@@ -1,0 +1,617 @@
+---
+name: venue-templates
+description: Access LaTeX templates, formatting requirements, and submission guidelines for scientific journals, conferences, posters, and grants
+version: 2.2.0
+when_to_use: Use when preparing manuscripts for Nature, Science, PLOS, IEEE, ACM journals; NeurIPS, ICML, CVPR, CHI conferences; academic research posters; or NSF, NIH, DOE, DARPA grant proposals. Also use when checking formatting requirements, page limits, or citation styles for any publication venue.
+allowed-tools: [Read, Write, Edit, Bash]
+---
+
+# Venue Templates
+
+## Overview
+
+Access comprehensive LaTeX templates, formatting requirements, and submission guidelines for major scientific publication venues, academic conferences, research posters, and grant proposals. This skill provides ready-to-use templates and detailed specifications for successful academic submissions across disciplines.
+
+Use this skill when preparing manuscripts for journal submission, conference papers, research posters, or grant proposals and need venue-specific formatting requirements and templates.
+
+## Prerequisites
+
+Before using this skill, ensure the following are installed:
+
+1. **LaTeX distribution** (TeX Live, MiKTeX, or MacTeX)
+   - Required commands: `pdflatex`, `bibtex`, `latexmk`
+   - Install venue-specific packages as needed (e.g., `neurips_2024.sty`)
+
+2. **Poppler utilities** (for PDF validation scripts)
+   - macOS: `brew install poppler`
+   - Linux: `sudo apt-get install poppler-utils`
+   - Windows: Install via Chocolatey or download from poppler releases
+
+3. **Python 3.7+** for helper scripts
+
+## Error Handling
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `pdfinfo not found` | Poppler utilities not installed | Run `brew install poppler` (macOS) or `apt-get install poppler-utils` (Linux) |
+| `Unknown venue: X` | Venue not in validation database | Check supported venues with `python {baseDir}/scripts/query_template.py --list-all` |
+| `LaTeX Error: File 'X.sty' not found` | Missing LaTeX package | Run `tlmgr install <package>` or download from venue website |
+| `Template file not found` | Incorrect path or missing template | Verify template exists in `{baseDir}/assets/` directory |
+| `Compilation failed` | LaTeX syntax or package errors | Check `.log` file for detailed error messages |
+| `Page count exceeded` | Document too long for venue | Reduce content or move to supplementary materials |
+| `Font size too small` | Using fonts below venue minimum | Update document class options or `\fontsize` commands |
+
+**Common LaTeX compilation issues:**
+- Run `pdflatex` twice for cross-references
+- Run `bibtex` between compilations for bibliography
+- Use `latexmk -pdf` for automatic recompilation
+
+---
+
+## Core Capabilities
+
+### 1. Journal Article Templates
+
+Access LaTeX templates and formatting guidelines for 50+ major scientific journals across disciplines:
+
+**Nature Portfolio**:
+- Nature, Nature Methods, Nature Biotechnology, Nature Machine Intelligence
+- Nature Communications, Nature Protocols
+- Scientific Reports
+
+**Science Family**:
+- Science, Science Advances, Science Translational Medicine
+- Science Immunology, Science Robotics
+
+**PLOS (Public Library of Science)**:
+- PLOS ONE, PLOS Biology, PLOS Computational Biology
+- PLOS Medicine, PLOS Genetics
+
+**Cell Press**:
+- Cell, Neuron, Immunity, Cell Reports
+- Molecular Cell, Developmental Cell
+
+**IEEE Publications**:
+- IEEE Transactions (various disciplines)
+- IEEE Access, IEEE Journal templates
+
+**ACM Publications**:
+- ACM Transactions, Communications of the ACM
+- ACM conference proceedings
+
+**Other Major Publishers**:
+- Springer journals (various disciplines)
+- Elsevier journals (custom templates)
+- Wiley journals
+- BMC journals
+- Frontiers journals
+
+### 2. Conference Paper Templates
+
+Conference-specific templates with proper formatting for major academic conferences:
+
+**Machine Learning & AI**:
+- NeurIPS (Neural Information Processing Systems)
+- ICML (International Conference on Machine Learning)
+- ICLR (International Conference on Learning Representations)
+- CVPR (Computer Vision and Pattern Recognition)
+- AAAI (Association for the Advancement of Artificial Intelligence)
+
+**Computer Science**:
+- ACM CHI (Human-Computer Interaction)
+- SIGKDD (Knowledge Discovery and Data Mining)
+- EMNLP (Empirical Methods in Natural Language Processing)
+- SIGIR (Information Retrieval)
+- USENIX conferences
+
+**Biology & Bioinformatics**:
+- ISMB (Intelligent Systems for Molecular Biology)
+- RECOMB (Research in Computational Molecular Biology)
+- PSB (Pacific Symposium on Biocomputing)
+
+**Engineering**:
+- IEEE conference templates (various disciplines)
+- ASME, AIAA conferences
+
+### 3. Research Poster Templates
+
+Academic poster templates for conference presentations:
+
+**Standard Formats**:
+- A0 (841 × 1189 mm / 33.1 × 46.8 in)
+- A1 (594 × 841 mm / 23.4 × 33.1 in)
+- 36" × 48" (914 × 1219 mm) - Common US size
+- 42" × 56" (1067 × 1422 mm)
+- 48" × 36" (landscape orientation)
+
+**Template Packages**:
+- **beamerposter**: Classic academic poster template
+- **tikzposter**: Modern, colorful poster design
+- **baposter**: Structured multi-column layout
+
+**Design Features**:
+- Optimal font sizes for readability at distance
+- Color schemes (colorblind-safe palettes)
+- Grid layouts and column structures
+- QR code integration for supplementary materials
+
+### 4. Grant Proposal Templates
+
+Templates and formatting requirements for major funding agencies:
+
+**NSF (National Science Foundation)**:
+- Full proposal template (15-page project description)
+- Project Summary (1 page: Overview, Intellectual Merit, Broader Impacts)
+- Budget and budget justification
+- Biographical sketch (3-page limit)
+- Facilities, Equipment, and Other Resources
+- Data Management Plan
+
+**NIH (National Institutes of Health)**:
+- R01 Research Grant (multi-year)
+- R21 Exploratory/Developmental Grant
+- K Awards (Career Development)
+- Specific Aims Page (1 page, most critical component)
+- Research Strategy (Significance, Innovation, Approach)
+- Biographical sketches (5-page limit)
+
+**DOE (Department of Energy)**:
+- Office of Science proposals
+- ARPA-E templates
+- Technology Readiness Level (TRL) descriptions
+- Commercialization and impact sections
+
+**DARPA (Defense Advanced Research Projects Agency)**:
+- BAA (Broad Agency Announcement) responses
+- Heilmeier Catechism framework
+- Technical approach and milestones
+- Transition planning
+
+**Private Foundations**:
+- Gates Foundation
+- Wellcome Trust
+- Howard Hughes Medical Institute (HHMI)
+- Chan Zuckerberg Initiative (CZI)
+
+## Workflow: Finding and Using Templates
+
+### Step 1: Identify Target Venue
+
+Determine the specific publication venue, conference, or funding agency:
+
+```
+Example queries:
+- "I need to submit to Nature"
+- "What are the requirements for NeurIPS 2025?"
+- "Show me NSF proposal formatting"
+- "I'm creating a poster for ISMB"
+```
+
+### Step 2: Query Template and Requirements
+
+Access venue-specific templates and formatting guidelines:
+
+**For Journals**:
+```bash
+# Load journal formatting requirements
+Reference: {baseDir}/references/journals_formatting.md
+Search for: "Nature" or specific journal name
+
+# Retrieve template
+Template: {baseDir}/assets/journals/nature_article.tex
+```
+
+**For Conferences**:
+```bash
+# Load conference formatting
+Reference: {baseDir}/references/conferences_formatting.md
+Search for: "NeurIPS" or specific conference
+
+# Retrieve template
+Template: {baseDir}/assets/journals/neurips_article.tex
+```
+
+**For Posters**:
+```bash
+# Load poster guidelines
+Reference: {baseDir}/references/posters_guidelines.md
+
+# Retrieve template
+Template: {baseDir}/assets/posters/beamerposter_academic.tex
+```
+
+**For Grants**:
+```bash
+# Load grant requirements
+Reference: {baseDir}/references/grants_requirements.md
+Search for: "NSF" or specific agency
+
+# Retrieve template
+Template: {baseDir}/assets/grants/nsf_proposal_template.tex
+```
+
+### Step 3: Review Formatting Requirements
+
+Check critical specifications before customizing:
+
+**Key Requirements to Verify**:
+- Page limits (varies by venue)
+- Font size and family
+- Margin specifications
+- Line spacing
+- Citation style (APA, Vancouver, Nature, etc.)
+- Figure/table requirements
+- File format (PDF, Word, LaTeX source)
+- Anonymization (for double-blind review)
+- Supplementary material limits
+
+### Step 4: Customize Template
+
+Use helper scripts or manual customization:
+
+**Option 1: Helper Script (Recommended)**:
+```bash
+python {baseDir}/scripts/customize_template.py \
+  --template {baseDir}/assets/journals/nature_article.tex \
+  --title "Your Paper Title" \
+  --authors "First Author, Second Author" \
+  --affiliations "University Name" \
+  --output my_nature_paper.tex
+```
+
+**Option 2: Manual Editing**:
+- Open template file
+- Replace placeholder text (marked with comments)
+- Fill in title, authors, affiliations, abstract
+- Add your content to each section
+
+### Step 5: Validate Format
+
+Check compliance with venue requirements:
+
+```bash
+python {baseDir}/scripts/validate_format.py \
+  --file my_paper.pdf \
+  --venue "Nature" \
+  --check-all
+```
+
+**Validation Checks**:
+- Page count within limits
+- Font sizes correct
+- Margins meet specifications
+- References formatted correctly
+- Figures meet resolution requirements
+
+### Step 6: Compile and Review
+
+Compile LaTeX and review output:
+
+```bash
+# Compile LaTeX
+pdflatex my_paper.tex
+bibtex my_paper
+pdflatex my_paper.tex
+pdflatex my_paper.tex
+
+# Or use latexmk for automated compilation
+latexmk -pdf my_paper.tex
+```
+
+Review checklist:
+- [ ] All sections present and properly formatted
+- [ ] Citations render correctly
+- [ ] Figures appear with proper captions
+- [ ] Page count within limits
+- [ ] Author guidelines followed
+- [ ] Supplementary materials prepared (if needed)
+
+## Integration with Other Skills
+
+**Skill Selection:** See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
+
+This skill works seamlessly with other scientific skills:
+
+### Scientific Writing
+- Use **scientific-writing** skill for content guidance (IMRaD structure, clarity, precision)
+- Apply venue-specific templates from this skill for formatting
+- Combine for complete manuscript preparation
+
+### Literature Review
+- Use **literature-review** skill for systematic literature search and synthesis
+- Apply appropriate citation style from venue requirements
+- Format references according to template specifications
+
+### Peer Review
+- Use **peer-review** skill to evaluate manuscript quality
+- Use this skill to verify formatting compliance
+- Ensure adherence to reporting guidelines (CONSORT, STROBE, etc.)
+
+### LaTeX Posters
+- This skill provides venue-agnostic poster templates
+- Use for conference-specific poster requirements
+- Integrate with visualization skills for figure creation
+
+### Scientific Schematics
+- Use **scientific-schematics** skill to generate publication-quality diagrams
+- Add methodology flowcharts, system architectures, or conceptual frameworks
+- Ensure figures meet venue-specific resolution and format requirements
+
+### Document Export
+- Use **document-skills/docx** to export formatted manuscript to Word for journal submission systems
+- Use **document-skills/pdf** to generate PDF version for preprint servers (arXiv, bioRxiv)
+- Use **markdown-to-pdf** for branded PDF output with Oligon templates
+
+**Export Workflow**: After applying venue-specific formatting with this skill, use `document-skills/docx` to generate the final Word document for submission.
+
+## Template Categories
+
+### By Document Type
+
+| Category | Template Count | Common Venues |
+|----------|---------------|---------------|
+| **Journal Articles** | 30+ | Nature, Science, PLOS, IEEE, ACM, Cell Press |
+| **Conference Papers** | 20+ | NeurIPS, ICML, CVPR, CHI, ISMB |
+| **Research Posters** | 10+ | A0, A1, 36×48, various packages |
+| **Grant Proposals** | 15+ | NSF, NIH, DOE, DARPA, foundations |
+
+### By Discipline
+
+| Discipline | Supported Venues |
+|------------|------------------|
+| **Life Sciences** | Nature, Cell Press, PLOS, ISMB, RECOMB |
+| **Physical Sciences** | Science, Physical Review, ACS, APS |
+| **Engineering** | IEEE, ASME, AIAA, ACM |
+| **Computer Science** | ACM, IEEE, NeurIPS, ICML, ICLR |
+| **Medicine** | NEJM, Lancet, JAMA, BMJ |
+| **Interdisciplinary** | PNAS, Nature Communications, Science Advances |
+
+## Helper Scripts
+
+### query_template.py
+
+Search and retrieve templates by venue name, type, or keywords:
+
+```bash
+# Find templates for a specific journal
+python {baseDir}/scripts/query_template.py --venue "Nature" --type "article"
+
+# Search by keyword
+python {baseDir}/scripts/query_template.py --keyword "machine learning"
+
+# List all available templates
+python {baseDir}/scripts/query_template.py --list-all
+
+# Get requirements for a venue
+python {baseDir}/scripts/query_template.py --venue "NeurIPS" --requirements
+```
+
+### customize_template.py
+
+Customize templates with author and project information:
+
+```bash
+# Basic customization
+python {baseDir}/scripts/customize_template.py \
+  --template {baseDir}/assets/journals/nature_article.tex \
+  --output my_paper.tex
+
+# With author information
+python {baseDir}/scripts/customize_template.py \
+  --template {baseDir}/assets/journals/nature_article.tex \
+  --title "Novel Approach to Protein Folding" \
+  --authors "Jane Doe, John Smith, Alice Johnson" \
+  --affiliations "MIT, Stanford, Harvard" \
+  --email "[email protected]" \
+  --output my_paper.tex
+
+# Interactive mode
+python {baseDir}/scripts/customize_template.py --interactive
+```
+
+### validate_format.py
+
+Check document compliance with venue requirements:
+
+```bash
+# Validate a compiled PDF
+python {baseDir}/scripts/validate_format.py \
+  --file my_paper.pdf \
+  --venue "Nature" \
+  --check-all
+
+# Check specific aspects
+python {baseDir}/scripts/validate_format.py \
+  --file my_paper.pdf \
+  --venue "NeurIPS" \
+  --check page-count,margins,fonts
+
+# Generate validation report
+python {baseDir}/scripts/validate_format.py \
+  --file my_paper.pdf \
+  --venue "Science" \
+  --report validation_report.txt
+```
+
+## Best Practices
+
+### Template Selection
+1. **Verify currency**: Check template date and compare with latest author guidelines
+2. **Check official sources**: Many journals provide official LaTeX classes
+3. **Test compilation**: Compile template before adding content
+4. **Read comments**: Templates include helpful inline comments
+
+### Customization
+1. **Preserve structure**: Don't remove required sections or packages
+2. **Follow placeholders**: Replace marked placeholder text systematically
+3. **Maintain formatting**: Don't override venue-specific formatting
+4. **Keep backups**: Save original template before customization
+
+### Compliance
+1. **Check page limits**: Verify before final submission
+2. **Validate citations**: Use correct citation style for venue
+3. **Test figures**: Ensure figures meet resolution requirements
+4. **Review anonymization**: Remove identifying information if required
+
+### Submission
+1. **Follow instructions**: Read complete author guidelines
+2. **Include all files**: LaTeX source, figures, bibliography
+3. **Generate properly**: Use recommended compilation method
+4. **Check output**: Verify PDF matches expectations
+
+## Writing Style Guides
+
+Beyond formatting, this skill provides comprehensive **writing style guides** that capture how papers should *read* at different venues—not just how they should look.
+
+### Why Style Matters
+
+The same research written for Nature will read very differently than when written for NeurIPS:
+- **Nature/Science**: Accessible to non-specialists, story-driven, broad significance
+- **Cell Press**: Mechanistic depth, comprehensive data, graphical abstract required
+- **Medical journals**: Patient-centered, evidence-graded, structured abstracts
+- **ML conferences**: Contribution bullets, ablation studies, reproducibility focus
+- **CS conferences**: Field-specific conventions, varying evaluation standards
+
+### Available Style Guides
+
+| Guide | Covers | Key Topics |
+|-------|--------|------------|
+| `venue_writing_styles.md` | Master overview | Style spectrum, quick reference |
+| `nature_science_style.md` | Nature, Science, PNAS | Accessibility, story-telling, broad impact |
+| `cell_press_style.md` | Cell, Neuron, Immunity | Graphical abstracts, eTOC, Highlights |
+| `medical_journal_styles.md` | NEJM, Lancet, JAMA, BMJ | Structured abstracts, evidence language |
+| `ml_conference_style.md` | NeurIPS, ICML, ICLR, CVPR | Contribution bullets, ablations |
+| `cs_conference_style.md` | ACL, EMNLP, CHI, SIGKDD | Field-specific conventions |
+| `reviewer_expectations.md` | All venues | What reviewers look for, rebuttal tips |
+
+### Writing Examples
+
+Concrete examples are available in `assets/examples/`:
+- `nature_abstract_examples.md`: Flowing paragraph abstracts for high-impact journals
+- `neurips_introduction_example.md`: ML conference intro with contribution bullets
+- `cell_summary_example.md`: Cell Press Summary, Highlights, eTOC format
+- `medical_structured_abstract.md`: NEJM, Lancet, JAMA structured format
+
+### Workflow: Adapting to a Venue
+
+1. **Identify target venue** and load the appropriate style guide
+2. **Review writing conventions**: Tone, voice, abstract format, structure
+3. **Check examples** for section-specific guidance
+4. **Review expectations**: What do reviewers at this venue prioritize?
+5. **Apply formatting**: Use LaTeX template from `assets/`
+
+---
+
+## Reference Documentation
+
+| Category | Location | Contents |
+|----------|----------|----------|
+| **Writing Style Guides** | `{baseDir}/references/` | 7 guides covering Nature, Science, Cell Press, medical, ML/CS conferences |
+| **Formatting Requirements** | `{baseDir}/references/` | journals_formatting.md, conferences_formatting.md, posters_guidelines.md, grants_requirements.md |
+| **Writing Examples** | `{baseDir}/assets/examples/` | Abstract, introduction, and summary examples by venue type |
+| **LaTeX Templates** | `{baseDir}/assets/` | journals/, posters/, grants/ subdirectories |
+| **Helper Scripts** | `{baseDir}/scripts/` | query_template.py, customize_template.py, validate_format.py |
+
+### External Resources
+
+- **Nature**: https://www.nature.com/nature/for-authors
+- **Science**: https://www.science.org/content/page/instructions-authors
+- **NeurIPS**: https://neurips.cc/Conferences/2024/CallForPapers
+- **NSF**: https://www.nsf.gov/publications/pub_summ.jsp?ods_key=pappg
+- **NIH**: https://grants.nih.gov/grants/how-to-apply-application-guide.html
+
+---
+
+## Example Usage
+
+### Example 1: Nature Article Submission
+
+```markdown
+User: "I need to prepare a manuscript for Nature"
+
+Response:
+1. Load Nature formatting requirements (references/journals_formatting.md)
+2. Retrieve Nature template (assets/journals/nature_article.tex)
+3. Key requirements:
+   - Length: ~3000 words, ~5 pages
+   - Format: Single column, 12pt font
+   - Citations: Numbered superscript (Nature style)
+   - Figures: 300+ dpi, RGB color
+4. Customize template with your title, authors, affiliations
+5. Compile and validate against requirements
+```
+
+### Example 2: NeurIPS Conference Paper
+
+```markdown
+User: "What are the formatting requirements for NeurIPS?"
+
+Response:
+From references/conferences_formatting.md:
+- Page limit: 8 pages main text + unlimited references/appendix
+- Format: Two-column, 10pt font
+- Template: neurips_2024.sty (official style file)
+- Anonymization: Required for initial submission
+- Citations: Numbered (brackets)
+- Figures: High resolution, colorblind-safe recommended
+```
+
+### Example 3: NSF Proposal
+
+```markdown
+User: "Help me format an NSF proposal"
+
+Response:
+NSF requirements (from references/grants_requirements.md):
+- Project Description: 15 pages maximum
+- Project Summary: 1 page (Overview, Intellectual Merit, Broader Impacts)
+- Budget Justification: 3-5 pages
+- Biographical Sketch: 3 pages per senior personnel
+- Font: Minimum 10pt, Times Roman or similar
+- Margins: 1 inch all sides
+Template: {baseDir}/assets/grants/nsf_proposal_template.tex
+```
+
+### Example 4: Conference Poster
+
+```markdown
+User: "I need to create a poster for ISMB"
+
+Response:
+ISMB poster specifications:
+- Size: Typically A0 portrait (33.1 × 46.8 inches)
+- Recommended template: beamerposter or tikzposter
+- Font sizes: Title 60-85pt, Headers 36-48pt, Body 24-32pt
+- Include: QR code for paper/supplementary materials
+Available templates:
+- assets/posters/beamerposter_academic.tex
+- assets/posters/tikzposter_research.tex
+```
+
+## Updates and Maintenance
+
+**Template Currency**:
+- Templates updated annually or when venues release new guidelines
+- Last updated: 2024
+- Check official venue sites for most current requirements
+
+**Reporting Issues**:
+- Template compilation errors
+- Outdated formatting requirements
+- Missing venue templates
+- Incorrect specifications
+
+## Summary
+
+The venue-templates skill provides comprehensive access to:
+
+1. **50+ publication venue templates** across disciplines
+2. **Detailed formatting requirements** for journals, conferences, posters, grants
+3. **Writing style guides** capturing tone, voice, and conventions for each venue type
+4. **Concrete examples** of abstracts, introductions, and other sections by venue
+5. **Reviewer expectations** explaining what evaluators look for at different venues
+6. **Helper scripts** for template discovery, customization, and validation
+7. **Integration** with other scientific writing skills
+
+Use this skill whenever you need venue-specific formatting guidance, writing style conventions, or templates for academic publishing.
+

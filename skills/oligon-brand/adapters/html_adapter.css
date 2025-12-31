@@ -1,0 +1,456 @@
+/**
+ * Oligon Brand Adapter for HTML/CSS
+ *
+ * This stylesheet provides CSS variables and utility classes for applying
+ * Oligon scientific brand identity to HTML documents and web applications.
+ *
+ * Usage:
+ *   <link rel="stylesheet" href="html_adapter.css">
+ *
+ *   <div class="brand-container">
+ *     <h1 class="brand-heading-1">Title</h1>
+ *     <p class="brand-body">Body text...</p>
+ *     <span class="brand-highlight">Highlighted text</span>
+ *   </div>
+ */
+
+/* =============================================================================
+   CSS CUSTOM PROPERTIES (VARIABLES)
+   ============================================================================= */
+
+:root {
+  /* Primary Brand Color */
+  --brand-blue: #2DB2E8;
+
+  /* Contrast Colors */
+  --brand-contrast-orange: #E8622D;
+  --brand-dark-warm: #7D250F;
+
+  /* Neutral Colors */
+  --brand-dark-gray: #222222;
+  --brand-medium-gray: #666666;
+  --brand-muted-gray: #999999;
+  --brand-light-gray: #BDBDBD;
+
+  /* Supporting Blues */
+  --brand-medium-blue: #158BBB;
+  --brand-dark-teal: #0F5D7D;
+
+  /* Structure Colors */
+  --brand-black: #000000;
+  --brand-white: #FFFFFF;
+  --brand-gridline: #E5E5E5;
+
+  /* Typography */
+  --brand-font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif;
+
+  /* Font Sizes - Figures */
+  --brand-font-size-panel-label: 10pt;
+  --brand-font-size-axis-label: 8pt;
+  --brand-font-size-tick-label: 7pt;
+  --brand-font-size-legend: 7pt;
+  --brand-font-size-annotation: 7pt;
+
+  /* Font Sizes - Documents */
+  --brand-font-size-body: 11pt;
+  --brand-font-size-h1: 14pt;
+  --brand-font-size-h2: 12pt;
+  --brand-font-size-h3: 11pt;
+  --brand-font-size-caption: 10pt;
+
+  /* Font Sizes - Presentations */
+  --brand-font-size-title: 28pt;
+  --brand-font-size-subtitle: 20pt;
+  --brand-font-size-slide-body: 18pt;
+
+  /* Spacing */
+  --brand-spacing-xs: 4px;
+  --brand-spacing-sm: 8px;
+  --brand-spacing-md: 16px;
+  --brand-spacing-lg: 24px;
+  --brand-spacing-xl: 32px;
+
+  /* Line Heights */
+  --brand-line-height-tight: 1.2;
+  --brand-line-height-normal: 1.5;
+  --brand-line-height-relaxed: 1.75;
+
+  /* Border */
+  --brand-border-radius: 4px;
+  --brand-border-width: 1px;
+}
+
+
+/* =============================================================================
+   COLOR CYCLE CLASSES
+   ============================================================================= */
+
+/* Treatment vs Control Cycle */
+.brand-color-cycle-treatment .series-1 { color: var(--brand-dark-gray); }
+.brand-color-cycle-treatment .series-2 { color: var(--brand-blue); }
+.brand-color-cycle-treatment .series-3 { color: var(--brand-medium-gray); }
+
+/* Neutrals Only Cycle */
+.brand-color-cycle-neutrals .series-1 { color: var(--brand-dark-gray); }
+.brand-color-cycle-neutrals .series-2 { color: var(--brand-medium-gray); }
+.brand-color-cycle-neutrals .series-3 { color: var(--brand-muted-gray); }
+
+/* Opposing Effects Cycle */
+.brand-color-cycle-opposing .series-1 { color: var(--brand-blue); }
+.brand-color-cycle-opposing .series-2 { color: var(--brand-contrast-orange); }
+.brand-color-cycle-opposing .series-3 { color: var(--brand-dark-gray); }
+
+/* Multi-Category Cycle */
+.brand-color-cycle-multi .series-1 { color: var(--brand-dark-gray); }
+.brand-color-cycle-multi .series-2 { color: var(--brand-blue); }
+.brand-color-cycle-multi .series-3 { color: var(--brand-medium-gray); }
+.brand-color-cycle-multi .series-4 { color: var(--brand-medium-blue); }
+
+
+/* =============================================================================
+   BASE STYLES
+   ============================================================================= */
+
+.brand-container {
+  font-family: var(--brand-font-family);
+  color: var(--brand-black);
+  background-color: var(--brand-white);
+  line-height: var(--brand-line-height-normal);
+}
+
+
+/* =============================================================================
+   TYPOGRAPHY
+   ============================================================================= */
+
+/* Headings */
+.brand-heading-1,
+.brand-h1 {
+  font-family: var(--brand-font-family);
+  font-size: var(--brand-font-size-h1);
+  font-weight: bold;
+  color: var(--brand-black);
+  margin-top: var(--brand-spacing-lg);
+  margin-bottom: var(--brand-spacing-sm);
+  line-height: var(--brand-line-height-tight);
+}
+
+.brand-heading-2,
+.brand-h2 {
+  font-family: var(--brand-font-family);
+  font-size: var(--brand-font-size-h2);
+  font-weight: bold;
+  color: var(--brand-black);
+  margin-top: var(--brand-spacing-md);
+  margin-bottom: var(--brand-spacing-xs);
+  line-height: var(--brand-line-height-tight);
+}
+
+.brand-heading-3,
+.brand-h3 {
+  font-family: var(--brand-font-family);
+  font-size: var(--brand-font-size-h3);
+  font-weight: bold;
+  color: var(--brand-black);
+  margin-top: var(--brand-spacing-md);
+  margin-bottom: var(--brand-spacing-xs);
+  line-height: var(--brand-line-height-tight);
+}
+
+/* Body Text */
+.brand-body,
+.brand-p {
+  font-family: var(--brand-font-family);
+  font-size: var(--brand-font-size-body);
+  color: var(--brand-black);
+  line-height: var(--brand-line-height-normal);
+  margin-bottom: var(--brand-spacing-sm);
+}
+
+/* Caption */
+.brand-caption {
+  font-family: var(--brand-font-family);
+  font-size: var(--brand-font-size-caption);
+  font-style: italic;
+  color: var(--brand-dark-gray);
+  line-height: var(--brand-line-height-normal);
+}
+
+
+/* =============================================================================
+   HIGHLIGHT UTILITIES
+   ============================================================================= */
+
+.brand-highlight {
+  color: var(--brand-blue);
+}
+
+.brand-highlight-contrast {
+  color: var(--brand-contrast-orange);
+}
+
+.brand-highlight-bg {
+  background-color: var(--brand-blue);
+  color: var(--brand-white);
+  padding: var(--brand-spacing-xs) var(--brand-spacing-sm);
+  border-radius: var(--brand-border-radius);
+}
+
+.brand-highlight-bg-contrast {
+  background-color: var(--brand-contrast-orange);
+  color: var(--brand-white);
+  padding: var(--brand-spacing-xs) var(--brand-spacing-sm);
+  border-radius: var(--brand-border-radius);
+}
+
+
+/* =============================================================================
+   TABLES
+   ============================================================================= */
+
+.brand-table {
+  font-family: var(--brand-font-family);
+  font-size: 9pt;
+  border-collapse: collapse;
+  width: 100%;
+  background-color: var(--brand-white);
+}
+
+.brand-table th {
+  background-color: var(--brand-light-gray);
+  color: var(--brand-black);
+  font-weight: bold;
+  text-align: left;
+  padding: var(--brand-spacing-sm) var(--brand-spacing-md);
+  border-bottom: 2px solid var(--brand-black);
+}
+
+.brand-table td {
+  color: var(--brand-black);
+  padding: var(--brand-spacing-sm) var(--brand-spacing-md);
+  border-bottom: 1px solid var(--brand-gridline);
+}
+
+.brand-table tr:hover {
+  background-color: var(--brand-gridline);
+}
+
+/* Minimal table variant */
+.brand-table-minimal {
+  font-family: var(--brand-font-family);
+  font-size: 9pt;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.brand-table-minimal th {
+  font-weight: bold;
+  text-align: left;
+  padding: var(--brand-spacing-sm) var(--brand-spacing-md);
+  border-bottom: 1px solid var(--brand-black);
+}
+
+.brand-table-minimal td {
+  padding: var(--brand-spacing-sm) var(--brand-spacing-md);
+  border-bottom: 1px solid var(--brand-gridline);
+}
+
+
+/* =============================================================================
+   FIGURE CONTAINERS
+   ============================================================================= */
+
+.brand-figure {
+  background-color: var(--brand-white);
+  padding: var(--brand-spacing-md);
+  margin: var(--brand-spacing-md) 0;
+}
+
+.brand-figure img {
+  max-width: 100%;
+  height: auto;
+}
+
+.brand-figure-caption {
+  font-family: var(--brand-font-family);
+  font-size: var(--brand-font-size-caption);
+  font-style: italic;
+  color: var(--brand-dark-gray);
+  margin-top: var(--brand-spacing-sm);
+}
+
+.brand-panel-label {
+  font-family: var(--brand-font-family);
+  font-size: var(--brand-font-size-panel-label);
+  font-weight: bold;
+  color: var(--brand-black);
+}
+
+
+/* =============================================================================
+   CARDS AND BOXES
+   ============================================================================= */
+
+.brand-card {
+  background-color: var(--brand-white);
+  border: var(--brand-border-width) solid var(--brand-gridline);
+  border-radius: var(--brand-border-radius);
+  padding: var(--brand-spacing-md);
+  margin: var(--brand-spacing-md) 0;
+}
+
+.brand-card-header {
+  font-family: var(--brand-font-family);
+  font-size: var(--brand-font-size-h3);
+  font-weight: bold;
+  color: var(--brand-black);
+  margin-bottom: var(--brand-spacing-sm);
+  padding-bottom: var(--brand-spacing-sm);
+  border-bottom: 2px solid var(--brand-blue);
+}
+
+.brand-callout {
+  background-color: var(--brand-gridline);
+  border-left: 4px solid var(--brand-blue);
+  padding: var(--brand-spacing-md);
+  margin: var(--brand-spacing-md) 0;
+}
+
+.brand-callout-warning {
+  border-left-color: var(--brand-contrast-orange);
+}
+
+
+/* =============================================================================
+   BUTTONS
+   ============================================================================= */
+
+.brand-button {
+  font-family: var(--brand-font-family);
+  font-size: var(--brand-font-size-body);
+  font-weight: bold;
+  color: var(--brand-white);
+  background-color: var(--brand-blue);
+  border: none;
+  border-radius: var(--brand-border-radius);
+  padding: var(--brand-spacing-sm) var(--brand-spacing-md);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.brand-button:hover {
+  background-color: var(--brand-medium-blue);
+}
+
+.brand-button-secondary {
+  background-color: var(--brand-dark-gray);
+}
+
+.brand-button-secondary:hover {
+  background-color: var(--brand-medium-gray);
+}
+
+.brand-button-contrast {
+  background-color: var(--brand-contrast-orange);
+}
+
+.brand-button-contrast:hover {
+  background-color: var(--brand-dark-warm);
+}
+
+
+/* =============================================================================
+   PRESENTATION STYLES (for HTML slides)
+   ============================================================================= */
+
+.brand-slide {
+  font-family: var(--brand-font-family);
+  background-color: var(--brand-white);
+  color: var(--brand-black);
+  padding: var(--brand-spacing-xl);
+  min-height: 100vh;
+}
+
+.brand-slide-title {
+  font-size: var(--brand-font-size-title);
+  font-weight: bold;
+  color: var(--brand-black);
+  text-align: center;
+  margin-bottom: var(--brand-spacing-lg);
+}
+
+.brand-slide-subtitle {
+  font-size: var(--brand-font-size-subtitle);
+  color: var(--brand-medium-gray);
+  text-align: center;
+  margin-bottom: var(--brand-spacing-xl);
+}
+
+.brand-slide-section {
+  background-color: var(--brand-blue);
+  color: var(--brand-white);
+}
+
+.brand-slide-section .brand-slide-title {
+  color: var(--brand-white);
+}
+
+
+/* =============================================================================
+   UTILITY CLASSES
+   ============================================================================= */
+
+/* Text Colors */
+.brand-text-primary { color: var(--brand-blue); }
+.brand-text-contrast { color: var(--brand-contrast-orange); }
+.brand-text-dark { color: var(--brand-dark-gray); }
+.brand-text-medium { color: var(--brand-medium-gray); }
+.brand-text-muted { color: var(--brand-muted-gray); }
+.brand-text-light { color: var(--brand-light-gray); }
+
+/* Background Colors */
+.brand-bg-primary { background-color: var(--brand-blue); }
+.brand-bg-contrast { background-color: var(--brand-contrast-orange); }
+.brand-bg-dark { background-color: var(--brand-dark-gray); }
+.brand-bg-light { background-color: var(--brand-gridline); }
+.brand-bg-white { background-color: var(--brand-white); }
+
+/* Border Colors */
+.brand-border-primary { border-color: var(--brand-blue); }
+.brand-border-contrast { border-color: var(--brand-contrast-orange); }
+.brand-border-dark { border-color: var(--brand-dark-gray); }
+.brand-border-light { border-color: var(--brand-gridline); }
+
+/* Font Weights */
+.brand-font-normal { font-weight: normal; }
+.brand-font-bold { font-weight: bold; }
+
+/* Text Alignment */
+.brand-text-left { text-align: left; }
+.brand-text-center { text-align: center; }
+.brand-text-right { text-align: right; }
+
+
+/* =============================================================================
+   PRINT STYLES
+   ============================================================================= */
+
+@media print {
+  .brand-container {
+    background-color: white !important;
+    color: black !important;
+  }
+
+  .brand-table th {
+    background-color: #BDBDBD !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .brand-highlight,
+  .brand-text-primary {
+    color: #2DB2E8 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "claude-scientific-writer",
+  "description": "25+ scientific writing skills for research papers, literature reviews, posters, presentations, statistical analysis, and academic documents",
+  "version": "1.0.0",
+  "author": {
+    "name": "Jeff Kiefer"
+  },
+  "license": "MIT",
+  "keywords": [
+    "scientific-writing",
+    "research",
+    "bioinformatics",
+    "LaTeX",
+    "academic",
+    "posters",
+    "presentations",
+    "literature-review",
+    "statistical-analysis",
+    "citations"
+  ]
+}

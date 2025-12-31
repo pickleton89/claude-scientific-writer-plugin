@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(research-paper-summarizer)",
+      "Bash(find:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nAdd research paper summarizer skill\n\nMulti-format scientific paper summarization skill supporting:\n- Specialized prompts for different article types (general, review,\n  computational biology, cell/molecular biology)\n- Multiple output formats: markdown, HTML presentations, PDF summaries,\n  SVG infographics\n- Brand-compliant styling with Oligon color palette\n- PDF generation script using weasyprint\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git commit:*)"
+    ]
+  }
+}

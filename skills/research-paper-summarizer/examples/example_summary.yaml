@@ -1,0 +1,87 @@
+# Example Research Paper Summary YAML
+# This format is produced by Claude when using the summarization prompt
+# and consumed by generate_summary_pdf.py
+
+metadata:
+  title: "Aptamer-siRNA Chimeras Achieve Tumor-Selective Gene Silencing in Pancreatic Cancer Xenografts"
+  authors: "Chen L, Martinez R, Thompson K et al."
+  journal: "Molecular Therapy - Nucleic Acids"
+  year: 2024
+  doi: "10.1016/j.omtn.2024.xxxxx"
+  article_type: "Primary Research"
+  pmid: "39xxxxxx"
+
+key_figures:
+  - number: "Figure 2"
+    title: "EpCAM aptamer binding specificity and internalization kinetics"
+    importance: "Validates tumor-selective delivery mechanism"
+    key_findings: "Kd = 2.3 nM; 85% internalization at 2h; minimal uptake in EpCAM-negative cells"
+  - number: "Figure 4"
+    title: "KRAS knockdown efficiency in BxPC-3 xenografts"
+    importance: "Primary efficacy endpoint"
+    key_findings: "72% mRNA knockdown at 48h post-injection (vs 12% scrambled control)"
+  - number: "Figure 5"
+    title: "Tumor growth inhibition and survival curves"
+    importance: "Therapeutic efficacy demonstration"
+    key_findings: "58% tumor growth inhibition; median survival 34 vs 21 days"
+
+overview: |
+  This study developed aptamer-siRNA chimeras targeting EpCAM-positive pancreatic cancer 
+  cells for selective KRAS gene silencing. Using a modular assembly approach with a 
+  sticky-bridge linker, the authors achieved tumor-selective delivery and significant 
+  knockdown in vivo, resulting in tumor growth inhibition in xenograft models.
+
+key_findings:
+  - finding: "EpCAM aptamer maintained high binding affinity after siRNA conjugation"
+    statistics: "Kd = 2.3 ± 0.4 nM (n=3 independent experiments)"
+    figure_ref: "Figure 2A"
+  - finding: "Chimera achieved rapid cellular internalization via receptor-mediated endocytosis"
+    statistics: "t½ internalization = 45 min; 85% internalized at 2h"
+    figure_ref: "Figure 2C"
+  - finding: "KRAS mRNA knockdown was tumor-selective with minimal liver accumulation"
+    statistics: "Tumor: 72% KD; Liver: 8% KD; p<0.001"
+    figure_ref: "Figure 4B"
+  - finding: "Bi-weekly dosing achieved sustained tumor growth inhibition"
+    statistics: "TGI = 58%, p=0.003 vs vehicle; n=8/group"
+    figure_ref: "Figure 5A"
+  - finding: "Treatment extended median survival by 62%"
+    statistics: "34 vs 21 days, HR=0.41, 95% CI: 0.22-0.78, p=0.006"
+    figure_ref: "Figure 5B"
+  - finding: "No significant hepatotoxicity or nephrotoxicity observed"
+    statistics: "ALT, AST, creatinine within normal range (p>0.05 vs vehicle)"
+    figure_ref: "Supplementary Table 2"
+
+methods:
+  study_design: "Preclinical efficacy study with subcutaneous xenografts"
+  model_system: "BxPC-3 human pancreatic cancer cells in nude mice (nu/nu)"
+  sample_size: "n=8 mice per group; 3 treatment groups (vehicle, scrambled, chimera)"
+  key_techniques: "RT-qPCR for knockdown; caliper measurements for tumor volume; bioluminescence imaging"
+  statistical_analysis: "Two-way ANOVA with Tukey post-hoc; log-rank test for survival; significance threshold p<0.05"
+  key_parameters: "5 mg/kg IV, bi-weekly dosing; 2'F-pyrimidine modifications; phosphorothioate backbone at termini"
+
+limitations:
+  author_stated:
+    - "Single tumor model (BxPC-3) may not represent pancreatic cancer heterogeneity"
+    - "Maximum treatment duration of 6 weeks; long-term efficacy unknown"
+    - "Humanized mouse models not used; immune component not assessed"
+  additional:
+    - "No comparison to standard-of-care gemcitabine combination"
+    - "Biodistribution assessed only at single timepoint (24h)"
+    - "Manufacturing scalability not addressed"
+
+implications: |
+  This work demonstrates feasibility of aptamer-mediated siRNA delivery for oncogene 
+  silencing in solid tumors. The modular assembly approach enables rapid optimization 
+  of targeting and payload components. Authors propose IND-enabling studies with 
+  GMP manufacturing and expanded toxicology in non-human primates.
+
+relevance_notes: |
+  Directly relevant to SeekR platform development. Key insights for our work:
+  
+  1. The sticky-bridge linker approach is similar to our modular assembly strategy
+  2. 2'F-pyrimidine + PS modifications achieved adequate stability (72h serum half-life)
+  3. 5 mg/kg bi-weekly dosing achieved therapeutic effect — useful benchmark
+  4. The 72% knockdown at 48h suggests our efficacy prediction cutoffs may be appropriate
+  
+  Consider: Their EpCAM aptamer (Kd 2.3 nM) outperforms our current CD71 aptamer. 
+  May be worth testing EpCAM for pancreatic applications.

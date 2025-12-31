@@ -1,0 +1,225 @@
+{
+  "meta": {
+    "name": "Oligon Scientific Brand",
+    "version": "4.0",
+    "description": "Scientific brand visual identity tokens for figures, charts, presentations, and documents"
+  },
+  "philosophy": {
+    "core_principle": "Neutrals are default; Brand Colors are for highlights; Contrast colors show opposition",
+    "guidelines": [
+      "Most data should be grayscale - color is earned by importance",
+      "Brand Blue highlights the most important element (1-2 per panel max)",
+      "All figures must work in grayscale",
+      "Never rely on color alone - use shapes, line styles, or labels"
+    ]
+  },
+  "colors": {
+    "primary": {
+      "brand_blue": {
+        "hex": "#2DB2E8",
+        "role": "Hero highlight - primary data of interest, treatment groups, focal points"
+      }
+    },
+    "contrast": {
+      "contrast_orange": {
+        "hex": "#E8622D",
+        "role": "Opposition to Brand Blue - up vs down, mutant vs wildtype"
+      },
+      "dark_warm": {
+        "hex": "#7D250F",
+        "role": "Heatmap positive extreme"
+      }
+    },
+    "neutrals": {
+      "dark_gray": {
+        "hex": "#222222",
+        "role": "Primary default data - control groups, baselines"
+      },
+      "medium_gray": {
+        "hex": "#666666",
+        "role": "Secondary data lines/points"
+      },
+      "muted_gray": {
+        "hex": "#999999",
+        "role": "Tertiary data (lightest for actual data)"
+      },
+      "light_gray": {
+        "hex": "#BDBDBD",
+        "role": "Annotations, gridlines, de-emphasized points ONLY - lacks contrast for data"
+      }
+    },
+    "supporting_blues": {
+      "medium_blue": {
+        "hex": "#158BBB",
+        "role": "Additional categorical series when neutrals + Brand Blue insufficient"
+      },
+      "dark_teal": {
+        "hex": "#0F5D7D",
+        "role": "Heatmap negative extreme, rare secondary highlight"
+      }
+    },
+    "structure": {
+      "white": {
+        "hex": "#FFFFFF",
+        "role": "Backgrounds ONLY"
+      },
+      "black": {
+        "hex": "#000000",
+        "role": "Axes, ticks, labels, titles, legend text"
+      },
+      "gridline": {
+        "hex": "#E5E5E5",
+        "role": "Gridlines if essential (thin, 0.5pt)"
+      }
+    }
+  },
+  "color_cycles": {
+    "treatment_control": {
+      "description": "Control vs Treatment comparison (most common)",
+      "colors": ["#222222", "#2DB2E8", "#666666"],
+      "assignments": {
+        "1": "Control / Baseline",
+        "2": "Treatment / Experimental",
+        "3": "Secondary comparison"
+      }
+    },
+    "neutrals_only": {
+      "description": "All groups equal weight, no highlight needed",
+      "colors": ["#222222", "#666666", "#999999"],
+      "assignments": {
+        "1": "Group A",
+        "2": "Group B",
+        "3": "Group C"
+      }
+    },
+    "opposing": {
+      "description": "Bidirectional effects (up/down, gain/loss)",
+      "colors": ["#2DB2E8", "#E8622D", "#222222"],
+      "assignments": {
+        "1": "Direction A (e.g., Down-regulated)",
+        "2": "Direction B (e.g., Up-regulated)",
+        "3": "Neutral / Unchanged"
+      }
+    },
+    "multi_category": {
+      "description": "4 categories max - MUST combine with marker shapes",
+      "colors": ["#222222", "#2DB2E8", "#666666", "#158BBB"],
+      "marker_shapes": ["circle", "square", "triangle", "diamond"],
+      "note": "If 5+ categories, redesign using faceting or small multiples"
+    },
+    "volcano": {
+      "description": "Differential expression volcano plots",
+      "colors": {
+        "nonsig": "#BDBDBD",
+        "up": "#E8622D",
+        "down": "#2DB2E8"
+      }
+    }
+  },
+  "divergent_colormap": {
+    "description": "For heatmaps with data centered at zero",
+    "gradient": [
+      {"position": 0.00, "color": "#0F5D7D", "label": "Extreme negative"},
+      {"position": 0.25, "color": "#2DB2E8", "label": "Moderate negative"},
+      {"position": 0.50, "color": "#FFFFFF", "label": "Zero/Neutral"},
+      {"position": 0.75, "color": "#E8622D", "label": "Moderate positive"},
+      {"position": 1.00, "color": "#7D250F", "label": "Extreme positive"}
+    ]
+  },
+  "typography": {
+    "font_family": {
+      "primary": ["Arial", "Helvetica", "DejaVu Sans"],
+      "forbidden": ["Calibri", "Times New Roman", "system defaults"]
+    },
+    "figures": {
+      "panel_labels": {"size_pt": [9, 10], "weight": "bold", "color": "#000000"},
+      "axis_labels": {"size_pt": 8, "weight": "normal", "color": "#000000"},
+      "tick_labels": {"size_pt": [7, 8], "weight": "normal", "color": "#000000"},
+      "legend_text": {"size_pt": [7, 8], "weight": "normal", "color": "#000000"},
+      "annotations": {"size_pt": 7, "weight": "normal", "color": "#000000"},
+      "titles": {"size_pt": [8, 9], "weight": "normal", "color": "#000000"}
+    },
+    "documents": {
+      "body_text": {"size_pt": 11, "weight": "normal"},
+      "heading_1": {"size_pt": 14, "weight": "bold"},
+      "heading_2": {"size_pt": 12, "weight": "bold"},
+      "heading_3": {"size_pt": 11, "weight": "bold"},
+      "figure_captions": {"size_pt": 10, "style": "italic"}
+    },
+    "presentations": {
+      "title": {"size_pt": 28, "weight": "bold"},
+      "subtitle": {"size_pt": 20, "weight": "normal"},
+      "body": {"size_pt": 18, "weight": "normal"},
+      "footer": {"size_pt": 12, "weight": "normal"}
+    }
+  },
+  "layout": {
+    "figures": {
+      "background": "#FFFFFF",
+      "spines": {
+        "visible": ["left", "bottom"],
+        "hidden": ["top", "right"],
+        "width_pt": 0.8,
+        "color": "#000000"
+      },
+      "gridlines": {
+        "default": false,
+        "if_needed": {"color": "#E5E5E5", "width_pt": 0.5}
+      },
+      "legend": {
+        "frameon": false,
+        "location": "inside plot area in empty region"
+      }
+    },
+    "aspect_ratios": {
+      "time_series": "4:3",
+      "scatter_correlation": "1:1",
+      "bar_charts": "context-dependent",
+      "heatmaps": "determined by data"
+    }
+  },
+  "lines_and_markers": {
+    "line_width": {
+      "primary_pt": [1.0, 1.5],
+      "secondary_pt": 0.75,
+      "error_bars_pt": 0.75
+    },
+    "marker_size_pt": [4, 6],
+    "error_bands": {
+      "opacity": [0.20, 0.30],
+      "border": false
+    }
+  },
+  "resolution": {
+    "print_publication": {"dpi": 300, "formats": ["TIFF", "PDF", "EPS"]},
+    "screen_presentation": {"dpi": 150, "formats": ["PNG", "PDF"]},
+    "web_preprint": {"dpi": 150, "formats": ["PNG", "SVG"]}
+  },
+  "accessibility": {
+    "colorblind_safe_pair": ["#2DB2E8", "#E8622D"],
+    "requirements": [
+      "All figures must remain interpretable in grayscale",
+      "Combine color with line style, marker shape, or labels",
+      "Do not use #2DB2E8 vs #158BBB as primary differentiator",
+      "Minimum contrast: 3:1 for data, 4.5:1 for text"
+    ],
+    "testing_tools": [
+      "Coblis Colorblind Simulator",
+      "Viz Palette",
+      "matplotlib colorspacious package"
+    ]
+  },
+  "preflight_checklist": [
+    "White background (#FFFFFF)",
+    "Black text and axis lines (#000000)",
+    "Top and right spines removed",
+    "Correct color cycle for scientific context",
+    "Brand Blue limited to 1-2 elements per panel",
+    "No library default colors",
+    "Redundant encoding (shapes/styles with color)",
+    "Tested in grayscale",
+    "Error bars labeled (SEM/SD/95% CI, n=?)",
+    "Arial font, 7-10 pt range",
+    "Resolution >= 300 DPI for print"
+  ]
+}

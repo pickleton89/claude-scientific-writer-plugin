@@ -1,0 +1,110 @@
+##########################################
+# Oligon Brand Style v4 - Neutrals First #
+##########################################
+# Based on Documents/BRAND_COLORS_v4.md
+# Philosophy: Most data should be grayscale. Brand Blue highlights only.
+
+##########
+# Figure #
+##########
+figure.facecolor: white
+figure.edgecolor: white
+figure.dpi: 150
+figure.constrained_layout.use: True
+
+savefig.facecolor: white
+savefig.edgecolor: white
+savefig.dpi: 300
+savefig.bbox: tight
+savefig.pad_inches: 0.1
+
+##########
+# Font   #
+##########
+font.family: sans-serif
+font.sans-serif: Arial, Helvetica, DejaVu Sans
+font.size: 9
+
+########
+# Axes #
+########
+axes.facecolor: white
+axes.edgecolor: black
+axes.linewidth: 0.8
+
+# Axes labels and title - black (scientific journal standard)
+axes.labelcolor: black
+axes.labelsize: 9
+axes.titlesize: 10
+axes.titlecolor: black
+axes.titleweight: normal
+
+# Despined layout - remove top and right spines
+axes.spines.top: False
+axes.spines.right: False
+axes.spines.bottom: True
+axes.spines.left: True
+
+# Default color cycle: Treatment vs Control (Neutrals First)
+# #222222 = Dark Gray (control/baseline)
+# #2DB2E8 = Brand Blue (treatment/highlight)
+# #666666 = Medium Gray (secondary)
+# For opposing effects, set manually: #2DB2E8, #E8622D, #222222
+axes.prop_cycle: cycler("color", ["222222", "2DB2E8", "666666", "999999", "158BBB"])
+
+###########
+# Ticks   #
+###########
+xtick.color: black
+ytick.color: black
+xtick.labelsize: 8
+ytick.labelsize: 8
+xtick.direction: out
+ytick.direction: out
+
+###########
+# Grid    #
+###########
+# Off by default per v4 spec
+axes.grid: False
+grid.color: E5E5E5
+grid.linestyle: -
+grid.linewidth: 0.5
+grid.alpha: 1.0
+
+#############
+# Lines     #
+#############
+lines.linewidth: 1.25
+lines.markersize: 5
+lines.solid_capstyle: round
+
+###########
+# Patches #
+###########
+# No black outlines on bars (reduces data-ink ratio)
+patch.facecolor: 222222
+patch.edgecolor: none
+patch.linewidth: 0.0
+
+############
+# Legend   #
+############
+# Minimalist, no frame per v4 spec
+legend.frameon: False
+legend.facecolor: white
+legend.edgecolor: none
+legend.fontsize: 8
+legend.title_fontsize: 9
+legend.loc: best
+
+##########
+# Text   #
+##########
+text.color: black
+
+##########
+# Image  #
+##########
+# Default colormap (use get_divergent_cmap() for heatmaps)
+image.cmap: viridis
