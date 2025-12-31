@@ -6,7 +6,7 @@ A comprehensive Claude Code plugin with 25+ skills for scientific research writi
 
 ```bash
 # Add the marketplace source
-/plugin marketplace add jeffkiefer/claude-scientific-writer-plugin
+/plugin marketplace add pickleton89/claude-scientific-writer-plugin
 
 # Install the plugin
 /plugin install claude-scientific-writer

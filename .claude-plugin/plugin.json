@@ -5,6 +5,7 @@
   "author": {
     "name": "Jeff Kiefer"
   },
+  "repository": "https://github.com/pickleton89/claude-scientific-writer-plugin",
   "license": "MIT",
   "keywords": [
     "scientific-writing",
