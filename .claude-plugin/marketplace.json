@@ -1,0 +1,14 @@
+{
+  "name": "claude-scientific-writer-marketplace",
+  "owner": {
+    "name": "Jeff Kiefer"
+  },
+  "plugins": [
+    {
+      "name": "claude-scientific-writer",
+      "source": "./",
+      "description": "25+ scientific writing skills for research papers, literature reviews, posters, presentations, statistical analysis, and academic documents",
+      "version": "1.0.0"
+    }
+  ]
+}
