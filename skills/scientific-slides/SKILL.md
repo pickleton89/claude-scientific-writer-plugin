@@ -60,7 +60,7 @@ pdflatex --version
 ```
 
 **For PowerPoint generation:**
-- See `document-skills/pptx/SKILL.md` for python-pptx setup
+- See `document-skills:pptx` for python-pptx setup
 </prerequisites>
 
 <decision_framework>
@@ -111,7 +111,7 @@ Choose output format
 │   └─ YES → PowerPoint via PPTX Skill
 │       - Generate visuals with --visual-only
 │       - Build PPTX with text separately
-│       - See: document-skills/pptx/SKILL.md
+│       - See: document-skills:pptx
 │
 └─ Need equations, version control, reproducibility?
     └─ YES → LaTeX Beamer
@@ -178,7 +178,7 @@ Choose output format
    - Ensure OPENROUTER_API_KEY is set
    - Create slides/ output directory
 3. For PowerPoint:
-   - Read document-skills/pptx/SKILL.md
+   - Read document-skills:pptx
    - Prepare template or HTML source
 4. For LaTeX Beamer:
    - Select template from assets/
@@ -258,7 +258,7 @@ Choose output format
    -o figures/slide_visual.png --visual-only
    ```
 
-2. Build PPTX using document-skills/pptx workflow
+2. Build PPTX using document-skills:pptx workflow
 
 3. Add text content separately from visuals
 
@@ -540,7 +540,7 @@ See `{baseDir}/references/output_templates.md` for complete templates:
 | `plotting-libraries` | Use for data visualizations to include in slides |
 | `latex-posters` | Use for research posters (not presentations) |
 | `pptx-posters` | Use for PowerPoint posters (not presentations) |
-| `document-skills/pptx` | Use for editable PowerPoint creation |
+| `document-skills:pptx` | Use for editable PowerPoint creation |
 | `venue-templates` | Consult for conference-specific styles |
 
 **Skill Selection:**

@@ -48,7 +48,7 @@ Do NOT use this skill when:
 - Converting arbitrary files to markdown → use `markitdown`
 - Creating LaTeX/academic papers → use `scientific-writing`
 - Making PowerPoint presentations → use `scientific-slides` or `pptx-posters`
-- Working with existing PDFs (extraction, forms) → use `document-skills/pdf`
+- Working with existing PDFs (extraction, forms) → use `document-skills:pdf`
 </when_to_use>
 
 <decision_framework>
@@ -446,7 +446,7 @@ The skill automatically creates `output/` and adds it to `.gitignore`.
 |-------|-------------|
 | `oligon-brand` | Brand colors and tokens—`oligon_reports` uses these for PDF styling |
 | `markitdown` | Convert documents TO markdown (reverse direction) |
-| `document-skills/pdf` | Low-level PDF manipulation (forms, extraction) |
+| `document-skills:pdf` | Low-level PDF manipulation (forms, extraction) |
 | `scientific-writing` | Create academic manuscripts (different output format) |
 | `scientific-schematics` | Generate figures for `--figures` integration |
 | `venue-templates` | Journal-specific formatting (use before /doc-to-pdf) |

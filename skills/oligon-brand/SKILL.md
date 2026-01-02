@@ -308,7 +308,7 @@ See individual adapter files for detailed API documentation.
 | `scientific-slides` | **Presentations** — apply oligon-brand colors to slide designs |
 | `latex-posters` / `pptx-posters` | **Posters** — apply oligon-brand colors and logo placement |
 | `markdown-to-pdf` | **PDF reports** — uses brand colors for styled output |
-| `document-skills/docx` | **Word documents** — use docx_adapter for branded styling |
+| `document-skills:docx` | **Word documents** — use docx_adapter for branded styling |
 
 **Skill Selection:** See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 

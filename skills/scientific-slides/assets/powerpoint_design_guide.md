@@ -18,7 +18,7 @@ This guide provides comprehensive instructions for creating professional scienti
 ### Reference
 
 For complete technical documentation on PowerPoint creation, refer to:
-- **Main documentation**: `document-skills/pptx/SKILL.md`
+- **Main documentation**: `document-skills:pptx`
 - **HTML to PowerPoint workflow**: Detailed in `pptx/html2pptx.md`
 - **OOXML editing**: For advanced editing in `pptx/ooxml.md`
 
@@ -29,7 +29,7 @@ For complete technical documentation on PowerPoint creation, refer to:
 **Best for**: Creating presentations from scratch with custom designs and data visualizations.
 
 **Workflow**:
-1. Read `document-skills/pptx/SKILL.md` completely
+1. Read `document-skills:pptx` completely
 2. Design slides in HTML with proper dimensions (720pt × 405pt for 16:9)
 3. Create JavaScript file using `html2pptx()` function
 4. Add charts and tables using PptxGenJS API
@@ -595,10 +595,9 @@ python scripts/replace.py working.pptx replacements.json output.pptx
 - Image editing (PowerPoint built-in, external tools)
 
 **PPTX Skill Documentation**:
-- `document-skills/pptx/SKILL.md`: Main documentation
-- `document-skills/pptx/html2pptx.md`: HTML to PPTX workflow
-- `document-skills/pptx/ooxml.md`: Advanced editing
-- `document-skills/pptx/scripts/`: Utility scripts
+- `document-skills:pptx`: Main documentation (from anthropic-agent-skills marketplace)
+- HTML to PPTX workflow: See html2pptx.md in marketplace skill
+- Advanced OOXML editing: See ooxml.md in marketplace skill
 
 ## Quick Reference
 

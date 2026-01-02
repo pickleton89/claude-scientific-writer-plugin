@@ -362,8 +362,8 @@ Run three tests before submission:
 | `venue-templates` | Journal-specific formatting and requirements |
 | `markdown-to-pdf` | Branded PDF output with Oligon styling |
 | `paper-2-web` | Web-optimized HTML version |
-| `document-skills/docx` | Word format for journal submission |
-| `document-skills/pdf` | PDF for preprints or supplementary materials |
+| `document-skills:docx` | Word format for journal submission |
+| `document-skills:pdf` | PDF for preprints or supplementary materials |
 
 ### Related
 
@@ -378,7 +378,7 @@ Run three tests before submission:
 
 **Figures**: Coordinate with `plotting-libraries` for data plots, `scientific-schematics` for diagrams, and `generate-image` for photorealistic visuals.
 
-**Output**: After drafting, use `venue-templates` for journal-specific formatting, then export via `document-skills/docx` for Word submissions or `markdown-to-pdf` for branded PDF output.
+**Output**: After drafting, use `venue-templates` for journal-specific formatting, then export via `document-skills:docx` for Word submissions or `markdown-to-pdf` for branded PDF output.
 
 ## References
 

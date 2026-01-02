@@ -107,7 +107,7 @@ User needs to apply organizational brand standards
 │  │               │  └─ pptx_adapter → scientific-slides
 │  │               │
 │  │               ├─ Word document?
-│  │               │  └─ docx_adapter → document-skills/docx
+│  │               │  └─ docx_adapter → document-skills:docx
 │  │               │
 │  │               ├─ PDF report?
 │  │               │  └─ reportlab_adapter → markdown-to-pdf
@@ -127,7 +127,7 @@ User needs to apply organizational brand standards
 | Publication figure (R) | oligon-brand | plotting-libraries |
 | Conference poster | oligon-brand | latex-posters / pptx-posters |
 | Presentation slides | oligon-brand | scientific-slides |
-| Word document | oligon-brand | document-skills/docx |
+| Word document | oligon-brand | document-skills:docx |
 | PDF report | oligon-brand | markdown-to-pdf |
 
 ---
@@ -519,7 +519,7 @@ User has content ready for final document format
 │
 ├─ Need Word document (.docx)?
 │  │
-│  └─ YES → document-skills/docx
+│  └─ YES → document-skills:docx
 │            │
 │            ├─ From scientific-writing content
 │            │  └─ Export manuscript to Word format
@@ -540,7 +540,7 @@ User has content ready for final document format
 │  │            └─ Uses Oligon templates & brand colors
 │  │
 │  └─ PDF manipulation (forms, merge, extract)?
-│     └─ YES → document-skills/pdf
+│     └─ YES → document-skills:pdf
 │              │
 │              ├─ Fill PDF forms
 │              ├─ Extract text/tables
@@ -550,13 +550,13 @@ User has content ready for final document format
 ├─ Need PowerPoint (.pptx)?
 │  │
 │  ├─ Creating presentation from scratch?
-│  │  └─ YES → scientific-slides → document-skills/pptx
+│  │  └─ YES → scientific-slides → document-skills:pptx
 │  │            │
 │  │            ├─ Plan content with scientific-slides
-│  │            └─ Build PPTX with document-skills/pptx
+│  │            └─ Build PPTX with document-skills:pptx
 │  │
 │  └─ Editing existing presentation?
-│     └─ YES → document-skills/pptx
+│     └─ YES → document-skills:pptx
 │              │
 │              ├─ OOXML manipulation
 │              ├─ Template-based creation
@@ -564,7 +564,7 @@ User has content ready for final document format
 │
 └─ Need Excel (.xlsx)?
    │
-   └─ YES → document-skills/xlsx
+   └─ YES → document-skills:xlsx
             │
             ├─ Create spreadsheets with formulas
             ├─ Data analysis and manipulation
@@ -576,11 +576,11 @@ User has content ready for final document format
 
 | Content Source | Output Format | Primary Skill | Supporting Skill |
 |----------------|---------------|---------------|------------------|
-| Manuscript text | Word (.docx) | document-skills/docx | venue-templates |
+| Manuscript text | Word (.docx) | document-skills:docx | venue-templates |
 | Markdown content | Branded PDF | markdown-to-pdf | visual-design |
-| Existing PDF | Modified PDF | document-skills/pdf | — |
-| Slide plan | PowerPoint | document-skills/pptx | scientific-slides |
-| Data/analysis | Excel | document-skills/xlsx | — |
+| Existing PDF | Modified PDF | document-skills:pdf | — |
+| Slide plan | PowerPoint | document-skills:pptx | scientific-slides |
+| Data/analysis | Excel | document-skills:xlsx | — |
 
 ---
 
@@ -631,11 +631,11 @@ User has content ready for final document format
 | File → Markdown | markitdown | — |
 | Paper → Web/Media | paper-2-web | — |
 | **Document Output** | | |
-| Export to Word | document-skills/docx | + venue-templates (for journal styles) |
+| Export to Word | document-skills:docx | + venue-templates (for journal styles) |
 | Create branded PDF | markdown-to-pdf | + visual-design |
-| PDF forms/manipulation | document-skills/pdf | — |
-| Create/edit PowerPoint | document-skills/pptx | + scientific-slides |
-| Create/edit Excel | document-skills/xlsx | — |
+| PDF forms/manipulation | document-skills:pdf | — |
+| Create/edit PowerPoint | document-skills:pptx | + scientific-slides |
+| Create/edit Excel | document-skills:xlsx | — |
 
 ---
 
@@ -654,7 +654,7 @@ User has content ready for final document format
 8. scientific-schematics  → Create method diagrams
 9. visual-design          → Polish all visuals
 10. peer-review           → Self-review before submission
-11. document-skills/docx  → Export to Word for submission
+11. document-skills:docx  → Export to Word for submission
 ```
 
 ### Workflow 2: Conference Poster
@@ -694,7 +694,7 @@ User has content ready for final document format
 3. plotting-libraries     → Create data figures
 4. markdown-to-pdf        → Apply branded template
    OR
-   document-skills/pdf    → Advanced PDF manipulation
+   document-skills:pdf    → Advanced PDF manipulation
 ```
 
 ### Workflow 6: Report to Presentation Conversion
@@ -703,7 +703,7 @@ User has content ready for final document format
 1. markitdown             → Extract PDF/DOCX to Markdown
 2. visual-design          → Load brand specifications
 3. scientific-slides      → Plan slide structure
-4. document-skills/pptx   → Build PowerPoint file
+4. document-skills:pptx   → Build PowerPoint file
 5. visual-design          → Validate accessibility
 ```
 

@@ -347,7 +347,7 @@ Avoid these errors that reduce executive summary effectiveness:
 | `plotting-libraries` | Data visualizations for findings |
 | `markdown-to-pdf` | Branded PDF output with Oligon styling |
 | `scientific-slides` | Presentation-ready summary slides |
-| `document-skills/docx` | Word format for stakeholder distribution |
+| `document-skills:docx` | Word format for stakeholder distribution |
 
 ### Related
 
