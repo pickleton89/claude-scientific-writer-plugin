@@ -2,6 +2,15 @@
 
 A comprehensive Claude Code plugin with 25+ skills for scientific research writing.
 
+## Prerequisites
+
+This plugin requires the **anthropic-agent-skills** marketplace plugin for document processing capabilities (DOCX, PDF, PPTX, XLSX).
+
+```bash
+/plugin marketplace add anthropics/agent-skills
+/plugin install anthropic-agent-skills
+```
+
 ## Installation
 
 ```bash
@@ -59,7 +68,7 @@ claude --plugin-dir /path/to/claude-scientific-writer-plugin
 | `markdown-to-pdf` | Template-based PDF generation |
 | `markitdown` | Convert documents to markdown |
 | `paper-2-web` | Convert papers to web format |
-| `document-skills` | DOCX, PDF, PPTX, XLSX generation |
+| `document-skills` | Adapter routing to anthropic-agent-skills for DOCX, PDF, PPTX, XLSX |
 | `research-paper-summarizer` | Multi-format paper summaries |
 
 ### Code & Reproducibility
@@ -91,6 +100,10 @@ Skills are automatically invoked based on your request. Examples:
 "Generate a figure showing gene expression"
 → Uses: plotting-libraries, visual-design
 ```
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for version history and updates.
 
 ## License
 

@@ -9,6 +9,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [1.1.0] - 2025-01-02
 
 ### Changed
+- **README.md**: Updated documentation to reflect v1.1.0 changes
+  - Added Prerequisites section documenting `anthropic-agent-skills` dependency
+  - Updated `document-skills` description to reflect adapter pattern
+  - Added Changelog section linking to CHANGELOG.md
 - **document-skills**: Refactored from full implementation to thin adapter pattern
   - Removed duplicated docx/, pdf/, pptx/, xlsx/ subdirectories (2.7 MB savings)
   - Now routes to `anthropic-agent-skills` marketplace plugin for core functionality
