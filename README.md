@@ -101,6 +101,10 @@ Skills are automatically invoked based on your request. Examples:
 → Uses: plotting-libraries, visual-design
 ```
 
+## Advanced
+
+For multi-skill workflow planning and skill selection logic, see [SKILL_ROUTER.md](skills/SKILL_ROUTER.md).
+
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for version history and updates.
