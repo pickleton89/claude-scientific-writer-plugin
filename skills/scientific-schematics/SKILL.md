@@ -61,6 +61,49 @@ python {baseDir}/scripts/generate_schematic.py --help
 ```
 </prerequisites>
 
+<brand_application>
+## Brand Application (Default)
+
+**By default, all scientific diagrams use Oligon Scientific Brand colors.** Include brand color guidance in generation prompts.
+
+### Default Colors for Prompts
+
+When generating diagrams, include these colors in the prompt:
+
+```
+Primary elements: #2DB2E8 (Brand Blue) - highlights, key components
+Contrast/alerts: #E8622D (Orange) - warnings, opposing elements
+Text/labels: #222222 (Dark Gray) - primary text, control elements
+Secondary elements: #666666 (Medium Gray) - supporting components
+Background: #FFFFFF (White) - clean background
+```
+
+**Example prompt with brand colors:**
+```
+CONSORT flowchart with Oligon brand colors:
+- Process boxes: white fill, #222222 borders
+- Randomization node: #2DB2E8 (Brand Blue) fill
+- Exclusion boxes: #E8622D (Orange) accent
+- Text: #222222
+- Background: white
+```
+
+### Disabling Brand Styling
+
+To use generic/accessibility-focused styling instead of Oligon brand:
+
+**Explicit request in prompt:**
+- "Use Okabe-Ito palette" or "Use accessibility colors"
+- "No brand colors" or "Generic color scheme"
+
+**Per-project override:** Add to project `CLAUDE.md`:
+```markdown
+## Visual Styling
+Use generic/default styling for all visual outputs. Do not apply Oligon brand.
+```
+
+</brand_application>
+
 <decision_framework>
 ## Decision Matrix
 

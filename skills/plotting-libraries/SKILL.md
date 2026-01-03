@@ -227,11 +227,55 @@ ggsave("figure.png", width = 7, height = 5, dpi = 300)
 </common_patterns>
 
 <styling_integration>
-## Brand Integration
+## Brand Application (Default)
 
-For scientific figures requiring organizational brand compliance, load brand tokens before plotting.
+**By default, all visual outputs use Oligon Scientific Brand styling.** This ensures consistent, professional appearance across all figures.
 
-### Oligon Brand (recommended)
+### Auto-Applied Settings
+
+When creating figures, the following brand defaults are automatically applied:
+
+```python
+# Oligon brand colors - auto-applied to all figures
+OLIGON_COLORS = {
+    'primary': '#2DB2E8',      # Brand Blue - highlights (1-2 elements max)
+    'secondary': '#E8622D',    # Contrast Orange - opposing effects
+    'dark': '#222222',         # Dark Gray - primary data/control
+    'medium': '#666666',       # Medium Gray - secondary data
+    'light': '#999999',        # Muted Gray - tertiary data
+}
+
+# Default color cycle for matplotlib
+plt.rcParams['axes.prop_cycle'] = plt.cycler(color=[
+    '#222222',  # Dark Gray (control/primary)
+    '#2DB2E8',  # Brand Blue (treatment/highlight)
+    '#666666',  # Medium Gray (secondary)
+    '#E8622D',  # Contrast Orange (opposing)
+    '#999999',  # Muted Gray (tertiary)
+])
+```
+
+### Disabling Brand Styling
+
+To use generic/default styling instead of Oligon brand:
+
+**Explicit request in prompt:**
+- "Use default colors" or "No brand styling"
+- "Use matplotlib defaults" or "Generic color scheme"
+
+**Per-project override:** Add to project `CLAUDE.md`:
+```markdown
+## Visual Styling
+Use generic/default styling for all visual outputs. Do not apply Oligon brand.
+```
+
+**Manual override in code:**
+```python
+import matplotlib.pyplot as plt
+plt.style.use('default')  # Reset to matplotlib defaults
+```
+
+### Oligon Brand (explicit loading)
 
 **Python (matplotlib/seaborn):**
 ```python

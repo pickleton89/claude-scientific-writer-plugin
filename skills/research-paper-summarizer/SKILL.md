@@ -369,9 +369,9 @@ NEVER summarize away numerical data. Always preserve:
 - Flag limitations (both author-stated and obvious)
 - Use exact technical terminology (no paraphrasing jargon)
 
-### Brand Visual Identity
+### Brand Visual Identity (Default)
 
-All visual outputs follow the **Oligon Scientific Brand** (see `oligon-brand` skill).
+**By default, all visual outputs use Oligon Scientific Brand styling.** This applies to HTML reports, PDF summaries, and SVG infographics.
 
 **Quick Reference:**
 
@@ -387,6 +387,20 @@ All visual outputs follow the **Oligon Scientific Brand** (see `oligon-brand` sk
 For complete brand specification, color cycles, and accessibility guidelines, see:
 - `skills/oligon-brand/SKILL.md`
 - `skills/oligon-brand/references/brand-colors-full.md`
+
+### Disabling Brand Styling
+
+To use generic styling instead of Oligon brand:
+
+**Explicit request in prompt:**
+- "Use default colors" or "No brand styling"
+- "Generic color scheme"
+
+**Per-project override:** Add to project `CLAUDE.md`:
+```markdown
+## Visual Styling
+Use generic/default styling for all visual outputs. Do not apply Oligon brand.
+```
 
 ## Quick Reference
 

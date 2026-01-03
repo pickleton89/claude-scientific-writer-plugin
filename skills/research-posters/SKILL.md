@@ -17,6 +17,53 @@ Create publication-quality research posters in either LaTeX (beamerposter, tikzp
 **Core Requirement**: Every poster MUST include 2-3 AI-generated figures using `scientific-schematics`. Target 40-50% visual content, 300-800 words maximum.
 </overview>
 
+<brand_application>
+## Brand Application (Default)
+
+**By default, all research posters use Oligon Scientific Brand styling.** This ensures consistent, professional appearance.
+
+### Auto-Applied Settings
+
+When creating posters, apply the following brand defaults:
+
+| Element | Color | Usage |
+|---------|-------|-------|
+| Primary accent | `#2DB2E8` (Brand Blue) | Section headers, key highlights |
+| Secondary accent | `#E8622D` (Orange) | Alerts, call-to-action elements |
+| Primary text | `#222222` (Dark Gray) | Body text, titles |
+| Secondary text | `#666666` (Medium Gray) | Captions, secondary info |
+| Background | `#FFFFFF` (White) | Poster background |
+
+**LaTeX color definitions:**
+```latex
+\definecolor{brandblue}{HTML}{2DB2E8}
+\definecolor{brandorange}{HTML}{E8622D}
+\definecolor{darkgray}{HTML}{222222}
+\definecolor{mediumgray}{HTML}{666666}
+```
+
+**PowerPoint theme colors:**
+- Accent 1: `#2DB2E8` (Brand Blue)
+- Accent 2: `#E8622D` (Orange)
+- Text 1: `#222222` (Dark Gray)
+- Background: `#FFFFFF` (White)
+
+### Disabling Brand Styling
+
+To use generic/conference-specific styling instead of Oligon brand:
+
+**Explicit request in prompt:**
+- "Use conference template colors"
+- "No brand styling" or "Generic color scheme"
+
+**Per-project override:** Add to project `CLAUDE.md`:
+```markdown
+## Visual Styling
+Use generic/default styling for all visual outputs. Do not apply Oligon brand.
+```
+
+</brand_application>
+
 <when_to_use>
 ## Trigger Conditions
 
