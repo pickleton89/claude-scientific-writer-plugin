@@ -1,23 +1,37 @@
 ---
 name: document-skills
-description: "Routes to marketplace document-skills plugin for DOCX, PDF, PPTX, XLSX. Adds scientific enhancements."
+version: 1.1.0
+description: "Thin adapter routing to anthropic-agent-skills marketplace document capabilities"
 allowed-tools: [Read, Skill]
 ---
 
-# Document Skills (Adapter)
+# Document Skills Adapter
 
-This skill routes to the **anthropic-agent-skills** marketplace plugin for document format processing, with scientific workflow integrations.
+This skill provides a **namespace adapter** for document creation capabilities powered by the [anthropic-agent-skills](https://github.com/anthropics/agent-skills) marketplace plugin.
 
-## Important: Use Marketplace Skills
+> **Architecture Note**: This is a thin adapter with no processing logic. All document operations are handled by the installed marketplace plugin. This skill adds scientific workflow integrations and cross-references to other skills in this plugin.
 
-This project depends on the `document-skills` plugin from the anthropic-agent-skills marketplace. The actual document processing capabilities are provided by:
+## Available Sub-Skills
 
-| Format | Marketplace Skill | Invoke With |
-|--------|-------------------|-------------|
-| Word (.docx) | `document-skills:docx` | `Skill(document-skills:docx)` |
-| PDF (.pdf) | `document-skills:pdf` | `Skill(document-skills:pdf)` |
-| PowerPoint (.pptx) | `document-skills:pptx` | `Skill(document-skills:pptx)` |
-| Excel (.xlsx) | `document-skills:xlsx` | `Skill(document-skills:xlsx)` |
+Use the `document-skills:` namespace prefix to invoke the marketplace capabilities:
+
+| Namespace | Routes To | Purpose |
+|-----------|-----------|---------|
+| `document-skills:docx` | Marketplace docx skill | Word document creation/editing |
+| `document-skills:pptx` | Marketplace pptx skill | PowerPoint presentation creation/editing |
+| `document-skills:pdf` | Marketplace pdf skill | PDF manipulation (forms, extraction, merging) |
+| `document-skills:xlsx` | Marketplace xlsx skill | Excel spreadsheet creation/editing |
+
+## Usage
+
+Reference these skills using the `document-skills:` namespace prefix:
+
+```markdown
+For PowerPoint output, use `document-skills:pptx`
+For Word document export, use `document-skills:docx`
+```
+
+The adapter automatically routes to the installed marketplace plugin via `Skill(document-skills:format)`.
 
 ## Scientific Enhancements
 
@@ -78,15 +92,27 @@ oligon-brand → document-skills:docx (with docx_adapter)
             └→ markdown-to-pdf (for branded PDFs)
 ```
 
+## Prerequisites
+
+> **Required**: The `document-skills` marketplace plugin must be installed for document processing to work.
+>
+> Install from: [anthropic-agent-skills](https://github.com/anthropics/agent-skills)
+
+Without the marketplace plugin installed, invocations of `document-skills:*` will fail.
+
 ## Cross-References
 
 **Related skills in this plugin:**
-- **scientific-writing**: Draft manuscript content before export
-- **scientific-slides**: Plan presentation structure before PowerPoint generation
-- **venue-templates**: Apply journal-specific formatting
-- **oligon-brand**: Apply Oligon brand standards
-- **scientific-schematics**: Generate publication-quality diagrams
-- **markdown-to-pdf**: Create branded PDFs from Markdown
 
-**Marketplace dependency:**
-- **anthropic-agent-skills/document-skills**: Core document processing (must be installed)
+| Skill | Integration |
+|-------|-------------|
+| `scientific-writing` | Draft manuscript content → export via `document-skills:docx` |
+| `scientific-slides` | Plan slide structure → build via `document-skills:pptx` |
+| `venue-templates` | Apply journal formatting → export via `document-skills:docx` |
+| `oligon-brand` | Apply brand standards → use docx_adapter for Word |
+| `scientific-schematics` | Generate diagrams → embed in any document format |
+| `markdown-to-pdf` | Create branded PDFs (alternative to `document-skills:pdf`) |
+
+**See also:**
+- `SKILL_ROUTER.md` for full routing logic
+- `oligon-brand` for docx_adapter integration

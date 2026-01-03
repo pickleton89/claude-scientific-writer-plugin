@@ -1,7 +1,8 @@
 # Skills Consolidation Implementation Plan
 
-> **Status:** Draft
+> **Status:** In Progress
 > **Created:** 2026-01-02
+> **Updated:** 2026-01-03
 > **Scope:** 4 consolidation initiatives based on skills audit
 
 ---
@@ -10,12 +11,12 @@
 
 This document outlines the implementation plan for consolidating and improving the claude-scientific-writer-plugin skills based on the January 2026 audit. Four initiatives are planned:
 
-| # | Initiative | Impact | Effort |
-|---|------------|--------|--------|
-| 1 | Merge ScholarEval scoring into peer-review | Medium | Medium |
-| 2 | Consolidate poster skills (latex + pptx) | High | High |
-| 3 | Update document-skills to marketplace references | Low | Low |
-| 4 | Default-on brand application for visual outputs | Medium | Medium |
+| # | Initiative | Impact | Effort | Status |
+|---|------------|--------|--------|--------|
+| 1 | Merge ScholarEval scoring into peer-review | Medium | Medium | ✅ Complete |
+| 2 | Consolidate poster skills (latex + pptx) | High | High | ✅ Complete |
+| 3 | Update document-skills to marketplace references | Low | Low | ✅ Complete |
+| 4 | Default-on brand application for visual outputs | Medium | Medium | Pending |
 
 ---
 
@@ -354,12 +355,12 @@ Note: The namespace `document-skills:X` is actually correct as it routes through
 
 ### Implementation Steps
 
-| Step | Task | Files Affected |
-|------|------|----------------|
-| 3.1 | Audit all references to document-skills | All skill files |
-| 3.2 | Verify adapter correctly routes to marketplace | `document-skills/SKILL.md` |
-| 3.3 | Update adapter documentation for clarity | `document-skills/SKILL.md` |
-| 3.4 | Ensure consistent namespace usage | Various |
+| Step | Task | Files Affected | Status |
+|------|------|----------------|--------|
+| 3.1 | Audit all references to document-skills | All skill files | ✅ Complete |
+| 3.2 | Verify adapter correctly routes to marketplace | `document-skills/SKILL.md` | ✅ Complete |
+| 3.3 | Update adapter documentation for clarity | `document-skills/SKILL.md` | ✅ Complete |
+| 3.4 | Ensure consistent namespace usage | Various | ✅ Complete |
 
 ### Files to Update
 
@@ -650,10 +651,10 @@ Use generic/default styling for all visual outputs. Do not apply Oligon brand.
 - [ ] Format selection works correctly
 - [ ] Both old skills marked deprecated
 
-### Initiative 3 (Document-skills references)
-- [ ] Adapter documentation is clear
-- [ ] All references consistent
-- [ ] Routing works correctly
+### Initiative 3 (Document-skills references) ✅ COMPLETE
+- [x] Adapter documentation is clear
+- [x] All references consistent
+- [x] Routing works correctly
 
 ### Initiative 4 (Default brand)
 - [ ] All 6 visual skills auto-apply brand colors
