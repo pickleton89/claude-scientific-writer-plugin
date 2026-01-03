@@ -639,11 +639,11 @@ Use generic/default styling for all visual outputs. Do not apply Oligon brand.
 
 ## Success Criteria
 
-### Initiative 1 (Merge scholar-evaluation)
-- [ ] peer-review scoring mode produces identical output to old scholar-evaluation
-- [ ] Full review mode unchanged
-- [ ] SKILL_ROUTER routes correctly
-- [ ] scholar-evaluation marked deprecated
+### Initiative 1 (Merge scholar-evaluation) ✅ COMPLETE
+- [x] peer-review scoring mode produces identical output to old scholar-evaluation
+- [x] Full review mode unchanged
+- [x] SKILL_ROUTER routes correctly
+- [x] scholar-evaluation marked deprecated
 
 ### Initiative 2 (Consolidate posters)
 - [ ] research-posters LaTeX path produces same output as latex-posters
