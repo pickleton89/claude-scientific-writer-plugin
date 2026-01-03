@@ -585,6 +585,9 @@ Before delivering any summary, verify compliance with these rules:
 - [ ] Negative/null results included with statistical context
 - [ ] Sample sizes specified for all experiments
 - [ ] Summary is paraphrased, not copied (Rule of Originality)
+- [ ] **"So What?" answered:** Summary explains why findings matter, not just what was found
+
+> **The Significance Test:** A complete summary doesn't just report *what* was discovered—it explains *why it matters*. Include: implications for the field, clinical/practical applications, or how findings change understanding.
 
 ### Visual Output Quality
 - [ ] Brand colors applied correctly (Oligon brand)

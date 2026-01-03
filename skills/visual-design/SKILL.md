@@ -332,6 +332,9 @@ Who is your primary audience?
 - [ ] Consistent with other document figures
 - [ ] Brand guidelines applied (if applicable)
 - [ ] Design quality score ≥7/10
+- [ ] **Independence Test passed:** Figure + caption understandable without main text
+
+> **The Independence Test:** Print only your figures with captions. Can someone understand the key message without reading the main text? If not, revise captions to include: what the data shows, what comparisons are being made, and what the takeaway is.
 
 </success_criteria>
 

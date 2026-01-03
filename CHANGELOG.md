@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- **literature-review/SKILL.md**: Added "So What?" Test emphasis
+  - Stage 6 (Synthesis): Added callout requiring significance explanation for each theme
+  - Stage 8 (Document Generation): Discussion must explain why findings matter
+- **visual-design/SKILL.md**: Added Independence Test to Success Criteria
+  - New checklist item: Figure + caption understandable without main text
+  - Actionable test: Print figures with captions, verify key message is clear
+- **research-paper-summarizer/SKILL.md**: Added Significance Test to Success Criteria
+  - New "So What?" checklist item for markdown summary quality
+  - Callout explaining implications, applications, and field impact requirements
+
 ### Added
 - **research-paper-summarizer/references/reading_strategy.md**: New strategic reading guide for summarization
   - Non-linear reading sequence (Abstract → Conclusions → Results → Introduction → Methods)

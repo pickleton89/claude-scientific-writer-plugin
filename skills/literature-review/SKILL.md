@@ -289,6 +289,8 @@ Do NOT use this skill when:
 5. Create summary tables per theme (see template in [`references/output_templates.md`]({baseDir}/references/output_templates.md))
 6. If meta-analysis: calculate pooled effects, heterogeneity (I²)
 
+> **The "So What?" Test:** For each theme, don't just describe *what* the literature says—explain *why it matters*. If a reader could ask "So what?" after reading your synthesis, you haven't explained the significance. Every theme should connect to: implications for the field, gaps that need addressing, or actionable conclusions.
+
 **Exit Criteria:**
 - [ ] 3-7 themes identified and documented
 - [ ] All studies mapped to themes
@@ -339,7 +341,7 @@ Do NOT use this skill when:
    - Introduction (context, rationale, objectives)
    - Methods (search strategy, selection, assessment)
    - Results (PRISMA, synthesis by theme, quality summary)
-   - Discussion (interpretation, limitations, implications)
+   - Discussion (interpretation, limitations, implications—**must explain why findings matter**)
    - Conclusions (key findings, future directions)
 
 2. Generate PDF with citations formatted
