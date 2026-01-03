@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **scientific-writing/references/writing_principles.md**: Enhanced with best practices alignment
+  - New "Reader-Centricity" section as the Cardinal Rule (cognitive load principle, rule of parsimony, narrative arc)
+  - New "Quick Diagnostic: The Four Tests" pre-submission checklist (Elevator Pitch, Independence, "So What?", Formatting)
+  - Updated "Final Thoughts" with reader-centricity as principle #1 and Four Tests quick reference
 - **docs/SKILLS_CONSOLIDATION_PLAN.md**: Comprehensive implementation plan for skills audit findings
   - Initiative 1: Merge ScholarEval scoring into `peer-review` as optional output mode
   - Initiative 2: Consolidate `latex-posters` + `pptx-posters` into unified `research-posters` skill
@@ -25,6 +29,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - Copied assets: 3 LaTeX templates, quality checklist, review script
 
 ### Changed
+- **scientific-writing/references/imrad_structure.md**: Enhanced "So What?" test prominence
+  - Added prominent callout box in Discussion section with ⚠️ warning
+  - Updated Common Mistakes to emphasize "So What?" as the #1 Discussion failure
+- **scientific-writing/references/figures_tables.md**: Added Independence Test terminology
+  - Renamed "Self-Explanatory Display Items" section to include "(The Independence Test)"
+  - Added actionable test instruction as blockquote
 - **Cross-references updated** for poster skills consolidation (Initiative 2, tasks 2.7-2.10):
   - `README.md`: Replaced `latex-posters`/`pptx-posters` with `research-posters`, updated skill count (25→23)
   - `SKILL_ROUTER.md`: Updated all poster routing to `research-posters` (v1.3.0 → v1.4.0)

@@ -4,6 +4,56 @@
 
 Effective scientific writing requires mastering fundamental principles that ensure clarity, precision, and impact. Unlike creative or narrative writing, scientific writing prioritizes accuracy, conciseness, and objectivity. This guide covers the core principles that distinguish good scientific writing from poor writing and provides practical strategies for improvement.
 
+## The Cardinal Rule: Reader-Centricity
+
+**Do not write for yourself; write for the reader.**
+
+Scientific writing is not a record of what you did—it is an argument designed to persuade the reader of your findings' validity and significance. Every word, sentence, and paragraph should serve the reader's understanding.
+
+### The Cognitive Load Principle
+
+Your reader is intelligent but lacks your specific context. The goal is to transfer information with **minimal cognitive load**:
+
+```
+Poor (writer-centered): "Having completed the analysis using the methodology
+previously described in our earlier work, the results obtained were consistent
+with our initial hypothesis."
+
+Better (reader-centered): "Gene expression increased 3-fold after treatment
+(p<0.001), confirming our hypothesis that pathway X regulates protein Y."
+```
+
+**Why this matters:** Readers who struggle to understand your prose will struggle to trust your science. Confusion breeds skepticism.
+
+### The Rule of Parsimony
+
+**Less is more. Include only what is necessary to support the conclusion.**
+
+Every detail should earn its place:
+- If the weather on the day of the experiment does not impact the result, remove it
+- If a methodological detail is standard practice, cite a reference rather than describe it
+- If a result does not contribute to the narrative, move it to supplementary materials
+
+```
+Wordy: "On the morning of July 15th, 2024, which was a particularly warm day
+with temperatures reaching 28°C, we proceeded to collect blood samples from
+the participants who had been previously recruited for this study."
+
+Concise: "We collected blood samples from participants on July 15, 2024."
+```
+
+### Narrative Arc Before Writing
+
+**Determine the story before writing.** Experiments may be performed out of order, but the report must present them in a linear logic that builds a coherent argument.
+
+Before drafting:
+1. What is the single main message?
+2. What evidence is essential to support it?
+3. What is the logical order of presentation (not necessarily chronological)?
+4. What can be cut without weakening the argument?
+
+---
+
 ## The Three Pillars of Scientific Writing
 
 ### 1. Clarity
@@ -839,16 +889,127 @@ showing preserved expressive power, and (3) empirical validation on ImageNet sho
 - [ ] Claims quantified (e.g., "15% faster", "2.3% accuracy gain")
 - [ ] Limitations acknowledged
 
+## Quick Diagnostic: The Four Tests
+
+Before finalizing any manuscript, run this rapid diagnostic. Each test takes 30 seconds and catches critical issues:
+
+### Test 1: The Elevator Pitch Test
+
+**Question:** Can a reader understand the main finding just by reading the Title and Abstract?
+
+**How to check:**
+1. Read only your title and abstract
+2. Can you state the single main conclusion?
+3. Is the significance clear to a non-specialist?
+
+**Pass criteria:**
+- Title contains the key finding or relationship studied
+- Abstract opens with context and ends with clear conclusion
+- No jargon that would confuse a scientist outside your field
+
+**Fail indicators:**
+- Vague title ("A Study of X and Y")
+- Abstract that describes what was done but not what was found
+- Conclusion buried in the middle of the abstract
+
+---
+
+### Test 2: The Independence Test
+
+**Question:** Do the figures and captions tell the whole story without the main text?
+
+**How to check:**
+1. Print only figures with captions (or view them separately)
+2. Can someone understand the key findings?
+3. Are all abbreviations defined in captions?
+
+**Pass criteria:**
+- Each figure has a clear, one-sentence message
+- Captions explain what is shown, including statistical tests and sample sizes
+- Figures can be understood without referring to main text
+
+**Fail indicators:**
+- Captions that say only "Results of experiment 1"
+- Undefined abbreviations
+- Statistical significance shown without explanation of symbols
+
+---
+
+### Test 3: The "So What?" Test
+
+**Question:** Does the Discussion explicitly state why these findings matter?
+
+**How to check:**
+1. Read the final paragraph of Discussion
+2. Is there a clear statement of significance?
+3. Would a reader know why they should care?
+
+**Pass criteria:**
+- Discussion answers "So what?" and "What next?"
+- Broader implications stated for field or stakeholders
+- Specific recommendations or future directions provided
+
+**Fail indicators:**
+- Discussion ends with limitations only
+- No connection to broader scientific context
+- Findings described but significance not explained
+
+---
+
+### Test 4: The Formatting Consistency Test
+
+**Question:** Are citations, terminology, and formatting consistent throughout?
+
+**How to check:**
+1. Spot-check 3-4 citations for format consistency
+2. Verify abbreviations defined at first use
+3. Check that terminology doesn't change (same term for same concept)
+
+**Pass criteria:**
+- All citations follow same format
+- All abbreviations defined on first use
+- Consistent terminology throughout (not synonyms for variety)
+- Fonts legible (sans-serif for figures, 8pt+ minimum)
+
+**Fail indicators:**
+- Mixed citation styles (Author, Year) vs. superscript numbers
+- Undefined abbreviations
+- Same concept called different names in different sections
+
+---
+
+### Quick Reference Card
+
+| Test | Pass in 30 Seconds? | If Fail → Fix |
+|------|---------------------|---------------|
+| **Elevator Pitch** | Title + Abstract = clear finding | Rewrite abstract with conclusion first |
+| **Independence** | Figures standalone | Expand captions, define abbreviations |
+| **"So What?"** | Discussion states significance | Add implications paragraph |
+| **Formatting** | Consistent throughout | Run find/replace, standardize |
+
+**Pro tip:** Run these tests on a colleague's paper first to calibrate your judgment, then apply to your own work.
+
+---
+
 ## Final Thoughts
 
 Effective scientific writing is a skill developed through practice. Key principles:
 
-1. **Clarity** trumps complexity
-2. **Conciseness** respects readers' time
-3. **Accuracy** builds credibility
-4. **Objectivity** maintains scientific integrity
-5. **Consistency** aids comprehension
-6. **Logical organization** guides readers
-7. **Journal-specific adaptation** maximizes publication success
+1. **Reader-centricity** puts the audience first—every word serves their understanding
+2. **Clarity** trumps complexity
+3. **Conciseness** respects readers' time
+4. **Accuracy** builds credibility
+5. **Objectivity** maintains scientific integrity
+6. **Consistency** aids comprehension
+7. **Logical organization** guides readers
+8. **Journal-specific adaptation** maximizes publication success
 
-**Remember:** The goal is not to impress readers with vocabulary or complexity, but to communicate your science clearly and precisely so readers can understand, evaluate, and build upon your work. Adapt your writing style to match your target journal's expectations and audience.
+**The Bottom Line:** Scientific writing is not a record of what you did—it is an argument designed to persuade readers of your findings' validity and significance. Write for the reader, not for yourself.
+
+**Before submission, run the Four Tests:**
+1. **Elevator Pitch Test** — Can a reader understand from Title + Abstract alone?
+2. **Independence Test** — Do figures tell the story without main text?
+3. **"So What?" Test** — Does Discussion state why findings matter?
+4. **Formatting Test** — Are citations, terms, and style consistent?
+
+Adapt your writing style to match your target journal's expectations and audience.

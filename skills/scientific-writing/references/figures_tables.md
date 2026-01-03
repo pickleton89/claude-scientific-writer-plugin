@@ -73,9 +73,11 @@ Strong purpose: "Figure 1 demonstrates that drug treatment increases BRCA1 expre
 3-fold compared to vehicle control, suggesting pathway activation."
 ```
 
-### 1. Self-Explanatory Display Items
+### 1. Self-Explanatory Display Items (The Independence Test)
 
 **Each figure or table must stand alone without requiring the main text.**
+
+> **Test:** Print only your figures with captions. Can someone understand the key findings without the main text? If not, your figures fail the Independence Test.
 
 **Essential elements:**
 - Complete, descriptive caption

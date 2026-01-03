@@ -363,6 +363,8 @@ Long-term outcomes (6 months)
 ### Purpose
 Interpret findings, relate them to existing knowledge, acknowledge limitations, and propose future directions.
 
+> **⚠️ THE "SO WHAT?" TEST**: Before finalizing your Discussion, ask: "Would a reader know why they should care about these findings?" If the answer is unclear, your Discussion is incomplete. The Discussion must answer both **"So what?"** (significance) and **"What next?"** (implications/future directions).
+
 ### Structure and Content
 
 **Paragraph 1: Summary of Main Findings**
@@ -438,7 +440,7 @@ minimize this through structured interviews."
 - Introducing new data or methods
 - Generic or superficial discussion of limitations
 - Overgeneralization beyond the study population
-- Missing the "so what?"—failing to explain significance
+- **Missing the "So What?"**—the #1 Discussion failure. If your Discussion describes what you found but not why it matters, it fails the reader. Every Discussion must explicitly state significance and implications.
 
 ### Key Questions to Answer
 1. What do these findings mean?
