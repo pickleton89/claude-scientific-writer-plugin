@@ -29,7 +29,7 @@ Use this skill when:
 - Giving research talks at institutions or companies
 
 Do NOT use this skill when:
-- Creating posters → use `latex-posters` or `pptx-posters`
+- Creating posters → use `research-posters`
 - Writing papers → use `scientific-writing`
 - Creating standalone figures → use `plotting-libraries` or `scientific-schematics`
 - Need only data visualizations → use `plotting-libraries`
@@ -411,7 +411,7 @@ Choose output format
 - Visual validation workflow
 
 **Out of Scope** (use specialized resources):
-- Research posters → use `latex-posters` or `pptx-posters`
+- Research posters → use `research-posters`
 - Scientific papers → use `scientific-writing`
 - Data visualization code → use `plotting-libraries`
 - Technical diagrams → use `scientific-schematics`
@@ -538,8 +538,7 @@ See `{baseDir}/references/output_templates.md` for complete templates:
 | `research-lookup` | Use BEFORE creating slides to gather 8-15 citations |
 | `scientific-schematics` | Use for complex technical diagrams |
 | `plotting-libraries` | Use for data visualizations to include in slides |
-| `latex-posters` | Use for research posters (not presentations) |
-| `pptx-posters` | Use for PowerPoint posters (not presentations) |
+| `research-posters` | Use for research posters (not presentations) |
 | `document-skills:pptx` | Use for editable PowerPoint creation |
 | `venue-templates` | Consult for conference-specific styles |
 

@@ -430,7 +430,7 @@ For deployment checklists, quality metrics, and detailed templates, see `{baseDi
 | `markitdown` | Use to convert PDF to Markdown first if needed |
 | `scientific-writing` | Use to write the paper before transformation |
 | `scientific-slides` | Use for manual slide creation (Paper2Video is automated) |
-| `latex-posters` | Alternative for manual poster creation |
+| `research-posters` | Alternative for manual poster creation |
 | `venue-templates` | Check venue requirements before generation |
 
 **Skill Selection:**

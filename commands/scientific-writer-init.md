@@ -89,7 +89,7 @@ After writing the file, provide a brief summary:
   • peer-review: Systematic manuscript evaluation
   • citation-management: BibTeX and reference handling
   • scientific-slides: Research presentations
-  • latex-posters: Conference poster generation
+  • research-posters: Conference poster generation
   • hypothesis-generation: Competing hypotheses documents
   • And 11 more specialized skills...
 

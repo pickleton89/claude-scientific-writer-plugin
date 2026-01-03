@@ -191,5 +191,5 @@ Address:
 ## Cross-References
 
 - **scientific-slides**: For creating presentations that meet these standards
-- **latex-posters**: Similar visual quality criteria for posters
+- **research-posters**: Similar visual quality criteria for posters
 - **visual-design**: Design principles underlying these criteria

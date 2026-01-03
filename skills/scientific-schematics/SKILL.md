@@ -32,7 +32,7 @@ Use this skill when:
 Do NOT use this skill when:
 - Creating data visualizations (plots, charts) → use `plotting-libraries`
 - Generating photorealistic images → use `generate-image`
-- Designing slides or posters → use `scientific-slides`, `latex-posters`, `pptx-posters`
+- Designing slides or posters → use `scientific-slides`, `research-posters`
 - Need design philosophy guidance → use `visual-design`
 </when_to_use>
 
@@ -374,7 +374,7 @@ Generate Image → Review Quality → Score >= Threshold?
 - Data visualizations (plots, charts) → use `plotting-libraries`
 - Photorealistic image generation → use `generate-image`
 - Slide design → use `scientific-slides`
-- Poster layout → use `latex-posters`, `pptx-posters`
+- Poster layout → use `research-posters`
 - Design principles → use `visual-design`
 - Hand-drawn or sketch-style diagrams → external tools
 
@@ -596,7 +596,7 @@ Vertical top-to-bottom layout.
 | `visual-design` | Consult for design principles before creating schematics |
 | `generate-image` | Use for photorealistic images; schematics for diagrams |
 | `scientific-slides` | Schematics integrates into slide presentations |
-| `latex-posters` | Schematics provides figures for posters |
+| `research-posters` | Schematics provides figures for posters |
 | `scientific-writing` | Schematics provides methodology diagrams for papers |
 
 **Skill Selection:**

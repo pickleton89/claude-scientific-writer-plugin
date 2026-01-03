@@ -47,7 +47,7 @@ Use this skill when:
 Do NOT use this skill when:
 - Converting arbitrary files to markdown → use `markitdown`
 - Creating LaTeX/academic papers → use `scientific-writing`
-- Making PowerPoint presentations → use `scientific-slides` or `pptx-posters`
+- Making PowerPoint presentations → use `scientific-slides` or `research-posters`
 - Working with existing PDFs (extraction, forms) → use `document-skills:pdf`
 </when_to_use>
 

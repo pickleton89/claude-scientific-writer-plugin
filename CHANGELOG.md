@@ -25,6 +25,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - Copied assets: 3 LaTeX templates, quality checklist, review script
 
 ### Changed
+- **Cross-references updated** for poster skills consolidation (Initiative 2, tasks 2.7-2.10):
+  - `README.md`: Replaced `latex-posters`/`pptx-posters` with `research-posters`, updated skill count (25→23)
+  - `SKILL_ROUTER.md`: Updated all poster routing to `research-posters` (v1.3.0 → v1.4.0)
+  - Updated 10+ skill files: visual-design, scientific-schematics, oligon-brand, generate-image, paper-2-web, markdown-to-pdf, scientific-slides, peer-review/references, commands/scientific-writer-init
+  - `venue-templates/REVIEW_AND_IMPROVEMENTS.md`: Added deprecation notice for poster consolidation
 - **peer-review**: Merged ScholarEval 8-dimension scoring as optional output mode (Initiative 1)
   - Added Output Mode Selection after Stage 1 (Full Review / Scoring Only / Review + Scoring)
   - Added Stage 1.5: Quantitative Scoring with 8-dimension framework and quality tiers (A-F)
@@ -47,6 +52,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **scholar-evaluation**: Marked as DEPRECATED, successor is `peer-review` (scoring mode)
   - Will be removed in v2.0.0
   - Migration: Use `peer-review` and select "Scoring Only" or "Review + Scoring" mode
+- **latex-posters**: Marked as DEPRECATED, successor is `research-posters` (LaTeX format)
+  - Will be removed in v2.0.0
+  - Migration: Use `research-posters` and select LaTeX format when prompted
+- **pptx-posters**: Marked as DEPRECATED, successor is `research-posters` (PowerPoint format)
+  - Will be removed in v2.0.0
+  - Migration: Use `research-posters` and select PowerPoint format when prompted
 
 ## [1.1.0] - 2025-01-02
 

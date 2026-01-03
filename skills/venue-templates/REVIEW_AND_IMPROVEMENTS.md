@@ -7,6 +7,8 @@
 > **Update 2025-12-26**: The `scientific-visualization` skill referenced in this document has been merged into `visual-design`. Publication specifications are now in `visual-design/references/publication_specs.md`.
 >
 > **Update 2026-01-03**: The `scholar-evaluation` skill has been deprecated and merged into `peer-review` as an optional scoring mode. References to `scholar-evaluation` below now apply to `peer-review` with scoring mode enabled.
+>
+> **Update 2026-01-03**: The `latex-posters` and `pptx-posters` skills have been consolidated into `research-posters`. References to these skills below now apply to the unified `research-posters` skill.
 
 ---
 

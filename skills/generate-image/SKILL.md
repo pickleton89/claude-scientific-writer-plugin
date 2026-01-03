@@ -474,7 +474,7 @@ done
 | `scientific-schematics` | Use for technical diagrams (flowcharts, pathways, circuits) |
 | `plotting-libraries` | Use for data visualizations (charts, plots, graphs) |
 | `scientific-slides` | Combine for visually rich presentations |
-| `latex-posters` | Combine for poster visuals and hero images |
+| `research-posters` | Combine for poster visuals and hero images |
 | `visual-design` | Consult for design principles and accessibility |
 
 **Skill Selection:**

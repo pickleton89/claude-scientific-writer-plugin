@@ -27,7 +27,7 @@ Do NOT use this skill when:
 - Writing matplotlib/seaborn/R code → use `plotting-libraries`
 - Generating diagrams → use `scientific-schematics`
 - Creating photorealistic images → use `generate-image`
-- Building slides or posters → use `scientific-slides`, `latex-posters`, `pptx-posters`
+- Building slides or posters → use `scientific-slides`, `research-posters`
 </when_to_use>
 
 <prerequisites>
@@ -351,7 +351,7 @@ Who is your primary audience?
 - Diagram generation → use `scientific-schematics`
 - Photorealistic images → use `generate-image`
 - Slide creation → use `scientific-slides`
-- Poster creation → use `latex-posters`, `pptx-posters`
+- Poster creation → use `research-posters`
 
 </scope>
 
@@ -549,7 +549,7 @@ See `references/output_templates.md` for:
 | `scientific-schematics` | Use for diagram generation; visual-design provides principles |
 | `generate-image` | Use for photorealistic images; visual-design provides aesthetics guidance |
 | `scientific-slides` | Visual-design principles apply to presentation design |
-| `latex-posters` / `pptx-posters` | Visual-design principles apply to poster design |
+| `research-posters` | Visual-design principles apply to poster design |
 | `oligon-brand` | **Brand implementation** — provides Oligon-specific colors, typography, and logos. For programmatic access, load `oligon-brand/tokens/brand-tokens.json`. For matplotlib, use `oligon-brand/adapters/matplotlib_adapter.py`. |
 
 **Skill Selection:**

@@ -1,6 +1,6 @@
 # Claude Scientific Writer Plugin
 
-A comprehensive Claude Code plugin with 25+ skills for scientific research writing.
+A comprehensive Claude Code plugin with 23+ skills for scientific research writing.
 
 ## Prerequisites
 
@@ -41,8 +41,7 @@ claude --plugin-dir /path/to/claude-scientific-writer-plugin
 | Skill | Description |
 |-------|-------------|
 | `scientific-slides` | Research presentations |
-| `latex-posters` | Academic posters in LaTeX |
-| `pptx-posters` | PowerPoint poster templates |
+| `research-posters` | Academic posters (LaTeX or PowerPoint format) |
 
 ### Research & Analysis
 | Skill | Description |
@@ -91,7 +90,7 @@ Skills are automatically invoked based on your request. Examples:
 → Uses: scientific-writing, statistical-analysis
 
 "Create a poster for my conference presentation"
-→ Uses: latex-posters or pptx-posters
+→ Uses: research-posters
 
 "Review this manuscript draft"
 → Uses: peer-review, scientific-writing

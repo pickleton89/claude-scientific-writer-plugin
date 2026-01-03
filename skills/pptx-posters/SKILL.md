@@ -1,11 +1,20 @@
 ---
 name: pptx-posters
 version: 2.2.0
+status: DEPRECATED
+deprecated_date: 2026-01-03
+successor: research-posters
 extends: visual-design
 description: "Create professional research posters in PowerPoint/PPTX format with structured layouts, brand-compliant styling, and print-ready export. Optimized for quick turnaround and collaborative editing."
 when_to_use: "Conference posters with tight deadlines (<48h), collaborative PowerPoint editing, PPTX templates provided, extensive image manipulation needed"
 allowed-tools: [Read, Write, Edit, Bash, Glob]
 ---
+
+> **⚠️ DEPRECATED**: This skill has been consolidated into [`research-posters`](../research-posters/SKILL.md).
+>
+> **Migration:** Use `research-posters` and select PowerPoint format when prompted.
+>
+> This skill will be removed in v2.0.0.
 
 # PowerPoint Research Posters
 

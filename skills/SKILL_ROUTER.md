@@ -2,13 +2,13 @@
 name: skill-router
 description: Decision trees for selecting the correct skill when multiple options apply. Consult when task scope is ambiguous or spans multiple scientific writing domains.
 when_to_use: When a user request could be handled by 2+ skills, when unclear which skill is primary vs. supporting, or when planning multi-skill workflows.
-version: 1.3.0
+version: 1.4.0
 ---
 
 # Skill Router
 
 > Decision trees and routing logic for selecting the right skill(s) for scientific writing tasks
-> Version: 1.3.0 | Updated: 2026-01-03
+> Version: 1.4.0 | Updated: 2026-01-03
 
 ---
 
@@ -112,8 +112,8 @@ User needs to apply organizational brand standards
 │  │               ├─ PDF report?
 │  │               │  └─ reportlab_adapter → markdown-to-pdf
 │  │               │
-│  │               └─ LaTeX poster?
-│  │                  └─ (manual colors) → latex-posters
+│  │               └─ Research poster?
+│  │                  └─ (manual colors) → research-posters
 │  │
 │  └─ Other/None?
 │     └─ Use visual-design defaults (no brand skill needed)
@@ -125,7 +125,7 @@ User needs to apply organizational brand standards
 |--------|-------------|---------------------|
 | Publication figure (Python) | oligon-brand | plotting-libraries |
 | Publication figure (R) | oligon-brand | plotting-libraries |
-| Conference poster | oligon-brand | latex-posters / pptx-posters |
+| Conference poster | oligon-brand | research-posters |
 | Presentation slides | oligon-brand | scientific-slides |
 | Word document | oligon-brand | document-skills:docx |
 | PDF report | oligon-brand | markdown-to-pdf |
@@ -172,15 +172,15 @@ User wants to create a document
 │          │
 │          └─ NO → Is it a POSTER?
 │                   │
-│                   ├─ YES → Which format?
+│                   ├─ YES → research-posters
 │                   │         │
-│                   │         ├─ Complex equations/LaTeX needed?
-│                   │         │  └─ YES → latex-posters
+│                   │         ├─ Complex equations / version control?
+│                   │         │  └─ LaTeX format (beamerposter/tikzposter/baposter)
 │                   │         │
-│                   │         ├─ Quick turnaround / visual focus?
-│                   │         │  └─ YES → pptx-posters
+│                   │         ├─ Quick turnaround / collaboration?
+│                   │         │  └─ PowerPoint format
 │                   │         │
-│                   │         └─ Unsure → See decision criteria below
+│                   │         └─ Skill handles format selection
 │                   │
 │                   └─ NO → Is it a LITERATURE REVIEW?
 │                            │
@@ -189,18 +189,21 @@ User wants to create a document
 │                            └─ NO → See "Other Documents" below
 ```
 
-### Poster Format Decision
+### Poster Format Selection
 
-| Criterion | LaTeX (latex-posters) | PowerPoint (pptx-posters) |
-|-----------|----------------------|---------------------------|
+The `research-posters` skill handles format selection internally. Use the following criteria:
+
+| Criterion | LaTeX Format | PowerPoint Format |
+|-----------|--------------|-------------------|
 | Complex equations | ✅ Preferred | ⚠️ Possible but harder |
 | Precise typography | ✅ Better control | ⚠️ Limited |
 | Quick iteration | ⚠️ Slower | ✅ Faster |
 | Non-LaTeX user | ⚠️ Learning curve | ✅ Familiar |
-| Template available | Check venue | Check venue |
+| Template available | Check venue (.tex) | Check venue (.pptx) |
 | Collaboration | ⚠️ Requires LaTeX | ✅ Easy sharing |
+| Version control | ✅ Git-friendly | ⚠️ Binary format |
 
-**Decision rule:** Use LaTeX if equations OR precise layout required; otherwise use PowerPoint.
+**Decision rule:** Use LaTeX if equations OR precise layout OR version control required; otherwise use PowerPoint.
 
 ### Other Document Types
 
@@ -602,8 +605,7 @@ User has content ready for final document format
 | Generate hypotheses | hypothesis-generation | + literature-review, statistical-analysis |
 | **Presentations** | | |
 | Create slides | scientific-slides | + visual-design, plotting-libraries |
-| Create LaTeX poster | latex-posters | + visual-design, scientific-schematics |
-| Create PowerPoint poster | pptx-posters | + visual-design, plotting-libraries |
+| Create research poster | research-posters | + visual-design, scientific-schematics, plotting-libraries |
 | **Visuals** | | |
 | Data visualization | plotting-libraries | + visual-design |
 | Schematic/diagram | scientific-schematics | + visual-design |
@@ -667,7 +669,7 @@ User has content ready for final document format
 
 ```
 1. scientific-writing     → Condense paper to poster content
-2. pptx-posters OR latex-posters → Create poster structure
+2. research-posters       → Create poster (LaTeX or PowerPoint format)
 3. plotting-libraries     → Create figures
 4. scientific-schematics  → Create diagrams
 5. visual-design          → Apply design principles
@@ -727,7 +729,7 @@ User has content ready for final document format
            │                   │                    │                   │
            ▼                   ▼                    ▼                   ▼
     ┌─────────────┐    ┌─────────────┐    ┌──────────────┐    ┌─────────────┐
-    │ literature- │    │ hypothesis- │    │ scientific-  │    │ latex-/pptx-│
+    │ literature- │    │ hypothesis- │    │ scientific-  │    │  research-  │
     │   review    │    │ generation  │    │    slides    │    │   posters   │
     └──────┬──────┘    └──────┬──────┘    └──────┬───────┘    └──────┬──────┘
            │                  │                   │                   │
@@ -786,7 +788,7 @@ User has content ready for final document format
 1. Research paper/manuscript? → scientific-writing
 2. Literature review? → literature-review + scientific-writing
 3. Presentation? → scientific-slides
-4. Poster? → latex-posters OR pptx-posters
+4. Poster? → research-posters (handles format selection)
 5. Hypothesis document? → hypothesis-generation
 
 ---
@@ -836,6 +838,8 @@ Each skill's `<cross_references>` section should include:
 
 ---
 
-*This router provides deterministic skill selection for the 25-skill scientific writing library (21 top-level + 4 document-skills sub-skills). For threshold values and quality criteria, see `QUANTIFICATION_THRESHOLDS.md`.*
+*This router provides deterministic skill selection for the 23-skill scientific writing library (19 top-level + 4 document-skills sub-skills). For threshold values and quality criteria, see `QUANTIFICATION_THRESHOLDS.md`.*
 
-> **Note:** The `scholar-evaluation` skill has been merged into `peer-review` as an optional scoring mode. Use `peer-review` with "Scoring Only" or "Review + Scoring" mode for 8-dimension quantitative assessment.
+> **Consolidation Notes:**
+> - `scholar-evaluation` has been merged into `peer-review` as an optional scoring mode. Use `peer-review` with "Scoring Only" or "Review + Scoring" mode for 8-dimension quantitative assessment.
+> - `latex-posters` and `pptx-posters` have been consolidated into `research-posters`. The unified skill handles format selection (LaTeX or PowerPoint) internally.

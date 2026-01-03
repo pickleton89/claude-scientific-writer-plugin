@@ -1,10 +1,19 @@
 ---
 name: latex-posters
 version: 2.1.0
+status: DEPRECATED
+deprecated_date: 2026-01-03
+successor: research-posters
 extends: visual-design
 description: "Create professional research posters in LaTeX using beamerposter, tikzposter, or baposter. Supports conference presentations, academic posters, and scientific communication with layout design, color schemes, and figure integration."
 allowed-tools: [Read, Write, Edit, Bash]
 ---
+
+> **⚠️ DEPRECATED**: This skill has been consolidated into [`research-posters`](../research-posters/SKILL.md).
+>
+> **Migration:** Use `research-posters` and select LaTeX format when prompted.
+>
+> This skill will be removed in v2.0.0.
 
 # LaTeX Research Posters
 

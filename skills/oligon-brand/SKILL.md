@@ -306,7 +306,7 @@ See individual adapter files for detailed API documentation.
 | `visual-design` | **Design philosophy** — provides universal principles; oligon-brand provides Oligon-specific implementation |
 | `plotting-libraries` | **Code implementation** — use plotting-libraries for matplotlib/ggplot2 code patterns; load oligon-brand first for brand colors |
 | `scientific-slides` | **Presentations** — apply oligon-brand colors to slide designs |
-| `latex-posters` / `pptx-posters` | **Posters** — apply oligon-brand colors and logo placement |
+| `research-posters` | **Posters** — apply oligon-brand colors and logo placement |
 | `markdown-to-pdf` | **PDF reports** — uses brand colors for styled output |
 | `document-skills:docx` | **Word documents** — use docx_adapter for branded styling |
 
