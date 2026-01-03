@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- **docs/SKILLS_CONSOLIDATION_PLAN.md**: Comprehensive implementation plan for skills audit findings
+  - Initiative 1: Merge ScholarEval scoring into `peer-review` as optional output mode
+  - Initiative 2: Consolidate `latex-posters` + `pptx-posters` into unified `research-posters` skill
+  - Initiative 3: Clarify document-skills adapter documentation and references
+  - Initiative 4: Default-on Oligon brand application for all visual output skills
+  - Includes 5-week implementation timeline, deprecation strategies, and testing checklists
+
 ## [1.1.0] - 2025-01-02
 
 ### Changed
