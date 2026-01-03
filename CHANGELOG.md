@@ -14,6 +14,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - Initiative 4: Default-on Oligon brand application for all visual output skills
   - Includes 5-week implementation timeline, deprecation strategies, and testing checklists
 
+### Added
+- **research-posters**: New unified skill consolidating `latex-posters` and `pptx-posters` (Initiative 2, tasks 2.1-2.4)
+  - Format selection decision tree (LaTeX vs PowerPoint) based on equations, timeline, collaboration needs
+  - Shared workflows: Requirements (Stage 1), Visual Content (Stage 4), Quality Validation (Stage 5)
+  - Branched workflows: Stage 3A (LaTeX) and Stage 3B (PowerPoint)
+  - LaTeX package sub-selection: beamerposter, tikzposter, baposter
+  - Merged reference documents: poster_content_guide.md, poster_design_principles.md, poster_layout_design.md
+  - Format-specific references: latex_packages.md (renamed), pptx_workflows.md (new)
+  - Copied assets: 3 LaTeX templates, quality checklist, review script
+
 ### Changed
 - **peer-review**: Merged ScholarEval 8-dimension scoring as optional output mode (Initiative 1)
   - Added Output Mode Selection after Stage 1 (Full Review / Scoring Only / Review + Scoring)
