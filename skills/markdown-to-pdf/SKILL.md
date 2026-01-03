@@ -16,6 +16,39 @@ This skill bridges the template infrastructure and PDF component system to provi
 - `oligon_reports.ReportGenerator` - PDF orchestration
 </overview>
 
+<brand_application>
+## Brand Application (Default)
+
+**By default, all PDF outputs use Oligon Scientific Brand styling.** The `oligon_reports` package automatically applies brand colors, typography, and visual standards.
+
+### Auto-Applied Settings
+
+The ReportGenerator automatically applies:
+
+| Element | Style |
+|---------|-------|
+| Accent color | `#2DB2E8` (Brand Blue) |
+| Alert color | `#E8622D` (Orange) |
+| Text color | `#222222` (Dark Gray) |
+| Background | `#FFFFFF` (White) |
+| Fonts | Arial family |
+
+### Disabling Brand Styling
+
+To use generic styling instead of Oligon brand:
+
+**Explicit request in prompt:**
+- "Use default PDF styling"
+- "No brand colors" or "Generic styling"
+
+**Per-project override:** Add to project `CLAUDE.md`:
+```markdown
+## Visual Styling
+Use generic/default styling for all visual outputs. Do not apply Oligon brand.
+```
+
+</brand_application>
+
 <prerequisites>
 ## Prerequisites
 

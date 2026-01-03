@@ -17,20 +17,51 @@ Brand implementation skill providing Oligon-specific colors, typography, and sty
 Most data should be grayscale. Brand Blue (`#2DB2E8`) highlights the most important element (1-2 per panel max).
 </overview>
 
+<default_behavior>
+## Default-On Brand Application
+
+**Brand styling is now applied by default** to all visual output skills. You do not need to explicitly invoke this skill—brand colors are automatically used by:
+
+| Skill | Brand Integration |
+|-------|-------------------|
+| `plotting-libraries` | Default color cycle uses brand colors |
+| `scientific-schematics` | Diagram prompts include brand colors |
+| `research-posters` | Poster templates use brand colors |
+| `scientific-slides` | Slide generation uses brand formatting |
+| `research-paper-summarizer` | HTML/PDF/SVG outputs use brand colors |
+| `markdown-to-pdf` | PDF generation uses brand styling |
+
+### Opt-Out Mechanism
+
+To disable brand styling and use generic defaults:
+
+**Per-request:** Include in your prompt:
+- "Use default colors" or "No brand styling"
+- "Generic color scheme" or "Use matplotlib defaults"
+
+**Per-project:** Add to project `CLAUDE.md`:
+```markdown
+## Visual Styling
+Use generic/default styling for all visual outputs. Do not apply Oligon brand.
+```
+
+</default_behavior>
+
 <when_to_use>
 ## Trigger Conditions
 
-**Use this skill when:**
-- Creating figures for Oligon-branded publications
-- Applying consistent brand colors to matplotlib/seaborn/ggplot2 plots
-- Styling presentations or documents with Oligon identity
+**Use this skill explicitly when:**
 - Need to access brand color hex codes programmatically
+- Want to load brand tokens directly (JSON or mplstyle)
+- Customizing brand application beyond defaults
 - Creating branded PDFs, Word documents, or PowerPoint presentations
+- Need the complete brand specification or logo assets
 
 **Do NOT use this skill when:**
-- Working on non-Oligon projects → use `visual-design` defaults
+- Creating standard visual outputs → brand is auto-applied
+- Working on non-Oligon projects → request opt-out
 - Need general design philosophy → use `visual-design`
-- Writing plotting code → use `plotting-libraries` (which references this skill)
+- Writing plotting code → use `plotting-libraries` (brand auto-applied)
 - Need journal-specific formatting → use `venue-templates`
 </when_to_use>
 

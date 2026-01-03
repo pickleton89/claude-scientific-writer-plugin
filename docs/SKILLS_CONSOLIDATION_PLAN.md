@@ -16,7 +16,7 @@ This document outlines the implementation plan for consolidating and improving t
 | 1 | Merge ScholarEval scoring into peer-review | Medium | Medium | ✅ Complete |
 | 2 | Consolidate poster skills (latex + pptx) | High | High | ✅ Complete |
 | 3 | Update document-skills to marketplace references | Low | Low | ✅ Complete |
-| 4 | Default-on brand application for visual outputs | Medium | Medium | Pending |
+| 4 | Default-on brand application for visual outputs | Medium | Medium | ✅ Complete |
 
 ---
 
@@ -656,10 +656,10 @@ Use generic/default styling for all visual outputs. Do not apply Oligon brand.
 - [x] All references consistent
 - [x] Routing works correctly
 
-### Initiative 4 (Default brand)
-- [ ] All 6 visual skills auto-apply brand colors
-- [ ] Opt-out mechanism documented and works
-- [ ] Visual outputs consistent with Oligon brand spec
+### Initiative 4 (Default brand) ✅ COMPLETE
+- [x] All 6 visual skills auto-apply brand colors
+- [x] Opt-out mechanism documented and works
+- [x] Visual outputs consistent with Oligon brand spec
 
 ---
 

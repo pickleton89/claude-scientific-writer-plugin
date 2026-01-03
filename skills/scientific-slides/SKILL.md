@@ -17,6 +17,47 @@ Create effective scientific presentations for conferences, seminars, defenses, a
 **Core Philosophy**: Visual-first design with research-backed context. Every slide needs strong visuals; text supports but doesn't replace them.
 </overview>
 
+<brand_application>
+## Brand Application (Default)
+
+**By default, all scientific presentations use Oligon Scientific Brand styling.** This ensures consistent, professional appearance.
+
+### Default Formatting Goal
+
+When generating slides, use this brand-compliant formatting goal:
+
+```
+FORMATTING GOAL: White background (#FFFFFF), dark gray text (#222222),
+Brand Blue accents (#2DB2E8), Orange highlights (#E8622D),
+minimal professional design, Arial/sans-serif fonts, generous margins
+```
+
+### Color Reference
+
+| Element | Color | HEX |
+|---------|-------|-----|
+| Background | White | `#FFFFFF` |
+| Primary text | Dark Gray | `#222222` |
+| Headers/Accents | Brand Blue | `#2DB2E8` |
+| Highlights/Alerts | Orange | `#E8622D` |
+| Secondary text | Medium Gray | `#666666` |
+
+### Disabling Brand Styling
+
+To use generic/custom styling instead of Oligon brand:
+
+**Explicit request in prompt:**
+- "Use custom color scheme: [colors]"
+- "No brand styling" or "Generic colors"
+
+**Per-project override:** Add to project `CLAUDE.md`:
+```markdown
+## Visual Styling
+Use generic/default styling for all visual outputs. Do not apply Oligon brand.
+```
+
+</brand_application>
+
 <when_to_use>
 ## Trigger Conditions
 
