@@ -145,6 +145,21 @@ Apply these rules to transform technical content into accessible prose:
 
 **Why:** Decision-makers span domains. Undefined jargon creates barriers to understanding and trust.
 
+### 5. Paraphrase, Don't Copy (Rule of Originality)
+
+**Rule:** Summaries must be written in your own words. Never copy sentences verbatim from the source document.
+
+| Do | Don't |
+|----|-------|
+| Paraphrase findings in summary language | Copy-paste sentences from source |
+| Preserve exact numbers and statistics | Alter quantitative data |
+| Use brief quotes with attribution if essential | Quote extensively |
+| Translate source prose to accessible language | Reproduce technical writing verbatim |
+
+**Test:** If removing quotation marks leaves sentences identical to the source, rewrite them.
+
+**Why:** Paraphrasing demonstrates understanding and ensures the summary is optimized for the target audience, not the original author's audience.
+
 ---
 
 ## Visualization Integration
@@ -215,7 +230,17 @@ Write in active voice.
 Ensure total length is ≤10% of source document.
 ```
 
-**Step 5: Validate**
+**Step 5: Compare to Source**
+```
+After drafting, compare your summary to the original:
+1. Re-read the source's key claims and conclusions
+2. Verify summary accurately represents findings (no distortion)
+3. Check that no critical information was omitted
+4. Confirm proportions match (main finding gets most space)
+5. Ensure paraphrasing—no verbatim sentences copied
+```
+
+**Step 6: Validate**
 ```
 Run the validation script:
 python3 {baseDir}/scripts/validate_summary.py <output_file>
@@ -226,7 +251,7 @@ Review the output for:
 - FAIL: Must fix before delivering
 ```
 
-**Step 6: Revise if Needed**
+**Step 7: Revise if Needed**
 ```
 If validation returns FAIL or WARN:
 1. Address each issue identified
@@ -234,7 +259,7 @@ If validation returns FAIL or WARN:
 3. Repeat until all checks pass
 ```
 
-**Step 7: Deliver**
+**Step 8: Deliver**
 ```
 Present the validated executive summary to the user.
 Include the validation results as confirmation of quality.
@@ -244,6 +269,17 @@ Include the validation results as confirmation of quality.
 
 Before delivering, confirm all criteria are met:
 
+**The Five Rules of Summarization:**
+
+| Rule | Requirement | Check |
+|------|-------------|-------|
+| **Independence** | Summary stands alone without source | Reader understands without main document |
+| **Conciseness** | ≤10% of source OR ≤2 pages | Ruthlessly cut non-essential details |
+| **Objectivity** | No opinion or personal interpretation | Report findings neutrally |
+| **Originality** | Paraphrased, not copied | No verbatim sentences (except quotes) |
+| **Jargon** | Technical terms explained or eliminated | Accessible to decision-makers |
+
+**Structure and Content:**
 - [ ] Opens with conclusion/recommendation (Pyramid Principle)
 - [ ] Contains all five components in correct order
 - [ ] Length is ≤10% of source OR ≤2 pages
@@ -252,6 +288,8 @@ Before delivering, confirm all criteria are met:
 - [ ] All technical terms defined or translated
 - [ ] All findings are quantified (no vague claims)
 - [ ] Call to action specifies WHAT + WHO + WHEN
+- [ ] Summary is paraphrased, not copied from source (Rule of Originality)
+- [ ] Source comparison completed—findings accurately represented
 
 ---
 

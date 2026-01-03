@@ -7,6 +7,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **research-paper-summarizer/references/reading_strategy.md**: New strategic reading guide for summarization
+  - Non-linear reading sequence (Abstract → Conclusions → Results → Introduction → Methods)
+  - Relevance filter with "Weather Test" for information selection
+  - Section-specific reading goals and time estimates
+  - Quick reference card for at-a-glance guidance
+  - Integration with summarization workflow
+- **QUANTIFICATION_THRESHOLDS.md §11**: New Summarization Quality section (v1.0.0 → v1.1.0)
+  - Five Rules of Summarization (Independence, Conciseness, Objectivity, Originality, Jargon)
+  - Length thresholds by summary type (executive, paper, abstract)
+  - Writing quality metrics for summaries
+  - Content completeness requirements by summary type
+  - Source fidelity checklist
+  - Summarization anti-patterns table
+  - AI-assisted summarization method comparison
+
+### Changed
+- **research-paper-summarizer/SKILL.md**: Enhanced with summarization best practices
+  - Added `<strategic_reading>` section with non-linear reading sequence
+  - Added "Rule of Originality (No Copying)" to Core Principles with clarification on terms vs. prose
+  - Added "Five Rules of Summarization" validation table to Success Criteria
+  - Added filtering criteria (relevance filter, "Weather Test")
+  - Updated references to include reading_strategy.md
+- **executive-summary/SKILL.md**: Enhanced with summarization best practices
+  - Added "5. Paraphrase, Don't Copy (Rule of Originality)" to Writing Rules
+  - Added "Step 5: Compare to Source" validation step to workflow
+  - Added "Five Rules of Summarization" table to Validation Checklist
+  - Added two new checklist items for originality and source comparison
+- **research-paper-summarizer/IMPLEMENTATION_PLAN.md**: Added future enhancement roadmap
+  - Appendix D: Semantic clustering pipeline for very long documents (v2.0 roadmap)
+  - Best Representation Vectors approach with clustering diagram
+  - AI-assisted summarization method comparison table
+  - Version roadmap (v1.0 → v2.0 → v2.1)
+
+### Added
 - **scientific-writing/references/writing_principles.md**: Enhanced with best practices alignment
   - New "Reader-Centricity" section as the Cardinal Rule (cognitive load principle, rule of parsimony, narrative arc)
   - New "Quick Diagnostic: The Four Tests" pre-submission checklist (Elevator Pitch, Independence, "So What?", Formatting)

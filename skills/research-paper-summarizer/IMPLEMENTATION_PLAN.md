@@ -955,3 +955,90 @@ This implementation transforms the skill from a single-pass full-document approa
 5. **Graceful fallback** to legacy mode if chunked processing fails
 
 The architecture is designed to be maintainable, testable, and extensible to new article types or output formats.
+
+---
+
+## Appendix D: Future Enhancements Roadmap
+
+### D.1 Semantic Clustering for Very Long Documents (v2.0)
+
+**Problem:** For extremely long documents (50+ pages), even chunked processing may miss cross-section themes or include redundant content.
+
+**Solution:** Implement "Best Representation Vectors" approach using semantic clustering:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    SEMANTIC CLUSTERING PIPELINE                          │
+│                                                                          │
+│  1. CHUNK DOCUMENT                                                       │
+│     - Split into ~500 token passages                                     │
+│     - Preserve paragraph boundaries                                      │
+│                                                                          │
+│  2. GENERATE EMBEDDINGS                                                  │
+│     - Embed each passage using text-embedding model                      │
+│     - Store vectors with passage metadata                                │
+│                                                                          │
+│  3. CLUSTER PASSAGES                                                     │
+│     - K-means or hierarchical clustering                                 │
+│     - Target: 8-12 clusters for typical paper                           │
+│                                                                          │
+│  4. SELECT REPRESENTATIVES                                               │
+│     - Find passage closest to each cluster centroid                      │
+│     - These are "most representative" passages                          │
+│                                                                          │
+│  5. SUMMARIZE REPRESENTATIVES                                            │
+│     - Process only representative passages                               │
+│     - Ensures diverse coverage without redundancy                       │
+│                                                                          │
+│  6. SYNTHESIZE                                                           │
+│     - Combine cluster summaries into coherent narrative                  │
+│     - Fill gaps with targeted passage retrieval                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**Implementation Requirements:**
+- Integration with embedding model (OpenAI, Cohere, or local)
+- Clustering library (scikit-learn or similar)
+- Vector storage for passage retrieval
+- Hybrid mode: semantic clustering + section-aware processing
+
+**Benefits:**
+- Handles arbitrarily long documents
+- Finds representative content across entire document
+- Reduces redundancy in summaries
+- Enables "smart" passage selection vs. page-based extraction
+
+**Estimated Effort:** 2-3 weeks additional development
+
+**Prerequisites:**
+- Embedding model access
+- Python environment for clustering
+- Testing with long-form documents (theses, book chapters)
+
+### D.2 Additional Future Enhancements
+
+| Enhancement | Description | Priority | Effort |
+|-------------|-------------|----------|--------|
+| **Multi-paper synthesis** | Summarize multiple related papers together | Medium | 2 weeks |
+| **Citation network analysis** | Map citation relationships in summary | Low | 1 week |
+| **Interactive summaries** | User can request expansion of specific sections | Medium | 1 week |
+| **Streaming progress** | Real-time updates as subagents complete | Low | 3 days |
+| **Quality scoring** | Automated evaluation of summary quality | Medium | 1 week |
+| **Template customization** | User-defined summary structures | Low | 1 week |
+
+### D.3 AI-Assisted Summarization Method Comparison
+
+Current skill supports these methods (with future additions noted):
+
+| Method | Status | Best For | Quality | Speed |
+|--------|--------|----------|---------|-------|
+| **Direct prompting** | ✅ Implemented | <12 pages | Good | Fast |
+| **Chunked/Map-Reduce** | ✅ Implemented | 12-50 pages | Very Good | Medium |
+| **Section-by-section** | ✅ Implemented | Structured docs | Very Good | Medium |
+| **Semantic clustering** | 🔮 Future (v2.0) | 50+ pages | Excellent | Slow |
+| **Hybrid (section + semantic)** | 🔮 Future (v2.1) | Any length | Best | Variable |
+
+**Version Roadmap:**
+- v1.0: Current implementation (direct + chunked)
+- v2.0: Add semantic clustering for very long documents
+- v2.1: Hybrid mode combining structural and semantic approaches

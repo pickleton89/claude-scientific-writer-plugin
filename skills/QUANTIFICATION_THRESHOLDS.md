@@ -1,8 +1,8 @@
 # Quantification Thresholds
 
 > Shared numeric standards for scientific writing quality assessment
-> Version: 1.0.0
-> Last Updated: 2025-12-30
+> Version: 1.1.0
+> Last Updated: 2026-01-03
 
 This document provides measurable thresholds referenced by multiple skills. Using shared definitions ensures consistency across the skill library.
 
@@ -22,6 +22,7 @@ This document provides measurable thresholds referenced by multiple skills. Usin
 8. [Iteration & Stopping Criteria](#8-iteration--stopping-criteria)
 9. [Figure & Plot Quality](#9-figure--plot-quality)
 10. [Statistical Reporting Completeness](#10-statistical-reporting-completeness)
+11. [Summarization Quality](#11-summarization-quality)
 
 ---
 
@@ -402,7 +403,104 @@ Stop iteration when:
 
 ---
 
+## §11 Summarization Quality
+
+**Referenced by:** `research-paper-summarizer`, `executive-summary`
+
+### The Five Rules of Summarization
+
+Every summary must pass these five rules before delivery:
+
+| Rule | Definition | Pass Criteria |
+|------|------------|---------------|
+| **Independence** | Summary stands alone without source | Reader understands without accessing original |
+| **Conciseness** | Significantly shorter than original | ≤10% of source length (executive summary) |
+| **Objectivity** | No opinion or personal interpretation | Neutral reporting of findings only |
+| **Originality** | Paraphrased, not copied | No verbatim sentences except attributed quotes |
+| **Jargon** | Technical terms explained or eliminated | Accessible to intended audience |
+
+### Length Thresholds by Summary Type
+
+| Summary Type | Minimum | Target | Maximum |
+|--------------|---------|--------|---------|
+| Executive summary | 100 words | 250-500 words | 10% of source |
+| Paper summary (short) | 300 words | 500-800 words | 1,000 words |
+| Paper summary (detailed) | 800 words | 1,500-2,500 words | 3,000 words |
+| Abstract | 150 words | 200-250 words | 300 words |
+| Structured abstract | 250 words | 300-350 words | 400 words |
+
+### Writing Quality Metrics for Summaries
+
+| Metric | Minimum | Target | Excellent |
+|--------|---------|--------|-----------|
+| Sentence length (avg) | ≤25 words | 15-20 words | 12-18 words |
+| Passive voice | ≤40% | ≤25% | ≤15% |
+| Undefined jargon | ≤5 terms | All defined | 0 undefined |
+| Quantified findings | ≥50% | ≥80% | 100% |
+
+### Content Completeness by Summary Type
+
+**Paper Summary (research-paper-summarizer):**
+
+| Element | Required | Target | Excellent |
+|---------|----------|--------|-----------|
+| Main finding stated | Yes | Yes | Yes |
+| Key statistics preserved | ≥80% | ≥95% | 100% |
+| Figures/tables referenced | Key only | All major | All with context |
+| Limitations noted | Author-stated | +Obvious | +Analysis |
+| Sample sizes specified | Yes | Per experiment | With context |
+
+**Executive Summary:**
+
+| Element | Required | Target | Excellent |
+|---------|----------|--------|-----------|
+| Hook/problem stated | Yes | Quantified | Compelling |
+| Solution/approach | Yes | Yes | Yes |
+| Key findings (quantified) | 3-5 | 4-5 | 5 with comparisons |
+| Value/impact | Yes | Quantified | ROI stated |
+| Call to action | Present | Specific | Specific + Owner + Timeline |
+
+### Source Fidelity Checklist
+
+After drafting any summary, verify:
+
+- [ ] Main finding accurately represents source conclusions
+- [ ] Statistics match source exactly (p-values, CIs, effect sizes)
+- [ ] No critical information omitted
+- [ ] Proportions match (main finding gets most space)
+- [ ] No distortion through selective emphasis
+- [ ] Paraphrased—no verbatim sentences copied
+
+### Summarization Anti-Patterns
+
+| Anti-Pattern | Detection | Severity |
+|--------------|-----------|----------|
+| Verbatim copying | Identical sentences to source | Major |
+| Statistics "rounded away" | p<0.05 instead of p=0.003 | Major |
+| Missing main finding | Conclusion not stated | Critical |
+| Jargon unexplained | Technical terms undefined | Minor |
+| Opinion inserted | Evaluative language added | Major |
+| Source referenced | "See Section 3.2" | Major |
+| Vague claims | "Improvements were made" | Minor |
+
+### AI-Assisted Summarization Methods
+
+| Method | When to Use | Quality Notes |
+|--------|-------------|---------------|
+| Direct prompting | Short documents (<5 pages) | Quick but shallow |
+| Chunked/Map-Reduce | Long documents (>12 pages) | Comprehensive; may miss cross-section themes |
+| Section-by-section | Structured documents | Preserves organization |
+| Semantic clustering | Very long documents | Advanced; finds representative passages |
+
+---
+
 ## Changelog
+
+### v1.1.0 (2026-01-03)
+- §11: New section for summarization quality thresholds
+- Added Five Rules of Summarization as validation framework
+- Added length, content completeness, and source fidelity metrics
+- Added AI-assisted summarization method guidance
 
 ### v1.0.0 (2025-12-30)
 - Initial creation consolidating thresholds from across skill library

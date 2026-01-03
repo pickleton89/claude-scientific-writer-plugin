@@ -83,6 +83,45 @@ Activate when the user:
 
 ---
 
+<strategic_reading>
+
+## Strategic Reading for Summarization
+
+Effective summarization starts with strategic reading. Scientific papers are designed for reference, not linear reading.
+
+### The Non-Linear Reading Sequence
+
+**Read sections in this order for optimal comprehension:**
+
+| Order | Section | Purpose | Time |
+|-------|---------|---------|------|
+| 1st | **Abstract** | Rapid orientation—scope, approach, main finding | 2 min |
+| 2nd | **Conclusions** | Learn outcomes before process | 3 min |
+| 3rd | **Results** | Evaluate evidence; identify key figures | 5-10 min |
+| 4th | **Introduction** | Understand motivation and gap | 3 min |
+| 5th | **Methods** | Reference only—procedural details as needed | Optional |
+
+**Why this order:** Know what was found before diving into how. Methods are least essential for summarization unless replicating.
+
+### The Relevance Filter
+
+For each piece of information, ask: "Does this support understanding the main finding?"
+
+| Include | Discard |
+|---------|---------|
+| Findings that answer the research question | Routine procedural details |
+| Statistical results with significance | Background already known to audience |
+| Methods essential to understanding results | Tangential findings unrelated to thesis |
+| Limitations affecting interpretation | Redundant restatements |
+
+**The "Weather Test":** "Mentioning it was 'raining' during an experiment is irrelevant, but mentioning a specific chemical reaction essential to the cure is vital."
+
+For detailed guidance, see: `{baseDir}/references/reading_strategy.md`
+
+</strategic_reading>
+
+---
+
 <decision_framework>
 
 ## Processing Modes
@@ -369,6 +408,26 @@ NEVER summarize away numerical data. Always preserve:
 - Flag limitations (both author-stated and obvious)
 - Use exact technical terminology (no paraphrasing jargon)
 
+### Rule of Originality (No Copying)
+
+**NEVER copy sentences verbatim from the source paper.** Summaries must be paraphrased in your own words.
+
+| Do | Don't |
+|----|-------|
+| Paraphrase findings in summary language | Copy-paste sentences from the paper |
+| Preserve exact statistics (p-values, CIs) | Change numerical values |
+| Use quotation marks for essential phrases | Quote extensively |
+| Translate jargon to accessible language | Reproduce technical prose verbatim |
+
+**Exception:** Direct quotes are acceptable when:
+- The phrasing is uniquely important (e.g., a novel term coined by authors)
+- Attribution requires exact wording
+- Always use quotation marks and keep quotes brief
+
+**Test:** If removing quotation marks leaves sentences identical to the source, rewrite them.
+
+**Clarification — Terms vs. Prose:** "Translate jargon" means paraphrasing the surrounding prose, not replacing established technical terms. Preserve exact terminology (e.g., "CRISPR-Cas9", "p-value", "IC50") while rewriting sentence structure in your own words.
+
 ### Brand Visual Identity (Default)
 
 **By default, all visual outputs use Oligon Scientific Brand styling.** This applies to HTML reports, PDF summaries, and SVG infographics.
@@ -505,6 +564,18 @@ For detailed anti-patterns with examples, see: `{baseDir}/references/common-pitf
 
 ## Success Criteria
 
+### The Five Rules of Summarization
+
+Before delivering any summary, verify compliance with these rules:
+
+| Rule | Requirement | Check |
+|------|-------------|-------|
+| **Independence** | Summary stands alone without source | Reader understands without reading paper |
+| **Conciseness** | Significantly shorter than original | Ruthlessly cut non-essential details |
+| **Objectivity** | No opinion or personal interpretation | Report findings neutrally |
+| **Originality** | Paraphrased, not copied | No verbatim sentences (except quotes) |
+| **Jargon** | Technical terms explained or eliminated | Accessible to intended audience |
+
 ### Markdown Summary Quality
 - [ ] All statistics preserved with exact values
 - [ ] Every finding linked to figure/table reference
@@ -513,6 +584,7 @@ For detailed anti-patterns with examples, see: `{baseDir}/references/common-pitf
 - [ ] Conditional language preserved (authors' hedging)
 - [ ] Negative/null results included with statistical context
 - [ ] Sample sizes specified for all experiments
+- [ ] Summary is paraphrased, not copied (Rule of Originality)
 
 ### Visual Output Quality
 - [ ] Brand colors applied correctly (Oligon brand)
@@ -572,6 +644,7 @@ For detailed anti-patterns with examples, see: `{baseDir}/references/common-pitf
 All paths use `{baseDir}` which resolves to this skill's installation directory.
 
 ### Reference Documentation
+- `{baseDir}/references/reading_strategy.md` - Strategic non-linear reading for summarization
 - `{baseDir}/references/subagent_architecture.md` - Chunked pipeline architecture deep-dive
 - `{baseDir}/references/troubleshooting.md` - Error recovery and common issues
 - `{baseDir}/references/common-pitfalls.md` - Anti-patterns with detailed examples
