@@ -92,6 +92,87 @@ Begin with a high-level evaluation to determine the manuscript's scope, novelty,
 
 **Output:** Brief summary (2-3 sentences) capturing the manuscript's essence and initial impression.
 
+### Output Mode Selection
+
+After initial assessment, select the evaluation mode based on user needs:
+
+| Mode | Output | Best For |
+|------|--------|----------|
+| **Full Review** (default) | Structured review with Major/Minor comments | Journal submission, detailed feedback |
+| **Scoring Only** | 8-dimension scores + quality tier (A-F) | Quick assessment, benchmarking |
+| **Review + Scoring** | Both outputs combined | Comprehensive evaluation |
+
+**Ask user:** "Which evaluation mode would you like?"
+1. Full peer review with revision guidance (default)
+2. Quick scoring only (8 dimensions, quality tier)
+3. Both: scoring summary + detailed review
+
+**Routing:**
+- **Full Review** → Proceed to Stage 2 (skip Stage 1.5)
+- **Scoring Only** → Proceed to Stage 1.5, then generate Scoring Report (skip Stages 2-7)
+- **Review + Scoring** → Proceed to Stage 1.5, then continue through all stages (2-7)
+
+---
+
+### Stage 1.5: Quantitative Scoring (Optional)
+
+> **Trigger:** User selects "Scoring Only" or "Review + Scoring" mode
+> **Reference:** See `{baseDir}/references/scholareval_framework.md` for detailed dimension criteria
+
+**Objective:** Generate 8-dimension quantitative assessment using the ScholarEval framework.
+
+**The 8 Evaluation Dimensions:**
+
+| # | Dimension | Weight | Key Criteria |
+|---|-----------|--------|--------------|
+| 1 | Problem Formulation | 15% | Clarity, significance, novelty, feasibility |
+| 2 | Literature Review | 15% | Comprehensiveness, synthesis, gap identification |
+| 3 | Methodology | 20% | Appropriateness, rigor, reproducibility, ethics |
+| 4 | Data Collection | 10% | Quality, sample size, procedures, reliability |
+| 5 | Analysis | 15% | Method appropriateness, rigor, coherence |
+| 6 | Results | 10% | Clarity, statistical rigor, visualization |
+| 7 | Writing | 10% | Organization, clarity, tone, accessibility |
+| 8 | Citations | 5% | Completeness, quality, accuracy, balance |
+
+**Scoring Rubric:**
+
+| Score | Rating | Criteria |
+|-------|--------|----------|
+| 5 | Excellent | Exemplary quality, publishable in top venues, no significant issues |
+| 4 | Good | Strong quality, minor improvements needed, suitable for most venues |
+| 3 | Adequate | Acceptable quality, notable areas for improvement, may need revision |
+| 2 | Needs Work | Significant revisions required, major issues in this dimension |
+| 1 | Poor | Fundamental issues, requires major revision or reconceptualization |
+
+**Quality Tiers:**
+
+| Aggregate Score | Tier | Interpretation |
+|-----------------|------|----------------|
+| 4.5-5.0 | A | Publication-ready for top venues |
+| 4.0-4.4 | B | Strong, minor revisions needed |
+| 3.5-3.9 | C | Acceptable, moderate revisions |
+| 3.0-3.4 | D | Significant revisions required |
+| <3.0 | F | Major reconceptualization needed |
+
+**Automated Score Calculation:**
+```bash
+python {baseDir}/scripts/calculate_scores.py --interactive
+# Or with JSON input:
+python {baseDir}/scripts/calculate_scores.py --scores scores.json --output report.txt
+```
+
+**Exit Criteria:**
+- [ ] All 8 dimensions scored (1-5)
+- [ ] Weighted aggregate calculated
+- [ ] Quality tier assigned (A-F)
+- [ ] Brief justification documented for each score
+
+**Output:**
+- If Scoring Only mode → Generate Scoring Report using `{baseDir}/templates/scoring_report.md`
+- If Review + Scoring mode → Continue to Stage 2
+
+---
+
 ### Stage 2: Detailed Section-by-Section Review
 
 Conduct a thorough evaluation of each manuscript section, documenting specific concerns and strengths.
@@ -511,6 +592,10 @@ This skill includes reference materials to support comprehensive peer review:
 | `{baseDir}/references/presentation_review.md` | Slide deck and presentation evaluation criteria |
 | `{baseDir}/references/critical_analysis.md` | GRADE, fallacy identification, bias detection |
 | `{baseDir}/references/workflow_transitions.md` | Stage exit criteria and progress indicators |
+| `{baseDir}/references/scholareval_framework.md` | ScholarEval 8-dimension scoring criteria and rubrics (for Scoring mode) |
+| `{baseDir}/references/scholareval_expert_guide.md` | Expert synthesis on evaluation principles and failure modes (for Scoring mode) |
+| `{baseDir}/templates/scoring_report.md` | Template for quantitative scoring output |
+| `{baseDir}/scripts/calculate_scores.py` | Automated weighted score calculation |
 
 ## Cross-References
 
@@ -521,8 +606,9 @@ This skill includes reference materials to support comprehensive peer review:
 - **statistical-analysis**: Evaluate statistical methods, test selection, multiple testing corrections, effect sizes, and power analysis in manuscripts
 - **venue-templates**: `reviewer_expectations.md` for venue-specific review standards
 - **reproducible-research**: Assess data availability, code sharing, and reproducibility standards
-- **scholar-evaluation**: 8-dimension scholarly work assessment for structured quality scoring
 - **research-paper-summarizer**: Summarization (extracting content) vs evaluation (assessing quality); use peer-review for critical assessment
+
+> **Note:** The ScholarEval 8-dimension scoring framework (formerly `scholar-evaluation` skill) is now integrated into this skill as an optional output mode. Select "Scoring Only" or "Review + Scoring" mode after Stage 1 to access quantitative assessment.
 
 ## Final Checklist
 

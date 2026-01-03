@@ -14,6 +14,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - Initiative 4: Default-on Oligon brand application for all visual output skills
   - Includes 5-week implementation timeline, deprecation strategies, and testing checklists
 
+### Changed
+- **peer-review**: Merged ScholarEval 8-dimension scoring as optional output mode (Initiative 1)
+  - Added Output Mode Selection after Stage 1 (Full Review / Scoring Only / Review + Scoring)
+  - Added Stage 1.5: Quantitative Scoring with 8-dimension framework and quality tiers (A-F)
+  - Migrated `calculate_scores.py` script for automated score calculation
+  - Migrated `scholareval_framework.md` and `scholareval_expert_guide.md` reference docs
+  - Added `templates/scoring_report.md` for structured scoring output
+  - Updated Resources table and cross-references
+- **SKILL_ROUTER.md**: Updated routing for peer-review scoring modes (v1.2.0 → v1.3.0)
+  - Research Workflow decision tree now routes to peer-review with mode selection
+  - Updated Research Task Routing table and Quick Reference Matrix
+  - Updated Ambiguous Scenarios clarifying questions
+  - Skill count reduced from 26 to 25 (scholar-evaluation merged)
+
+### Deprecated
+- **scholar-evaluation**: Marked as DEPRECATED, successor is `peer-review` (scoring mode)
+  - Will be removed in v2.0.0
+  - Migration: Use `peer-review` and select "Scoring Only" or "Review + Scoring" mode
+
 ## [1.1.0] - 2025-01-02
 
 ### Changed

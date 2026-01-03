@@ -2,13 +2,13 @@
 name: skill-router
 description: Decision trees for selecting the correct skill when multiple options apply. Consult when task scope is ambiguous or spans multiple scientific writing domains.
 when_to_use: When a user request could be handled by 2+ skills, when unclear which skill is primary vs. supporting, or when planning multi-skill workflows.
-version: 1.2.0
+version: 1.3.0
 ---
 
 # Skill Router
 
 > Decision trees and routing logic for selecting the right skill(s) for scientific writing tasks
-> Version: 1.2.0 | Updated: 2025-12-30
+> Version: 1.3.0 | Updated: 2026-01-03
 
 ---
 
@@ -245,13 +245,18 @@ User needs research/information support
 │            ├─ Style selection (APA, Nature, etc.)
 │            └─ Validation and deduplication
 │
-├─ Need to EVALUATE a paper or researcher?
+├─ Need to EVALUATE a paper?
 │  │
-│  ├─ Evaluate paper quality?
-│  │  └─ YES → peer-review (manuscript review + critical analysis framework)
-│  │
-│  └─ Evaluate researcher/scholar?
-│     └─ YES → scholar-evaluation (8-dimension assessment)
+│  └─ YES → peer-review
+│            │
+│            ├─ Need detailed revision guidance?
+│            │  └─ Full Review mode (default)
+│            │
+│            ├─ Need quick quality score (8 dimensions)?
+│            │  └─ Scoring Only mode
+│            │
+│            └─ Need both scoring + detailed review?
+│               └─ Review + Scoring mode
 │
 └─ Need to ANALYZE arguments or evidence?
    │
@@ -269,8 +274,8 @@ User needs research/information support
 | "Find papers on X" | research-lookup | Quick search, <10 papers |
 | "Comprehensive literature review" | literature-review | Systematic, 50+ papers |
 | "Format my references" | citation-management | BibTeX/citation styling |
-| "Is this paper reliable?" | peer-review | Manuscript evaluation |
-| "Evaluate this researcher" | scholar-evaluation | Scholar assessment |
+| "Is this paper reliable?" | peer-review | Full Review or Review + Scoring mode |
+| "Score this paper's quality" | peer-review | Scoring Only mode (8-dimension assessment) |
 | "Analyze this argument" | peer-review | Logic/evidence analysis (Critical Analysis Framework) |
 
 ---
@@ -617,8 +622,9 @@ User has content ready for final document format
 | Quick paper lookup | research-lookup | — |
 | Systematic literature review | literature-review | + citation-management |
 | **Evaluation** | | |
-| Review manuscript | peer-review | (includes critical analysis) |
-| Evaluate scholar | scholar-evaluation | — |
+| Review manuscript | peer-review | Full Review mode (includes critical analysis) |
+| Score paper quality | peer-review | Scoring Only mode (8-dimension ScholarEval) |
+| Comprehensive evaluation | peer-review | Review + Scoring mode |
 | Analyze arguments | peer-review | (use Critical Analysis Framework) |
 | **Analysis** | | |
 | Statistical guidance | statistical-analysis | + reproducible-research |
@@ -743,7 +749,7 @@ User has content ready for final document format
     ┌─────────────────────────────────────────────────────────────────┐
     │                     SUPPORTING SKILLS                           │
     │  research-lookup  │  statistical-analysis  │  reproducible-     │
-    │  peer-review      │  scholar-evaluation    │  research          │
+    │  peer-review                               │  research          │
     │                                            │  code-documentation│
     └─────────────────────────────────────────────────────────────────┘
            │
@@ -769,8 +775,8 @@ User has content ready for final document format
 ### "I need to review something"
 
 **Clarifying questions:**
-1. Review a manuscript for peer review? → peer-review
-2. Evaluate a researcher's work? → scholar-evaluation
+1. Review a manuscript for peer review? → peer-review (Full Review mode)
+2. Quick quality score for a paper? → peer-review (Scoring Only mode)
 3. Analyze logical arguments? → peer-review (Critical Analysis Framework)
 4. Review literature systematically? → literature-review
 
@@ -830,4 +836,6 @@ Each skill's `<cross_references>` section should include:
 
 ---
 
-*This router provides deterministic skill selection for the 26-skill scientific writing library (22 top-level + 4 document-skills sub-skills). For threshold values and quality criteria, see `QUANTIFICATION_THRESHOLDS.md`.*
+*This router provides deterministic skill selection for the 25-skill scientific writing library (21 top-level + 4 document-skills sub-skills). For threshold values and quality criteria, see `QUANTIFICATION_THRESHOLDS.md`.*
+
+> **Note:** The `scholar-evaluation` skill has been merged into `peer-review` as an optional scoring mode. Use `peer-review` with "Scoring Only" or "Review + Scoring" mode for 8-dimension quantitative assessment.

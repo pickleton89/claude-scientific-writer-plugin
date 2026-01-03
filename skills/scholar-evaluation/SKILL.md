@@ -1,9 +1,20 @@
 ---
 name: scholar-evaluation
 version: 2.1.0
+status: DEPRECATED
+deprecated_date: 2026-01-03
+successor: peer-review (scoring mode)
 description: "Systematic evaluation of scholarly work using the ScholarEval framework with quantitative scoring and structured feedback"
 when_to_use: "Evaluating research papers for quality, assessing literature review comprehensiveness, reviewing methodology design, scoring data analysis approaches, providing structured feedback on academic work, benchmarking research quality"
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
+---
+
+> **DEPRECATED**: This skill has been merged into `peer-review` as an optional scoring mode.
+>
+> **Migration:** Use `peer-review` and select "Scoring Only" or "Review + Scoring" mode after Stage 1.
+>
+> This skill will be removed in v2.0.0.
+
 ---
 
 # Scholar Evaluation
