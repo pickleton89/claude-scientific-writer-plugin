@@ -356,8 +356,7 @@ Run three tests before submission:
 | Skill | Relationship |
 |-------|-------------|
 | `citation-management` | Organize and format manuscript references |
-| `peer-review` | Structured feedback and revision guidance |
-| `scholar-evaluation` | Publication readiness assessment (8 dimensions) |
+| `peer-review` | Structured feedback, revision guidance, and quantitative scoring (8-dimension evaluation via scoring mode) |
 | `executive-summary` | Action-oriented summaries for decision-makers |
 | `venue-templates` | Journal-specific formatting and requirements |
 | `markdown-to-pdf` | Branded PDF output with Oligon styling |

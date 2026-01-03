@@ -5,6 +5,8 @@
 > Priority: Low (for future enhancement)
 >
 > **Update 2025-12-26**: The `scientific-visualization` skill referenced in this document has been merged into `visual-design`. Publication specifications are now in `visual-design/references/publication_specs.md`.
+>
+> **Update 2026-01-03**: The `scholar-evaluation` skill has been deprecated and merged into `peer-review` as an optional scoring mode. References to `scholar-evaluation` below now apply to `peer-review` with scoring mode enabled.
 
 ---
 
@@ -379,7 +381,7 @@ The following skills could benefit from venue-templates integration but currentl
 | **scientific-schematics** | Figure requirements by venue | Resolution, format, color space specs |
 | **scientific-visualization** | Journal figure specs | Already has inline specs - could centralize |
 | **generate-image** | Publication figure requirements | Output quality matching venue needs |
-| **scholar-evaluation** | Reviewer expectations | Venue-specific evaluation criteria |
+| **peer-review** (scoring mode) | Reviewer expectations | Venue-specific evaluation criteria |
 | **research-lookup** | Venue context for searches | Target venue when finding literature |
 | **markitdown** | Formatting preservation | Venue-aware document conversion |
 | **plotting-libraries** | Export specifications | Journal-ready figure export settings |
@@ -487,12 +489,12 @@ Reference: `venue-templates/references/journals_formatting.md`
 
 #### Priority 3: Lower-Value Additions
 
-**8. scholar-evaluation → venue-templates**
+**8. peer-review (scoring mode) → venue-templates**
 
 ```markdown
 ## Venue-Calibrated Evaluation
 
-For scholar evaluation, consult **venue-templates/references/reviewer_expectations.md** to:
+For peer-review scoring mode, consult **venue-templates/references/reviewer_expectations.md** to:
 - Understand venue-specific evaluation criteria
 - Calibrate quality assessments to venue standards
 - Recognize venue-appropriate methodologies
@@ -665,7 +667,7 @@ Current Outbound: scientific-schematics, scientific-writing,
 
 Proposed New:     scientific-slides, pptx-posters, paper-2-web,
                   scientific-visualization, plotting-libraries,
-                  generate-image, visual-design, scholar-evaluation
+                  generate-image, visual-design
 ```
 
 ---

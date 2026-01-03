@@ -141,7 +141,7 @@ A literature search is **comprehensive** when ALL criteria are met:
 
 ## §4 Issue Severity Classification
 
-**Referenced by:** `peer-review`, `scholar-evaluation`
+**Referenced by:** `peer-review`
 
 ### Severity Criteria
 

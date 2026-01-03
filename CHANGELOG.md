@@ -32,6 +32,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - Migrated `scholareval_framework.md` and `scholareval_expert_guide.md` reference docs
   - Added `templates/scoring_report.md` for structured scoring output
   - Updated Resources table and cross-references
+- **Cross-references updated** for scholar-evaluation deprecation (Initiative 1, task 1.9):
+  - `README.md`: Removed scholar-evaluation row, updated peer-review description
+  - `scientific-writing/SKILL.md`: Updated Feeds table to reference peer-review scoring mode
+  - `QUANTIFICATION_THRESHOLDS.md`: Updated §4 "Referenced by" section
+  - `venue-templates/REVIEW_AND_IMPROVEMENTS.md`: Added deprecation notice, updated 3 references
 - **SKILL_ROUTER.md**: Updated routing for peer-review scoring modes (v1.2.0 → v1.3.0)
   - Research Workflow decision tree now routes to peer-review with mode selection
   - Updated Research Task Routing table and Quick Reference Matrix

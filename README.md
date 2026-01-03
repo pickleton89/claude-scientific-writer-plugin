@@ -49,8 +49,7 @@ claude --plugin-dir /path/to/claude-scientific-writer-plugin
 |-------|-------------|
 | `research-lookup` | Literature search and database queries |
 | `citation-management` | BibTeX citations and bibliography |
-| `peer-review` | Manuscript review and critique |
-| `scholar-evaluation` | Evaluate research quality and impact |
+| `peer-review` | Manuscript review, critique, and quantitative scoring |
 | `statistical-analysis` | Statistical methods and reporting |
 
 ### Visuals & Figures
