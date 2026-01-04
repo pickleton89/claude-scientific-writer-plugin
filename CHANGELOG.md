@@ -7,6 +7,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/paper-search/**: Phase 2 implementation - new source modules
+  - **sources/biorxiv/search.py**: bioRxiv/medRxiv API client with preprint search
+    - Support for both bioRxiv and medRxiv servers
+    - Date range and subject category filtering
+    - Keyword matching in title/abstract
+    - BibTeX export with preprint metadata
+    - CLI with `--server`, `--date-start`, `--date-end`, `--category` options
+  - **sources/biorxiv/references/search_guide.md**: Comprehensive bioRxiv API documentation
+    - API endpoints and response format
+    - Subject category lists for both servers
+    - CLI examples and Python usage patterns
+  - **sources/semantic_scholar/search.py**: Semantic Scholar API client (200M+ papers)
+    - Paper search with year, field, and citation filters
+    - Citation graph traversal (get_citations, get_references)
+    - Author lookup and paper retrieval by ID/DOI/arXiv
+    - Open access PDF filtering
+    - Subcommand CLI: search, paper, citations, references, author
+  - **sources/semantic_scholar/references/api_guide.md**: Semantic Scholar API documentation
+    - Authentication and rate limits
+    - Paper ID formats (DOI, arXiv, PMID, S2 ID)
+    - Available fields and filters
+    - CLI examples and Python usage patterns
 - **skills/paper-search/**: Phase 1 implementation - directory structure and file migrations
   - Created source modules: `pubmed/`, `biorxiv/`, `semantic_scholar/`, `google_scholar/`
   - Migrated PubMed search script and documentation from `citation-management`
