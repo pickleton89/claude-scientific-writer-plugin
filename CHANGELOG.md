@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- **docs/PAPER_SEARCH_RESTRUCTURING.md**: Comprehensive restructuring plan for research skills
+  - Decision to consolidate `research-lookup`, `citation-management`, and `pubmed-database` into two skills
+  - New `paper-search` skill: unified multi-database academic literature search (PubMed, bioRxiv, Semantic Scholar, Google Scholar)
+  - Refocused `citation-management`: validation and formatting only (search moved to paper-search)
+  - Removes Perplexity AI dependency (5-10% hallucination risk)
+  - 8-phase implementation plan with validation checklist and rollback procedures
+- **skills/pubmed-database/**: PubMed database skill (to be merged into paper-search)
+  - Comprehensive E-utilities API documentation
+  - MeSH/Boolean search syntax reference
+  - Common query patterns for systematic reviews
+
 ### Changed
 - **literature-review/SKILL.md**: Added "So What?" Test emphasis
   - Stage 6 (Synthesis): Added callout requiring significance explanation for each theme
