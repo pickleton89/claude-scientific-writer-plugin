@@ -7,7 +7,16 @@
       "Bash(git -C /Users/jeffkiefer/Documents/projects/claude-scientific-writer-plugin status)",
       "Bash(git -C /Users/jeffkiefer/Documents/projects/claude-scientific-writer-plugin status --short)",
       "Bash(git -C /Users/jeffkiefer/Documents/projects/claude-scientific-writer-plugin log --oneline -3)",
-      "Bash(git -C /Users/jeffkiefer/Documents/projects/claude-scientific-writer-plugin push)"
+      "Bash(git -C /Users/jeffkiefer/Documents/projects/claude-scientific-writer-plugin push)",
+      "Bash(git -C /Users/jeffkiefer/Documents/projects/claude-scientific-writer-plugin add README.md CHANGELOG.md skills/QUANTIFICATION_THRESHOLDS.md skills/scientific-writing/SKILL.md skills/venue-templates/REVIEW_AND_IMPROVEMENTS.md)",
+      "Bash(git -C /Users/jeffkiefer/Documents/projects/claude-scientific-writer-plugin commit -m \"$\\(cat <<''EOF''\nrefactor: update cross-references for scholar-evaluation deprecation\n\nComplete Initiative 1, task 1.9: Update all skills referencing the\ndeprecated scholar-evaluation skill to point to peer-review with\nscoring mode.\n\nFiles updated:\n- README.md: Remove scholar-evaluation row, update peer-review desc\n- scientific-writing/SKILL.md: Update Feeds table\n- QUANTIFICATION_THRESHOLDS.md: Update §4 \"Referenced by\" section\n- venue-templates/REVIEW_AND_IMPROVEMENTS.md: Add deprecation notice,\n  update 3 references to use peer-review \\(scoring mode\\)\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git pull:*)",
+      "Bash(paste:*)",
+      "Bash(git -C /Users/jeffkiefer/Documents/projects/claude-scientific-writer-plugin diff --staged --stat)",
+      "Bash(git -C /Users/jeffkiefer/Documents/projects/claude-scientific-writer-plugin diff --stat HEAD)",
+      "Bash(git -C /Users/jeffkiefer/Documents/projects/claude-scientific-writer-plugin add skills/literature-review/SKILL.md skills/visual-design/SKILL.md skills/research-paper-summarizer/SKILL.md CHANGELOG.md)",
+      "Bash(git -C /Users/jeffkiefer/Documents/projects/claude-scientific-writer-plugin commit -m \"$\\(cat <<''EOF''\nfeat: add best practices tests to writing skills\n\nPropagate \"So What?\" and Independence Test principles from\nscientific-writing skill to related content generation skills:\n\n- literature-review: Add significance emphasis to Stage 6 synthesis\n  and Stage 8 document generation\n- visual-design: Add Independence Test to completion checklist with\n  actionable verification guidance\n- research-paper-summarizer: Add Significance Test to markdown\n  summary quality criteria\n\nThese changes ensure consistent best practices terminology across\nthe scientific writing skill ecosystem.\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(pip show:*)"
     ]
   }
 }
