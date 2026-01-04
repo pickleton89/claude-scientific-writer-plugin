@@ -594,5 +594,5 @@ response = requests.get("https://rest.ensembl.org/...")
 
 ---
 
-*Reference document for research-lookup skill bioinformatics queries.*
-*Last updated: 2025-12-27*
+*Reference document for paper-search skill bioinformatics queries.*
+*Last updated: 2026-01-04*

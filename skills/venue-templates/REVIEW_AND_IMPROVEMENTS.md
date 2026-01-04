@@ -384,7 +384,7 @@ The following skills could benefit from venue-templates integration but currentl
 | **scientific-visualization** | Journal figure specs | Already has inline specs - could centralize |
 | **generate-image** | Publication figure requirements | Output quality matching venue needs |
 | **peer-review** (scoring mode) | Reviewer expectations | Venue-specific evaluation criteria |
-| **research-lookup** | Venue context for searches | Target venue when finding literature |
+| **paper-search** | Venue context for searches | Target venue when finding literature |
 | **markitdown** | Formatting preservation | Venue-aware document conversion |
 | **plotting-libraries** | Export specifications | Journal-ready figure export settings |
 | **visual-design** | Venue aesthetic expectations | Brand consistency by publisher |
@@ -502,7 +502,7 @@ For peer-review scoring mode, consult **venue-templates/references/reviewer_expe
 - Recognize venue-appropriate methodologies
 ```
 
-**9. research-lookup → venue-templates**
+**9. paper-search → venue-templates**
 
 ```markdown
 ## Venue-Targeted Literature Search

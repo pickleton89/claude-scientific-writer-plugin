@@ -6,7 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Removed
+- **Phase 7: Cleanup and deprecation completed**
+  - Removed `skills/research-lookup/` directory (replaced by paper-search)
+  - Removed `skills/pubmed-database/` directory (merged into paper-search)
+  - All documentation preserved in paper-search skill
+
 ### Changed
+- **Phase 7: Final cross-reference updates**
+  - Updated `commands/scientific-writer-init.md`: paper-search now featured skill
+  - Updated `skills/statistical-analysis/SKILL.md`: cross-reference to paper-search
+  - Updated `skills/markitdown/SKILL.md`: cross-reference to paper-search
+  - Updated `skills/venue-templates/REVIEW_AND_IMPROVEMENTS.md`: updated integration references
+  - Updated `skills/QUANTIFICATION_THRESHOLDS.md`: §6 now references paper-search
+  - Updated `skills/paper-search/references/bioinformatics_databases.md`: footer attribution
 - **Phase 6: Testing and validation completed**
   - All source modules tested: PubMed (✅), bioRxiv (✅), Semantic Scholar (⚠️ rate-limited without API key), Google Scholar (⚠️ requires `scholarly` library)
   - Unified CLI tested: single source, multi-source, deduplication, output formats (JSON, BibTeX, text)

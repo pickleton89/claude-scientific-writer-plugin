@@ -198,7 +198,7 @@ A literature search is **comprehensive** when ALL criteria are met:
 
 ## §6 Time-Based Thresholds
 
-**Referenced by:** `literature-review`, `research-lookup`
+**Referenced by:** `literature-review`, `paper-search`
 
 ### Literature Recency Definitions
 

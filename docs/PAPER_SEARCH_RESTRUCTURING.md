@@ -853,10 +853,11 @@ User needs research/information support
   - extract_metadata.py: ✅
 - [x] No broken cross-references
 
-### Phase 7: Cleanup
-- [ ] Deprecation notices added
-- [ ] research-lookup removed
-- [ ] pubmed-database removed
+### Phase 7: Cleanup ✅
+- [x] Deprecation notices added (to SKILL.md files before removal)
+- [x] research-lookup removed
+- [x] pubmed-database removed
+- [x] Final cross-reference updates in 6 files
 
 ### Phase 8: Documentation
 - [ ] CHANGELOG.md updated

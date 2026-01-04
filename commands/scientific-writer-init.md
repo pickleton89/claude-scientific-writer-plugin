@@ -85,7 +85,7 @@ After writing the file, provide a brief summary:
 - A deep research and writing tool that combines AI-driven research with well-formatted written outputs
 - Complete scientific writing workflow with real-time literature search and verified citations
 - 17 specialized skills for academic writing:
-  • research-lookup: Real-time literature search
+  • paper-search: Multi-database academic paper search
   • peer-review: Systematic manuscript evaluation
   • citation-management: BibTeX and reference handling
   • scientific-slides: Research presentations
@@ -109,7 +109,7 @@ After writing the file, provide a brief summary:
    - "Generate competing hypotheses for [phenomenon]"
 
 💡 Tips:
-- The research-lookup skill automatically finds real papers and citations
+- The paper-search skill provides direct database access to find papers and citations
 - All documents default to LaTeX format (publication-ready)
 - Peer review is conducted automatically after paper generation
 - You can edit the CLAUDE.md file to customize behavior
@@ -127,7 +127,7 @@ Remind the user:
 - The `CLAUDE.md` file can be opened and edited manually at any time
 - All 19 skills are now available for use in this project
 - They can ask "What skills are available?" to see the full list
-- They can reference specific skills like "@research-lookup" in their prompts
+- They can reference specific skills like "@paper-search" in their prompts
 
 ## Error Handling
 

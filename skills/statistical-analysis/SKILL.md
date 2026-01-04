@@ -347,5 +347,5 @@ Use **plotting-libraries** skill for creating figures. Match visualization to st
 - **plotting-libraries**: Visualizing statistical results—see `<visualization_guidance>` above for test-specific plot recommendations
 - **scientific-writing**: Reporting statistical methods and results in manuscripts
 - **reproducible-research**: Documenting analysis parameters for reproducibility
-- **research-lookup**: Finding appropriate statistical methods in literature
+- **paper-search**: Finding appropriate statistical methods in literature
 </cross_references>
