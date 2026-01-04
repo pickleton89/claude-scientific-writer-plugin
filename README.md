@@ -46,7 +46,7 @@ claude --plugin-dir /path/to/claude-scientific-writer-plugin
 ### Research & Analysis
 | Skill | Description |
 |-------|-------------|
-| `research-lookup` | Literature search and database queries |
+| `paper-search` | Multi-database academic paper search (PubMed, bioRxiv, Semantic Scholar, Google Scholar) |
 | `citation-management` | BibTeX citations and bibliography |
 | `peer-review` | Manuscript review, critique, and quantitative scoring |
 | `statistical-analysis` | Statistical methods and reporting |

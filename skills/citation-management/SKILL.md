@@ -1,14 +1,16 @@
 ---
 name: citation-management
-version: 2.0.0
-description: "Comprehensive citation management for academic research: search databases, extract metadata, validate citations, generate formatted BibTeX entries."
+version: 2.1.0
+description: "Comprehensive citation management for academic research: extract metadata, validate citations, generate formatted BibTeX entries."
 allowed-tools: [Read, Write, Edit, Bash, WebSearch, WebFetch]
 ---
 
 # Citation Management
 
 <overview>
-Systematic citation management throughout the research and writing workflow. Search academic databases (Google Scholar, PubMed), extract accurate metadata from multiple sources (CrossRef, PubMed, arXiv), validate citation information, and generate properly formatted BibTeX entries. Critical for maintaining citation accuracy and ensuring reproducible research.
+Systematic citation management throughout the research and writing workflow. Extract accurate metadata from multiple sources (CrossRef, PubMed, arXiv), validate citation information, and generate properly formatted BibTeX entries. Critical for maintaining citation accuracy and ensuring reproducible research.
+
+> **For paper discovery:** Use the `paper-search` skill to find papers across multiple databases (PubMed, bioRxiv, Semantic Scholar, Google Scholar). This skill focuses on managing citations after papers have been identified.
 </overview>
 
 <setup>
@@ -26,9 +28,9 @@ pip install requests
 | `doi_to_bibtex.py` | Convert DOIs to BibTeX | `python {baseDir}/scripts/doi_to_bibtex.py 10.1038/s41586-021-03819-2` |
 | `extract_metadata.py` | Extract metadata from any identifier | `python {baseDir}/scripts/extract_metadata.py --doi 10.xxxx/xxxxx` |
 | `validate_citations.py` | Validate BibTeX file | `python {baseDir}/scripts/validate_citations.py references.bib` |
-| `search_pubmed.py` | Search PubMed programmatically | `python {baseDir}/scripts/search_pubmed.py "query terms"` |
-| `search_google_scholar.py` | Search Google Scholar | `python {baseDir}/scripts/search_google_scholar.py "query"` |
 | `format_bibtex.py` | Clean and format BibTeX | `python {baseDir}/scripts/format_bibtex.py input.bib -o output.bib` |
+
+> **Note:** For paper searching, use the `paper-search` skill which provides unified search across PubMed, bioRxiv, Semantic Scholar, and Google Scholar.
 
 </setup>
 
@@ -36,7 +38,6 @@ pip install requests
 ## Trigger Conditions
 
 Use this skill when:
-- Searching for papers on Google Scholar or PubMed
 - Converting DOIs, PMIDs, or arXiv IDs to BibTeX
 - Extracting complete metadata for citations
 - Validating existing citations for accuracy
@@ -49,6 +50,7 @@ Use this skill when:
 
 | Task | Recommended Skill |
 |------|-------------------|
+| Finding papers across databases | `paper-search` |
 | Systematic literature review methodology | `literature-review` |
 | Thematic synthesis of findings | `literature-review` |
 | Journal-specific manuscript formatting | `venue-templates` |
@@ -75,51 +77,9 @@ For detailed decision trees on citation style selection, metadata source routing
 <workflow>
 ## Workflow
 
-### Stage 1: Paper Discovery
+> **Prerequisite:** Use `paper-search` to find papers before managing citations. This skill assumes papers have already been identified.
 
-**Progress Milestones:**
-- 25%: Target databases identified
-- 50%: Search query constructed
-- 75%: Searches executed and results exported
-- 100%: Duplicates identified, search documented
-
-**Objective:** Find relevant papers using academic search engines
-
-**Steps:**
-1. Identify target databases based on research domain (see decision matrix)
-2. Construct search query using field-specific syntax
-3. Execute search with appropriate filters (date range, article type)
-4. Export results to structured format (JSON/BibTeX)
-5. Document search strategy for reproducibility
-
-**Exit Criteria:**
-- [ ] Search query documented with date
-- [ ] ≥2 databases searched for comprehensive coverage
-- [ ] Results exported in machine-readable format
-- [ ] Duplicate papers across databases identified
-
-**Google Scholar Query Syntax:**
-```
-"exact phrase"           # Exact matching
-author:lastname          # Author search
-intitle:keyword          # Title search
-source:journal           # Journal filter
--exclude                 # Exclusion
-2020..2024              # Year range
-```
-
-**PubMed Query Syntax:**
-```
-"term"[MeSH]            # MeSH controlled vocabulary
-"term"[Title]           # Title field
-"term"[Author]          # Author field
-AND/OR/NOT              # Boolean operators
-2020:2024[PDAT]         # Publication date range
-```
-
----
-
-### Stage 2: Metadata Extraction
+### Stage 1: Metadata Extraction
 
 **Progress Milestones:**
 - 25%: Identifier types classified
@@ -160,7 +120,7 @@ AND/OR/NOT              # Boolean operators
 
 ---
 
-### Stage 3: BibTeX Generation
+### Stage 2: BibTeX Generation
 
 **Progress Milestones:**
 - 25%: Entry types selected
@@ -234,7 +194,7 @@ Fix any errors before generating the next entry. This prevents error accumulatio
 
 ---
 
-### Stage 4: Validation
+### Stage 3: Validation
 
 **Progress Milestones:**
 - 25%: BibTeX syntax validated
@@ -271,7 +231,7 @@ Fix any errors before generating the next entry. This prevents error accumulatio
 
 ---
 
-### Stage 5: Integration
+### Stage 4: Integration
 
 **Progress Milestones:**
 - 25%: .bib file copied to manuscript directory
@@ -323,7 +283,6 @@ Fix any errors before generating the next entry. This prevents error accumulatio
 ## Scope
 
 **In Scope:**
-- Academic database searching (Google Scholar, PubMed, arXiv)
 - DOI/PMID/arXiv ID to BibTeX conversion
 - Citation metadata extraction and validation
 - BibTeX file formatting and deduplication
@@ -331,6 +290,7 @@ Fix any errors before generating the next entry. This prevents error accumulatio
 - Preprint to published version updating
 
 **Out of Scope** (use specialized resources):
+- Finding papers across databases → use `paper-search`
 - Systematic literature review methodology → use `literature-review`
 - Thematic synthesis of findings → use `literature-review`
 - Journal-specific manuscript formatting → use `venue-templates`
@@ -342,13 +302,13 @@ Fix any errors before generating the next entry. This prevents error accumulatio
 <anti_patterns>
 ## Common Pitfalls
 
-### 1. Single Database Bias
+### 1. Skipping Paper Search
 
 **Anti-pattern:**
-Only searching Google Scholar and missing field-specific databases.
+Manually typing citation metadata or searching databases without using `paper-search`.
 
 **Solution:**
-Search ≥2 databases per research domain. Use PubMed for biomedical, IEEE Xplore for engineering, arXiv for preprints. Document all searches for reproducibility.
+Use `paper-search` to find papers systematically across multiple databases (PubMed, bioRxiv, Semantic Scholar). Export results in BibTeX format for direct import into your bibliography.
 
 ---
 
@@ -462,8 +422,7 @@ For complete templates with examples, see:
 
 | Template | Used In | Purpose |
 |----------|---------|---------|
-| Search Strategy Documentation | Stage 1 | Document searches for reproducibility |
-| Validation Report (JSON) | Stage 4 | Machine-readable validation output |
+| Validation Report (JSON) | Stage 3 | Machine-readable validation output |
 
 </templates>
 
@@ -472,19 +431,19 @@ For complete templates with examples, see:
 
 | Skill | Relationship |
 |-------|-------------|
+| `paper-search` | Use for finding papers across databases (PubMed, bioRxiv, Semantic Scholar, Google Scholar); citation-management handles metadata extraction and validation |
 | `literature-review` | Use for systematic search methodology; citation-management handles technical citation extraction |
 | `venue-templates` | Use for journal-specific formatting after citations are validated |
 | `scientific-writing` | Integrates validated bibliography into manuscript |
-| `research-lookup` | Use for quick fact-checking; citation-management for formal citations |
 
 **Skill Selection:**
 See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 
 **Combined Workflow:**
-1. `literature-review` → systematic multi-database search
-2. `citation-management` → extract and validate all citations
-3. `literature-review` → synthesize findings thematically
-4. `citation-management` → verify final bibliography accuracy
+1. `paper-search` → find papers across multiple databases
+2. `citation-management` → extract metadata and generate BibTeX
+3. `citation-management` → validate all citations
+4. `literature-review` → synthesize findings thematically (if systematic review)
 5. `venue-templates` → format for target journal
 
 </cross_references>
@@ -494,13 +453,13 @@ See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 
 | Document | Purpose |
 |----------|---------|
-| `{baseDir}/references/decision_framework.md` | Citation style, metadata routing, database selection |
-| `{baseDir}/references/output_templates.md` | Search strategy and validation report templates |
-| `{baseDir}/references/google_scholar_search.md` | Complete Google Scholar search guide |
-| `{baseDir}/references/pubmed_search.md` | PubMed and E-utilities API documentation |
+| `{baseDir}/references/decision_framework.md` | Citation style, metadata routing |
+| `{baseDir}/references/output_templates.md` | Validation report templates |
 | `{baseDir}/references/metadata_extraction.md` | Metadata sources and field requirements |
 | `{baseDir}/references/citation_validation.md` | Validation criteria and quality checks |
 | `{baseDir}/references/bibtex_formatting.md` | BibTeX entry types and formatting rules |
+
+> **Search Documentation:** For database search guides (PubMed, Google Scholar, bioRxiv, Semantic Scholar), see the `paper-search` skill.
 
 ### External Resources
 

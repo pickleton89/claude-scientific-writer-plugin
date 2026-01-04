@@ -668,6 +668,25 @@ Add to `skills/pubmed-database/SKILL.md`:
 > See `skills/paper-search/sources/pubmed/` for PubMed-specific documentation.
 ```
 
+#### Step 7.1.1: High-Impact Skill Updates (COMPLETED in Phase 5)
+
+The following high-impact skills were updated to replace `research-lookup` references with `paper-search` during Phase 5 (early completion):
+
+**Already Updated:**
+- ✅ `scientific-writing/SKILL.md` (v2.4.0) - All references updated
+- ✅ `scientific-writing/references/writing_process.md` - Updated
+- ✅ `scientific-slides/SKILL.md` (v2.3.0) - All references updated
+- ✅ `scientific-slides/assets/powerpoint_design_guide.md` - Updated
+- ✅ `research-paper-summarizer/SKILL.md` - Cross-reference updated
+
+**Remaining Files (lower priority, update in Phase 7):**
+- [ ] `commands/scientific-writer-init.md` - Init command mentions
+- [ ] `skills/statistical-analysis/SKILL.md` - Cross-reference only
+- [ ] `skills/markitdown/SKILL.md` - Cross-reference only
+- [ ] `skills/venue-templates/REVIEW_AND_IMPROVEMENTS.md` - Cross-references
+- [ ] `skills/QUANTIFICATION_THRESHOLDS.md` - "Referenced by" list
+- [ ] `skills/paper-search/references/bioinformatics_databases.md` - Footer text
+
 #### Step 7.2: Remove deprecated skills (after validation)
 ```bash
 # Only after all tests pass

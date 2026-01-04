@@ -2,13 +2,13 @@
 name: skill-router
 description: Decision trees for selecting the correct skill when multiple options apply. Consult when task scope is ambiguous or spans multiple scientific writing domains.
 when_to_use: When a user request could be handled by 2+ skills, when unclear which skill is primary vs. supporting, or when planning multi-skill workflows.
-version: 1.4.0
+version: 1.5.0
 ---
 
 # Skill Router
 
 > Decision trees and routing logic for selecting the right skill(s) for scientific writing tasks
-> Version: 1.4.0 | Updated: 2026-01-03
+> Version: 1.5.0 | Updated: 2026-01-04
 
 ---
 
@@ -225,18 +225,20 @@ The `research-posters` skill handles format selection internally. Use the follow
 ```
 User needs research/information support
 │
-├─ Need to FIND information or papers?
+├─ Need to FIND papers?
 │  │
-│  ├─ Quick fact/concept lookup?
-│  │  └─ YES → research-lookup (Perplexity API)
+│  ├─ Quick search (1-20 papers)?
+│  │  └─ YES → paper-search
 │  │            │
-│  │            ├─ Simple query → Sonar Pro
-│  │            └─ Complex/reasoning → Sonar Reasoning Pro
+│  │            ├─ Biomedical topic? → --source pubmed
+│  │            ├─ Need preprints? → --source biorxiv
+│  │            ├─ Cross-domain? → --source semantic
+│  │            └─ Broad coverage? → --source all
 │  │
-│  └─ Systematic literature search?
+│  └─ Systematic literature search (50+ papers)?
 │     └─ YES → literature-review
 │              │
-│              ├─ Database selection by domain
+│              ├─ Uses paper-search for Stage 2
 │              ├─ PRISMA-style screening
 │              └─ Then → citation-management (for references)
 │
@@ -274,8 +276,10 @@ User needs research/information support
 
 | Task | Primary Skill | When to Use |
 |------|---------------|-------------|
-| "Find papers on X" | research-lookup | Quick search, <10 papers |
-| "Comprehensive literature review" | literature-review | Systematic, 50+ papers |
+| "Find papers on X" | paper-search | Quick to medium search, 1-50 papers |
+| "Search PubMed for..." | paper-search | `--source pubmed` |
+| "Find preprints on..." | paper-search | `--source biorxiv` or `--source medrxiv` |
+| "Comprehensive literature review" | literature-review | Systematic, 50+ papers (uses paper-search internally) |
 | "Format my references" | citation-management | BibTeX/citation styling |
 | "Is this paper reliable?" | peer-review | Full Review or Review + Scoring mode |
 | "Score this paper's quality" | peer-review | Scoring Only mode (8-dimension assessment) |
@@ -309,9 +313,9 @@ User wants to summarize or analyze a research paper
 │  └─ YES → literature-review
 │            └─ Then optionally → research-paper-summarizer (for each key paper)
 │
-├─ Is it a quick lookup for citation/abstract only?
+├─ Is it searching for papers to summarize?
 │  │
-│  └─ YES → research-lookup
+│  └─ YES → paper-search (then research-paper-summarizer for each)
 │
 └─ Is it evaluating paper QUALITY (not summarizing)?
    │
@@ -323,7 +327,7 @@ User wants to summarize or analyze a research paper
 | Task | Primary Skill | Output |
 |------|---------------|--------|
 | Deep analysis of single paper | research-paper-summarizer | Markdown + optional visual |
-| Quick abstract/citation lookup | research-lookup | Text response |
+| Find papers on topic | paper-search | JSON/BibTeX results |
 | Systematic review of many papers | literature-review | Review document |
 | Evaluate paper methodology | peer-review | Evaluation report |
 | Summarize paper for presentation | research-paper-summarizer → scientific-slides | Slides |
@@ -616,13 +620,13 @@ User has content ready for final document format
 | Get brand color hex codes | oligon-brand | — |
 | Style matplotlib for brand | oligon-brand | + plotting-libraries |
 | **Research** | | |
-| Quick lookup | research-lookup | — |
-| Systematic review | literature-review | + citation-management |
+| Find papers | paper-search | + citation-management |
+| Systematic review | literature-review | + paper-search, citation-management |
 | Manage citations | citation-management | — |
 | **Paper Analysis** | | |
 | Summarize single paper | research-paper-summarizer | + oligon-brand (for visual outputs) |
-| Quick paper lookup | research-lookup | — |
-| Systematic literature review | literature-review | + citation-management |
+| Find papers to analyze | paper-search | + research-paper-summarizer |
+| Systematic literature review | literature-review | + paper-search, citation-management |
 | **Evaluation** | | |
 | Review manuscript | peer-review | Full Review mode (includes critical analysis) |
 | Score paper quality | peer-review | Scoring Only mode (8-dimension ScholarEval) |
@@ -678,8 +682,8 @@ User has content ready for final document format
 ### Workflow 3: Literature Review Paper
 
 ```
-1. research-lookup        → Initial scoping search
-2. literature-review      → Systematic search & PRISMA
+1. paper-search           → Initial scoping search
+2. literature-review      → Systematic search & PRISMA (uses paper-search)
 3. citation-management    → Organize all references
 4. scientific-writing     → Write review narrative
 5. venue-templates        → Format for target journal
@@ -750,7 +754,7 @@ User has content ready for final document format
            ▼
     ┌─────────────────────────────────────────────────────────────────┐
     │                     SUPPORTING SKILLS                           │
-    │  research-lookup  │  statistical-analysis  │  reproducible-     │
+    │  paper-search     │  statistical-analysis  │  reproducible-     │
     │  peer-review                               │  research          │
     │                                            │  code-documentation│
     └─────────────────────────────────────────────────────────────────┘
@@ -810,7 +814,7 @@ If clarification isn't possible, use these defaults:
 |---------------------|---------------|-----------|
 | Text-heavy, unstructured | `scientific-writing` | General manuscript guidance |
 | Visual but unclear type | `visual-design` | Design philosophy applies broadly |
-| Research/information need | `research-lookup` | Quick scoping before deeper work |
+| Research/information need | `paper-search` | Quick scoping before deeper work |
 | Analysis/statistics | `statistical-analysis` | Covers most quantitative needs |
 | Unknown document format | `venue-templates` | Has format specifications |
 
@@ -841,5 +845,6 @@ Each skill's `<cross_references>` section should include:
 *This router provides deterministic skill selection for the 23-skill scientific writing library (19 top-level + 4 document-skills sub-skills). For threshold values and quality criteria, see `QUANTIFICATION_THRESHOLDS.md`.*
 
 > **Consolidation Notes:**
+> - `research-lookup` has been replaced by `paper-search`. Use `paper-search` for multi-database academic paper search (PubMed, bioRxiv, Semantic Scholar, Google Scholar).
 > - `scholar-evaluation` has been merged into `peer-review` as an optional scoring mode. Use `peer-review` with "Scoring Only" or "Review + Scoring" mode for 8-dimension quantitative assessment.
 > - `latex-posters` and `pptx-posters` have been consolidated into `research-posters`. The unified skill handles format selection (LaTeX or PowerPoint) internally.

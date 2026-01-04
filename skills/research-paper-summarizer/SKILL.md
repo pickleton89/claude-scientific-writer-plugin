@@ -620,7 +620,7 @@ Before delivering any summary, verify compliance with these rules:
 |-------|-------------|
 | `oligon-brand` | **Brand colors** — all visual outputs (HTML, PDF, SVG) use Oligon brand styling |
 | `literature-review` | **Finding papers** — use literature-review to find papers, then summarize key ones |
-| `research-lookup` | **Quick lookup** — for simple queries; use research-paper-summarizer for deep analysis |
+| `paper-search` | **Finding papers** — use paper-search to find papers across databases before summarizing |
 | `peer-review` | **Evaluation vs summary** — peer-review assesses quality; this skill extracts content |
 | `markdown-to-pdf` | **Alternative PDF** — for template-based documents; this skill has specialized figure extraction |
 | `scientific-critical-thinking` | **Analysis framework** — provides structure for the critical analysis sections |

@@ -1,6 +1,6 @@
 ---
 name: scientific-writing
-version: 2.3.0
+version: 2.4.0
 description: "Guides scientific manuscript writing using IMRAD structure, citations (APA/AMA/Vancouver), and reporting guidelines (CONSORT/STROBE/PRISMA). Use when writing research papers, journal submissions, abstracts, or scientific documents requiring structured prose with proper citations."
 allowed-tools: Read, Write, Edit, Bash
 quantification-reference: "../QUANTIFICATION_THRESHOLDS.md"
@@ -21,11 +21,11 @@ when_to_use: |
 
 ## Overview
 
-**This is the core skill for the deep research and writing tool**—combining AI-driven deep research with well-formatted written outputs. Every document produced is backed by comprehensive literature search and verified citations through the research-lookup skill.
+**This is the core skill for the deep research and writing tool**—combining AI-driven deep research with well-formatted written outputs. Every document produced is backed by comprehensive literature search and verified citations through the `paper-search` and `citation-management` skills.
 
 Scientific writing is a process for communicating research with precision and clarity. Write manuscripts using IMRAD structure, citations (APA/AMA/Vancouver), figures/tables, and reporting guidelines (CONSORT/STROBE/PRISMA). Apply this skill for research papers and journal submissions.
 
-**Critical Principle: Always write in full paragraphs with flowing prose. Never submit bullet points in the final manuscript.** Use a two-stage process: first create section outlines with key points using research-lookup, then convert those outlines into complete paragraphs.
+**Critical Principle: Always write in full paragraphs with flowing prose. Never submit bullet points in the final manuscript.** Use a two-stage process: first create section outlines with key points using `paper-search`, then convert those outlines into complete paragraphs.
 
 ## Prerequisites
 
@@ -33,7 +33,8 @@ Scientific writing is a process for communicating research with precision and cl
 
 | Skill | Purpose | When Needed |
 |-------|---------|-------------|
-| `research-lookup` | Literature search and citation retrieval | Stage 1 (outline creation), Introduction, Discussion |
+| `paper-search` | Literature search across multiple databases | Stage 1 (outline creation), Introduction, Discussion |
+| `citation-management` | Citation retrieval and BibTeX formatting | All sections with citations |
 | `statistical-analysis` | Test selection and statistical reporting | Methods and Results sections |
 
 ### Validation Scripts
@@ -240,7 +241,7 @@ Apply fundamental scientific writing principles. For detailed guidance, refer to
 Use the two-stage writing process:
 
 **Stage 1: Create Section Outlines**
-- Use research-lookup to gather relevant literature
+- Use `paper-search` to gather relevant literature
 - Create structured outlines with bullet points marking main arguments, key studies, data points
 - These bullets are scaffolding, NOT the final manuscript
 
@@ -289,7 +290,7 @@ Common failure scenarios and how to resolve them:
 | **Literature search returns no results** | Empty citation list, unable to support claims | Broaden search terms, try synonyms, check alternative databases (PubMed, Scopus, Google Scholar). If topic is truly novel, state this explicitly and cite foundational work. |
 | **Conflicting reporting guidelines** | Study crosses categories (e.g., observational + interventional) | Use primary guideline for main study type, incorporate relevant items from secondary guidelines, document in Methods which guidelines were followed. |
 | **Word count exceeds journal limit** | Section totals exceed target | Run `validate_writing_quality.py` to identify verbose passages. Prioritize cutting: redundant citations, over-explained methods, tangential discussion points. Move details to supplementary materials. |
-| **Citation count below minimum** | `count_citations.py` reports LOW status | Return to research-lookup for additional sources. Focus on: recent review articles, seminal papers, methodological references. Verify you haven't missed citing relevant work. |
+| **Citation count below minimum** | `count_citations.py` reports LOW status | Return to `paper-search` for additional sources. Focus on: recent review articles, seminal papers, methodological references. Verify you haven't missed citing relevant work. |
 | **Readability score too high (>16)** | `readability_score.py` reports TOO_COMPLEX | Break compound sentences, replace jargon with simpler terms where precision allows, add transitional phrases. Target: 1 idea per sentence. |
 | **Mixed tense throughout manuscript** | Reviewer feedback on inconsistent tense | Methods/Results: past tense ("We measured..."). Introduction/Discussion: present for established facts ("Cancer is..."), past for specific studies ("Smith found..."). |
 | **Figures rejected by journal** | Resolution/format/size errors | Check journal guidelines for DPI (typically 300+), format (TIFF/EPS preferred), dimensions. Use vector formats (PDF/SVG) when possible. |
@@ -343,7 +344,8 @@ Run three tests before submission:
 
 | Skill | Relationship |
 |-------|-------------|
-| `research-lookup` | Literature search and citation finding |
+| `paper-search` | Literature search across multiple databases (PubMed, bioRxiv, Semantic Scholar) |
+| `citation-management` | Citation retrieval and BibTeX formatting |
 | `hypothesis-generation` | Research hypotheses that drive narrative |
 | `literature-review` | Synthesized background for Introduction and Discussion |
 | `statistical-analysis` | Test selection, statistical reporting in Methods, interpreting results |

@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- **Phase 5: Existing skill updates for paper-search integration**
+  - **citation-management/SKILL.md** (v2.0.0 → v2.1.0): Removed Stage 1 (Paper Discovery), renumbered stages, updated cross-references to use `paper-search`
+  - **literature-review/SKILL.md**: Updated Stage 2 with paper-search CLI examples, updated cross-references table
+  - **SKILL_ROUTER.md** (v1.4.0 → v1.5.0): Updated all routing tables, decision trees, and added consolidation note about research-lookup deprecation
+  - **scientific-writing/SKILL.md** (v2.3.0 → v2.4.0): Updated 6 references from research-lookup to paper-search
+  - **scientific-writing/references/writing_process.md**: Updated paper search integration section
+  - **scientific-slides/SKILL.md** (v2.2.0 → v2.3.0): Updated workflow Stage 1, anti-patterns, and cross-references
+  - **scientific-slides/assets/powerpoint_design_guide.md**: Updated research context best practices
+  - **research-paper-summarizer/SKILL.md**: Updated cross-reference to paper-search
+  - **README.md**: Updated skills table (research-lookup → paper-search)
+  - **docs/PAPER_SEARCH_RESTRUCTURING.md**: Added Step 7.1.1 documenting completed updates and remaining files
+
+### Removed
+- **literature-review/scripts/search_databases.py**: Deprecated script removed (functionality now in paper-search)
+
 ### Added
 - **skills/paper-search/SKILL.md**: Phase 4 implementation - main skill documentation
   - Complete skill definition following project SKILL.md conventions

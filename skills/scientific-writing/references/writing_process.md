@@ -15,7 +15,7 @@ Scientific papers must be written in complete, flowing prose. Use this two-stage
 
 When starting a new section:
 
-1. Use the research-lookup skill to gather relevant literature and data
+1. Use the `paper-search` skill to gather relevant literature and data
 2. Create a structured outline with bullet points marking:
    - Main arguments or findings to present
    - Key studies to cite
@@ -115,11 +115,11 @@ Lists may appear in scientific papers only in specific contexts:
 
 ---
 
-## Integration with Research Lookup
+## Integration with Paper Search
 
-The research-lookup skill is essential for Stage 1 (creating outlines):
+The `paper-search` skill is essential for Stage 1 (creating outlines):
 
-1. Search for relevant papers using research-lookup
+1. Search for relevant papers using `paper-search`
 2. Extract key findings, methods, and data
 3. Organize findings as bullet points in your outline
 4. Then convert the outline to full paragraphs in Stage 2

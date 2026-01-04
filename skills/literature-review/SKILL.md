@@ -39,14 +39,18 @@ This skill includes automation scripts in `{baseDir}/scripts/`:
 
 | Script | Purpose | Usage |
 |--------|---------|-------|
-| `search_databases.py` | Automated database querying | `python {baseDir}/scripts/search_databases.py --query "terms" --databases pubmed,scopus` |
 | `verify_citations.py` | DOI verification and metadata check | `python {baseDir}/scripts/verify_citations.py --input references.bib` |
 | `generate_pdf.py` | Convert markdown to formatted PDF | `python {baseDir}/scripts/generate_pdf.py --input review.md --style apa` |
 
+> **For database searching:** Use the `paper-search` skill which provides unified multi-database search:
+> ```bash
+> python ../paper-search/scripts/search.py "query" --source pubmed,biorxiv,semantic
+> ```
+
 **Example Workflow:**
 ```bash
-# 1. Run database searches
-python {baseDir}/scripts/search_databases.py --query "machine learning AND healthcare" --output results.json
+# 1. Run database searches (using paper-search skill)
+python ../paper-search/scripts/search.py "machine learning AND healthcare" --source pubmed,semantic --output results.json
 
 # 2. After writing review, verify all citations
 python {baseDir}/scripts/verify_citations.py --input my_review.md --output verification_report.txt
@@ -68,8 +72,8 @@ Use this skill when:
 - Identifying research gaps and future directions
 
 Do NOT use this skill when:
-- Looking up a single paper or citation → use `research-lookup`
-- Searching a single database for quick reference → use `research-lookup`
+- Looking up a single paper or citation → use `paper-search`
+- Searching a single database for quick reference → use `paper-search`
 - Formatting existing citations → use `citation-management`
 - Creating figures for the review → use `scientific-schematics` or `plotting-libraries`
 </when_to_use>
@@ -137,6 +141,8 @@ Do NOT use this skill when:
 
 **Objective:** Execute documented database searches meeting coverage thresholds (≥3 databases, <5% new papers in final iteration)
 
+> **Tool:** Use the `paper-search` skill for multi-database searching. It provides unified access to PubMed, bioRxiv, Semantic Scholar, and Google Scholar.
+
 **Steps:**
 1. Construct search strings for each database:
    ```
@@ -147,17 +153,30 @@ Do NOT use this skill when:
    Concept 3 terms: (term3 OR synonym5)
    ```
 
-2. Execute searches and document:
+2. Execute searches using `paper-search` and document:
+   ```bash
+   # PubMed search
+   python ../paper-search/scripts/search.py "your query" \
+     --source pubmed --max 100 --output pubmed_results.json
+
+   # bioRxiv preprint search
+   python ../paper-search/scripts/search.py "your query" \
+     --source biorxiv --max 50 --output biorxiv_results.json
+
+   # Multi-source comprehensive search
+   python ../paper-search/scripts/search.py "your query" \
+     --source pubmed,biorxiv,semantic --max 50 --output combined_results.json
+   ```
 
 | Database | Date Searched | Search String | Results |
 |----------|--------------|---------------|---------|
 | PubMed | YYYY-MM-DD | [full query] | N papers |
-| Scopus | YYYY-MM-DD | [full query] | N papers |
-| ... | ... | ... | ... |
+| bioRxiv | YYYY-MM-DD | [full query] | N papers |
+| Semantic Scholar | YYYY-MM-DD | [full query] | N papers |
 
-3. Export results in structured format (RIS, BibTeX, JSON)
+3. Export results in structured format (JSON, BibTeX)
 4. Search citation networks:
-   - Forward citations: Papers citing key papers
+   - Forward citations: Papers citing key papers (use `--source semantic` with paper ID)
    - Backward citations: References from included papers
 5. Search grey literature if appropriate (theses, reports, preprints)
 
@@ -408,7 +427,7 @@ Do NOT use this skill when:
 
 **Out of Scope** (use specialized resources):
 - Meta-analysis statistical calculations → use `statistical-analysis`
-- Single paper lookups → use `research-lookup`
+- Single paper lookups → use `paper-search`
 - Citation formatting only → use `citation-management`
 - Figure creation → use `plotting-libraries` or `scientific-schematics`
 - Full-text retrieval → manual or institutional access
@@ -457,7 +476,7 @@ Identification → Screening → Eligibility → Included
 
 | Skill | Relationship |
 |-------|-------------|
-| `research-lookup` | Use for single paper lookups and quick searches |
+| `paper-search` | Use for multi-database searching in Stage 2 (PubMed, bioRxiv, Semantic Scholar, Google Scholar) |
 | `citation-management` | Use for citation formatting after extraction |
 | `scientific-schematics` | Generate PRISMA diagrams and synthesis figures |
 | `plotting-libraries` | Create forest plots and summary visualizations |
