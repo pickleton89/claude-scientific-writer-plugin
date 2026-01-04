@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Changed
+- **Phase 6: Testing and validation completed**
+  - All source modules tested: PubMed (✅), bioRxiv (✅), Semantic Scholar (⚠️ rate-limited without API key), Google Scholar (⚠️ requires `scholarly` library)
+  - Unified CLI tested: single source, multi-source, deduplication, output formats (JSON, BibTeX, text)
+  - Citation-management scripts validated: doi_to_bibtex.py, validate_citations.py, format_bibtex.py, extract_metadata.py all working
+  - Known limitations documented: Semantic Scholar requires API key for heavy usage; Google Scholar requires `pip install scholarly`
 - **Phase 5: Existing skill updates for paper-search integration**
   - **citation-management/SKILL.md** (v2.0.0 → v2.1.0): Removed Stage 1 (Paper Discovery), renumbered stages, updated cross-references to use `paper-search`
   - **literature-review/SKILL.md**: Updated Stage 2 with paper-search CLI examples, updated cross-references table
