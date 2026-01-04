@@ -7,6 +7,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/paper-search/**: Phase 1 implementation - directory structure and file migrations
+  - Created source modules: `pubmed/`, `biorxiv/`, `semantic_scholar/`, `google_scholar/`
+  - Migrated PubMed search script and documentation from `citation-management`
+  - Migrated Google Scholar search script and documentation from `citation-management`
+  - Copied PubMed API references from `pubmed-database` (api_reference.md, search_syntax.md, common_queries.md)
+  - Copied bioinformatics_databases.md reference from `research-lookup`
+
+### Changed
+- **citation-management**: Removed search functionality (moved to paper-search)
+  - Removed `scripts/search_pubmed.py` → now at `paper-search/sources/pubmed/search.py`
+  - Removed `scripts/search_google_scholar.py` → now at `paper-search/sources/google_scholar/search.py`
+  - Removed `references/pubmed_search.md` and `references/google_scholar_search.md`
+  - Retained validation/formatting scripts: doi_to_bibtex.py, validate_citations.py, extract_metadata.py, format_bibtex.py
+
+### Added
 - **docs/PAPER_SEARCH_RESTRUCTURING.md**: Comprehensive restructuring plan for research skills
   - Decision to consolidate `research-lookup`, `citation-management`, and `pubmed-database` into two skills
   - New `paper-search` skill: unified multi-database academic literature search (PubMed, bioRxiv, Semantic Scholar, Google Scholar)
