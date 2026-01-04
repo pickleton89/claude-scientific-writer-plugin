@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/paper-search/SKILL.md**: Phase 4 implementation - main skill documentation
+  - Complete skill definition following project SKILL.md conventions
+  - YAML frontmatter (name, version, description, when_to_use, allowed-tools)
+  - Prerequisites with Python dependencies and optional API keys
+  - Unified CLI documentation with all options and examples
+  - Database selection matrix by research domain
+  - 3-stage workflow (Define Strategy → Execute Search → Export Results)
+  - Usage examples covering common patterns (reviews, preprints, citations, multi-source)
+  - Cross-references to source-specific documentation and related skills
+  - Integration guidance for literature-review and citation-management workflows
 - **skills/paper-search/**: Phase 3 implementation - unified search interface
   - **scripts/search.py**: Unified CLI for multi-database academic paper search
     - Routes to all sources: pubmed, biorxiv, medrxiv, semantic, scholar
