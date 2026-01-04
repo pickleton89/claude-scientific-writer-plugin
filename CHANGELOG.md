@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - All documentation preserved in paper-search skill
 
 ### Changed
+- **Phase 8: Paper-search restructuring complete** - All 8 phases implemented, `docs/PAPER_SEARCH_RESTRUCTURING.md` marked complete
 - **Phase 7: Final cross-reference updates**
   - Updated `commands/scientific-writer-init.md`: paper-search now featured skill
   - Updated `skills/statistical-analysis/SKILL.md`: cross-reference to paper-search
