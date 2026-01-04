@@ -7,6 +7,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/paper-search/**: Phase 3 implementation - unified search interface
+  - **scripts/search.py**: Unified CLI for multi-database academic paper search
+    - Routes to all sources: pubmed, biorxiv, medrxiv, semantic, scholar
+    - Multi-source search with `--source pubmed,semantic,biorxiv`
+    - Automatic DOI-based deduplication across sources
+    - Output formats: JSON, BibTeX, human-readable text
+    - Date normalization across database-specific formats
+    - Source-specific filters: `--type` (PubMed), `--fields`/`--min-citations` (Semantic Scholar)
+  - **references/database_selection.md**: Database selection decision guide
+    - Quick decision matrix by research domain
+    - Database profiles with strengths/limitations
+    - Multi-source search strategies
+    - Rate limits and API key recommendations
+  - **references/query_best_practices.md**: Query construction guide
+    - Core principles (broad-to-narrow, synonyms, Boolean operators)
+    - Database-specific syntax examples
+    - Common patterns (reviews, recent papers, highly-cited, author search)
+    - Query templates for systematic reviews, tech assessments, grants
 - **skills/paper-search/**: Phase 2 implementation - new source modules
   - **sources/biorxiv/search.py**: bioRxiv/medRxiv API client with preprint search
     - Support for both bioRxiv and medRxiv servers
