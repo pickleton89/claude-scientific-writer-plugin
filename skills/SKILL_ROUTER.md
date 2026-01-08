@@ -846,5 +846,5 @@ Each skill's `<cross_references>` section should include:
 
 > **Consolidation Notes:**
 > - `research-lookup` has been replaced by `paper-search`. Use `paper-search` for multi-database academic paper search (PubMed, bioRxiv, Semantic Scholar, Google Scholar).
-> - `scholar-evaluation` has been merged into `peer-review` as an optional scoring mode. Use `peer-review` with "Scoring Only" or "Review + Scoring" mode for 8-dimension quantitative assessment.
-> - `latex-posters` and `pptx-posters` have been consolidated into `research-posters`. The unified skill handles format selection (LaTeX or PowerPoint) internally.
+> - `scholar-evaluation` has been merged into `peer-review` as an optional scoring mode. Use `peer-review` with "Scoring Only" or "Review + Scoring" mode for 8-dimension quantitative assessment. *(Archived to `docs/archive/scholar-evaluation/`)*
+> - `latex-posters` and `pptx-posters` have been consolidated into `research-posters`. The unified skill handles format selection (LaTeX or PowerPoint) internally. *(Archived to `docs/archive/`)*
