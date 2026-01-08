@@ -7,6 +7,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/hypothesis-generation/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
+  - Executive summary: ~55-60% current determinism, targeting 85% (25-30% variance reduction)
+  - Key insight: Well-documented with excellent workflow structure (8 stages), quantified thresholds (≥40 citations, <5% search saturation, quality scores ≥5/10); variance exists because thresholds are stated but never validated—missing validation layer transforms aspirational into enforced requirements
+  - 3-phase implementation plan with complete Python code:
+    - Phase 1: Critical validation (`validate_input.py`, `validate_hypothesis.py`, `track_citations.py`)
+    - Phase 2: Quality automation (`score_hypothesis.py`, `check_distinctiveness.py`)
+    - Phase 3: Workflow validation (`validate_stage_exit.py`, `latex_preflight.py`)
+  - Ready-to-implement modules with complete code for all 7 validation scripts
+  - Structured input schema with domain enum (biomedical, chemistry, physics, ecology, materials, computational, neuroscience, engineering)
+  - Hypothesis structure validator enforcing mechanism (trigger/pathway/outcome/causal_chain), evidence (≥3 citations), assumptions (≥2), and predictions (≥2 with falsification criteria)
+  - Automated quality scorer calculating testability, falsifiability, parsimony scores deterministically; flags explanatory_power and distinctiveness for LLM review
+  - Citation tracker validating ≥40 total, ≥10 main text, ≥60% recent papers thresholds
+  - Hypothesis distinctiveness checker using mechanism term overlap (Jaccard similarity <0.4 threshold)
+  - Stage exit validators for stages 1, 2, 4, 5, 7 checking all exit criteria before progression
+  - LaTeX preflight checker validating required environments, sections, appendices, bibliography, and page break placement
+  - Calibration examples: strong hypothesis (9/10) vs weak hypothesis (2/10) with detailed scoring rationale
+  - Detection patterns: domain classification keywords, strong/weak prediction markers
+  - Deterministic scorecard: Input validation 30%→85%, Hypothesis structure 50%→95%, Citation tracking 20%→95%
+  - Priority matrix: validate_input (P0), validate_hypothesis (P0), track_citations (P0), score_hypothesis (P1)
+  - Success metrics: overall determinism 55-60%→70%→80%→85% across three phases
+
 - **skills/literature-review/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
   - Executive summary: ~75% current determinism, targeting 90% (15% variance reduction)
   - Key insight: Remarkably well-structured with excellent reference documentation, explicit numerical thresholds, decision matrices, and two working Python scripts (verify_citations.py, generate_pdf.py); remaining variance is in unvalidated inputs, unstandardized intermediate outputs, and subjective processes (theme identification)
