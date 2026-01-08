@@ -1,0 +1,155 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "power_analysis.json",
+  "title": "Power Analysis Input",
+  "description": "Schema for structured input to the power analysis calculator. Exactly one of effect_size, power, or n_per_group must be null to be calculated.",
+  "type": "object",
+  "required": ["test_type"],
+  "properties": {
+    "test_type": {
+      "type": "string",
+      "enum": [
+        "t_test",
+        "paired_t_test",
+        "one_sample_t",
+        "anova",
+        "correlation",
+        "chi_square",
+        "proportion"
+      ],
+      "description": "Type of statistical test for power analysis"
+    },
+    "effect_size": {
+      "type": ["number", "null"],
+      "exclusiveMinimum": 0,
+      "description": "Expected effect size. The metric depends on test_type: Cohen's d for t-tests, Cohen's f for ANOVA, r for correlation, Cohen's w for chi-square, Cohen's h for proportions."
+    },
+    "alpha": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "exclusiveMaximum": 1,
+      "default": 0.05,
+      "description": "Significance level (Type I error rate)"
+    },
+    "power": {
+      "type": ["number", "null"],
+      "exclusiveMinimum": 0,
+      "exclusiveMaximum": 1,
+      "description": "Desired statistical power (1 - Type II error rate). Typically 0.8 or 0.9."
+    },
+    "n_per_group": {
+      "type": ["integer", "null"],
+      "minimum": 2,
+      "description": "Sample size per group"
+    },
+    "n_groups": {
+      "type": "integer",
+      "minimum": 2,
+      "default": 2,
+      "description": "Number of groups (required for ANOVA)"
+    },
+    "df": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Degrees of freedom (required for chi_square test)"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "test_type": { "const": "anova" }
+        }
+      },
+      "then": {
+        "required": ["n_groups"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "test_type": { "const": "chi_square" }
+        }
+      },
+      "then": {
+        "required": ["df"]
+      }
+    }
+  ],
+  "definitions": {
+    "effect_size_conventions": {
+      "t_test": {
+        "metric": "Cohen's d",
+        "small": 0.2,
+        "medium": 0.5,
+        "large": 0.8
+      },
+      "paired_t_test": {
+        "metric": "Cohen's d (paired)",
+        "small": 0.2,
+        "medium": 0.5,
+        "large": 0.8
+      },
+      "anova": {
+        "metric": "Cohen's f",
+        "small": 0.1,
+        "medium": 0.25,
+        "large": 0.4
+      },
+      "correlation": {
+        "metric": "Pearson's r",
+        "small": 0.1,
+        "medium": 0.3,
+        "large": 0.5
+      },
+      "chi_square": {
+        "metric": "Cohen's w",
+        "small": 0.1,
+        "medium": 0.3,
+        "large": 0.5
+      },
+      "proportion": {
+        "metric": "Cohen's h",
+        "small": 0.2,
+        "medium": 0.5,
+        "large": 0.8
+      }
+    }
+  },
+  "examples": [
+    {
+      "test_type": "t_test",
+      "effect_size": 0.5,
+      "power": 0.8,
+      "n_per_group": null,
+      "alpha": 0.05
+    },
+    {
+      "test_type": "t_test",
+      "effect_size": 0.5,
+      "power": null,
+      "n_per_group": 30,
+      "alpha": 0.05
+    },
+    {
+      "test_type": "anova",
+      "effect_size": 0.25,
+      "power": 0.8,
+      "n_per_group": null,
+      "n_groups": 3
+    },
+    {
+      "test_type": "correlation",
+      "effect_size": 0.3,
+      "power": 0.8,
+      "n_per_group": null
+    },
+    {
+      "test_type": "chi_square",
+      "effect_size": 0.3,
+      "power": 0.8,
+      "n_per_group": null,
+      "df": 2
+    }
+  ]
+}

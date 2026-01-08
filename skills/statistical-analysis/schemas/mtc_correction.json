@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mtc_correction.json",
+  "title": "Multiple Testing Correction Input",
+  "description": "Schema for structured input to the multiple testing correction utility",
+  "type": "object",
+  "required": ["pvalues"],
+  "properties": {
+    "pvalues": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "minItems": 1,
+      "description": "Array of raw p-values from statistical tests"
+    },
+    "method": {
+      "type": "string",
+      "enum": [
+        "bh_fdr",
+        "bonferroni",
+        "holm",
+        "hochberg",
+        "by_fdr",
+        "sidak",
+        "holm_sidak",
+        "fdr_tsbh",
+        "fdr_tsbky"
+      ],
+      "default": "bh_fdr",
+      "description": "Correction method to apply"
+    },
+    "alpha": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "exclusiveMaximum": 1,
+      "default": 0.05,
+      "description": "Significance threshold"
+    }
+  },
+  "definitions": {
+    "methods": {
+      "bh_fdr": {
+        "description": "Benjamini-Hochberg FDR - Controls false discovery rate. Recommended for discovery/screening studies.",
+        "controls": "FDR",
+        "conservative": false
+      },
+      "bonferroni": {
+        "description": "Bonferroni correction - Controls family-wise error rate. Very conservative, for confirmatory studies.",
+        "controls": "FWER",
+        "conservative": true
+      },
+      "holm": {
+        "description": "Holm-Bonferroni step-down - Controls FWER, less conservative than Bonferroni.",
+        "controls": "FWER",
+        "conservative": true
+      },
+      "hochberg": {
+        "description": "Hochberg step-up - Controls FWER, requires independence assumption.",
+        "controls": "FWER",
+        "conservative": true
+      },
+      "by_fdr": {
+        "description": "Benjamini-Yekutieli FDR - Controls FDR under arbitrary dependence. More conservative than BH.",
+        "controls": "FDR",
+        "conservative": false
+      },
+      "sidak": {
+        "description": "Sidak correction - Slightly less conservative than Bonferroni, assumes independence.",
+        "controls": "FWER",
+        "conservative": true
+      },
+      "holm_sidak": {
+        "description": "Holm-Sidak step-down - Assumes independence.",
+        "controls": "FWER",
+        "conservative": true
+      },
+      "fdr_tsbh": {
+        "description": "Two-stage Benjamini-Hochberg - Adaptive FDR control, can be more powerful.",
+        "controls": "FDR",
+        "conservative": false
+      },
+      "fdr_tsbky": {
+        "description": "Two-stage Benjamini-Krieger-Yekutieli - Adaptive FDR with improved power for small effects.",
+        "controls": "FDR",
+        "conservative": false
+      }
+    }
+  },
+  "examples": [
+    {
+      "pvalues": [0.001, 0.01, 0.02, 0.04, 0.05, 0.10, 0.50],
+      "method": "bh_fdr",
+      "alpha": 0.05
+    },
+    {
+      "pvalues": [0.001, 0.003, 0.007, 0.02],
+      "method": "bonferroni",
+      "alpha": 0.05
+    },
+    {
+      "pvalues": [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.02, 0.05],
+      "method": "holm"
+    }
+  ]
+}

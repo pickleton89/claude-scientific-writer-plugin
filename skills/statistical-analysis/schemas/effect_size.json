@@ -1,0 +1,123 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "effect_size.json",
+  "title": "Effect Size Interpretation Input",
+  "description": "Schema for structured input to the effect size interpreter",
+  "type": "object",
+  "required": ["value", "metric"],
+  "properties": {
+    "value": {
+      "type": "number",
+      "description": "The effect size value to interpret"
+    },
+    "metric": {
+      "type": "string",
+      "enum": [
+        "cohens_d",
+        "hedges_g",
+        "pearsons_r",
+        "spearmans_rho",
+        "eta_squared",
+        "partial_eta_squared",
+        "omega_squared",
+        "r_squared",
+        "odds_ratio",
+        "risk_ratio",
+        "hazard_ratio",
+        "cramers_v",
+        "phi",
+        "log2_fold_change",
+        "cohens_h",
+        "number_needed_to_treat"
+      ],
+      "description": "Type of effect size metric"
+    }
+  },
+  "definitions": {
+    "metric_details": {
+      "cohens_d": {
+        "name": "Cohen's d",
+        "description": "Standardized mean difference",
+        "range": "(-inf, +inf)",
+        "thresholds": {
+          "negligible": "<0.01",
+          "very_small": "0.01-0.20",
+          "small": "0.20-0.50",
+          "medium": "0.50-0.80",
+          "large": "0.80-1.20",
+          "very_large": "1.20-2.00",
+          "huge": ">2.00"
+        }
+      },
+      "pearsons_r": {
+        "name": "Pearson's r",
+        "description": "Linear correlation coefficient",
+        "range": "[-1, 1]",
+        "thresholds": {
+          "negligible": "<0.10",
+          "weak": "0.10-0.30",
+          "moderate": "0.30-0.50",
+          "strong": "0.50-0.70",
+          "very_strong": ">0.70"
+        }
+      },
+      "eta_squared": {
+        "name": "Eta-squared",
+        "description": "Proportion of variance explained (ANOVA)",
+        "range": "[0, 1]",
+        "thresholds": {
+          "negligible": "<0.01",
+          "small": "0.01-0.06",
+          "medium": "0.06-0.14",
+          "large": ">0.14"
+        }
+      },
+      "odds_ratio": {
+        "name": "Odds ratio",
+        "description": "Ratio of odds between groups",
+        "range": "(0, +inf)",
+        "thresholds": {
+          "negligible": "<1.5",
+          "small": "1.5-2.5",
+          "medium": "2.5-4.0",
+          "large": "4.0-10.0",
+          "very_large": ">10.0"
+        }
+      },
+      "log2_fold_change": {
+        "name": "Log2 fold change",
+        "description": "Relative expression change (gene expression)",
+        "range": "(-inf, +inf)",
+        "thresholds": {
+          "negligible": "<0.5",
+          "small": "0.5-1.0",
+          "medium": "1.0-2.0",
+          "large": "2.0-3.0",
+          "very_large": ">3.0"
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "value": 0.65,
+      "metric": "cohens_d"
+    },
+    {
+      "value": -0.42,
+      "metric": "pearsons_r"
+    },
+    {
+      "value": 3.5,
+      "metric": "odds_ratio"
+    },
+    {
+      "value": -1.5,
+      "metric": "log2_fold_change"
+    },
+    {
+      "value": 0.12,
+      "metric": "eta_squared"
+    }
+  ]
+}

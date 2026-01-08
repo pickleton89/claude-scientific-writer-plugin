@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "test_selection.json",
+  "title": "Statistical Test Selection Input",
+  "description": "Schema for structured input to the deterministic test selector",
+  "type": "object",
+  "required": ["outcome_type", "design", "n_groups"],
+  "properties": {
+    "outcome_type": {
+      "type": "string",
+      "enum": ["continuous", "categorical", "ordinal", "count", "time_to_event", "proportion"],
+      "description": "Type of outcome variable being analyzed"
+    },
+    "distribution": {
+      "type": "string",
+      "enum": ["normal", "non_normal", "unknown"],
+      "description": "Distribution characteristics of the data. Required for continuous/ordinal outcomes."
+    },
+    "design": {
+      "type": "string",
+      "enum": ["independent", "paired", "repeated_measures"],
+      "description": "Study design type"
+    },
+    "n_groups": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of groups being compared"
+    },
+    "variance_equal": {
+      "type": ["boolean", "null"],
+      "description": "Whether variances are equal across groups (for parametric tests). Null if unknown."
+    },
+    "expected_counts_sufficient": {
+      "type": "boolean",
+      "default": true,
+      "description": "For categorical data, whether expected cell counts >= 5"
+    },
+    "sample_size_adequate": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether sample size is adequate for the test (n >= 30 for CLT)"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "outcome_type": { "const": "continuous" }
+        }
+      },
+      "then": {
+        "required": ["distribution"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "outcome_type": { "const": "ordinal" }
+        }
+      },
+      "then": {
+        "required": ["distribution"]
+      }
+    }
+  ],
+  "examples": [
+    {
+      "outcome_type": "continuous",
+      "distribution": "normal",
+      "design": "independent",
+      "n_groups": 2,
+      "variance_equal": false
+    },
+    {
+      "outcome_type": "continuous",
+      "distribution": "non_normal",
+      "design": "paired",
+      "n_groups": 2
+    },
+    {
+      "outcome_type": "categorical",
+      "design": "independent",
+      "n_groups": 2,
+      "expected_counts_sufficient": false
+    },
+    {
+      "outcome_type": "continuous",
+      "distribution": "normal",
+      "design": "independent",
+      "n_groups": 3,
+      "variance_equal": true
+    },
+    {
+      "outcome_type": "time_to_event",
+      "design": "independent",
+      "n_groups": 2
+    }
+  ]
+}

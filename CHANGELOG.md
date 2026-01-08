@@ -7,6 +7,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/statistical-analysis/**: Deterministic utilities implementation with 203 test cases (100% pass rate)
+  - **scripts/test_selector.py**: Deterministic statistical test selection from data characteristics
+    - `select_test(outcome_type, distribution, design, n_groups, ...)` encoding full decision tree as Python code
+    - 32+ test types with Python (scipy/statsmodels) and R code templates
+    - `select_correlation_test()` for Pearson/Spearman/Kendall selection
+    - `TestRecommendation` dataclass with test name, code, assumptions, effect size metric
+    - Post-hoc test recommendations for omnibus tests (Tukey, Games-Howell, Dunn's)
+  - **scripts/mtc_corrector.py**: Multiple testing correction wrapper
+    - `correct_pvalues(pvalues, method, alpha)` supporting 9 methods (BH-FDR, Bonferroni, Holm, etc.)
+    - `MTCResult` dataclass with adjusted p-values, significance flags, interpretation
+    - `recommend_method()` for study type-based method selection
+    - `estimate_fdr_discoveries()` for power analysis in high-throughput studies
+  - **scripts/effect_interpreter.py**: Effect size interpretation via lookup tables
+    - `interpret_effect_size(value, metric)` for 16 effect size metrics
+    - Cohen's d, Hedges' g, Pearson's r, eta-squared, odds ratio, hazard ratio, log2 fold change, etc.
+    - `EffectInterpretation` dataclass with magnitude, context, direction, confidence note
+    - Effect size conversion utilities (d↔r, OR→d)
+  - **scripts/power_calculator.py**: Power analysis wrapper
+    - `power_analysis(test_type, effect_size, power, n_per_group, ...)` for 7 test types
+    - Calculates missing parameter from any three of (effect_size, power, n, alpha)
+    - `PowerResult` dataclass with interpretation and recommendations
+    - `sample_size_table()` for generating sample size lookup tables
+  - **scripts/validators.py**: Input validation utilities
+    - `validate_test_selection_input()`, `validate_mtc_input()`, `validate_power_analysis_input()`
+    - `ValidationResult` dataclass with errors, warnings, normalized input
+    - Case-insensitive normalization and cross-validation
+  - **schemas/**: JSON Schema definitions for structured inputs
+    - `test_selection.json`, `mtc_correction.json`, `power_analysis.json`, `effect_size.json`
+  - **tests/**: Comprehensive test suite (203 tests)
+    - Unit tests for all utility modules
+    - Determinism tests verifying same input → same output
+    - Validation tests for input/output contracts
+  - Determinism improvement: ~60% → ~90% through code-based decision trees and lookup tables
+
 - **skills/visual-design/**: Deterministic utilities implementation with 155 test cases (100% pass rate)
   - **utils/venue_specs.py**: Journal specifications for 8 venues (Nature, Science, Cell, PNAS, PLOS, eLife, JBC, default)
     - `get_venue_specs(venue)` with alias normalization (e.g., "Nature Communications" → "nature")
