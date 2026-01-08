@@ -7,6 +7,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/executive-summary/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
+  - Executive summary: ~65-70% current determinism, targeting 85% (15-20% variance reduction)
+  - Key insight: Well-architected with existing validation script (`validate_summary.py`) implementing 7 deterministic quality checks; remaining variance is in manual workflow steps (source comparison, completeness verification) and keyword-based component detection
+  - 3-phase implementation plan with complete Python code:
+    - Phase 1: Quick wins (`preprocess_source.py` for source analysis, `validate_structure.py` for template compliance)
+    - Phase 2: Core infrastructure (`compare_to_source.py` for fidelity checking, `check_readability.py` for Flesch-Kincaid metrics)
+    - Phase 3: Advanced features (`flag_jargon.py` for technical term detection)
+  - Ready-to-implement modules with complete code for all 5 validation scripts
+  - Source preprocessing: word count extraction, TBD/TODO marker detection, section structure analysis, completeness scoring
+  - Structural template validation: enforces `## Executive Summary` header, `**Key Findings:**` section (3-5 numbered items), `**Recommendation:**` section with action verb
+  - Source comparison: trigram overlap similarity (0.1-0.6 target range), verbatim phrase detection (6+ words), claim coverage analysis
+  - Readability metrics: Flesch-Kincaid Grade Level (target 10-14), Flesch Reading Ease, syllable counting, sentence length analysis
+  - Jargon detection: flags uncommon words not in common vocabulary unless followed by definition pattern
+  - Existing validation preserved: 7 checks (word count, passive voice %, component presence, quantification, section references, CTA specificity, sentence length)
+  - Deterministic scorecard: Input validation 40%→85%, Template compliance 60%→95%, Source fidelity 0%→80%, Readability 70%→95%
+  - Priority matrix: preprocess_source (P0), validate_structure (P0), compare_to_source (P1), check_readability (P1), flag_jargon (P2)
+  - Success metrics: overall determinism 65-70%→75%→80%→85% across three phases
+
 - **skills/code-documentation/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
   - Executive summary: ~65% current determinism, targeting 85% (20% variance reduction)
   - Key insight: Well-designed with extensive reference materials and clear templates; main gaps are no programmatic validation of generated documentation against well-defined templates/checklists, and implicit rather than enforced selection logic for styles and templates
