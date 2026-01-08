@@ -7,6 +7,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/venue-templates/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
+  - Executive summary: ~40% current determinism, targeting 75% (50-60% variance reduction)
+  - Identified key issue: data fragmentation (venue specs duplicated across Python dicts and markdown)
+  - 5-phase implementation plan with complete Python code:
+    - Phase 1: Unified venue database (`data/venues.json` with JSON Schema, `venue_database.py` access layer)
+    - Phase 2: Venue resolution with fuzzy matching (`venue_resolver.py` for deterministic name normalization)
+    - Phase 3: Enhanced validation (citation format, abstract structure, anonymization, contribution list checks)
+    - Phase 4: Style compliance checker (`check_style.py` for voice, jargon, abstract, hedging validation)
+    - Phase 5: Style rules as structured data (`style_rules.yaml` with validatable patterns)
+  - Ready-to-implement modules with complete code for all utilities
+  - JSON Schema definitions for venue specifications
+  - Migration guide for updating existing scripts
+  - Testing infrastructure with pytest examples
+  - Priority matrix and success metrics
+
 - **skills/visual-design/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
   - Executive summary: ~70% of decision-making can become deterministic (50-70% variance reduction)
   - Current state analysis: skill has strong foundations with decision matrices, but implemented as prose tables
