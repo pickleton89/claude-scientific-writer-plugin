@@ -7,6 +7,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/scientific-writing/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
+  - Executive summary: ~40% current determinism, targeting 70% (30% variance reduction)
+  - Key insight: Skill has excellent validation scripts but prose-based decision guidance should be code
+  - 4-phase implementation plan with complete Python code:
+    - Phase 1: Decision trees → code (`scripts/select_guideline.py` for study design → reporting guideline, `scripts/select_citation_style.py` for journal → citation style)
+    - Phase 2: Structure validation (`scripts/validate_structure.py` for IMRAD compliance checking)
+    - Phase 3: Section targets calculator (`scripts/calculate_targets.py` for word counts and citation targets)
+    - Phase 4: Data files (`data/journal_requirements.json` with structured venue specifications)
+  - Ready-to-implement modules with complete code for all utilities
+  - JSON Schema definitions for manuscript metadata input
+  - Structured output dataclasses (StructureValidation, ManuscriptQualityReport, PreSubmissionChecklist)
+  - Existing validation scripts analyzed: validate_writing_quality.py, readability_score.py, count_citations.py
+  - Testing infrastructure with pytest examples
+  - Priority matrix: guideline selector and citation style selector are P0 (high impact, low effort)
+  - Success metrics showing path from 40% to 70% deterministic outputs
+
 - **skills/statistical-analysis/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
   - Executive summary: ~60% current determinism, targeting 90% (highest potential among audited skills)
   - Key insight: Skill is built on decision trees, lookup tables, and mathematical formulas—ideal for code-based execution
