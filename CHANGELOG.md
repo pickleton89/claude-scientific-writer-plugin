@@ -7,6 +7,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/paper-search/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
+  - Executive summary: ~85% current determinism, targeting 95% (10% variance reduction)
+  - Key insight: Skill is exceptionally well-designed with code-based search infrastructure; remaining variance is in query construction and database selection
+  - 3-phase implementation plan with complete Python code:
+    - Phase 1: Quick wins (`scripts/query_templates.py`, `scripts/database_router.py`)
+    - Phase 2: Core improvements (`scripts/query_schema.py`, `scripts/query_validator.py`)
+    - Phase 3: Enhancements (`references/gene_aliases.json`, result analysis)
+  - Ready-to-implement modules with complete code for all utilities
+  - Query template library with 6+ common patterns (review search, author papers, clinical trials)
+  - Automated database router with keyword-based domain classification (biomedical vs CS/AI)
+  - Structured query schema (StructuredQuery dataclass) for deterministic query construction
+  - Gene alias lookup with 18+ common genes (TP53, BRCA1, EGFR, etc.) expandable from HGNC
+  - Query syntax validator for PubMed with field tag and boolean clause checking
+  - Result count analyzer with deterministic feedback (too_few/good/too_many thresholds)
+  - Reproducibility hash generation for search logging
+  - Testing plan with unit, integration, and reproducibility tests
+  - Priority matrix: query templates (P0), database router (P0), structured schema (P1)
+  - Success metrics: query variance HIGH→LOW, routing consistency 70%→95%
+
 - **skills/peer-review/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
   - Executive summary: ~35-40% current determinism, targeting 70-75% (30-35% variance reduction)
   - Key insight: Excellent structural foundations (quantitative rubrics, staged workflows, score calculator) but relies on LLM judgment to apply them
