@@ -7,6 +7,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/code-documentation/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
+  - Executive summary: ~65% current determinism, targeting 85% (20% variance reduction)
+  - Key insight: Well-designed with extensive reference materials and clear templates; main gaps are no programmatic validation of generated documentation against well-defined templates/checklists, and implicit rather than enforced selection logic for styles and templates
+  - 3-phase implementation plan with complete Python code:
+    - Phase 1: Validation infrastructure (`scripts/validate_documentation.py` with pydocstyle, doctest, README section checks)
+    - Phase 2: Input standardization (`scripts/infer_style.py` implementing SKILL.md decision tree as code)
+    - Phase 3: Output schema enforcement (section schemas for NumPy/Google styles, README templates)
+  - Ready-to-implement modules with complete code for all utilities
+  - Docstring style selector converting prose decision tree to callable function
+  - README template selector with project type lookup table
+  - Docstring completeness checker validating parameter coverage, return docs, examples
+  - Automated validation script running pydocstyle, doctest, and README section verification
+  - Schema definitions for NumPy/Google docstring sections and README templates by project type
+  - Quality thresholds: 100% public API coverage, 100% parameter documentation, 1+ example per function
+  - Testing plan with validation commands and integration guidance
+  - Priority matrix: validation script (P0), style inference (P1), output schemas (P2), parameter extraction (P3)
+  - Success metrics: style selection 70%→95%, template adherence 60%→90%, example validity 50%→95%, overall 65%→85%
+
 - **skills/generate-image/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
   - Executive summary: ~60% current determinism, targeting 80% (20% variance reduction)
   - Key insight: Well-architected with clear decision frameworks and quality rubrics; image generation is fundamentally stochastic but surrounding validation can be deterministic
