@@ -7,6 +7,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/scientific-schematics/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
+  - Executive summary: ~35% current determinism, targeting 60% (25% variance reduction)
+  - Key insight: Core image generation is inherently stochastic (AI-based), but significant gains possible through pre-generation validation
+  - 3-phase implementation plan with complete Python code:
+    - Phase 1: Pre-generation validation (`scripts/validate_prompt.py`, `scripts/utils/complexity_limits.py`)
+    - Phase 2: Deterministic selection (`scripts/diagram_type_selector.py`, `scripts/utils/brand_colors.py`)
+    - Phase 3: Output validation (`scripts/validate_image.py`, `scripts/utils/schemas.py`)
+  - Ready-to-implement modules with complete code for all utilities
+  - Prompt validation with keyword detection for diagram types, layout, and component counts
+  - Schematic type selector converting prose decision tree to Python lookup function
+  - Complexity pre-check against diagram type limits (max nodes, edges, levels)
+  - Brand color lookup module with Oligon, Okabe-Ito, and generic palettes
+  - Pydantic schemas for GenerationResults and IterationResult
+  - Image metadata validation (dimensions, format, file size checks)
+  - Testing plan with pytest examples for all validators
+  - Priority matrix: prompt validator (P1), type selector (P2), complexity check (P3)
+  - Success metrics showing path from 35% to 60% deterministic decision-making
+
 - **skills/scientific-writing/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
   - Executive summary: ~40% current determinism, targeting 70% (30% variance reduction)
   - Key insight: Skill has excellent validation scripts but prose-based decision guidance should be code
