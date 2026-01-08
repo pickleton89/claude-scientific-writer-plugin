@@ -7,6 +7,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/research-paper-summarizer/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
+  - Executive summary: ~55-60% current determinism, targeting 75-80% (20% variance reduction)
+  - Key insight: Excellent architectural foundations (subagent pipeline, templates, section markers) but validation is prose-based
+  - 3-phase implementation plan with complete Python code:
+    - Phase 1: Validation infrastructure (`scripts/validate_summary.py`, `scripts/validate_yaml.py`, `schemas/summary_output.yaml`)
+    - Phase 2: Pre-processing scripts (`scripts/extract_statistics.py`, `scripts/detect_article_type.py`, `scripts/update_markers.py`)
+    - Phase 3: Integration with subagent prompts and SKILL.md workflow
+  - Ready-to-implement modules with complete code for all utilities
+  - Summary validation with 9 quality checks (pending sections, statistics count, figure references, limitations, sample sizes)
+  - JSON Schema for YAML output validation before PDF generation
+  - Statistics extraction via regex (p-values, CIs, sample sizes, fold changes, hazard/odds ratios)
+  - Article type auto-detection via keyword scoring with confidence levels
+  - Deterministic section marker management (replaces LLM file editing)
+  - Regex pattern reference for statistics and figure references
+  - Structured output requirements for subagent prompts (XML tags for statistics_found, figure_references)
+  - Success metrics: 0% → 80% validation coverage, <10% failed output rate target
+  - Priority matrix: validate_summary.py (P1), extract_statistics.py (P2), YAML schema (P1)
+
 - **skills/research-posters/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
   - Executive summary: ~60-70% current determinism, targeting 85% (15-25% variance reduction)
   - Key insight: Skill has strong foundations (templates, review script, quantified criteria) but validation is mostly manual
