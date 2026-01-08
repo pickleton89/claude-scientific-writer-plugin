@@ -7,6 +7,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/visual-design/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
+  - Executive summary: ~70% of decision-making can become deterministic (50-70% variance reduction)
+  - Current state analysis: skill has strong foundations with decision matrices, but implemented as prose tables
+  - 5-phase implementation plan with complete Python code:
+    - Phase 1: Data extraction & schema (`venue_specs.py`, JSON Schema)
+    - Phase 2: Core utilities (`chart_selector.py`, `palette_selector.py`)
+    - Phase 3: Accessibility validation (`accessibility.py`, WCAG compliance)
+    - Phase 4: Quality scoring (`quality_scorer.py`, hybrid 40% deterministic / 60% LLM)
+    - Phase 5: Reference consolidation and worked examples
+  - Ready-to-implement modules with complete code for all utilities
+  - JSON Schema definitions for structured input/output
+  - Testing plan with pytest structure
+  - Success metrics and file structure roadmap
+
 - **skills/scientific-slides/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
   - Executive summary with key findings and expected 40-60% variance reduction
   - Current state analysis mapping stochastic vs deterministic components
