@@ -556,6 +556,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - Will be removed in v2.0.0
   - Migration: Use `research-posters` and select PowerPoint format when prompted
 
+### Changed
+- **Deprecated skills archived**: Moved deprecated skills from `skills/` to `docs/archive/` for cleaner project structure
+  - `skills/scholar-evaluation/` → `docs/archive/scholar-evaluation/`
+  - `skills/latex-posters/` → `docs/archive/latex-posters/`
+  - `skills/pptx-posters/` → `docs/archive/pptx-posters/`
+  - Skills remain available for reference but are no longer active
+
 ## [1.1.0] - 2025-01-02
 
 ### Changed
