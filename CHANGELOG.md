@@ -7,6 +7,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/markdown-to-pdf/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
+  - Executive summary: ~85% current determinism, targeting 95% (10% variance reduction)
+  - Key insight: Skill is highly deterministic due to excellent delegation to Python libraries (`oligon_reports`) with explicit pattern matching; remaining variance is in presentation formatting
+  - 3-phase implementation plan with complete Python code:
+    - Phase 1: Critical fixes (`preflight_check()` function, brand color consistency, element summary template)
+    - Phase 2: Output standardization (`format_structure_tree()`, frontmatter JSON schemas, `ValidationResult` type)
+    - Phase 3: Polish (error recovery map, automated tests, documentation deduplication)
+  - Already-deterministic components documented: table classification (STATUS_SYMBOLS/GRADE_VALUES sets), finding detection (regex), callout detection (prefix matching), language filtering (explicit enum), template listing, filename generation
+  - Critical issue identified: brand color mismatch between SKILL.md and component_map.md requiring single source of truth
+  - Ready-to-implement modules: `PreflightResult` dataclass, structure tree generator, error recovery JSON lookup
+  - Detection pattern reference appendix with all deterministic patterns used by the skill
+  - Priority matrix: preflight_check (P0), brand color fix (P0), structure tree (P1), frontmatter schemas (P1)
+  - Success metrics: determinism 85%→90%→93%→95% across three phases
+
 - **skills/oligon-brand/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
   - Executive summary: ~85% current determinism, targeting 95% (10% variance reduction)
   - Key insight: Exceptionally well-structured with machine-readable JSON tokens, explicit hex codes, and format-specific adapters; remaining variance is in decision tree interpretation and manual verification
