@@ -7,6 +7,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/peer-review/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
+  - Executive summary: ~35-40% current determinism, targeting 70-75% (30-35% variance reduction)
+  - Key insight: Excellent structural foundations (quantitative rubrics, staged workflows, score calculator) but relies on LLM judgment to apply them
+  - 4-phase implementation plan with complete Python code:
+    - Phase 1: Critical infrastructure (`validators/severity_classifier.py`, extended `calculate_scores.py` validation)
+    - Phase 2: Workflow automation (`scripts/workflow_tracker.py` for stage gate enforcement)
+    - Phase 3: Calibration & lookup (`calibration/` examples, `validators/issue_lookup.py`)
+    - Phase 4: Advanced validators (`scripts/figure_checker.py`, `validators/statistical_tests.py`)
+  - Ready-to-implement modules with complete code for all utilities
+  - Severity classifier encoding SKILL.md quantitative criteria (Critical/Major/Minor thresholds)
+  - Score validation ensuring completeness, bounds checking, and justification requirements
+  - Workflow state tracker with stage exit criteria from workflow_transitions.md
+  - JSON schemas for manuscript input and review output validation
+  - Common issue catalog with 22+ issues mapped to severity levels and recommendation templates
+  - Statistical test selection tree converting decision matrix to Python lookup
+  - Figure quality checker against quantified thresholds (DPI, font size, contrast ratio)
+  - Testing plan with unit, integration, and regression tests
+  - Priority matrix: severity_classifier (P0), score validation (P0), workflow tracker (P1)
+  - Success metrics: severity consistency 60%→95%, score variance ±0.8→±0.3 points
+
 - **skills/plotting-libraries/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
   - Executive summary: ~55-60% current determinism, targeting 80% (20-25% variance reduction)
   - Key insight: Decision matrices (Python vs R, library selection, thresholds) are deterministic in design but need code implementation
