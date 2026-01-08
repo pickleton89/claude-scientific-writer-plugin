@@ -11,7 +11,6 @@ Usage:
 """
 
 import argparse
-import os
 import json
 from pathlib import Path
 
@@ -190,7 +189,7 @@ def print_requirements(venue):
     if 'size' in details:
         print(f"📏 Size: {details['size']}")
     
-    print(f"\n💡 For detailed requirements, see:")
+    print("\n💡 For detailed requirements, see:")
     skill_path = get_skill_path()
     
     if template['category'] == "journals":

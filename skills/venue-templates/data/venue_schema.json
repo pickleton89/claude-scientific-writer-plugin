@@ -1,0 +1,218 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "venue_schema.json",
+  "title": "Venue Database Schema",
+  "description": "Schema for validating venue specifications in the venue-templates skill",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "venues": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/venue"
+      }
+    }
+  },
+  "required": ["venues"],
+  "definitions": {
+    "venue": {
+      "type": "object",
+      "required": ["id", "full_name", "type", "formatting"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the venue (lowercase, snake_case)"
+        },
+        "full_name": {
+          "type": "string",
+          "description": "Full display name of the venue"
+        },
+        "publisher": {
+          "type": "string",
+          "description": "Name of the publishing organization"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["journal", "conference", "poster", "grant"],
+          "description": "Type of publication venue"
+        },
+        "discipline": {
+          "type": "string",
+          "description": "Primary discipline or field"
+        },
+        "impact_tier": {
+          "type": "string",
+          "enum": ["high", "medium", "standard"],
+          "description": "Impact/prestige tier"
+        },
+        "aliases": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Alternative names and common variations"
+        },
+        "formatting": {
+          "$ref": "#/definitions/formatting"
+        },
+        "abstract": {
+          "$ref": "#/definitions/abstract"
+        },
+        "style": {
+          "$ref": "#/definitions/style"
+        },
+        "requirements": {
+          "$ref": "#/definitions/requirements"
+        },
+        "templates": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of available template files"
+        },
+        "style_guides": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of associated style guide files"
+        },
+        "author_guidelines_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to official author guidelines"
+        }
+      }
+    },
+    "formatting": {
+      "type": "object",
+      "properties": {
+        "page_limit": {
+          "type": ["integer", "null"],
+          "description": "Maximum number of pages (null if no limit)"
+        },
+        "word_limit": {
+          "type": ["integer", "null"],
+          "description": "Maximum word count (null if no limit)"
+        },
+        "word_limit_scope": {
+          "type": ["string", "null"],
+          "description": "What the word limit includes/excludes"
+        },
+        "format": {
+          "type": "string",
+          "enum": ["single-column", "two-column"],
+          "description": "Document column format"
+        },
+        "font_size": {
+          "type": "integer",
+          "minimum": 8,
+          "maximum": 14,
+          "description": "Required font size in points"
+        },
+        "font_family": {
+          "type": "string",
+          "description": "Required font family"
+        },
+        "margins_cm": {
+          "type": "object",
+          "properties": {
+            "top": {"type": "number"},
+            "bottom": {"type": "number"},
+            "left": {"type": "number"},
+            "right": {"type": "number"}
+          },
+          "description": "Page margins in centimeters"
+        },
+        "line_spacing": {
+          "type": "string",
+          "enum": ["single", "double", "1.5", "any"],
+          "description": "Required line spacing"
+        },
+        "citation_style": {
+          "type": "string",
+          "enum": ["superscript", "numbered", "author-year", "any"],
+          "description": "Citation format style"
+        },
+        "reference_format": {
+          "type": "string",
+          "description": "Bibliography format (e.g., nature, vancouver, ieee)"
+        }
+      }
+    },
+    "abstract": {
+      "type": "object",
+      "properties": {
+        "style": {
+          "type": "string",
+          "enum": ["flowing", "structured"],
+          "description": "Whether abstract is free-form or has required sections"
+        },
+        "max_words": {
+          "type": "integer",
+          "description": "Maximum word count for abstract"
+        },
+        "structured_sections": {
+          "type": ["array", "null"],
+          "items": {"type": "string"},
+          "description": "Required section headings for structured abstracts"
+        },
+        "required_elements": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Required content elements (even for flowing abstracts)"
+        }
+      }
+    },
+    "style": {
+      "type": "object",
+      "properties": {
+        "tone": {
+          "type": "string",
+          "enum": ["accessible", "technical", "formal"],
+          "description": "Expected writing tone"
+        },
+        "voice": {
+          "type": "string",
+          "enum": ["active", "passive", "mixed"],
+          "description": "Preferred grammatical voice"
+        },
+        "first_person": {
+          "type": "boolean",
+          "description": "Whether first person (we) is acceptable"
+        },
+        "jargon_level": {
+          "type": "string",
+          "enum": ["minimal", "moderate", "high"],
+          "description": "Expected level of technical jargon"
+        },
+        "audience": {
+          "type": "string",
+          "description": "Target reader audience"
+        }
+      }
+    },
+    "requirements": {
+      "type": "object",
+      "properties": {
+        "anonymization": {
+          "type": "boolean",
+          "description": "Whether double-blind review requires anonymization"
+        },
+        "graphical_abstract": {
+          "type": "boolean",
+          "description": "Whether graphical abstract is required"
+        },
+        "data_availability": {
+          "type": "boolean",
+          "description": "Whether data availability statement is required"
+        },
+        "contribution_list": {
+          "type": "boolean",
+          "description": "Whether explicit contribution list is expected"
+        },
+        "ablation_studies": {
+          "type": "boolean",
+          "description": "Whether ablation studies are expected (ML venues)"
+        }
+      }
+    }
+  }
+}

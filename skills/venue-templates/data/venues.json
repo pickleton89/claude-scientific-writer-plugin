@@ -1,0 +1,665 @@
+{
+  "$schema": "./venue_schema.json",
+  "venues": {
+    "nature": {
+      "id": "nature",
+      "full_name": "Nature",
+      "publisher": "Nature Publishing Group",
+      "type": "journal",
+      "discipline": "multidisciplinary",
+      "impact_tier": "high",
+      "aliases": ["nature journal", "nature paper", "nature publishing", "nature mag"],
+      "formatting": {
+        "page_limit": null,
+        "word_limit": 3000,
+        "word_limit_scope": "excluding_methods_refs",
+        "format": "single-column",
+        "font_size": 12,
+        "font_family": "Times",
+        "margins_cm": {"top": 2.5, "bottom": 2.5, "left": 2.5, "right": 2.5},
+        "line_spacing": "double",
+        "citation_style": "superscript",
+        "reference_format": "nature"
+      },
+      "abstract": {
+        "style": "flowing",
+        "max_words": 200,
+        "structured_sections": null,
+        "required_elements": ["significance", "key_finding", "implications"]
+      },
+      "style": {
+        "tone": "accessible",
+        "voice": "active",
+        "first_person": true,
+        "jargon_level": "minimal",
+        "audience": "educated_non_specialist"
+      },
+      "requirements": {
+        "anonymization": false,
+        "graphical_abstract": false,
+        "data_availability": true,
+        "contribution_list": false,
+        "ablation_studies": false
+      },
+      "templates": ["nature_article.tex"],
+      "style_guides": ["nature_science_style.md"],
+      "author_guidelines_url": "https://www.nature.com/nature/for-authors"
+    },
+    "science": {
+      "id": "science",
+      "full_name": "Science",
+      "publisher": "AAAS",
+      "type": "journal",
+      "discipline": "multidisciplinary",
+      "impact_tier": "high",
+      "aliases": ["science journal", "science paper", "science mag", "aaas science"],
+      "formatting": {
+        "page_limit": null,
+        "word_limit": 2500,
+        "word_limit_scope": "excluding_refs",
+        "format": "single-column",
+        "font_size": 12,
+        "font_family": "Times",
+        "margins_cm": {"top": 2.5, "bottom": 2.5, "left": 2.5, "right": 2.5},
+        "line_spacing": "double",
+        "citation_style": "numbered",
+        "reference_format": "science"
+      },
+      "abstract": {
+        "style": "flowing",
+        "max_words": 125,
+        "structured_sections": null,
+        "required_elements": ["context", "finding", "significance"]
+      },
+      "style": {
+        "tone": "accessible",
+        "voice": "active",
+        "first_person": true,
+        "jargon_level": "minimal",
+        "audience": "educated_non_specialist"
+      },
+      "requirements": {
+        "anonymization": false,
+        "graphical_abstract": false,
+        "data_availability": true,
+        "contribution_list": false,
+        "ablation_studies": false
+      },
+      "templates": [],
+      "style_guides": ["nature_science_style.md"],
+      "author_guidelines_url": "https://www.science.org/content/page/instructions-authors"
+    },
+    "neurips": {
+      "id": "neurips",
+      "full_name": "NeurIPS (Neural Information Processing Systems)",
+      "publisher": "NeurIPS Foundation",
+      "type": "conference",
+      "discipline": "machine_learning",
+      "impact_tier": "high",
+      "aliases": ["neurips", "nips", "neural information processing", "neurips 2024", "neurips 2025", "neurips conference"],
+      "formatting": {
+        "page_limit": 8,
+        "word_limit": null,
+        "word_limit_scope": "excluding_refs_appendix",
+        "format": "two-column",
+        "font_size": 10,
+        "font_family": "Times",
+        "margins_cm": {"top": 2.54, "bottom": 2.54, "left": 2.54, "right": 2.54},
+        "line_spacing": "single",
+        "citation_style": "numbered",
+        "reference_format": "neurips"
+      },
+      "abstract": {
+        "style": "flowing",
+        "max_words": 300,
+        "structured_sections": null,
+        "required_elements": ["method_name", "key_metrics", "benchmark_names"]
+      },
+      "style": {
+        "tone": "technical",
+        "voice": "active",
+        "first_person": true,
+        "jargon_level": "high",
+        "audience": "specialist"
+      },
+      "requirements": {
+        "anonymization": true,
+        "graphical_abstract": false,
+        "data_availability": true,
+        "contribution_list": true,
+        "ablation_studies": true
+      },
+      "templates": ["neurips_article.tex"],
+      "style_guides": ["ml_conference_style.md"],
+      "author_guidelines_url": "https://neurips.cc/Conferences/2024/CallForPapers"
+    },
+    "icml": {
+      "id": "icml",
+      "full_name": "ICML (International Conference on Machine Learning)",
+      "publisher": "PMLR",
+      "type": "conference",
+      "discipline": "machine_learning",
+      "impact_tier": "high",
+      "aliases": ["icml", "icml conference", "icml 2024", "icml 2025", "international conference machine learning"],
+      "formatting": {
+        "page_limit": 8,
+        "word_limit": null,
+        "word_limit_scope": "excluding_refs_appendix",
+        "format": "two-column",
+        "font_size": 10,
+        "font_family": "Times",
+        "margins_cm": {"top": 2.54, "bottom": 2.54, "left": 2.54, "right": 2.54},
+        "line_spacing": "single",
+        "citation_style": "numbered",
+        "reference_format": "icml"
+      },
+      "abstract": {
+        "style": "flowing",
+        "max_words": 300,
+        "structured_sections": null,
+        "required_elements": ["method_name", "key_metrics", "benchmark_names"]
+      },
+      "style": {
+        "tone": "technical",
+        "voice": "active",
+        "first_person": true,
+        "jargon_level": "high",
+        "audience": "specialist"
+      },
+      "requirements": {
+        "anonymization": true,
+        "graphical_abstract": false,
+        "data_availability": true,
+        "contribution_list": true,
+        "ablation_studies": true
+      },
+      "templates": [],
+      "style_guides": ["ml_conference_style.md"],
+      "author_guidelines_url": "https://icml.cc/Conferences/2024/CallForPapers"
+    },
+    "cvpr": {
+      "id": "cvpr",
+      "full_name": "CVPR (Computer Vision and Pattern Recognition)",
+      "publisher": "IEEE",
+      "type": "conference",
+      "discipline": "computer_vision",
+      "impact_tier": "high",
+      "aliases": ["cvpr", "cvpr conference", "cvpr 2024", "cvpr 2025", "computer vision pattern recognition"],
+      "formatting": {
+        "page_limit": 8,
+        "word_limit": null,
+        "word_limit_scope": "excluding_refs",
+        "format": "two-column",
+        "font_size": 10,
+        "font_family": "Times",
+        "margins_cm": {"top": 2.54, "bottom": 2.54, "left": 2.54, "right": 2.54},
+        "line_spacing": "single",
+        "citation_style": "numbered",
+        "reference_format": "ieee"
+      },
+      "abstract": {
+        "style": "flowing",
+        "max_words": 300,
+        "structured_sections": null,
+        "required_elements": ["method_name", "key_metrics", "benchmark_names"]
+      },
+      "style": {
+        "tone": "technical",
+        "voice": "active",
+        "first_person": true,
+        "jargon_level": "high",
+        "audience": "specialist"
+      },
+      "requirements": {
+        "anonymization": true,
+        "graphical_abstract": false,
+        "data_availability": true,
+        "contribution_list": true,
+        "ablation_studies": true
+      },
+      "templates": [],
+      "style_guides": ["ml_conference_style.md"],
+      "author_guidelines_url": "https://cvpr.thecvf.com/"
+    },
+    "plos_one": {
+      "id": "plos_one",
+      "full_name": "PLOS ONE",
+      "publisher": "PLOS",
+      "type": "journal",
+      "discipline": "multidisciplinary",
+      "impact_tier": "standard",
+      "aliases": ["plos one", "plos", "plos 1", "public library of science"],
+      "formatting": {
+        "page_limit": null,
+        "word_limit": null,
+        "word_limit_scope": null,
+        "format": "single-column",
+        "font_size": 10,
+        "font_family": "Arial",
+        "margins_cm": {"top": 2.54, "bottom": 2.54, "left": 2.54, "right": 2.54},
+        "line_spacing": "double",
+        "citation_style": "numbered",
+        "reference_format": "vancouver"
+      },
+      "abstract": {
+        "style": "flowing",
+        "max_words": 300,
+        "structured_sections": null,
+        "required_elements": ["background", "methods", "results", "conclusions"]
+      },
+      "style": {
+        "tone": "formal",
+        "voice": "mixed",
+        "first_person": true,
+        "jargon_level": "moderate",
+        "audience": "specialist"
+      },
+      "requirements": {
+        "anonymization": false,
+        "graphical_abstract": false,
+        "data_availability": true,
+        "contribution_list": false,
+        "ablation_studies": false
+      },
+      "templates": ["plos_one.tex"],
+      "style_guides": [],
+      "author_guidelines_url": "https://journals.plos.org/plosone/s/submission-guidelines"
+    },
+    "cell": {
+      "id": "cell",
+      "full_name": "Cell",
+      "publisher": "Cell Press",
+      "type": "journal",
+      "discipline": "life_sciences",
+      "impact_tier": "high",
+      "aliases": ["cell journal", "cell paper", "cell press"],
+      "formatting": {
+        "page_limit": null,
+        "word_limit": 7000,
+        "word_limit_scope": "excluding_methods_refs",
+        "format": "single-column",
+        "font_size": 12,
+        "font_family": "Arial",
+        "margins_cm": {"top": 2.5, "bottom": 2.5, "left": 2.5, "right": 2.5},
+        "line_spacing": "double",
+        "citation_style": "numbered",
+        "reference_format": "cell"
+      },
+      "abstract": {
+        "style": "structured",
+        "max_words": 150,
+        "structured_sections": null,
+        "required_elements": ["summary", "highlights", "etoc_blurb"]
+      },
+      "style": {
+        "tone": "technical",
+        "voice": "active",
+        "first_person": true,
+        "jargon_level": "moderate",
+        "audience": "specialist"
+      },
+      "requirements": {
+        "anonymization": false,
+        "graphical_abstract": true,
+        "data_availability": true,
+        "contribution_list": true,
+        "ablation_studies": false
+      },
+      "templates": [],
+      "style_guides": ["cell_press_style.md"],
+      "author_guidelines_url": "https://www.cell.com/cell/authors"
+    },
+    "nejm": {
+      "id": "nejm",
+      "full_name": "New England Journal of Medicine",
+      "publisher": "Massachusetts Medical Society",
+      "type": "journal",
+      "discipline": "medical",
+      "impact_tier": "high",
+      "aliases": ["nejm", "new england journal", "new england journal of medicine"],
+      "formatting": {
+        "page_limit": null,
+        "word_limit": 2700,
+        "word_limit_scope": "excluding_refs_tables_figures",
+        "format": "single-column",
+        "font_size": 12,
+        "font_family": "Times",
+        "margins_cm": {"top": 2.5, "bottom": 2.5, "left": 2.5, "right": 2.5},
+        "line_spacing": "double",
+        "citation_style": "numbered",
+        "reference_format": "vancouver"
+      },
+      "abstract": {
+        "style": "structured",
+        "max_words": 250,
+        "structured_sections": ["Background", "Methods", "Results", "Conclusions"],
+        "required_elements": ["background", "methods", "results", "conclusions"]
+      },
+      "style": {
+        "tone": "formal",
+        "voice": "passive",
+        "first_person": false,
+        "jargon_level": "moderate",
+        "audience": "clinical_specialist"
+      },
+      "requirements": {
+        "anonymization": false,
+        "graphical_abstract": false,
+        "data_availability": true,
+        "contribution_list": true,
+        "ablation_studies": false
+      },
+      "templates": [],
+      "style_guides": ["medical_journal_styles.md"],
+      "author_guidelines_url": "https://www.nejm.org/author-center/new-manuscripts"
+    },
+    "lancet": {
+      "id": "lancet",
+      "full_name": "The Lancet",
+      "publisher": "Elsevier",
+      "type": "journal",
+      "discipline": "medical",
+      "impact_tier": "high",
+      "aliases": ["lancet", "the lancet", "lancet journal"],
+      "formatting": {
+        "page_limit": null,
+        "word_limit": 3000,
+        "word_limit_scope": "excluding_refs_tables_figures",
+        "format": "single-column",
+        "font_size": 12,
+        "font_family": "Times",
+        "margins_cm": {"top": 2.5, "bottom": 2.5, "left": 2.5, "right": 2.5},
+        "line_spacing": "double",
+        "citation_style": "numbered",
+        "reference_format": "vancouver"
+      },
+      "abstract": {
+        "style": "structured",
+        "max_words": 300,
+        "structured_sections": ["Background", "Methods", "Findings", "Interpretation", "Funding"],
+        "required_elements": ["background", "methods", "findings", "interpretation"]
+      },
+      "style": {
+        "tone": "formal",
+        "voice": "passive",
+        "first_person": false,
+        "jargon_level": "moderate",
+        "audience": "clinical_specialist"
+      },
+      "requirements": {
+        "anonymization": false,
+        "graphical_abstract": false,
+        "data_availability": true,
+        "contribution_list": true,
+        "ablation_studies": false
+      },
+      "templates": [],
+      "style_guides": ["medical_journal_styles.md"],
+      "author_guidelines_url": "https://www.thelancet.com/lancet/information-for-authors"
+    },
+    "jama": {
+      "id": "jama",
+      "full_name": "JAMA (Journal of the American Medical Association)",
+      "publisher": "AMA",
+      "type": "journal",
+      "discipline": "medical",
+      "impact_tier": "high",
+      "aliases": ["jama", "journal american medical association"],
+      "formatting": {
+        "page_limit": null,
+        "word_limit": 3000,
+        "word_limit_scope": "excluding_refs_tables_figures",
+        "format": "single-column",
+        "font_size": 12,
+        "font_family": "Times",
+        "margins_cm": {"top": 2.5, "bottom": 2.5, "left": 2.5, "right": 2.5},
+        "line_spacing": "double",
+        "citation_style": "numbered",
+        "reference_format": "ama"
+      },
+      "abstract": {
+        "style": "structured",
+        "max_words": 350,
+        "structured_sections": ["Importance", "Objective", "Design, Setting, and Participants", "Interventions", "Main Outcomes and Measures", "Results", "Conclusions and Relevance"],
+        "required_elements": ["importance", "objective", "design", "results", "conclusions"]
+      },
+      "style": {
+        "tone": "formal",
+        "voice": "passive",
+        "first_person": false,
+        "jargon_level": "moderate",
+        "audience": "clinical_specialist"
+      },
+      "requirements": {
+        "anonymization": false,
+        "graphical_abstract": false,
+        "data_availability": true,
+        "contribution_list": true,
+        "ablation_studies": false
+      },
+      "templates": [],
+      "style_guides": ["medical_journal_styles.md"],
+      "author_guidelines_url": "https://jamanetwork.com/journals/jama/pages/instructions-for-authors"
+    },
+    "nsf": {
+      "id": "nsf",
+      "full_name": "NSF Standard Grant",
+      "publisher": "National Science Foundation",
+      "type": "grant",
+      "discipline": "multidisciplinary",
+      "impact_tier": "high",
+      "aliases": ["nsf", "nsf grant", "nsf proposal", "national science foundation"],
+      "formatting": {
+        "page_limit": 15,
+        "word_limit": null,
+        "word_limit_scope": "project_description",
+        "format": "single-column",
+        "font_size": 11,
+        "font_family": "Times Roman",
+        "margins_cm": {"top": 2.54, "bottom": 2.54, "left": 2.54, "right": 2.54},
+        "line_spacing": "single",
+        "citation_style": "author-year",
+        "reference_format": "any"
+      },
+      "abstract": {
+        "style": "structured",
+        "max_words": 300,
+        "structured_sections": ["Overview", "Intellectual Merit", "Broader Impacts"],
+        "required_elements": ["overview", "intellectual_merit", "broader_impacts"]
+      },
+      "style": {
+        "tone": "formal",
+        "voice": "active",
+        "first_person": true,
+        "jargon_level": "moderate",
+        "audience": "review_panel"
+      },
+      "requirements": {
+        "anonymization": false,
+        "graphical_abstract": false,
+        "data_availability": false,
+        "contribution_list": false,
+        "ablation_studies": false
+      },
+      "templates": ["nsf_proposal_template.tex"],
+      "style_guides": ["grants_requirements.md"],
+      "author_guidelines_url": "https://www.nsf.gov/publications/pub_summ.jsp?ods_key=pappg"
+    },
+    "nih": {
+      "id": "nih",
+      "full_name": "NIH Research Grant (R01)",
+      "publisher": "National Institutes of Health",
+      "type": "grant",
+      "discipline": "biomedical",
+      "impact_tier": "high",
+      "aliases": ["nih", "nih grant", "nih r01", "nih proposal", "national institutes of health", "r01"],
+      "formatting": {
+        "page_limit": 12,
+        "word_limit": null,
+        "word_limit_scope": "research_strategy",
+        "format": "single-column",
+        "font_size": 11,
+        "font_family": "Arial",
+        "margins_cm": {"top": 1.27, "bottom": 1.27, "left": 1.27, "right": 1.27},
+        "line_spacing": "single",
+        "citation_style": "any",
+        "reference_format": "any"
+      },
+      "abstract": {
+        "style": "flowing",
+        "max_words": 300,
+        "structured_sections": null,
+        "required_elements": ["hypothesis", "specific_aims", "significance"]
+      },
+      "style": {
+        "tone": "formal",
+        "voice": "active",
+        "first_person": true,
+        "jargon_level": "moderate",
+        "audience": "study_section"
+      },
+      "requirements": {
+        "anonymization": false,
+        "graphical_abstract": false,
+        "data_availability": false,
+        "contribution_list": false,
+        "ablation_studies": false
+      },
+      "templates": ["nih_specific_aims.tex"],
+      "style_guides": ["grants_requirements.md"],
+      "author_guidelines_url": "https://grants.nih.gov/grants/how-to-apply-application-guide.html"
+    },
+    "ieee": {
+      "id": "ieee",
+      "full_name": "IEEE Transactions",
+      "publisher": "IEEE",
+      "type": "journal",
+      "discipline": "engineering",
+      "impact_tier": "medium",
+      "aliases": ["ieee", "ieee transactions", "ieee journal", "ieee paper"],
+      "formatting": {
+        "page_limit": null,
+        "word_limit": null,
+        "word_limit_scope": null,
+        "format": "two-column",
+        "font_size": 10,
+        "font_family": "Times",
+        "margins_cm": {"top": 1.91, "bottom": 2.54, "left": 1.57, "right": 1.57},
+        "line_spacing": "single",
+        "citation_style": "numbered",
+        "reference_format": "ieee"
+      },
+      "abstract": {
+        "style": "flowing",
+        "max_words": 200,
+        "structured_sections": null,
+        "required_elements": ["problem", "approach", "results"]
+      },
+      "style": {
+        "tone": "technical",
+        "voice": "passive",
+        "first_person": false,
+        "jargon_level": "high",
+        "audience": "specialist"
+      },
+      "requirements": {
+        "anonymization": false,
+        "graphical_abstract": false,
+        "data_availability": false,
+        "contribution_list": false,
+        "ablation_studies": false
+      },
+      "templates": [],
+      "style_guides": [],
+      "author_guidelines_url": "https://www.ieee.org/publications/authors/author-templates.html"
+    },
+    "acm": {
+      "id": "acm",
+      "full_name": "ACM Publications",
+      "publisher": "ACM",
+      "type": "journal",
+      "discipline": "computer_science",
+      "impact_tier": "medium",
+      "aliases": ["acm", "acm journal", "acm paper", "acm transactions"],
+      "formatting": {
+        "page_limit": null,
+        "word_limit": null,
+        "word_limit_scope": null,
+        "format": "two-column",
+        "font_size": 9,
+        "font_family": "Linux Libertine",
+        "margins_cm": {"top": 2.54, "bottom": 2.54, "left": 2.54, "right": 2.54},
+        "line_spacing": "single",
+        "citation_style": "author-year",
+        "reference_format": "acm"
+      },
+      "abstract": {
+        "style": "flowing",
+        "max_words": 200,
+        "structured_sections": null,
+        "required_elements": ["problem", "approach", "results"]
+      },
+      "style": {
+        "tone": "technical",
+        "voice": "active",
+        "first_person": true,
+        "jargon_level": "high",
+        "audience": "specialist"
+      },
+      "requirements": {
+        "anonymization": false,
+        "graphical_abstract": false,
+        "data_availability": false,
+        "contribution_list": false,
+        "ablation_studies": false
+      },
+      "templates": [],
+      "style_guides": ["cs_conference_style.md"],
+      "author_guidelines_url": "https://www.acm.org/publications/authors/submissions"
+    },
+    "chi": {
+      "id": "chi",
+      "full_name": "ACM CHI Conference on Human Factors in Computing Systems",
+      "publisher": "ACM",
+      "type": "conference",
+      "discipline": "human_computer_interaction",
+      "impact_tier": "high",
+      "aliases": ["acm chi", "chi conference", "chi 2024", "chi 2025"],
+      "formatting": {
+        "page_limit": 10,
+        "word_limit": null,
+        "word_limit_scope": "excluding_refs",
+        "format": "two-column",
+        "font_size": 9,
+        "font_family": "Linux Libertine",
+        "margins_cm": {"top": 2.54, "bottom": 2.54, "left": 2.54, "right": 2.54},
+        "line_spacing": "single",
+        "citation_style": "author-year",
+        "reference_format": "acm"
+      },
+      "abstract": {
+        "style": "flowing",
+        "max_words": 150,
+        "structured_sections": null,
+        "required_elements": ["problem", "approach", "findings", "implications"]
+      },
+      "style": {
+        "tone": "accessible",
+        "voice": "active",
+        "first_person": true,
+        "jargon_level": "moderate",
+        "audience": "hci_researcher"
+      },
+      "requirements": {
+        "anonymization": true,
+        "graphical_abstract": false,
+        "data_availability": true,
+        "contribution_list": true,
+        "ablation_studies": false
+      },
+      "templates": [],
+      "style_guides": ["cs_conference_style.md"],
+      "author_guidelines_url": "https://chi2024.acm.org/submission-guides/"
+    }
+  }
+}

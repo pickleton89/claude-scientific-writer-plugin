@@ -1,0 +1,292 @@
+# Style Rules for Venue Templates
+# Structured rules that can be programmatically validated
+# Complements (not replaces) prose style guides in references/
+
+nature:
+  abstract:
+    style: flowing
+    max_words: 200
+    prohibited_patterns:
+      - pattern: "state-of-the-art"
+        message: "Avoid clichés like 'state-of-the-art'"
+      - pattern: "novel"
+        message: "Nature discourages overuse of 'novel'"
+      - pattern: "for the first time"
+        message: "Let the work speak for itself"
+    required_elements:
+      - broad_significance
+      - key_finding
+      - implications
+
+  introduction:
+    max_paragraphs: 4
+    first_paragraph:
+      purpose: "Hook with broad significance"
+      patterns_expected:
+        - "fundamental question"
+        - "longstanding challenge"
+        - "critical importance"
+        - "remains poorly understood"
+    last_paragraph:
+      purpose: "Preview of findings"
+      patterns_expected:
+        - "Here we show"
+        - "We demonstrate"
+        - "Here, we"
+
+  voice:
+    active_preferred: true
+    first_person: true
+    examples:
+      good: "We discovered that protein X controls..."
+      bad: "It was discovered that protein X controls..."
+
+  figures:
+    conceptual_schematics: required
+    raw_data_emphasis: low
+    key_message: "Each figure should tell a story accessible to non-specialists"
+
+science:
+  abstract:
+    style: flowing
+    max_words: 125
+    prohibited_patterns:
+      - pattern: "novel"
+        message: "Science avoids self-promotion"
+      - pattern: "breakthrough"
+        message: "Let reviewers make this judgment"
+    required_elements:
+      - context
+      - finding
+      - significance
+
+  voice:
+    active_preferred: true
+    first_person: true
+
+neurips:
+  abstract:
+    style: flowing
+    max_words: 300
+    numbers_upfront: true
+    required_elements:
+      - method_name
+      - key_metrics
+      - benchmark_names
+    recommended_patterns:
+      - "achieves X% on benchmark"
+      - "outperforms by X%"
+
+  introduction:
+    contribution_list:
+      required: true
+      format: bulleted
+      typical_count: [3, 4]
+      patterns:
+        - "We propose"
+        - "We provide theoretical"
+        - "We demonstrate"
+        - "We release"
+
+  experiments:
+    required_sections:
+      - baselines
+      - main_results
+      - ablation_studies
+    tables:
+      bold_best: true
+      include_std: recommended
+
+  reproducibility:
+    code_availability: expected
+    hyperparameters: required_in_appendix
+
+icml:
+  abstract:
+    style: flowing
+    max_words: 300
+    required_elements:
+      - method_name
+      - theoretical_or_empirical
+      - key_results
+
+  introduction:
+    contribution_list:
+      required: true
+      format: bulleted
+
+  experiments:
+    required_sections:
+      - baselines
+      - main_results
+      - ablation_studies
+
+cvpr:
+  abstract:
+    style: flowing
+    max_words: 300
+    required_elements:
+      - visual_task
+      - method_name
+      - benchmark_results
+
+  figures:
+    qualitative_results: required
+    failure_cases: recommended
+
+cell:
+  abstract:
+    style: structured
+    max_words: 150
+    required_elements:
+      - summary
+      - highlights
+      - etoc_blurb
+    highlights:
+      count: 4
+      max_chars_each: 85
+
+  graphical_abstract:
+    required: true
+    format: "Single panel summarizing key finding"
+
+  voice:
+    active_preferred: true
+    first_person: true
+
+medical:
+  # Applies to NEJM, Lancet, JAMA, BMJ
+  abstract:
+    style: structured
+    sections:
+      - Background
+      - Methods
+      - Results
+      - Conclusions
+    max_words: 300
+
+  language:
+    evidence_hedging:
+      rct: ["reduced", "prevented", "caused"]
+      observational: ["was associated with", "may reduce", "appeared to"]
+      case_series: ["suggests that", "may be", "appears to"]
+    patient_centered: true
+    examples:
+      good: "Patients receiving treatment X..."
+      bad: "Treatment X subjects..."
+
+  reporting:
+    absolute_numbers: required
+    confidence_intervals: required
+    nnt_arr: recommended
+
+  prohibited_patterns:
+    - pattern: "proves that"
+      message: "Medical literature avoids 'proves' - use 'demonstrates' or 'suggests'"
+    - pattern: "significant"
+      message: "Specify statistical vs clinical significance"
+
+nsf:
+  abstract:
+    style: structured
+    sections:
+      - Overview
+      - Intellectual Merit
+      - Broader Impacts
+    max_words: 300
+
+  project_description:
+    required_sections:
+      - objectives
+      - methodology
+      - expected_outcomes
+      - broader_impacts
+
+  voice:
+    active_preferred: true
+    first_person: true
+
+  prohibited_patterns:
+    - pattern: "I will"
+      message: "Use 'we will' even for single-PI grants"
+
+nih:
+  specific_aims:
+    structure:
+      - hook: "Opening paragraph establishing significance"
+      - hypothesis: "Central hypothesis clearly stated"
+      - aims: "2-3 numbered specific aims"
+      - payoff: "Closing statement on expected outcomes"
+    max_pages: 1
+
+  research_strategy:
+    sections:
+      - Significance
+      - Innovation
+      - Approach
+
+  voice:
+    active_preferred: true
+    first_person: true
+
+  prohibited_patterns:
+    - pattern: "paradigm shift"
+      message: "Avoid hyperbolic language"
+    - pattern: "ground-breaking"
+      message: "Let reviewers make this judgment"
+
+ieee:
+  abstract:
+    style: flowing
+    max_words: 200
+    required_elements:
+      - problem
+      - approach
+      - results
+
+  voice:
+    passive_preferred: true
+    first_person: false
+    examples:
+      good: "A novel method is proposed..."
+      bad: "We propose a novel method..."
+
+acm:
+  abstract:
+    style: flowing
+    max_words: 200
+
+  voice:
+    active_preferred: true
+    first_person: true
+
+chi:
+  abstract:
+    style: flowing
+    max_words: 150
+    required_elements:
+      - problem
+      - approach
+      - findings
+      - implications
+
+  voice:
+    active_preferred: true
+    first_person: true
+
+  user_study:
+    participants: "Report demographics appropriately"
+    ethics: "IRB/ethics approval required"
+
+# Global patterns to avoid (apply to all venues)
+global_prohibited:
+  - pattern: "very unique"
+    message: "Unique is absolute - cannot be 'very'"
+  - pattern: "most optimal"
+    message: "Optimal is absolute"
+  - pattern: "utilize"
+    message: "Prefer 'use' in most contexts"
+  - pattern: "in order to"
+    message: "Simply use 'to'"
+  - pattern: "due to the fact that"
+    message: "Use 'because'"

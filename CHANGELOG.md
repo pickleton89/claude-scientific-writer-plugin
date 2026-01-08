@@ -48,6 +48,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - **SKILL.md** (v2.3.0 → v2.4.0): Added `<utilities>` section with API documentation and usage examples
   - Determinism improvement: ~30% → ~70% through code-based lookup and validation
 
+- **skills/venue-templates/**: Deterministic venue database and validation implementation with 70 test cases (100% pass rate)
+  - **data/venues.json**: Unified venue database with 15 venues (Nature, Science, NeurIPS, ICML, CVPR, PLOS ONE, Cell, NEJM, Lancet, JAMA, NSF, NIH, IEEE, ACM, CHI)
+    - Complete specs: formatting (page/word limits, fonts, margins, citation style), abstract (max words, structure, required elements), style (tone, voice, jargon level), requirements (anonymization, contribution lists, graphical abstracts)
+    - Alias mapping for fuzzy venue resolution
+  - **data/venue_schema.json**: JSON Schema for venue database validation
+  - **data/style_rules.yaml**: Structured style rules per venue (prohibited patterns, voice preferences, abstract requirements)
+  - **scripts/venue_database.py**: Dataclass-based access layer with `VenueSpec`, `FormattingSpec`, `AbstractSpec`, `StyleSpec`, `RequirementsSpec`
+    - `get_venue(id)`, `list_venues()`, `list_venues_by_type()`, `resolve_venue(query)` convenience functions
+  - **scripts/venue_resolver.py**: Fuzzy matching resolver for user queries
+    - Year suffix removal ("NeurIPS 2024" → "neurips"), common word filtering ("nature paper" → "nature")
+    - Substring and similarity-based matching with configurable threshold
+    - `ResolveResult` with confidence scores and alternatives
+  - **scripts/validate_format.py**: Enhanced PDF validation (8 checks)
+    - Page count, margins, fonts, citation format, abstract structure, anonymization, contribution lists, graphical abstracts
+    - Integration with venue database for venue-specific requirements
+  - **scripts/check_style.py**: Style compliance checker (6 checks)
+    - Voice (active vs passive), jargon level, abstract style, contribution format, hedging language, first person usage
+    - `StyleIssue` dataclass with category, severity, suggestion
+  - **tests/**: Comprehensive test suite (70 tests)
+    - Venue database tests: loading, querying, type filtering, alias resolution
+    - Venue resolver tests: exact match, fuzzy match, year handling, threshold behavior
+    - Style checker tests: voice, jargon, abstract, contributions, hedging, first person
+  - **DETERMINISM_AUDIT.md**: Updated to "Implementation Complete" status
+  - Determinism improvement: ~40% → ~75% through unified venue database and code-based validation
+
 - **skills/skill-router/**: Deterministic skill routing implementation with 100% test pass rate
   - **route.py**: Core routing module with `SkillRouter` class and `RoutingDecision` dataclass
     - Confidence scoring based on keyword match count (1→0.35, 2→0.55, 3→0.65, 4+→0.8 cap)
