@@ -7,6 +7,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/citation-management/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
+  - Executive summary: ~75% current determinism, targeting 90% (15% variance reduction)
+  - Key insight: Exceptionally well-designed with four comprehensive Python scripts already achieving high determinism for metadata extraction, validation, formatting, and DOI conversion; remaining variance involves hardcoded heuristics (title protection, citation key generation) and decision trees documented in markdown rather than encoded as executable logic
+  - 3-phase implementation plan with complete Python code:
+    - Phase 1: Quick wins (`_generate_citation_key()` collision detection, `scripts/select_citation_style.py` encoding decision tree)
+    - Phase 2: Core infrastructure (`assets/protected_words.txt` expandable config, complete CrossRef entry type mapping)
+    - Phase 3: Advanced features (`scripts/check_preprint_status.py`, `schemas/validation_report.json`)
+  - Ready-to-implement modules with complete code for all utilities
+  - Citation key collision detection with alphabetic suffix disambiguation (Smith2024protein → Smith2024proteina)
+  - Deterministic citation style selector with `VenueType` and `CitationStyle` enums implementing decision_framework.md
+  - Expandable protected words system: 100+ scientific terms (acronyms, software, databases, chemical terms, model organisms)
+  - Complete CrossRef-to-BibTeX entry type mapping covering all 25+ CrossRef content types
+  - Preprint-to-published checker for arXiv, bioRxiv, medRxiv with automatic DOI resolution
+  - JSON schema for validation report output enabling downstream tooling
+  - Already-deterministic components documented: DOI/PMID/arXiv extraction (100%), validation (100%), formatting (100%)
+  - Deterministic scorecard: Citation key 85%→98%, Title protection 70%→95%, Style selection 50%→95%, Overall 75%→90%
+  - Priority matrix: collision detection (P0), style selector (P0), protected words (P1), entry type mapping (P1), preprint checker (P2)
+  - Success metrics: determinism 75%→82%→87%→90% across three phases
+
 - **skills/executive-summary/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
   - Executive summary: ~65-70% current determinism, targeting 85% (15-20% variance reduction)
   - Key insight: Well-architected with existing validation script (`validate_summary.py`) implementing 7 deterministic quality checks; remaining variance is in manual workflow steps (source comparison, completeness verification) and keyword-based component detection
