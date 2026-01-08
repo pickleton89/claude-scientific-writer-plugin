@@ -19,7 +19,6 @@ import argparse
 import json
 import re
 import sys
-from collections import defaultdict
 from pathlib import Path
 
 
@@ -86,12 +85,14 @@ def extract_citations(text: str, style: str = "auto") -> list[dict]:
 
     for pattern in patterns:
         for match in re.finditer(pattern, text):
-            citations.append({
-                "text": match.group(0),
-                "start": match.start(),
-                "end": match.end(),
-                "style": style,
-            })
+            citations.append(
+                {
+                    "text": match.group(0),
+                    "start": match.start(),
+                    "end": match.end(),
+                    "style": style,
+                }
+            )
 
     # Deduplicate overlapping citations
     citations.sort(key=lambda x: x["start"])
@@ -156,7 +157,9 @@ def count_unique_citations(citations: list[dict]) -> int:
     return len(unique)
 
 
-def analyze_manuscript(text: str, style: str = "auto", document_type: str = "original_research") -> dict:
+def analyze_manuscript(
+    text: str, style: str = "auto", document_type: str = "original_research"
+) -> dict:
     """Analyze citations in manuscript by section."""
     sections = split_into_sections(text)
     detected_style = style if style != "auto" else detect_citation_style(text)
@@ -241,7 +244,7 @@ def evaluate_citations(analysis: dict) -> dict:
         }
         evaluation["recommendations"].insert(
             0,
-            f"Total citations ({total_count}) below minimum ({total_target['min']}) for {doc_type.replace('_', ' ')}"
+            f"Total citations ({total_count}) below minimum ({total_target['min']}) for {doc_type.replace('_', ' ')}",
         )
     else:
         evaluation["checks"]["total"] = {
@@ -257,21 +260,30 @@ def main():
     parser = argparse.ArgumentParser(
         description="Count and verify citations in scientific manuscripts."
     )
-    parser.add_argument("input_file", help="Path to manuscript file (Markdown or plain text)")
     parser.add_argument(
-        "--style", "-s",
+        "input_file", help="Path to manuscript file (Markdown or plain text)"
+    )
+    parser.add_argument(
+        "--style",
+        "-s",
         choices=["auto", "numbered", "author_date"],
         default="auto",
-        help="Citation style (default: auto-detect)"
+        help="Citation style (default: auto-detect)",
     )
     parser.add_argument(
-        "--type", "-t",
+        "--type",
+        "-t",
         choices=["original_research", "review_article"],
         default="original_research",
-        help="Document type for target evaluation (default: original_research)"
+        help="Document type for target evaluation (default: original_research)",
     )
     parser.add_argument("--json", "-j", action="store_true", help="Output as JSON only")
-    parser.add_argument("--by-section", "-b", action="store_true", help="Show detailed section breakdown")
+    parser.add_argument(
+        "--by-section",
+        "-b",
+        action="store_true",
+        help="Show detailed section breakdown",
+    )
 
     args = parser.parse_args()
 
@@ -313,7 +325,9 @@ def main():
                 check = evaluation["checks"].get(section, {})
                 status = check.get("status", "N/A")
                 status_icon = {"OK": "+", "LOW": "!", "HIGH": "~", "N/A": " "}[status]
-                print(f"[{status_icon}] {section.title()}: {data['unique_citations']} citations ({data['word_count']} words)")
+                print(
+                    f"[{status_icon}] {section.title()}: {data['unique_citations']} citations ({data['word_count']} words)"
+                )
 
         if evaluation["recommendations"]:
             print("\n" + "-" * 40)

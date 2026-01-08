@@ -42,10 +42,23 @@ THRESHOLDS = {
 
 # Common syllable counting exceptions
 SYLLABLE_OVERRIDES = {
-    "area": 3, "idea": 3, "real": 2, "being": 2, "seeing": 2,
-    "science": 2, "patient": 2, "ancient": 2, "coefficient": 4,
-    "create": 2, "created": 3, "creates": 2, "creating": 3,
-    "data": 2, "via": 2, "trial": 2, "bias": 2,
+    "area": 3,
+    "idea": 3,
+    "real": 2,
+    "being": 2,
+    "seeing": 2,
+    "science": 2,
+    "patient": 2,
+    "ancient": 2,
+    "coefficient": 4,
+    "create": 2,
+    "created": 3,
+    "creates": 2,
+    "creating": 3,
+    "data": 2,
+    "via": 2,
+    "trial": 2,
+    "bias": 2,
 }
 
 
@@ -115,12 +128,26 @@ def split_sentences(text: str) -> list[str]:
     """Split text into sentences."""
     # Protect abbreviations
     protected = text
-    abbrevs = ["Dr.", "Mr.", "Mrs.", "Ms.", "Prof.", "Fig.", "et al.", "e.g.", "i.e.", "vs.", "etc.", "No.", "Vol."]
+    abbrevs = [
+        "Dr.",
+        "Mr.",
+        "Mrs.",
+        "Ms.",
+        "Prof.",
+        "Fig.",
+        "et al.",
+        "e.g.",
+        "i.e.",
+        "vs.",
+        "etc.",
+        "No.",
+        "Vol.",
+    ]
     for abbr in abbrevs:
         protected = protected.replace(abbr, abbr.replace(".", "<DOT>"))
 
     # Split on sentence boundaries
-    sentences = re.split(r'(?<=[.!?])\s+', protected)
+    sentences = re.split(r"(?<=[.!?])\s+", protected)
     sentences = [s.replace("<DOT>", ".").strip() for s in sentences if s.strip()]
 
     return sentences
@@ -171,7 +198,10 @@ def calculate_readability(text: str) -> dict:
         smog = 1.0430 * ((num_complex_words * (30 / num_sentences)) ** 0.5) + 3.1291
     else:
         # Simplified SMOG for shorter texts
-        smog = 1.0430 * ((num_complex_words * (30 / max(num_sentences, 1))) ** 0.5) + 3.1291
+        smog = (
+            1.0430 * ((num_complex_words * (30 / max(num_sentences, 1))) ** 0.5)
+            + 3.1291
+        )
 
     return {
         "statistics": {
@@ -220,7 +250,9 @@ def interpret_scores(scores: dict) -> dict:
 
     if fk_grade > thresh["target_max"]:
         recommendations.append("Reduce average sentence length (target: 15-20 words)")
-        recommendations.append("Replace multi-syllable words with simpler alternatives where possible")
+        recommendations.append(
+            "Replace multi-syllable words with simpler alternatives where possible"
+        )
         recommendations.append("Break complex sentences into shorter ones")
 
     if fk_grade < thresh["excellent_min"]:
@@ -228,9 +260,13 @@ def interpret_scores(scores: dict) -> dict:
         recommendations.append("Ensure writing reflects appropriate academic rigor")
 
     if fk_ease < 30:
-        recommendations.append("Text is very difficult to read; significant simplification recommended")
+        recommendations.append(
+            "Text is very difficult to read; significant simplification recommended"
+        )
     elif fk_ease > 60:
-        recommendations.append("Consider whether text is sufficiently technical for target journal")
+        recommendations.append(
+            "Consider whether text is sufficiently technical for target journal"
+        )
 
     return {
         "overall_status": status,
@@ -306,7 +342,10 @@ def main():
         if match:
             text = match.group(1)
         else:
-            print(f"Warning: Section '{args.section}' not found, analyzing entire text", file=sys.stderr)
+            print(
+                f"Warning: Section '{args.section}' not found, analyzing entire text",
+                file=sys.stderr,
+            )
 
     # Calculate metrics
     results = calculate_readability(text)
@@ -331,20 +370,24 @@ def main():
         print("READABILITY ANALYSIS REPORT")
         print("=" * 60)
 
-        print(f"\nText Statistics:")
+        print("\nText Statistics:")
         stats = results["statistics"]
         print(f"  Words: {stats['total_words']}")
         print(f"  Sentences: {stats['total_sentences']}")
         print(f"  Avg sentence length: {stats['avg_sentence_length']} words")
         print(f"  Avg syllables/word: {stats['avg_syllables_per_word']}")
-        print(f"  Complex words (3+ syllables): {stats['complex_words']} ({stats['percent_complex_words']}%)")
+        print(
+            f"  Complex words (3+ syllables): {stats['complex_words']} ({stats['percent_complex_words']}%)"
+        )
 
-        print(f"\nReadability Scores:")
+        print("\nReadability Scores:")
         scores = results["scores"]
         thresh = THRESHOLDS["flesch_kincaid_grade"]
         print(f"  Flesch-Kincaid Grade: {scores['flesch_kincaid_grade']}")
         print(f"    - {interpretation['grade_level_interpretation']}")
-        print(f"    - Target for scientific writing: {thresh['target_min']}-{thresh['target_max']}")
+        print(
+            f"    - Target for scientific writing: {thresh['target_min']}-{thresh['target_max']}"
+        )
         print(f"  Flesch Reading Ease: {scores['flesch_reading_ease']}")
         print(f"    - {interpretation['reading_ease_interpretation']}")
         print(f"  Gunning Fog Index: {scores['gunning_fog_index']}")
@@ -354,12 +397,18 @@ def main():
         print(f"Assessment: {interpretation['message']}")
 
         if interpretation["recommendations"]:
-            print(f"\nRecommendations:")
+            print("\nRecommendations:")
             for rec in interpretation["recommendations"]:
                 print(f"  - {rec}")
 
     # Exit code based on status
-    exit_codes = {"EXCELLENT": 0, "TARGET": 0, "ACCEPTABLE": 0, "TOO_COMPLEX": 1, "TOO_SIMPLE": 1}
+    exit_codes = {
+        "EXCELLENT": 0,
+        "TARGET": 0,
+        "ACCEPTABLE": 0,
+        "TOO_COMPLEX": 1,
+        "TOO_SIMPLE": 1,
+    }
     sys.exit(exit_codes.get(interpretation["overall_status"], 1))
 
 

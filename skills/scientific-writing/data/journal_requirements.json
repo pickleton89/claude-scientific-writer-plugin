@@ -1,0 +1,231 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Journal and venue requirements database for scientific manuscript preparation",
+  "version": "1.0.0",
+  "venues": {
+    "nature": {
+      "citation_style": "nature_numbered",
+      "word_limit": 4500,
+      "abstract_limit": 150,
+      "methods_placement": "supplement",
+      "structured_abstract": false,
+      "figures_limit": 6,
+      "references_limit": 50,
+      "reporting_guidelines": ["study_appropriate"]
+    },
+    "science": {
+      "citation_style": "science_numbered",
+      "word_limit": 4500,
+      "abstract_limit": 125,
+      "methods_placement": "supplement",
+      "structured_abstract": false,
+      "figures_limit": 4,
+      "references_limit": 40,
+      "reporting_guidelines": ["study_appropriate"]
+    },
+    "nejm": {
+      "citation_style": "vancouver",
+      "word_limit": 2700,
+      "abstract_limit": 250,
+      "methods_placement": "main_text",
+      "structured_abstract": true,
+      "figures_limit": 5,
+      "references_limit": 40,
+      "reporting_guidelines": ["consort", "strobe"]
+    },
+    "jama": {
+      "citation_style": "ama",
+      "word_limit": 3500,
+      "abstract_limit": 350,
+      "methods_placement": "main_text",
+      "structured_abstract": true,
+      "figures_limit": 5,
+      "references_limit": 60,
+      "reporting_guidelines": ["consort", "strobe", "prisma"]
+    },
+    "lancet": {
+      "citation_style": "vancouver",
+      "word_limit": 3500,
+      "abstract_limit": 300,
+      "methods_placement": "main_text",
+      "structured_abstract": true,
+      "figures_limit": 5,
+      "references_limit": 40,
+      "reporting_guidelines": ["consort", "strobe"]
+    },
+    "bmj": {
+      "citation_style": "vancouver",
+      "word_limit": 3000,
+      "abstract_limit": 250,
+      "methods_placement": "main_text",
+      "structured_abstract": true,
+      "figures_limit": 6,
+      "references_limit": 40,
+      "reporting_guidelines": ["consort", "strobe", "prisma", "stard"]
+    },
+    "plos_one": {
+      "citation_style": "vancouver",
+      "word_limit": null,
+      "abstract_limit": 300,
+      "methods_placement": "main_text",
+      "structured_abstract": false,
+      "figures_limit": null,
+      "references_limit": null,
+      "open_access": true,
+      "reporting_guidelines": ["required_for_study_type"]
+    },
+    "plos_biology": {
+      "citation_style": "vancouver",
+      "word_limit": 7000,
+      "abstract_limit": 300,
+      "methods_placement": "main_text",
+      "structured_abstract": false,
+      "figures_limit": 8,
+      "references_limit": null,
+      "open_access": true,
+      "reporting_guidelines": ["required_for_study_type"]
+    },
+    "elife": {
+      "citation_style": "vancouver",
+      "word_limit": null,
+      "abstract_limit": 150,
+      "methods_placement": "main_text",
+      "structured_abstract": false,
+      "figures_limit": null,
+      "references_limit": null,
+      "open_access": true,
+      "reporting_guidelines": ["study_appropriate"]
+    },
+    "cell": {
+      "citation_style": "cell_author_date",
+      "word_limit": 7000,
+      "abstract_limit": 150,
+      "methods_placement": "star_methods",
+      "structured_abstract": false,
+      "figures_limit": 7,
+      "references_limit": 100,
+      "reporting_guidelines": ["study_appropriate"]
+    },
+    "nature_medicine": {
+      "citation_style": "nature_numbered",
+      "word_limit": 5000,
+      "abstract_limit": 150,
+      "methods_placement": "supplement",
+      "structured_abstract": false,
+      "figures_limit": 6,
+      "references_limit": 50,
+      "reporting_guidelines": ["consort", "strobe", "prisma"]
+    },
+    "nature_communications": {
+      "citation_style": "nature_numbered",
+      "word_limit": null,
+      "abstract_limit": 150,
+      "methods_placement": "main_text",
+      "structured_abstract": false,
+      "figures_limit": 10,
+      "references_limit": 60,
+      "open_access": true,
+      "reporting_guidelines": ["study_appropriate"]
+    },
+    "annals_of_internal_medicine": {
+      "citation_style": "ama",
+      "word_limit": 3000,
+      "abstract_limit": 250,
+      "methods_placement": "main_text",
+      "structured_abstract": true,
+      "figures_limit": 5,
+      "references_limit": 50,
+      "reporting_guidelines": ["consort", "strobe", "prisma"]
+    },
+    "neurips": {
+      "citation_style": "numbered_brackets",
+      "page_limit": 8,
+      "abstract_limit": 200,
+      "methods_placement": "main_text",
+      "structured_abstract": false,
+      "requires_code": true,
+      "contribution_list": true,
+      "venue_type": "ml_conference",
+      "reporting_guidelines": []
+    },
+    "icml": {
+      "citation_style": "numbered_brackets",
+      "page_limit": 8,
+      "abstract_limit": 200,
+      "methods_placement": "main_text",
+      "structured_abstract": false,
+      "requires_code": true,
+      "venue_type": "ml_conference",
+      "reporting_guidelines": []
+    },
+    "iclr": {
+      "citation_style": "numbered_brackets",
+      "page_limit": 8,
+      "abstract_limit": 200,
+      "methods_placement": "main_text",
+      "structured_abstract": false,
+      "requires_code": true,
+      "venue_type": "ml_conference",
+      "reporting_guidelines": []
+    },
+    "cvpr": {
+      "citation_style": "ieee",
+      "page_limit": 8,
+      "abstract_limit": 200,
+      "methods_placement": "main_text",
+      "structured_abstract": false,
+      "requires_code": false,
+      "venue_type": "ml_conference",
+      "reporting_guidelines": []
+    },
+    "acl": {
+      "citation_style": "acl_author_year",
+      "page_limit": 8,
+      "abstract_limit": 200,
+      "methods_placement": "main_text",
+      "structured_abstract": false,
+      "venue_type": "nlp_conference",
+      "reporting_guidelines": []
+    },
+    "jacs": {
+      "citation_style": "acs",
+      "word_limit": 8000,
+      "abstract_limit": 200,
+      "methods_placement": "main_text",
+      "structured_abstract": false,
+      "figures_limit": null,
+      "references_limit": null,
+      "reporting_guidelines": []
+    },
+    "angewandte_chemie": {
+      "citation_style": "acs",
+      "word_limit": 4000,
+      "abstract_limit": 200,
+      "methods_placement": "supplement",
+      "structured_abstract": false,
+      "figures_limit": 4,
+      "references_limit": 40,
+      "reporting_guidelines": []
+    },
+    "psychological_bulletin": {
+      "citation_style": "apa",
+      "word_limit": 12000,
+      "abstract_limit": 250,
+      "methods_placement": "main_text",
+      "structured_abstract": false,
+      "figures_limit": null,
+      "references_limit": null,
+      "reporting_guidelines": ["prisma", "mars"]
+    },
+    "psychological_review": {
+      "citation_style": "apa",
+      "word_limit": 15000,
+      "abstract_limit": 250,
+      "methods_placement": "main_text",
+      "structured_abstract": false,
+      "figures_limit": null,
+      "references_limit": null,
+      "reporting_guidelines": []
+    }
+  }
+}

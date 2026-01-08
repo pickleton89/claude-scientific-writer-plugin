@@ -55,12 +55,24 @@ def split_sentences(text: str) -> list[str]:
     """Split text into sentences, handling common abbreviations."""
     # Protect common abbreviations
     protected = text
-    abbrevs = ["Dr.", "Mr.", "Mrs.", "Ms.", "Prof.", "Fig.", "et al.", "e.g.", "i.e.", "vs.", "etc."]
+    abbrevs = [
+        "Dr.",
+        "Mr.",
+        "Mrs.",
+        "Ms.",
+        "Prof.",
+        "Fig.",
+        "et al.",
+        "e.g.",
+        "i.e.",
+        "vs.",
+        "etc.",
+    ]
     for abbr in abbrevs:
         protected = protected.replace(abbr, abbr.replace(".", "<DOT>"))
 
     # Split on sentence boundaries
-    sentences = re.split(r'(?<=[.!?])\s+', protected)
+    sentences = re.split(r"(?<=[.!?])\s+", protected)
 
     # Restore abbreviations and clean
     sentences = [s.replace("<DOT>", ".").strip() for s in sentences if s.strip()]
@@ -69,7 +81,7 @@ def split_sentences(text: str) -> list[str]:
 
 def split_paragraphs(text: str) -> list[str]:
     """Split text into paragraphs."""
-    paragraphs = re.split(r'\n\s*\n', text)
+    paragraphs = re.split(r"\n\s*\n", text)
     return [p.strip() for p in paragraphs if p.strip() and len(p.split()) > 5]
 
 
@@ -94,15 +106,25 @@ def analyze_text(text: str) -> dict:
 
     # Sentence analysis
     sentence_lengths = [count_words(s) for s in sentences]
-    avg_sentence_length = sum(sentence_lengths) / len(sentence_lengths) if sentence_lengths else 0
+    avg_sentence_length = (
+        sum(sentence_lengths) / len(sentence_lengths) if sentence_lengths else 0
+    )
     max_sentence_length = max(sentence_lengths) if sentence_lengths else 0
-    long_sentences = [s for s, l in zip(sentences, sentence_lengths) if l > THRESHOLDS["sentence_length"]["maximum"]]
+    long_sentences = [
+        s
+        for s, l in zip(sentences, sentence_lengths)
+        if l > THRESHOLDS["sentence_length"]["maximum"]
+    ]
 
     # Paragraph analysis
     paragraph_lengths = [count_words(p) for p in paragraphs]
-    avg_paragraph_length = sum(paragraph_lengths) / len(paragraph_lengths) if paragraph_lengths else 0
+    avg_paragraph_length = (
+        sum(paragraph_lengths) / len(paragraph_lengths) if paragraph_lengths else 0
+    )
     max_paragraph_length = max(paragraph_lengths) if paragraph_lengths else 0
-    long_paragraphs = sum(1 for l in paragraph_lengths if l > THRESHOLDS["paragraph_length"]["maximum"])
+    long_paragraphs = sum(
+        1 for l in paragraph_lengths if l > THRESHOLDS["paragraph_length"]["maximum"]
+    )
 
     # Passive voice analysis
     passive_sentences = [s for s in sentences if detect_passive_voice(s)]
@@ -193,7 +215,7 @@ def evaluate_quality(metrics: dict) -> dict:
     results["checks"]["passive_voice"] = {
         "status": passive_status,
         "value": metrics["passive_voice"]["percentage"],
-        "threshold": f"Target: <={passive_thresh['target_max']*100:.0f}%, Max: {passive_thresh['maximum']*100:.0f}%",
+        "threshold": f"Target: <={passive_thresh['target_max'] * 100:.0f}%, Max: {passive_thresh['maximum'] * 100:.0f}%",
     }
 
     return results
@@ -203,9 +225,13 @@ def main():
     parser = argparse.ArgumentParser(
         description="Validate scientific writing quality against defined thresholds."
     )
-    parser.add_argument("input_file", nargs="?", help="Path to input file (Markdown or plain text)")
+    parser.add_argument(
+        "input_file", nargs="?", help="Path to input file (Markdown or plain text)"
+    )
     parser.add_argument("--text", "-t", help="Text to analyze directly")
-    parser.add_argument("--section", "-s", help="Analyze only a specific section (e.g., 'Introduction')")
+    parser.add_argument(
+        "--section", "-s", help="Analyze only a specific section (e.g., 'Introduction')"
+    )
     parser.add_argument("--json", "-j", action="store_true", help="Output as JSON only")
 
     args = parser.parse_args()
@@ -230,7 +256,10 @@ def main():
         if match:
             text = match.group(1)
         else:
-            print(f"Warning: Section '{args.section}' not found, analyzing entire text", file=sys.stderr)
+            print(
+                f"Warning: Section '{args.section}' not found, analyzing entire text",
+                file=sys.stderr,
+            )
 
     # Analyze and evaluate
     metrics = analyze_text(text)
@@ -248,19 +277,30 @@ def main():
         print("=" * 60)
         print("SCIENTIFIC WRITING QUALITY REPORT")
         print("=" * 60)
-        print(f"\nTotal: {metrics['total_words']} words, {metrics['total_sentences']} sentences, {metrics['total_paragraphs']} paragraphs")
+        print(
+            f"\nTotal: {metrics['total_words']} words, {metrics['total_sentences']} sentences, {metrics['total_paragraphs']} paragraphs"
+        )
         print(f"\nOverall Status: {evaluation['overall_status']}")
         print("-" * 40)
 
         for check_name, check_data in evaluation["checks"].items():
-            status_icon = {"EXCELLENT": "+", "TARGET": "+", "ACCEPTABLE": "~", "FAIL": "X"}[check_data["status"]]
-            print(f"[{status_icon}] {check_name.replace('_', ' ').title()}: {check_data['value']} ({check_data['status']})")
+            status_icon = {
+                "EXCELLENT": "+",
+                "TARGET": "+",
+                "ACCEPTABLE": "~",
+                "FAIL": "X",
+            }[check_data["status"]]
+            print(
+                f"[{status_icon}] {check_name.replace('_', ' ').title()}: {check_data['value']} ({check_data['status']})"
+            )
             print(f"    {check_data['threshold']}")
 
         # Show problem areas
         if metrics["sentence_length"]["over_limit_examples"]:
             print("\nLong sentences to revise:")
-            for i, sent in enumerate(metrics["sentence_length"]["over_limit_examples"], 1):
+            for i, sent in enumerate(
+                metrics["sentence_length"]["over_limit_examples"], 1
+            ):
                 truncated = sent[:100] + "..." if len(sent) > 100 else sent
                 print(f"  {i}. {truncated}")
 
