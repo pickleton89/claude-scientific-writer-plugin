@@ -7,6 +7,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/literature-review/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
+  - Executive summary: ~75% current determinism, targeting 90% (15% variance reduction)
+  - Key insight: Remarkably well-structured with excellent reference documentation, explicit numerical thresholds, decision matrices, and two working Python scripts (verify_citations.py, generate_pdf.py); remaining variance is in unvalidated inputs, unstandardized intermediate outputs, and subjective processes (theme identification)
+  - 3-phase implementation plan with complete Python code:
+    - Phase 1: Critical validation (`prisma_validator.py`, PICO/PEO/SPIDER JSON schemas, preflight validation)
+    - Phase 2: Quality & selection (`quality_scorer.py`, `database_selector.py`, `review_config.py`)
+    - Phase 3: Tracking & polish (screening tracker format, search syntax validators, exit criteria checker)
+  - Ready-to-implement modules with complete code for all utilities
+  - PRISMA flow validator checking arithmetic consistency of identification→screening→included numbers
+  - Quality assessment scorer with tool-specific domain definitions (RoB2, NOS, QUADAS2, CASP, AMSTAR2)
+  - Algorithmic database selector implementing decision matrix from decision_frameworks.md
+  - Research question schemas (PICOQuestion, PEOQuestion, SPIDERQuestion dataclasses) with validation
+  - Review configuration preflight validator checking database coverage, date ranges, criteria specificity
+  - Deterministic scorecard: Input validation 50%→90%, PRISMA documentation 70%→95%, Quality assessment 60%→85%
+  - Detection pattern appendix: research question type detection, study design pattern matching
+  - Priority matrix: prisma_validator (P0), PICO schemas (P0), quality_scorer (P1), database_selector (P1)
+  - Success metrics: input validation coverage 50%→95%, PRISMA accuracy 70%→98%, overall determinism 75%→93%
+
 - **skills/markdown-to-pdf/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
   - Executive summary: ~85% current determinism, targeting 95% (10% variance reduction)
   - Key insight: Skill is highly deterministic due to excellent delegation to Python libraries (`oligon_reports`) with explicit pattern matching; remaining variance is in presentation formatting
