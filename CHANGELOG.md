@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- **skills/scientific-slides/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
+  - Executive summary with key findings and expected 40-60% variance reduction
+  - Current state analysis mapping stochastic vs deterministic components
+  - 4-phase implementation plan with complete Python code:
+    - Phase 1: Deterministic post-generation validation (PIL-based image analysis)
+    - Phase 2: JSON schema for structured slide plan inputs
+    - Phase 3: Hybrid quality scoring (40% deterministic, 60% AI)
+    - Phase 4: Documentation consolidation
+  - Ready-to-implement modules: `validate_slide_image.py`, `validate_slide_plan.py`, `prompt_templates.py`, `hybrid_quality_scorer.py`
+  - JSON schema definition for slide plans
+  - Testing plan with pytest unit and integration tests
+  - Success metrics and timeline summary
+
 ### Removed
 - **Phase 7: Cleanup and deprecation completed**
   - Removed `skills/research-lookup/` directory (replaced by paper-search)
