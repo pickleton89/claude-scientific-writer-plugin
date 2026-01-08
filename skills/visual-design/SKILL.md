@@ -1,7 +1,7 @@
 ---
 name: visual-design
-version: 2.3.0
-description: "Design philosophy and publication specifications for scientific visuals. Provides guidance on typography, color, layout, accessibility, and journal requirements. Delegates implementation to specialized skills."
+version: 2.4.0
+description: "Design philosophy and publication specifications for scientific visuals. Provides guidance on typography, color, layout, accessibility, and journal requirements. Includes deterministic Python utilities for validation and rendering. Delegates implementation to specialized skills."
 allowed-tools: [Read, Glob, Write]
 quantification-reference: "../QUANTIFICATION_THRESHOLDS.md"
 ---
@@ -542,6 +542,83 @@ See `references/output_templates.md` for:
 - **Quick Specification Card** — Rapid documentation format
 
 </templates>
+
+<utilities>
+## Deterministic Utilities
+
+This skill includes Python utilities for deterministic operations, reducing LLM variance by encoding decision matrices, validation rules, and publication specifications as executable code.
+
+### Available Utilities
+
+| Module | Function | Description |
+|--------|----------|-------------|
+| `venue_specs.py` | `get_venue_specs(venue)` | Get publication specs for any journal |
+| `chart_selector.py` | `recommend_chart_type(data_type, n_categories)` | Chart recommendations from decision matrix |
+| `palette_selector.py` | `select_palette(data_type, n_groups)` | Colorblind-safe palette selection |
+| `accessibility.py` | `contrast_ratio(color1, color2)` | WCAG contrast calculation |
+| `accessibility.py` | `validate_accessibility(specs)` | Full accessibility validation |
+| `quality_scorer.py` | `calculate_measurable_score(specs, venue)` | Objective quality metrics |
+| `validation.py` | `validate_figure_spec(spec, venue)` | Complete spec validation |
+| `template_renderer.py` | `render_spec_yaml(spec)` | Machine-readable output |
+| `template_renderer.py` | `render_spec_markdown(spec)` | Human-readable output |
+
+### Usage Example
+
+```python
+from skills.visual_design.utils import (
+    get_venue_specs,
+    recommend_chart_type,
+    select_palette,
+    validate_figure_spec,
+    render_spec_yaml,
+)
+
+# Get Nature specifications
+venue = get_venue_specs("nature")
+# Returns: {single_col_mm: 89, min_dpi: 300, panel_label_case: "lower", ...}
+
+# Get chart recommendation
+chart = recommend_chart_type("time_series", n_groups=3)
+# Returns: {recommended: ["line", "area"], avoid: ["bar"], reason: "..."}
+
+# Select colorblind-safe palette
+palette = select_palette(data_type="categorical", n_groups=5)
+# Returns: {palette_name: "okabe_ito", colors: [...], colorblind_safe: True}
+
+# Validate specification
+spec = {
+    "venue": "nature",
+    "dimensions": {"width_mm": 89},
+    "resolution_dpi": 300,
+    "typography": {"min_pt": 7},
+    "color_palette": {"text": "#000000", "background": "#FFFFFF"},
+}
+validation = validate_figure_spec(spec)
+# Returns: {valid: True, errors: [], warnings: [], checks_performed: [...]}
+
+# Render specification
+yaml_output = render_spec_yaml(spec)
+```
+
+### Test Suite
+
+Run the comprehensive test suite to validate all utilities:
+
+```bash
+uv run pytest skills/visual-design/tests/ -v
+```
+
+The test suite includes 155 tests covering:
+- Venue specification lookup and normalization
+- Chart type selection logic
+- Palette selection for all data types
+- WCAG contrast calculations
+- Accessibility validation
+- Quality scoring
+- Integration tests for end-to-end workflows
+- Determinism verification
+
+</utilities>
 
 <cross_references>
 ## Related Skills
