@@ -1,0 +1,339 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/oligon/claude-scientific-writer/brand-tokens.schema.json",
+  "title": "Brand Tokens Schema",
+  "description": "JSON Schema for brand skill tokens files. Validates structure, required fields, and data formats.",
+  "type": "object",
+  "required": ["meta", "colors", "color_cycles"],
+  "additionalProperties": true,
+  "properties": {
+    "meta": {
+      "type": "object",
+      "description": "Brand metadata",
+      "required": ["name", "version"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable brand name"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+(\\.\\d+)?$",
+          "description": "Semantic version (X.Y or X.Y.Z)"
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of the brand's purpose"
+        }
+      }
+    },
+    "philosophy": {
+      "type": "object",
+      "description": "Brand design philosophy and principles",
+      "properties": {
+        "core_principle": {
+          "type": "string"
+        },
+        "guidelines": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "colors": {
+      "type": "object",
+      "description": "Color definitions organized by category",
+      "required": ["primary", "neutrals", "structure"],
+      "properties": {
+        "primary": {
+          "$ref": "#/$defs/colorCategory",
+          "description": "Primary brand colors for emphasis/highlights"
+        },
+        "contrast": {
+          "$ref": "#/$defs/colorCategory",
+          "description": "Colors that contrast with primary (opposition, bidirectional)"
+        },
+        "neutrals": {
+          "$ref": "#/$defs/colorCategory",
+          "description": "Grayscale colors for default data representation"
+        },
+        "supporting_blues": {
+          "$ref": "#/$defs/colorCategory",
+          "description": "Additional blue variants for extended palettes"
+        },
+        "structure": {
+          "$ref": "#/$defs/colorCategory",
+          "description": "Structural colors (white, black, gridlines)"
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/colorCategory"
+      }
+    },
+    "color_cycles": {
+      "type": "object",
+      "description": "Named color cycles for different visualization contexts",
+      "minProperties": 1,
+      "additionalProperties": {
+        "$ref": "#/$defs/colorCycle"
+      }
+    },
+    "divergent_colormap": {
+      "type": "object",
+      "description": "Colormap definition for heatmaps with data centered at zero",
+      "properties": {
+        "description": {"type": "string"},
+        "gradient": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "type": "object",
+            "required": ["position", "color"],
+            "properties": {
+              "position": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "color": {"$ref": "#/$defs/hexColor"},
+              "label": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "typography": {
+      "type": "object",
+      "description": "Typography specifications",
+      "properties": {
+        "font_family": {
+          "type": "object",
+          "properties": {
+            "primary": {
+              "type": "array",
+              "items": {"type": "string"},
+              "minItems": 1
+            },
+            "fallback_fonts": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "forbidden": {
+              "type": "array",
+              "items": {"type": "string"}
+            }
+          }
+        },
+        "figures": {"$ref": "#/$defs/typographyContext"},
+        "documents": {"$ref": "#/$defs/typographyContext"},
+        "presentations": {"$ref": "#/$defs/typographyContext"}
+      }
+    },
+    "layout": {
+      "type": "object",
+      "description": "Layout specifications for figures and documents",
+      "properties": {
+        "figures": {
+          "type": "object",
+          "properties": {
+            "background": {"$ref": "#/$defs/hexColor"},
+            "spines": {
+              "type": "object",
+              "properties": {
+                "visible": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["left", "right", "top", "bottom"]
+                  }
+                },
+                "hidden": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["left", "right", "top", "bottom"]
+                  }
+                },
+                "width_pt": {"type": "number", "minimum": 0},
+                "color": {"$ref": "#/$defs/hexColor"}
+              }
+            },
+            "gridlines": {
+              "type": "object",
+              "properties": {
+                "default": {"type": "boolean"},
+                "if_needed": {
+                  "type": "object",
+                  "properties": {
+                    "color": {"$ref": "#/$defs/hexColor"},
+                    "width_pt": {"type": "number", "minimum": 0}
+                  }
+                }
+              }
+            },
+            "legend": {
+              "type": "object",
+              "properties": {
+                "frameon": {"type": "boolean"},
+                "location": {"type": "string"}
+              }
+            }
+          }
+        },
+        "aspect_ratios": {
+          "type": "object",
+          "additionalProperties": {"type": "string"}
+        }
+      }
+    },
+    "lines_and_markers": {
+      "type": "object",
+      "description": "Line and marker styling specifications",
+      "properties": {
+        "line_width": {
+          "type": "object",
+          "properties": {
+            "primary_pt": {"$ref": "#/$defs/sizeSpec"},
+            "secondary_pt": {"type": "number", "minimum": 0},
+            "error_bars_pt": {"type": "number", "minimum": 0}
+          }
+        },
+        "marker_size_pt": {"$ref": "#/$defs/sizeSpec"},
+        "error_bands": {
+          "type": "object",
+          "properties": {
+            "opacity": {"$ref": "#/$defs/sizeSpec"},
+            "border": {"type": "boolean"}
+          }
+        }
+      }
+    },
+    "resolution": {
+      "type": "object",
+      "description": "Output resolution specifications",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "dpi": {"type": "integer", "minimum": 72},
+          "formats": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        }
+      }
+    },
+    "accessibility": {
+      "type": "object",
+      "description": "Accessibility requirements and testing guidance",
+      "properties": {
+        "colorblind_safe_pair": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/hexColor"},
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "requirements": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "testing_tools": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "preflight_checklist": {
+      "type": "array",
+      "description": "Checklist items for validating brand compliance",
+      "items": {"type": "string"}
+    }
+  },
+  "$defs": {
+    "hexColor": {
+      "type": "string",
+      "pattern": "^#[0-9A-Fa-f]{6}$",
+      "description": "6-digit hex color code"
+    },
+    "colorDefinition": {
+      "type": "object",
+      "required": ["hex"],
+      "properties": {
+        "hex": {"$ref": "#/$defs/hexColor"},
+        "role": {
+          "type": "string",
+          "description": "Description of when/how to use this color"
+        }
+      }
+    },
+    "colorCategory": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "$ref": "#/$defs/colorDefinition"
+      }
+    },
+    "colorCycle": {
+      "type": "object",
+      "description": "A named color cycle for a specific visualization context",
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "When to use this cycle"
+        },
+        "colors": {
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {"$ref": "#/$defs/hexColor"},
+              "minItems": 1
+            },
+            {
+              "type": "object",
+              "additionalProperties": {"$ref": "#/$defs/hexColor"}
+            }
+          ]
+        },
+        "assignments": {
+          "type": "object",
+          "additionalProperties": {"type": "string"}
+        },
+        "marker_shapes": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "note": {"type": "string"}
+      }
+    },
+    "sizeSpec": {
+      "description": "Size specification - single value or [min, max] range",
+      "oneOf": [
+        {"type": "number", "minimum": 0},
+        {
+          "type": "array",
+          "items": {"type": "number", "minimum": 0},
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    "typographyContext": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "size_pt": {"$ref": "#/$defs/sizeSpec"},
+          "weight": {
+            "type": "string",
+            "enum": ["normal", "bold", "light", "medium", "semibold"]
+          },
+          "style": {
+            "type": "string",
+            "enum": ["normal", "italic", "oblique"]
+          },
+          "color": {"$ref": "#/$defs/hexColor"}
+        }
+      }
+    }
+  }
+}

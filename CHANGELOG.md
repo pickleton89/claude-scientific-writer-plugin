@@ -7,6 +7,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/brand-interface/**: Complete validation toolkit for brand skills implementing BRAND_SKILL_INTERFACE contract
+  - **schemas/brand-tokens.schema.json**: JSON Schema 2020-12 for automated token file validation
+    - Validates required fields (meta, colors, color_cycles), hex color patterns, nested structures
+    - Reusable `$defs` for common patterns (hexColor, colorCategory, colorCycle, typographyContext)
+  - **validation/validate_brand.py**: Comprehensive brand skill validator CLI
+    - Directory structure validation, JSON Schema validation, Python adapter API verification via AST
+    - SKILL.md frontmatter parsing, accessibility integration
+    - Structured ValidationReport output with categorized issues (ERROR/WARNING/INFO)
+  - **validation/check_accessibility.py**: WCAG 2.1 color accessibility checker
+    - Contrast ratio calculation per W3C specification, relative luminance
+    - Grayscale conversion and distance metrics
+    - Colorblind simulation matrices (protanopia, deuteranopia, tritanopia)
+  - **validation/controlled_vocabularies.py**: Standardized enums for deterministic behavior
+    - BrandType (organizational, personal, institutional, journal, generic)
+    - ColorRole (20+ semantic roles replacing free-text descriptions)
+    - CycleName, FontWeight, FontStyle, MarkerShape, LineStyle
+  - **type_stubs/adapter_interface.pyi**: Python type definitions for adapter implementations
+    - BrandAdapterProtocol with required interface, BrandAdapterOptionalProtocol for extensions
+  - **DETERMINISM_AUDIT.md**: Audit documentation with pre/post implementation state
+  - Determinism improvement: ~30% → ~90% through automated validation replacing manual checklist
+
+### Changed
+- **skills/BRAND_SKILL_INTERFACE.md** (v1.0.0 → v1.1.0): Updated with validation tools integration
+  - Added "Validation Tools" section with usage examples
+  - Added "Controlled Vocabularies" section with standardized values tables
+  - Updated checklist to indicate automated vs manual checks
+  - Added validation tools version tracking
+
 - **skills/citation-management/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
   - Executive summary: ~75% current determinism, targeting 90% (15% variance reduction)
   - Key insight: Exceptionally well-designed with four comprehensive Python scripts already achieving high determinism for metadata extraction, validation, formatting, and DOI conversion; remaining variance involves hardcoded heuristics (title protection, citation key generation) and decision trees documented in markdown rather than encoded as executable logic

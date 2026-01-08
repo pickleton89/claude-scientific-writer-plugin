@@ -1,8 +1,9 @@
 # Brand Skill Interface Contract
 
 > Specification for creating alternative brand skills compatible with the skill library
-> Version: 1.0.0
+> Version: 1.1.0
 > Created: 2025-12-30
+> Updated: 2026-01-08
 
 ## Purpose
 
@@ -11,6 +12,31 @@ This document defines the interface that brand skills must implement to integrat
 1. Skills like `plotting-libraries` can load any brand without code changes
 2. SKILL_ROUTER.md can route to the correct brand skill
 3. Future brands integrate seamlessly
+
+## Validation Tools
+
+This interface includes automated validation tools to ensure compliance:
+
+```bash
+# Validate a brand skill
+python skills/brand-interface/validation/validate_brand.py skills/your-brand
+
+# Check color accessibility
+python skills/brand-interface/validation/check_accessibility.py skills/your-brand/tokens/brand-tokens.json
+
+# JSON Schema validation (requires jsonschema package)
+python -c "import json, jsonschema; \
+  schema = json.load(open('skills/brand-interface/schemas/brand-tokens.schema.json')); \
+  tokens = json.load(open('skills/your-brand/tokens/brand-tokens.json')); \
+  jsonschema.validate(tokens, schema); print('Valid!')"
+```
+
+**Validation Artifacts:**
+- `brand-interface/schemas/brand-tokens.schema.json` - JSON Schema for tokens validation
+- `brand-interface/validation/validate_brand.py` - Complete brand validation script
+- `brand-interface/validation/check_accessibility.py` - WCAG contrast checker
+- `brand-interface/validation/controlled_vocabularies.py` - Standardized enums
+- `brand-interface/type_stubs/adapter_interface.pyi` - Python type definitions
 
 ## Required Structure
 
@@ -198,33 +224,79 @@ And to the "Brand Application: Quick Selection" table:
 
 ---
 
+## Controlled Vocabularies
+
+To ensure deterministic behavior, use standardized values from `controlled_vocabularies.py`:
+
+### Brand Types (frontmatter `brand-type`)
+| Value | Description |
+|-------|-------------|
+| `organizational` | Company/organization brand |
+| `personal` | Individual researcher's style |
+| `institutional` | University/institute brand |
+| `journal` | Journal-specific styling |
+| `generic` | General-purpose/no affiliation |
+
+### Color Roles (for `role` field in tokens)
+| Role | Description |
+|------|-------------|
+| `primary-highlight` | Main emphasis color |
+| `data-primary` | Primary data series |
+| `data-secondary` | Secondary data series |
+| `data-control` | Control/baseline data |
+| `data-treatment` | Treatment/experimental data |
+| `direction-up` | Upregulated, positive |
+| `direction-down` | Downregulated, negative |
+| `background` | Figure background |
+| `text` | Labels, titles, legends |
+| `axes` | Axis lines, ticks |
+| `annotations` | Annotation text/lines |
+
+### Cycle Names
+| Name | Use Case |
+|------|----------|
+| `default` | Default cycle (required) |
+| `treatment_control` | Control vs treatment comparison |
+| `neutrals_only` | All groups equal weight |
+| `opposing` | Bidirectional effects (up/down) |
+| `multi_category` | 4+ categories |
+| `volcano` | Differential expression plots |
+
+---
+
 ## Integration Checklist
 
-Before submitting a new brand skill:
+Before submitting a new brand skill, run the validation tools:
 
-### Structure
+```bash
+# Run full validation
+python skills/brand-interface/validation/validate_brand.py skills/your-brand -v
+
+# The validator checks all items below automatically
+```
+
+### Structure (automated)
 - [ ] Directory follows required structure
-- [ ] `tokens/brand-tokens.json` follows schema above
+- [ ] `tokens/brand-tokens.json` follows JSON Schema
 - [ ] At least one adapter provided
 
-### API Compliance
-- [ ] Adapter exports required functions
-- [ ] `set_brand_style()` applies rcParams correctly
-- [ ] `get_cycle()` returns list of hex strings
-- [ ] `get_color()` returns single hex string
+### API Compliance (automated)
+- [ ] Adapter exports required functions (`BRAND_COLORS`, `set_brand_style`, `get_cycle`, `get_color`)
+- [ ] Function signatures match interface specification
+- [ ] Type stub compliance (optional: use mypy with `adapter_interface.pyi`)
 
-### SKILL.md
-- [ ] Has proper frontmatter with `brand-type` and `tokens-file`
-- [ ] Has `<cross_references>` to visual-design and plotting-libraries
-- [ ] Has `<decision_framework>` for color cycle selection
-- [ ] Has `<success_criteria>` checklist
+### SKILL.md (automated)
+- [ ] Has proper YAML frontmatter with required fields
+- [ ] Has `brand-type` from controlled vocabulary
+- [ ] Has recommended XML sections
 
-### Accessibility
-- [ ] Colors tested for grayscale readability
-- [ ] Colors tested for colorblind accessibility
-- [ ] Redundant encoding documented (shapes, patterns)
+### Accessibility (automated)
+- [ ] All colors pass WCAG AA contrast (3:1 minimum)
+- [ ] Text colors pass WCAG AA (4.5:1 minimum)
+- [ ] Grayscale distinguishability >= 30
+- [ ] Colorblind simulation check (protanopia, deuteranopia, tritanopia)
 
-### Integration
+### Integration (manual)
 - [ ] Added to SKILL_ROUTER.md "Brand Application" section
 - [ ] Cross-referenced from visual-design and plotting-libraries
 - [ ] CHANGELOG.md updated
@@ -271,5 +343,6 @@ See `skills/oligon-brand/` for a complete reference implementation of this inter
 
 ---
 
-*Interface contract version: 1.0.0*
+*Interface contract version: 1.1.0*
 *Compatible with skill library version: 2.10.0+*
+*Validation tools version: 1.0.0*
