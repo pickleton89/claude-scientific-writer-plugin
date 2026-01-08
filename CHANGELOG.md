@@ -7,6 +7,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/generate-image/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
+  - Executive summary: ~60% current determinism, targeting 80% (20% variance reduction)
+  - Key insight: Well-architected with clear decision frameworks and quality rubrics; image generation is fundamentally stochastic but surrounding validation can be deterministic
+  - 3-phase implementation plan with complete Python code:
+    - Phase 1: Quick wins (`validate_output.py` for PIL-based image validation, `analyze_prompt.py` for 5-component formula checking)
+    - Phase 2: Core infrastructure (`utils/models.py` for model validation/selection, `utils/metadata.py` for generation logging)
+    - Phase 3: Iteration tracking (`iteration_tracker.py` implementing stopping rules from SKILL.md)
+  - Ready-to-implement modules with complete code for all utilities
+  - Automated image validation checking resolution tiers (512/1024/2048px), file integrity, format
+  - Prompt component analyzer detecting STYLE, MEDIUM, TECHNICAL, QUALITY keywords from templates
+  - Model ID validation against allowlist with typo suggestions
+  - Deterministic model selector implementing decision tree (quality/speed/budget priorities)
+  - Generation metadata logger for reproducibility (sidecar JSON with prompt, model, timestamp, resolution)
+  - Iteration enforcer implementing all 4 stopping rules from SKILL.md success criteria
+  - Testing plan with pytest examples for all validators
+  - Priority matrix: validate_output (P0), analyze_prompt (P0), models (P1), metadata (P1), iteration_tracker (P2)
+  - Success metrics: prompt validation 0%→80%, output validation 0%→90%, iteration overruns 20%→5%
+
 - **skills/hypothesis-generation/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
   - Executive summary: ~55-60% current determinism, targeting 85% (25-30% variance reduction)
   - Key insight: Well-documented with excellent workflow structure (8 stages), quantified thresholds (≥40 citations, <5% search saturation, quality scores ≥5/10); variance exists because thresholds are stated but never validated—missing validation layer transforms aspirational into enforced requirements
