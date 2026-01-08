@@ -7,6 +7,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/plotting-libraries/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
+  - Executive summary: ~55-60% current determinism, targeting 80% (20-25% variance reduction)
+  - Key insight: Decision matrices (Python vs R, library selection, thresholds) are deterministic in design but need code implementation
+  - 4-phase implementation plan with complete Python code:
+    - Phase 1: Reproducibility fixes (random seeds in clustering, version pins) - P0 priority
+    - Phase 2: Parameter lookup tables (`scripts/plotting_params.py` with thresholds, journal specs, palettes)
+    - Phase 3: Input validation (`scripts/validate_data.py` for volcano/heatmap data)
+    - Phase 4: Output validation (`scripts/validate_figure.py` for saved figures)
+  - Ready-to-implement modules with complete code for all utilities
+  - Volcano threshold presets (exploratory, standard, stringent, very_stringent)
+  - Journal figure specifications (Nature, Cell, Science, PLOS) with dimension lookup
+  - Color palette module with colorblind-safe options (Okabe-Ito, volcano, heatmap diverging)
+  - Plot type classifier converting user requests to plot types via keyword matching
+  - Ecosystem classifier (Python vs R) based on library/tool mentions
+  - Data validation with specific checks for volcano plots and heatmaps
+  - Figure validation with PDF/PNG checks (dimensions, DPI, fonts embedded)
+  - Testing plan with pytest examples for all validators
+  - Priority matrix emphasizing random seeds and version pins as P0 quick wins
+  - Success metrics showing path from 55% to 80% deterministic parameter selection
+
 - **skills/research-paper-summarizer/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
   - Executive summary: ~55-60% current determinism, targeting 75-80% (20% variance reduction)
   - Key insight: Excellent architectural foundations (subagent pipeline, templates, section markers) but validation is prose-based
