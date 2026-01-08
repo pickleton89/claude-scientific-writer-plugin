@@ -844,6 +844,68 @@ Each skill's `<cross_references>` section should include:
 
 *This router provides deterministic skill selection for the 23-skill scientific writing library (19 top-level + 4 document-skills sub-skills). For threshold values and quality criteria, see `QUANTIFICATION_THRESHOLDS.md`.*
 
+---
+
+## Validation Tooling
+
+The skill router includes programmatic validation tools for deterministic routing:
+
+### Directory Structure
+
+```
+skills/skill-router/
+├── __init__.py           # Package exports
+├── route.py              # Deterministic routing module
+├── skill_triggers.yaml   # Keyword registry for all 23 skills
+└── tests/
+    ├── __init__.py
+    ├── canonical_routes.yaml  # 97 canonical test cases
+    └── test_routing.py        # Validation script
+```
+
+### Usage
+
+```bash
+# Run all routing tests
+uv run python skills/skill-router/tests/test_routing.py
+
+# Interactive routing mode
+uv run python skills/skill-router/route.py --interactive
+
+# Route a single request
+uv run python skills/skill-router/route.py "Create a bar chart of my results"
+
+# List all skills
+uv run python skills/skill-router/route.py --list-skills
+```
+
+### Programmatic API
+
+```python
+from skills.skill_router import route_request, RoutingDecision
+
+result = route_request("Create a bar chart of my results")
+print(result.primary_skill)      # "plotting-libraries"
+print(result.confidence)         # 0.75
+print(result.requires_clarification)  # False
+
+# Output formats
+print(result.to_xml())           # Structured XML output
+print(result.to_dict())          # Dictionary for JSON
+```
+
+### Confidence Thresholds
+
+| Threshold | Meaning |
+|-----------|---------|
+| >= 0.7 | High confidence - route directly |
+| 0.5 - 0.7 | Medium confidence - route with clarification flag |
+| < 0.5 | Low confidence - requires disambiguation |
+
+See `skill-router/DETERMINISM_AUDIT.md` for implementation details.
+
+---
+
 > **Consolidation Notes:**
 > - `research-lookup` has been replaced by `paper-search`. Use `paper-search` for multi-database academic paper search (PubMed, bioRxiv, Semantic Scholar, Google Scholar).
 > - `scholar-evaluation` has been merged into `peer-review` as an optional scoring mode. Use `peer-review` with "Scoring Only" or "Review + Scoring" mode for 8-dimension quantitative assessment. *(Archived to `docs/archive/scholar-evaluation/`)*

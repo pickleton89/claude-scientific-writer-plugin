@@ -1,0 +1,793 @@
+# Skill Trigger Registry
+# Version: 1.0.0
+# Purpose: Deterministic keyword-based routing for the 23-skill scientific writing library
+#
+# Structure:
+#   keywords: Common terms that indicate this skill (weighted equally)
+#   triggers: Regex patterns for stronger matches (boost confidence by 0.3)
+#   category: Primary task category for fallback routing
+#   output_formats: File formats this skill can produce
+#   negative_keywords: Terms that indicate this skill should NOT be used
+
+skills:
+  # ============================================================
+  # VISUAL CREATION SKILLS
+  # ============================================================
+
+  plotting-libraries:
+    description: Data visualization with matplotlib, seaborn, ggplot2, plotly
+    category: visual
+    keywords:
+      - plot
+      - chart
+      - graph
+      - histogram
+      - scatter
+      - heatmap
+      - visualization
+      - visualize
+      - figure
+      - data
+      - bar chart
+      - line plot
+      - box plot
+      - violin plot
+      - volcano plot
+      - pca
+      - umap
+      - seaborn
+      - matplotlib
+      - ggplot
+      - ggplot2
+      - plotly
+      - data figure
+      - statistical plot
+    triggers:
+      - "visualize"
+      - "plot"
+      - "chart"
+      - "graph"
+      - "histogram"
+      - "heatmap"
+      - "(bar|line|scatter|box|violin)\\s*(chart|plot|graph)"
+      - "correlation.*matrix"
+      - "(pca|umap|tsne).*plot"
+    output_formats: [png, svg, pdf, html]
+    negative_keywords:
+      - diagram
+      - schematic
+      - flowchart
+      - workflow
+      - mechanism
+      - pathway
+
+  scientific-schematics:
+    description: Diagrams, flowcharts, pathways, mechanism illustrations
+    category: visual
+    keywords:
+      - diagram
+      - schematic
+      - flowchart
+      - workflow
+      - pathway
+      - mechanism
+      - process
+      - pipeline
+      - architecture
+      - process diagram
+      - methods diagram
+      - concept map
+      - experimental setup
+      - biological pathway
+      - signaling pathway
+      - molecular mechanism
+    triggers:
+      - "diagram"
+      - "schematic"
+      - "flowchart"
+      - "workflow"
+      - "pathway"
+      - "mechanism"
+      - "pipeline"
+      - "(workflow|process).*diagram"
+      - "(biological|signaling|metabolic).*pathway"
+      - "experimental.*setup"
+    output_formats: [svg, png, pdf]
+    negative_keywords:
+      - plot
+      - chart
+      - histogram
+      - scatter
+      - bar chart
+      - heatmap
+
+  generate-image:
+    description: AI-generated imagery, illustrations, photorealistic images
+    category: visual
+    keywords:
+      - image
+      - illustration
+      - artistic
+      - photorealistic
+      - dall-e
+      - generate image
+      - ai image
+      - create image
+      - visual concept
+      - conceptual illustration
+      - creative visual
+      - rendering
+      - ai generated
+    triggers:
+      - "generate.*image"
+      - "create.*illustration"
+      - "ai.*generat"
+      - "photorealistic"
+      - "artistic.*visual"
+      - "image.*of"
+    output_formats: [png, jpg, webp]
+    negative_keywords:
+      - plot
+      - chart
+      - diagram
+      - schematic
+      - histogram
+      - scatter
+
+  visual-design:
+    description: Design guidance, color theory, typography, layout, accessibility
+    category: visual
+    keywords:
+      - design
+      - color theory
+      - typography
+      - layout
+      - accessibility
+      - color palette
+      - font
+      - visual style
+      - design principles
+      - aesthetic
+      - composition
+      - whitespace
+      - visual hierarchy
+    triggers:
+      - "design.*guidance"
+      - "color.*palette"
+      - "layout.*principle"
+      - "visual.*style"
+      - "accessibility.*check"
+      - "wcag"
+    output_formats: []  # Supporting skill, doesn't produce output directly
+    negative_keywords: []
+
+  # ============================================================
+  # BRAND SKILLS
+  # ============================================================
+
+  oligon-brand:
+    description: Oligon organizational brand standards, colors, fonts, templates
+    category: brand
+    keywords:
+      - oligon
+      - brand
+      - brand colors
+      - brand standards
+      - corporate identity
+      - oligon style
+      - brand template
+      - brand guidelines
+    triggers:
+      - "oligon.*brand"
+      - "brand.*colors?"
+      - "oligon.*style"
+      - "apply.*brand"
+      - "corporate.*identity"
+    output_formats: []  # Applied to other outputs
+    negative_keywords: []
+
+  # ============================================================
+  # DOCUMENT CREATION SKILLS
+  # ============================================================
+
+  scientific-writing:
+    description: Research papers, manuscripts, IMRAD structure, academic writing
+    category: document
+    keywords:
+      - paper
+      - manuscript
+      - write
+      - draft
+      - methods
+      - results
+      - discussion
+      - introduction
+      - abstract
+      - imrad
+      - academic writing
+      - research paper
+      - journal article
+      - thesis
+      - dissertation
+    triggers:
+      - "write.*paper"
+      - "draft.*manuscript"
+      - "(methods|results|discussion).*section"
+      - "research.*paper"
+      - "academic.*writing"
+      - "journal.*article"
+    output_formats: [md, docx, pdf]
+    negative_keywords:
+      - slide
+      - presentation
+      - poster
+      - executive summary
+
+  executive-summary:
+    description: Executive summaries using Pyramid Principle, stakeholder reports
+    category: document
+    keywords:
+      - executive summary
+      - summary
+      - stakeholder
+      - board report
+      - decision makers
+      - pyramid principle
+      - action-oriented
+      - key findings
+      - recommendations
+    triggers:
+      - "executive.*summary"
+      - "stakeholder.*report"
+      - "board.*presentation"
+      - "summarize.*for.*leadership"
+      - "decision.*makers"
+    output_formats: [md, docx, pdf]
+    negative_keywords:
+      - literature review
+      - systematic review
+      - manuscript
+
+  scientific-slides:
+    description: Presentation slides for conferences, seminars, lab meetings
+    category: document
+    keywords:
+      - slides
+      - presentation
+      - talk
+      - conference
+      - seminar
+      - powerpoint
+      - keynote
+      - lab meeting
+      - thesis defense
+      - oral presentation
+    triggers:
+      - "create.*slides"
+      - "make.*presentation"
+      - "conference.*talk"
+      - "prepare.*seminar"
+      - "thesis.*defense"
+      - "lab.*meeting"
+    output_formats: [pptx]
+    negative_keywords:
+      - poster
+      - paper
+      - manuscript
+
+  research-posters:
+    description: Conference posters in LaTeX or PowerPoint format
+    category: document
+    keywords:
+      - poster
+      - conference poster
+      - research poster
+      - scientific poster
+      - poster presentation
+      - poster session
+      - beamerposter
+      - tikzposter
+      - baposter
+    triggers:
+      - "poster"
+      - "create.*poster"
+      - "conference.*poster"
+      - "research.*poster"
+      - "poster.*(presentation|session)"
+    output_formats: [pptx, pdf, tex]
+    negative_keywords:
+      - slides
+      - seminar
+      - talk
+      - powerpoint presentation
+
+  venue-templates:
+    description: Journal-specific formatting, submission requirements
+    category: document
+    keywords:
+      - journal
+      - venue
+      - template
+      - formatting
+      - submission
+      - style guide
+      - author guidelines
+      - nature
+      - science
+      - cell
+      - plos
+      - ieee
+    triggers:
+      - "journal.*template"
+      - "format.*for.*journal"
+      - "submission.*requirements"
+      - "author.*guidelines"
+      - "(nature|science|cell|plos|ieee).*format"
+    output_formats: [tex, docx]
+    negative_keywords: []
+
+  hypothesis-generation:
+    description: Formulating testable hypotheses from literature and data
+    category: document
+    keywords:
+      - hypothesis
+      - hypotheses
+      - testable
+      - prediction
+      - research question
+      - formulate
+      - null hypothesis
+      - alternative hypothesis
+    triggers:
+      - "generate.*hypothesis"
+      - "formulate.*hypothesis"
+      - "testable.*prediction"
+      - "research.*question"
+    output_formats: [md]
+    negative_keywords: []
+
+  markdown-to-pdf:
+    description: Convert markdown to branded PDF documents
+    category: document
+    keywords:
+      - markdown to pdf
+      - md to pdf
+      - convert markdown
+      - branded pdf
+      - pdf report
+      - generate pdf
+    triggers:
+      - "markdown.*pdf"
+      - "convert.*md.*pdf"
+      - "branded.*pdf"
+      - "generate.*pdf.*report"
+    output_formats: [pdf]
+    negative_keywords: []
+
+  # ============================================================
+  # RESEARCH WORKFLOW SKILLS
+  # ============================================================
+
+  paper-search:
+    description: Multi-database academic paper search (PubMed, bioRxiv, Semantic Scholar)
+    category: research
+    keywords:
+      - search
+      - find
+      - papers
+      - articles
+      - publications
+      - pubmed
+      - biorxiv
+      - medrxiv
+      - semantic scholar
+      - google scholar
+      - literature search
+      - paper search
+      - find papers
+      - search papers
+      - find articles
+      - academic search
+      - look up
+      - lookup
+    triggers:
+      - "find.*papers"
+      - "search.*(papers|pubmed|articles|for)"
+      - "look.*up.*(papers|articles)"
+      - "find.*articles"
+      - "literature.*search"
+      - "(pubmed|biorxiv|medrxiv|semantic.scholar)"
+    output_formats: [json, bib]
+    negative_keywords:
+      - systematic review
+      - comprehensive review
+      - write
+      - draft
+
+  literature-review:
+    description: Systematic literature reviews, PRISMA methodology
+    category: research
+    keywords:
+      - literature review
+      - systematic review
+      - prisma
+      - meta-analysis
+      - comprehensive review
+      - screening
+      - inclusion criteria
+      - exclusion criteria
+      - narrative review
+    triggers:
+      - "literature.*review"
+      - "systematic.*review"
+      - "prisma"
+      - "comprehensive.*review"
+      - "review.*literature"
+    output_formats: [md, docx]
+    negative_keywords:
+      - quick search
+      - find papers
+
+  citation-management:
+    description: BibTeX formatting, citation styles, reference management
+    category: research
+    keywords:
+      - citation
+      - reference
+      - bibtex
+      - bibliography
+      - cite
+      - apa
+      - mla
+      - chicago
+      - vancouver
+      - nature style
+      - reference list
+      - endnote
+      - zotero
+    triggers:
+      - "format.*citation"
+      - "bibtex"
+      - "manage.*reference"
+      - "citation.*style"
+      - "(apa|mla|chicago|vancouver).*format"
+    output_formats: [bib, json]
+    negative_keywords: []
+
+  peer-review:
+    description: Manuscript review, paper evaluation, critical analysis, quality scoring
+    category: research
+    keywords:
+      - review
+      - evaluate
+      - critique
+      - feedback
+      - revision
+      - assess
+      - reviewer
+      - score
+      - quality
+      - peer review
+      - review manuscript
+      - evaluate paper
+      - reviewer comments
+      - critical analysis
+      - paper quality
+      - score paper
+      - assess methodology
+      - scholarly evaluation
+      - quality score
+      - methodology
+    triggers:
+      - "review.*(manuscript|paper|this|draft)"
+      - "peer.*review"
+      - "evaluate.*(paper|this|study)"
+      - "critique.*(study|paper|this)"
+      - "score.*(paper|this|quality)"
+      - "assess.*(quality|methodology)"
+      - "critical.*analysis"
+      - "give.*feedback"
+      - "paper.*quality"
+      - "quality.*paper"
+    output_formats: [md]
+    negative_keywords:
+      - literature review
+      - systematic review
+      - find papers
+      - search papers
+
+  research-paper-summarizer:
+    description: Comprehensive single-paper summarization with multiple output formats
+    category: research
+    keywords:
+      - summarize paper
+      - paper summary
+      - summarize article
+      - article summary
+      - research summary
+      - key findings
+      - tldr
+      - digest
+    triggers:
+      - "summarize.*paper"
+      - "summary.*article"
+      - "summarize.*study"
+      - "paper.*summary"
+      - "digest.*research"
+    output_formats: [md, html, pdf, svg]
+    negative_keywords:
+      - literature review
+      - systematic review
+      - multiple papers
+
+  # ============================================================
+  # ANALYSIS & CODE SKILLS
+  # ============================================================
+
+  statistical-analysis:
+    description: Statistical test selection, power analysis, effect sizes, reporting
+    category: analysis
+    keywords:
+      - statistics
+      - statistical test
+      - p-value
+      - significance
+      - anova
+      - t-test
+      - regression
+      - correlation
+      - power analysis
+      - sample size
+      - effect size
+      - multiple testing
+      - bonferroni
+      - fdr
+    triggers:
+      - "which.*test"
+      - "statistical.*analysis"
+      - "power.*analysis"
+      - "sample.*size"
+      - "effect.*size"
+      - "(anova|t-test|regression|correlation)"
+      - "multiple.*testing"
+    output_formats: [md]
+    negative_keywords: []
+
+  reproducible-research:
+    description: FAIR principles, environment specification, data archiving
+    category: analysis
+    keywords:
+      - reproducible
+      - reproducibility
+      - fair
+      - findable
+      - accessible
+      - interoperable
+      - reusable
+      - environment
+      - docker
+      - conda
+      - requirements
+      - seed
+      - random seed
+      - data archive
+      - zenodo
+      - figshare
+      - archive
+    triggers:
+      - "reproducib"
+      - "fair.*principles"
+      - "environment.*specification"
+      - "data.*archive"
+      - "archive.*(data|my)"
+      - "(docker|conda|requirements)"
+      - "zenodo"
+      - "figshare"
+    output_formats: [md, yaml, txt]
+    negative_keywords:
+      - plot
+      - chart
+      - visualization
+
+  code-documentation:
+    description: README structure, docstrings, API documentation
+    category: analysis
+    keywords:
+      - readme
+      - docstring
+      - documentation
+      - api docs
+      - document code
+      - code comments
+      - numpy docstring
+      - google docstring
+      - sphinx
+      - roxygen
+    triggers:
+      - "document.*code"
+      - "write.*readme"
+      - "docstring"
+      - "api.*documentation"
+      - "(numpy|google).*style"
+    output_formats: [md, rst]
+    negative_keywords: []
+
+  # ============================================================
+  # CONVERSION SKILLS
+  # ============================================================
+
+  markitdown:
+    description: Convert files (PDF, DOCX, PPTX, images, audio) to Markdown
+    category: conversion
+    keywords:
+      - convert
+      - markitdown
+      - pdf to markdown
+      - docx to markdown
+      - extract text
+      - ocr
+      - transcription
+    triggers:
+      - "convert.*markdown"
+      - "extract.*text"
+      - "(pdf|docx|pptx).*to.*markdown"
+      - "ocr"
+      - "transcribe"
+    output_formats: [md]
+    negative_keywords: []
+
+  paper-2-web:
+    description: Convert papers to web formats, video abstracts, interactive sites
+    category: conversion
+    keywords:
+      - paper to web
+      - video abstract
+      - interactive site
+      - research website
+      - paper website
+      - visual abstract
+      - graphical abstract
+    triggers:
+      - "paper.*to.*web"
+      - "video.*abstract"
+      - "interactive.*site"
+      - "research.*website"
+      - "graphical.*abstract"
+    output_formats: [html, mp4]
+    negative_keywords: []
+
+  # ============================================================
+  # DOCUMENT OUTPUT SUB-SKILLS (document-skills:*)
+  # ============================================================
+
+  "document-skills:docx":
+    description: Word document creation and manipulation
+    category: document_output
+    keywords:
+      - word
+      - docx
+      - word document
+      - microsoft word
+      - tracked changes
+      - redline
+      - export to word
+    triggers:
+      - "word.*document"
+      - "export.*docx"
+      - "create.*docx"
+      - "tracked.*changes"
+      - "\\.docx"
+    output_formats: [docx]
+    negative_keywords: []
+
+  "document-skills:pdf":
+    description: PDF manipulation, forms, merge/split, metadata
+    category: document_output
+    keywords:
+      - pdf
+      - pdf form
+      - merge pdf
+      - split pdf
+      - pdf manipulation
+      - extract pdf
+      - fill form
+    triggers:
+      - "pdf.*form"
+      - "merge.*pdf"
+      - "split.*pdf"
+      - "fill.*form"
+      - "manipulate.*pdf"
+    output_formats: [pdf]
+    negative_keywords:
+      - markdown to pdf
+      - convert to pdf
+
+  "document-skills:pptx":
+    description: PowerPoint creation and editing
+    category: document_output
+    keywords:
+      - powerpoint
+      - pptx
+      - edit presentation
+      - create pptx
+      - slide deck
+    triggers:
+      - "powerpoint"
+      - "create.*pptx"
+      - "edit.*presentation"
+      - "\\.pptx"
+    output_formats: [pptx]
+    negative_keywords: []
+
+  "document-skills:xlsx":
+    description: Excel spreadsheet creation and manipulation
+    category: document_output
+    keywords:
+      - excel
+      - xlsx
+      - spreadsheet
+      - workbook
+      - formula
+      - pivot table
+      - data analysis excel
+    triggers:
+      - "excel"
+      - "spreadsheet"
+      - "create.*xlsx"
+      - "\\.xlsx"
+      - "pivot.*table"
+    output_formats: [xlsx]
+    negative_keywords: []
+
+# ============================================================
+# ROUTING CONFIGURATION
+# ============================================================
+
+routing_config:
+  # Confidence thresholds
+  high_confidence_threshold: 0.7    # Route directly without clarification
+  low_confidence_threshold: 0.3     # Require clarification
+  trigger_boost: 0.2                # Boost per regex trigger match (hardcoded in code)
+  max_trigger_boost: 0.4            # Cap for total trigger boost (hardcoded in code)
+
+  # Category defaults (fallback when no skill matches clearly)
+  category_defaults:
+    visual: visual-design
+    document: scientific-writing
+    research: paper-search
+    analysis: statistical-analysis
+    conversion: markitdown
+    document_output: "document-skills:docx"
+    brand: oligon-brand
+
+  # Disambiguation questions by category
+  disambiguation:
+    visual:
+      - question: "Is this based on data/numbers?"
+        yes_skill: plotting-libraries
+        no_followup: "Is it a diagram or schematic?"
+      - question: "Is it a diagram or schematic?"
+        yes_skill: scientific-schematics
+        no_followup: "Do you need AI-generated imagery?"
+      - question: "Do you need AI-generated imagery?"
+        yes_skill: generate-image
+        no_skill: visual-design
+
+    document:
+      - question: "Is this a research paper or manuscript?"
+        yes_skill: scientific-writing
+        no_followup: "Is it a presentation or poster?"
+      - question: "Is it a presentation?"
+        yes_skill: scientific-slides
+        no_followup: "Is it a poster?"
+      - question: "Is it a poster?"
+        yes_skill: research-posters
+        no_skill: executive-summary
+
+    research:
+      - question: "Do you need a quick search (1-50 papers)?"
+        yes_skill: paper-search
+        no_followup: "Is this a systematic/comprehensive review?"
+      - question: "Is this a systematic/comprehensive review?"
+        yes_skill: literature-review
+        no_skill: citation-management

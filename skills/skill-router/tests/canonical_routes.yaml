@@ -1,0 +1,603 @@
+# Canonical Routing Test Cases
+# Version: 1.0.0
+# Purpose: Validate deterministic routing produces expected results
+#
+# Test case structure:
+#   request: The user's natural language request
+#   expected_skill: The skill that should be selected
+#   min_confidence: Minimum acceptable confidence score (0.5 = standard, 0.6+ = high signal)
+#   category: Expected category classification
+#   notes: Optional explanation for edge cases
+#
+# Confidence guidelines:
+#   0.5 = Standard threshold (2 keyword matches OR 1 trigger)
+#   0.6 = Elevated (3+ keyword matches OR multiple triggers)
+#   0.7 = High (4+ matches with strong triggers) - rare
+
+# ============================================================
+# VISUAL CREATION - plotting-libraries
+# ============================================================
+
+plotting_libraries_cases:
+  - request: "Create a bar chart of my experimental results"
+    expected_skill: plotting-libraries
+    min_confidence: 0.6
+    category: visual
+
+  - request: "Make a scatter plot showing the correlation"
+    expected_skill: plotting-libraries
+    min_confidence: 0.5
+    category: visual
+
+  - request: "I need a histogram of the distribution"
+    expected_skill: plotting-libraries
+    min_confidence: 0.5
+    category: visual
+
+  - request: "Generate a heatmap of gene expression data"
+    expected_skill: plotting-libraries
+    min_confidence: 0.5
+    category: visual
+
+  - request: "Create a volcano plot for differential expression"
+    expected_skill: plotting-libraries
+    min_confidence: 0.5
+    category: visual
+
+  - request: "Make a PCA plot of my samples"
+    expected_skill: plotting-libraries
+    min_confidence: 0.5
+    category: visual
+
+  - request: "I need to visualize my data"
+    expected_skill: plotting-libraries
+    min_confidence: 0.5
+    category: visual
+
+  - request: "Plot my results using matplotlib"
+    expected_skill: plotting-libraries
+    min_confidence: 0.5
+    category: visual
+
+  - request: "Create a figure with seaborn"
+    expected_skill: plotting-libraries
+    min_confidence: 0.5
+    category: visual
+
+  - request: "Make a ggplot2 figure in R"
+    expected_skill: plotting-libraries
+    min_confidence: 0.5
+    category: visual
+
+# ============================================================
+# VISUAL CREATION - scientific-schematics
+# ============================================================
+
+scientific_schematics_cases:
+  - request: "Draw a flowchart of my experimental workflow"
+    expected_skill: scientific-schematics
+    min_confidence: 0.5
+    category: visual
+
+  - request: "Create a diagram of the signaling pathway"
+    expected_skill: scientific-schematics
+    min_confidence: 0.6
+    category: visual
+
+  - request: "Make a schematic of my methods"
+    expected_skill: scientific-schematics
+    min_confidence: 0.5
+    category: visual
+
+  - request: "I need a process diagram for the protocol"
+    expected_skill: scientific-schematics
+    min_confidence: 0.5
+    category: visual
+
+  - request: "Create a biological pathway diagram"
+    expected_skill: scientific-schematics
+    min_confidence: 0.6
+    category: visual
+
+  - request: "Draw a mechanism diagram"
+    expected_skill: scientific-schematics
+    min_confidence: 0.5
+    category: visual
+
+  - request: "Make a concept map of the theory"
+    expected_skill: scientific-schematics
+    min_confidence: 0.3
+    category: visual
+    notes: "Weak signal - only 'concept map' matches"
+
+# ============================================================
+# VISUAL CREATION - generate-image
+# ============================================================
+
+generate_image_cases:
+  - request: "Generate an image of a cell membrane"
+    expected_skill: generate-image
+    min_confidence: 0.5
+    category: visual
+
+  - request: "Create an illustration for my paper"
+    expected_skill: generate-image
+    min_confidence: 0.5
+    category: visual
+
+  - request: "Make a photorealistic rendering"
+    expected_skill: generate-image
+    min_confidence: 0.5
+    category: visual
+
+  - request: "I need an AI-generated scientific illustration"
+    expected_skill: generate-image
+    min_confidence: 0.5
+    category: visual
+
+# ============================================================
+# DOCUMENT CREATION - scientific-writing
+# ============================================================
+
+scientific_writing_cases:
+  - request: "Write the methods section of my paper"
+    expected_skill: scientific-writing
+    min_confidence: 0.6
+    category: document
+
+  - request: "Draft a manuscript for Nature"
+    expected_skill: scientific-writing
+    min_confidence: 0.5
+    category: document
+
+  - request: "Help me write my research paper"
+    expected_skill: scientific-writing
+    min_confidence: 0.5
+    category: document
+
+  - request: "I need to write an introduction"
+    expected_skill: scientific-writing
+    min_confidence: 0.5
+    category: document
+
+  - request: "Draft the results section"
+    expected_skill: scientific-writing
+    min_confidence: 0.5
+    category: document
+
+  - request: "Write a discussion for my thesis"
+    expected_skill: scientific-writing
+    min_confidence: 0.5
+    category: document
+
+  - request: "Help with academic writing"
+    expected_skill: scientific-writing
+    min_confidence: 0.4
+    category: document
+
+# ============================================================
+# DOCUMENT CREATION - executive-summary
+# ============================================================
+
+executive_summary_cases:
+  - request: "Write an executive summary for stakeholders"
+    expected_skill: executive-summary
+    min_confidence: 0.6
+    category: document
+
+  - request: "Create a summary for the board"
+    expected_skill: executive-summary
+    min_confidence: 0.3
+    category: document
+    notes: "Weak signal - only 'summary' and 'board'"
+
+  - request: "Summarize this for decision makers"
+    expected_skill: executive-summary
+    min_confidence: 0.5
+    category: document
+
+  - request: "I need a stakeholder report"
+    expected_skill: executive-summary
+    min_confidence: 0.5
+    category: document
+
+# ============================================================
+# DOCUMENT CREATION - scientific-slides
+# ============================================================
+
+scientific_slides_cases:
+  - request: "Create slides for my conference presentation"
+    expected_skill: scientific-slides
+    min_confidence: 0.5
+    category: document
+
+  - request: "Make a presentation for my seminar"
+    expected_skill: scientific-slides
+    min_confidence: 0.5
+    category: document
+
+  - request: "Prepare slides for my thesis defense"
+    expected_skill: scientific-slides
+    min_confidence: 0.5
+    category: document
+
+  - request: "I need to give a talk at the lab meeting"
+    expected_skill: scientific-slides
+    min_confidence: 0.5
+    category: document
+
+  - request: "Create a PowerPoint presentation"
+    expected_skill: scientific-slides
+    min_confidence: 0.5
+    category: document
+
+# ============================================================
+# DOCUMENT CREATION - research-posters
+# ============================================================
+
+research_posters_cases:
+  - request: "Create a poster for the conference"
+    expected_skill: research-posters
+    min_confidence: 0.5
+    category: document
+
+  - request: "Make a research poster"
+    expected_skill: research-posters
+    min_confidence: 0.5
+    category: document
+
+  - request: "I need a scientific poster for the symposium"
+    expected_skill: research-posters
+    min_confidence: 0.5
+    category: document
+
+  - request: "Create a poster presentation"
+    expected_skill: research-posters
+    min_confidence: 0.5
+    category: document
+
+# ============================================================
+# RESEARCH WORKFLOW - paper-search
+# ============================================================
+
+paper_search_cases:
+  - request: "Find papers on CRISPR gene editing"
+    expected_skill: paper-search
+    min_confidence: 0.5
+    category: research
+
+  - request: "Search PubMed for cancer immunotherapy"
+    expected_skill: paper-search
+    min_confidence: 0.5
+    category: research
+
+  - request: "Find articles about machine learning in biology"
+    expected_skill: paper-search
+    min_confidence: 0.5
+    category: research
+
+  - request: "Search for papers on protein folding"
+    expected_skill: paper-search
+    min_confidence: 0.5
+    category: research
+
+  - request: "Look up recent publications on mRNA vaccines"
+    expected_skill: paper-search
+    min_confidence: 0.5
+    category: research
+
+  - request: "Find preprints on bioRxiv about organoids"
+    expected_skill: paper-search
+    min_confidence: 0.5
+    category: research
+
+# ============================================================
+# RESEARCH WORKFLOW - literature-review
+# ============================================================
+
+literature_review_cases:
+  - request: "Conduct a systematic literature review"
+    expected_skill: literature-review
+    min_confidence: 0.6
+    category: research
+
+  - request: "I need a comprehensive review of the field"
+    expected_skill: literature-review
+    min_confidence: 0.5
+    category: research
+
+  - request: "Do a PRISMA-style systematic review"
+    expected_skill: literature-review
+    min_confidence: 0.5
+    category: research
+
+  - request: "Write a literature review on this topic"
+    expected_skill: literature-review
+    min_confidence: 0.5
+    category: research
+
+# ============================================================
+# RESEARCH WORKFLOW - citation-management
+# ============================================================
+
+citation_management_cases:
+  - request: "Format my references in APA style"
+    expected_skill: citation-management
+    min_confidence: 0.5
+    category: research
+
+  - request: "Create a BibTeX bibliography"
+    expected_skill: citation-management
+    min_confidence: 0.5
+    category: research
+
+  - request: "Manage my citations"
+    expected_skill: citation-management
+    min_confidence: 0.3
+    category: research
+    notes: "Weak signal - only 'citations'"
+
+  - request: "Convert my references to Vancouver format"
+    expected_skill: citation-management
+    min_confidence: 0.5
+    category: research
+
+# ============================================================
+# RESEARCH WORKFLOW - peer-review
+# ============================================================
+
+peer_review_cases:
+  - request: "Review this manuscript"
+    expected_skill: peer-review
+    min_confidence: 0.5
+    category: research
+
+  - request: "Evaluate this paper's methodology"
+    expected_skill: peer-review
+    min_confidence: 0.5
+    category: research
+
+  - request: "Give me feedback on this draft"
+    expected_skill: peer-review
+    min_confidence: 0.5
+    category: research
+
+  - request: "Score this paper's quality"
+    expected_skill: peer-review
+    min_confidence: 0.5
+    category: research
+
+  - request: "Critique this study's design"
+    expected_skill: peer-review
+    min_confidence: 0.5
+    category: research
+
+  - request: "Do a critical analysis of this argument"
+    expected_skill: peer-review
+    min_confidence: 0.5
+    category: research
+
+# ============================================================
+# ANALYSIS - statistical-analysis
+# ============================================================
+
+statistical_analysis_cases:
+  - request: "Which statistical test should I use?"
+    expected_skill: statistical-analysis
+    min_confidence: 0.5
+    category: analysis
+
+  - request: "Do a power analysis for my experiment"
+    expected_skill: statistical-analysis
+    min_confidence: 0.5
+    category: analysis
+
+  - request: "Calculate the sample size I need"
+    expected_skill: statistical-analysis
+    min_confidence: 0.5
+    category: analysis
+
+  - request: "Help me with ANOVA"
+    expected_skill: statistical-analysis
+    min_confidence: 0.5
+    category: analysis
+
+  - request: "What's the effect size for this result?"
+    expected_skill: statistical-analysis
+    min_confidence: 0.5
+    category: analysis
+
+  - request: "Apply multiple testing correction"
+    expected_skill: statistical-analysis
+    min_confidence: 0.5
+    category: analysis
+
+# ============================================================
+# ANALYSIS - reproducible-research
+# ============================================================
+
+reproducible_research_cases:
+  - request: "Make my analysis reproducible"
+    expected_skill: reproducible-research
+    min_confidence: 0.5
+    category: analysis
+
+  - request: "Set up a reproducible environment"
+    expected_skill: reproducible-research
+    min_confidence: 0.5
+    category: analysis
+
+  - request: "Apply FAIR principles to my data"
+    expected_skill: reproducible-research
+    min_confidence: 0.5
+    category: analysis
+
+  - request: "Create a Docker container for my analysis"
+    expected_skill: reproducible-research
+    min_confidence: 0.4
+    category: analysis
+
+  - request: "Archive my data on Zenodo"
+    expected_skill: reproducible-research
+    min_confidence: 0.5
+    category: analysis
+
+# ============================================================
+# ANALYSIS - code-documentation
+# ============================================================
+
+code_documentation_cases:
+  - request: "Write a README for my code"
+    expected_skill: code-documentation
+    min_confidence: 0.5
+    category: analysis
+
+  - request: "Add docstrings to my functions"
+    expected_skill: code-documentation
+    min_confidence: 0.5
+    category: analysis
+
+  - request: "Document my Python code"
+    expected_skill: code-documentation
+    min_confidence: 0.2
+    category: analysis
+    notes: "Weak signal - document + code, but 'Python' doesn't help"
+
+  - request: "Create API documentation"
+    expected_skill: code-documentation
+    min_confidence: 0.5
+    category: analysis
+
+# ============================================================
+# CONVERSION - markitdown
+# ============================================================
+
+markitdown_cases:
+  - request: "Convert this PDF to Markdown"
+    expected_skill: markitdown
+    min_confidence: 0.5
+    category: conversion
+
+  - request: "Extract text from this document"
+    expected_skill: markitdown
+    min_confidence: 0.4
+    category: conversion
+
+  - request: "Convert DOCX to Markdown"
+    expected_skill: markitdown
+    min_confidence: 0.5
+    category: conversion
+
+# ============================================================
+# BRAND - oligon-brand
+# ============================================================
+
+oligon_brand_cases:
+  - request: "Apply Oligon brand colors to my figure"
+    expected_skill: oligon-brand
+    min_confidence: 0.5
+    category: brand
+
+  - request: "Use the Oligon style for this presentation"
+    expected_skill: oligon-brand
+    min_confidence: 0.5
+    category: brand
+
+  - request: "What are the Oligon brand colors?"
+    expected_skill: oligon-brand
+    min_confidence: 0.5
+    category: brand
+
+# ============================================================
+# DOCUMENT OUTPUT - document-skills:*
+# ============================================================
+
+document_skills_cases:
+  - request: "Export to Word document"
+    expected_skill: "document-skills:docx"
+    min_confidence: 0.5
+    category: document_output
+
+  - request: "Create a DOCX file"
+    expected_skill: "document-skills:docx"
+    min_confidence: 0.5
+    category: document_output
+
+  - request: "Fill out this PDF form"
+    expected_skill: "document-skills:pdf"
+    min_confidence: 0.5
+    category: document_output
+
+  - request: "Merge these PDF files"
+    expected_skill: "document-skills:pdf"
+    min_confidence: 0.5
+    category: document_output
+
+  - request: "Edit my PowerPoint file"
+    expected_skill: "document-skills:pptx"
+    min_confidence: 0.5
+    category: document_output
+
+  - request: "Create an Excel spreadsheet"
+    expected_skill: "document-skills:xlsx"
+    min_confidence: 0.5
+    category: document_output
+
+  - request: "Add formulas to my spreadsheet"
+    expected_skill: "document-skills:xlsx"
+    min_confidence: 0.5
+    category: document_output
+
+# ============================================================
+# AMBIGUOUS CASES (should require clarification)
+# ============================================================
+
+ambiguous_cases:
+  - request: "I need to make a figure"
+    expected_skill: plotting-libraries
+    max_confidence: 0.7
+    notes: "Ambiguous - could be data plot, diagram, or illustration"
+
+  - request: "Help me review something"
+    expected_skill: peer-review
+    max_confidence: 0.7
+    notes: "Ambiguous - peer review vs literature review"
+
+  - request: "I need to write something"
+    expected_skill: scientific-writing
+    max_confidence: 0.7
+    notes: "Too vague - could be many document types"
+
+  - request: "Visualize this"
+    expected_skill: plotting-libraries
+    max_confidence: 0.7
+    notes: "Needs clarification on visualization type"
+
+# ============================================================
+# NEGATIVE CASES (should NOT route to certain skills)
+# ============================================================
+
+negative_cases:
+  - request: "Create a flowchart showing my data pipeline"
+    expected_skill: scientific-schematics
+    not_expected: plotting-libraries
+    min_confidence: 0.5
+    notes: "Flowchart trumps data keyword"
+
+  - request: "Draw a diagram of the experimental setup"
+    expected_skill: scientific-schematics
+    not_expected: generate-image
+    min_confidence: 0.5
+    notes: "Diagram keyword routes to schematics"
+
+  - request: "Quick search for 5 papers on CRISPR"
+    expected_skill: paper-search
+    not_expected: literature-review
+    min_confidence: 0.5
+    notes: "Quick/few papers goes to paper-search"
+
+  - request: "Comprehensive systematic review of the field"
+    expected_skill: literature-review
+    not_expected: paper-search
+    min_confidence: 0.5
+    notes: "Systematic/comprehensive goes to literature-review"
