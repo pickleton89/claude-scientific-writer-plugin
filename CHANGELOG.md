@@ -7,6 +7,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/visual-design/**: Deterministic utilities implementation with 155 test cases (100% pass rate)
+  - **utils/venue_specs.py**: Journal specifications for 8 venues (Nature, Science, Cell, PNAS, PLOS, eLife, JBC, default)
+    - `get_venue_specs(venue)` with alias normalization (e.g., "Nature Communications" → "nature")
+    - Single/double column widths, max height, DPI requirements, preferred formats, panel label case
+  - **utils/chart_selector.py**: Chart type recommendations from decision matrix
+    - `recommend_chart_type(data_type, n_categories, n_time_points, n_groups)` implementing SKILL.md matrix
+    - 15 data type mappings with recommended/avoid lists and rationale
+    - Category threshold logic (few vs many categories)
+  - **utils/palette_selector.py**: Colorblind-safe palette selection
+    - `select_palette(data_type, n_groups, is_diverging, require_colorblind_safe)` with 4 palette types
+    - Okabe-Ito (8 colors), Tableau10 (10 colors) for categorical data
+    - Viridis/Plasma/Cividis for sequential, RdBu/PuOr for diverging
+    - Blue-Orange/Magenta-Green for binary comparisons
+  - **utils/accessibility.py**: WCAG 2.1 compliance validation
+    - `contrast_ratio(color1, color2)` with correct relative luminance calculation
+    - `check_contrast(fg, bg, is_large_text, level)` for AA/AAA compliance
+    - `validate_accessibility(specs)` comprehensive checker (fonts, contrast, colors, redundant encoding)
+    - `simulate_cvd(color, cvd_type)` for colorblind simulation (protanopia, deuteranopia, tritanopia)
+  - **utils/quality_scorer.py**: Hybrid quality scoring (40% deterministic, 60% LLM)
+    - `calculate_measurable_score(specs, venue_specs)` for objective metrics (resolution, dimensions, accessibility, typography)
+    - `get_subjective_criteria()` returning structured rubric for LLM assessment
+    - `calculate_total_score(measurable, subjective)` with interpretation thresholds
+  - **utils/validation.py**: Comprehensive figure specification validation
+    - `validate_figure_spec(spec, venue)` checking dimensions, DPI, format, typography, accessibility
+    - `validate_color_palette(colors, background)` for palette quality
+    - `get_validation_checklist(venue)` generating venue-specific pre-submission checklists
+  - **utils/schema.py**: JSON Schema definitions for input/output validation
+    - `REQUEST_SCHEMA` for structured input validation
+    - `OUTPUT_SCHEMA` for figure specification output
+    - `validate_request(request)` and `validate_output(output)` functions
+  - **utils/template_renderer.py**: Multi-format output generation
+    - `render_spec_yaml(spec)` for machine-readable handoff to downstream skills
+    - `render_spec_markdown(spec)` for human-readable documentation
+    - `render_quick_spec_card(spec)` for compact reference cards
+  - **tests/**: Comprehensive test suite (155 tests)
+    - Unit tests for all utility modules
+    - Integration tests for end-to-end workflows (Nature time series, Science comparison, diverging heatmap)
+    - Determinism tests verifying same input → same output
+  - **SKILL.md** (v2.3.0 → v2.4.0): Added `<utilities>` section with API documentation and usage examples
+  - Determinism improvement: ~30% → ~70% through code-based lookup and validation
+
 - **skills/skill-router/**: Deterministic skill routing implementation with 100% test pass rate
   - **route.py**: Core routing module with `SkillRouter` class and `RoutingDecision` dataclass
     - Confidence scoring based on keyword match count (1→0.35, 2→0.55, 3→0.65, 4+→0.8 cap)
