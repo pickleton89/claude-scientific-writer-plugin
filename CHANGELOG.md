@@ -7,6 +7,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/oligon-brand/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
+  - Executive summary: ~85% current determinism, targeting 95% (10% variance reduction)
+  - Key insight: Exceptionally well-structured with machine-readable JSON tokens, explicit hex codes, and format-specific adapters; remaining variance is in decision tree interpretation and manual verification
+  - 3-phase implementation plan with complete Python code:
+    - Phase 1: Quick wins (`select_cycle()` function, `run_preflight()` validator)
+    - Phase 2: Core infrastructure (`validate_palette()`, `count_brand_blue()`, workflow docs update)
+    - Phase 3: Advanced features (JSON→Markdown generator, adapter test suite, grayscale contrast checker)
+  - Ready-to-implement modules with complete code for all utilities
+  - Deterministic cycle selector converting text decision tree to callable function with enum inputs
+  - Automated preflight validator checking background, spines, grid (returns structured pass/fail dict)
+  - Color palette validator extracting colors from figures and comparing against allowed brand set
+  - Brand Blue usage counter to enforce 1-2 element limit per panel
+  - Pydantic schema for structured brand requests (n_series, context, output_format, target_medium)
+  - Testing plan for adapter consistency and regression prevention
+  - Priority matrix: select_cycle (P0), run_preflight (P0), validate_palette (P1), brand blue counter (P1)
+  - Success metrics: determinism 85%→95%, preflight automation 0%→80%, color validation manual→automated
+
 - **skills/paper-2-web/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
   - Executive summary: ~55% current determinism, targeting 85% (30% variance reduction)
   - Key insight: Well-structured orchestration wrapper around Paper2All tool, but relies heavily on LLM interpretation of decision trees and manual quality validation
