@@ -7,6 +7,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/statistical-analysis/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
+  - Executive summary: ~60% current determinism, targeting 90% (highest potential among audited skills)
+  - Key insight: Skill is built on decision trees, lookup tables, and mathematical formulas—ideal for code-based execution
+  - 4-phase implementation plan with complete Python code:
+    - Phase 1: Deterministic test selector (`scripts/test_selector.py` encoding full decision tree as if/elif logic)
+    - Phase 2: Multiple testing correction wrapper (`scripts/mtc_corrector.py` with structured output)
+    - Phase 3: Effect size interpreter (`scripts/effect_interpreter.py` with threshold lookup tables)
+    - Phase 4: Power calculator (`scripts/power_calculator.py` wrapping statsmodels)
+  - Ready-to-implement modules with complete code for all utilities
+  - JSON Schema definitions for three query types: test_selection, power_analysis, mtc_correction
+  - Structured output dataclasses (TestRecommendation, MTCResult, EffectInterpretation, PowerResult)
+  - Code templates for Python (scipy/statsmodels) and R for all common tests
+  - Priority matrix emphasizing that test selection is the highest-impact target
+  - Success metrics showing path from LLM-dependent to zero-variance outputs
+
 - **skills/venue-templates/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
   - Executive summary: ~40% current determinism, targeting 75% (50-60% variance reduction)
   - Identified key issue: data fragmentation (venue specs duplicated across Python dicts and markdown)
