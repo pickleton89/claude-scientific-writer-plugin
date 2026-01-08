@@ -38,6 +38,14 @@ import time
 from pathlib import Path
 from typing import Optional, Dict, Any, List, Tuple
 
+# Import deterministic validation modules
+try:
+    from validate_slide_image import SlideImageValidator
+    from hybrid_quality_scorer import HybridQualityScorer
+    HAS_VALIDATION = True
+except ImportError:
+    HAS_VALIDATION = False
+
 
 try:
     import requests
@@ -197,6 +205,18 @@ STYLE:
         self.image_model = "google/gemini-3-pro-image-preview"
         # Gemini 3 Pro for quality review
         self.review_model = "google/gemini-3-pro"
+
+        # Initialize hybrid quality scorer if validation modules available
+        if HAS_VALIDATION:
+            self.hybrid_scorer = HybridQualityScorer(
+                deterministic_weight=0.4,
+                ai_weight=0.6,
+                threshold=self.QUALITY_THRESHOLD
+            )
+            self.image_validator = SlideImageValidator()
+        else:
+            self.hybrid_scorer = None
+            self.image_validator = None
         
     def _log(self, message: str):
         """Log message if verbose mode is enabled."""
@@ -549,8 +569,7 @@ Generate an improved version that addresses all the critique points."""
         output_path = Path(output_path)
         output_dir = output_path.parent
         output_dir.mkdir(parents=True, exist_ok=True)
-        
-        base_name = output_path.stem
+
         extension = output_path.suffix or ".png"
         
         mode = "visual_only" if visual_only else "full_slide"
@@ -596,7 +615,7 @@ Generate a high-quality {'visual/figure' if visual_only else 'presentation slide
             print(f"\n[Iteration {i}/{iterations}]")
             print("-" * 40)
             
-            print(f"Generating image with Nano Banana Pro...")
+            print("Generating image with Nano Banana Pro...")
             image_data = self.generate_image(current_prompt, attachments=attachments)
             
             if not image_data:
@@ -619,39 +638,107 @@ Generate a high-quality {'visual/figure' if visual_only else 'presentation slide
             with open(temp_path, "wb") as f:
                 f.write(image_data)
             print(f"✓ Generated image (iteration {i})")
-            
-            print(f"Reviewing image with Gemini 3 Pro...")
-            critique, score, needs_improvement = self.review_image(
+
+            # Deterministic pre-check (fast fail) if validation available
+            if self.image_validator is not None:
+                pre_result = self.image_validator.validate(str(temp_path))
+                if pre_result.errors:
+                    print(f"✗ Deterministic validation failed: {pre_result.errors}")
+                    results["iterations"].append({
+                        "iteration": i,
+                        "success": False,
+                        "error": f"Validation failed: {pre_result.errors}",
+                        "deterministic_score": pre_result.score
+                    })
+                    # Improve prompt based on deterministic feedback
+                    feedback = f"Image failed validation: {pre_result.errors}."
+                    if pre_result.warnings:
+                        feedback += f" Warnings: {pre_result.warnings}"
+                    current_prompt = self.improve_prompt(user_prompt, feedback, i + 1, visual_only)
+                    continue
+                else:
+                    print(f"✓ Deterministic pre-check passed (score: {pre_result.score}/10)")
+
+            # AI review
+            print("Reviewing image with Gemini 3 Pro...")
+            critique, ai_score, needs_improvement = self.review_image(
                 str(temp_path), user_prompt, i, visual_only, iterations
             )
-            print(f"✓ Score: {score}/10 (threshold: {self.QUALITY_THRESHOLD}/10)")
-            
-            results["iterations"].append({
-                "iteration": i,
-                "critique": critique,
-                "score": score,
-                "needs_improvement": needs_improvement,
-                "success": True
-            })
-            
-            if not needs_improvement:
-                print(f"\n✓ Quality meets threshold ({score} >= {self.QUALITY_THRESHOLD})")
-                final_image_data = image_data
-                results["final_score"] = score
-                results["success"] = True
-                results["early_stop"] = True
-                break
-            
-            if i == iterations:
-                print(f"\n⚠ Maximum iterations reached")
-                final_image_data = image_data
-                results["final_score"] = score
-                results["success"] = True
-                break
-            
-            print(f"\n⚠ Quality below threshold ({score} < {self.QUALITY_THRESHOLD})")
-            print(f"Improving prompt...")
-            current_prompt = self.improve_prompt(user_prompt, critique, i + 1, visual_only)
+
+            # Hybrid scoring if available, otherwise use AI score only
+            if self.hybrid_scorer is not None:
+                hybrid_result = self.hybrid_scorer.score(
+                    str(temp_path),
+                    ai_score=ai_score,
+                    ai_feedback=critique
+                )
+                final_score = hybrid_result.total_score
+                deterministic_score = hybrid_result.deterministic_score
+
+                print(f"✓ Hybrid Score: {final_score}/10")
+                print(f"  - Deterministic: {deterministic_score}/10 (weight: 40%)")
+                print(f"  - AI Review: {ai_score}/10 (weight: 60%)")
+
+                should_regen, regen_reason = self.hybrid_scorer.should_regenerate(hybrid_result)
+
+                results["iterations"].append({
+                    "iteration": i,
+                    "hybrid_score": final_score,
+                    "deterministic_score": deterministic_score,
+                    "ai_score": ai_score,
+                    "critique": critique,
+                    "needs_improvement": should_regen,
+                    "success": True
+                })
+
+                if not should_regen:
+                    print(f"\n✓ Quality meets threshold ({final_score} >= {self.QUALITY_THRESHOLD})")
+                    final_image_data = image_data
+                    results["final_score"] = final_score
+                    results["success"] = True
+                    results["early_stop"] = True
+                    break
+
+                if i == iterations:
+                    print("\n⚠ Maximum iterations reached")
+                    final_image_data = image_data
+                    results["final_score"] = final_score
+                    results["success"] = True
+                    break
+
+                print(f"\n⚠ {regen_reason}")
+                print("Improving prompt...")
+                current_prompt = self.improve_prompt(user_prompt, critique, i + 1, visual_only)
+            else:
+                # Fallback to original AI-only scoring
+                print(f"✓ Score: {ai_score}/10 (threshold: {self.QUALITY_THRESHOLD}/10)")
+
+                results["iterations"].append({
+                    "iteration": i,
+                    "critique": critique,
+                    "score": ai_score,
+                    "needs_improvement": needs_improvement,
+                    "success": True
+                })
+
+                if not needs_improvement:
+                    print(f"\n✓ Quality meets threshold ({ai_score} >= {self.QUALITY_THRESHOLD})")
+                    final_image_data = image_data
+                    results["final_score"] = ai_score
+                    results["success"] = True
+                    results["early_stop"] = True
+                    break
+
+                if i == iterations:
+                    print("\n⚠ Maximum iterations reached")
+                    final_image_data = image_data
+                    results["final_score"] = ai_score
+                    results["success"] = True
+                    break
+
+                print(f"\n⚠ Quality below threshold ({ai_score} < {self.QUALITY_THRESHOLD})")
+                print("Improving prompt...")
+                current_prompt = self.improve_prompt(user_prompt, critique, i + 1, visual_only)
         
         # Clean up temporary files
         for temp_file in temp_files:
@@ -669,7 +756,7 @@ Generate a high-quality {'visual/figure' if visual_only else 'presentation slide
             print(f"\n✓ Final image: {output_path}")
         
         print(f"\n{'='*60}")
-        print(f"Generation Complete!")
+        print("Generation Complete!")
         print(f"Final Score: {results['final_score']}/10")
         if results["early_stop"]:
             success_count = len([r for r in results['iterations'] if r.get('success')])
@@ -752,7 +839,7 @@ Environment:
             print(f"\n✓ Success! Image saved to: {args.output}")
             sys.exit(0)
         else:
-            print(f"\n✗ Generation failed. Check review log for details.")
+            print("\n✗ Generation failed. Check review log for details.")
             sys.exit(1)
     except Exception as e:
         print(f"\n✗ Error: {str(e)}")

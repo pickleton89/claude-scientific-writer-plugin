@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "slide_plan_schema",
+  "title": "Scientific Slide Plan",
+  "description": "Structured input for scientific presentation generation",
+  "type": "object",
+  "required": ["talk_type", "duration_minutes", "title", "slides"],
+  "properties": {
+    "talk_type": {
+      "type": "string",
+      "enum": [
+        "conference",
+        "seminar",
+        "defense",
+        "grant",
+        "journal_club",
+        "lightning",
+        "industry",
+        "tutorial"
+      ],
+      "description": "Type of scientific talk"
+    },
+    "duration_minutes": {
+      "type": "integer",
+      "minimum": 3,
+      "maximum": 90,
+      "description": "Total presentation duration in minutes"
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Presentation title"
+    },
+    "speaker": {
+      "type": "string",
+      "description": "Speaker name"
+    },
+    "affiliation": {
+      "type": "string",
+      "description": "Speaker affiliation/institution"
+    },
+    "formatting": {
+      "type": "object",
+      "properties": {
+        "background_color": {
+          "type": "string",
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "default": "#FFFFFF",
+          "description": "Background color in hex format"
+        },
+        "text_color": {
+          "type": "string",
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "default": "#222222",
+          "description": "Primary text color in hex format"
+        },
+        "accent_color": {
+          "type": "string",
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "default": "#2DB2E8",
+          "description": "Accent/highlight color in hex format"
+        },
+        "highlight_color": {
+          "type": "string",
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "default": "#E8622D",
+          "description": "Secondary highlight color in hex format"
+        },
+        "font_family": {
+          "type": "string",
+          "enum": ["Arial", "Helvetica", "Calibri", "Avenir", "system-ui"],
+          "default": "Arial",
+          "description": "Primary font family"
+        },
+        "style": {
+          "type": "string",
+          "enum": ["minimal", "modern", "academic", "corporate"],
+          "default": "minimal",
+          "description": "Overall visual style"
+        }
+      },
+      "additionalProperties": false
+    },
+    "slides": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["slide_type", "title"],
+        "properties": {
+          "slide_type": {
+            "type": "string",
+            "enum": [
+              "title",
+              "section",
+              "content",
+              "figure",
+              "comparison",
+              "timeline",
+              "conclusion",
+              "acknowledgments",
+              "backup"
+            ],
+            "description": "Type of slide determining layout"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 80,
+            "description": "Slide title"
+          },
+          "subtitle": {
+            "type": "string",
+            "maxLength": 120,
+            "description": "Optional subtitle"
+          },
+          "key_points": {
+            "type": "array",
+            "maxItems": 6,
+            "items": {
+              "type": "string",
+              "maxLength": 60
+            },
+            "description": "Bullet points (max 6, each max 60 chars)"
+          },
+          "visual_description": {
+            "type": "string",
+            "maxLength": 300,
+            "description": "Description of visual element for AI generation"
+          },
+          "citations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Citation references to display"
+          },
+          "figure_path": {
+            "type": "string",
+            "description": "Path to existing figure to include"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Speaker notes (not displayed on slide)"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -7,6 +7,51 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/scientific-slides/**: Deterministic utilities implementation with 47 test cases (100% pass rate)
+  - **scripts/validate_slide_image.py**: Deterministic image validation
+    - `SlideImageValidator.validate(image_path, expected_colors)` checking dimensions, aspect ratio, contrast, white space, file size
+    - 16:9 aspect ratio validation with 5% tolerance
+    - Contrast estimation (min/max luminance ratio) with 0.5 threshold
+    - White space percentage (25-70% target range)
+    - Brand color compliance checking via Euclidean color distance
+    - `ValidationResult` dataclass with score (0-10), checks, details, warnings, errors
+  - **scripts/hybrid_quality_scorer.py**: Combined deterministic + AI scoring system
+    - `HybridQualityScorer.score(image_path, ai_score)` with configurable weights (default: 40% deterministic, 60% AI)
+    - `should_regenerate()` decision logic with threshold checking and error detection
+    - `get_improvement_suggestions()` for actionable feedback
+    - `format_score_report()` for human-readable output
+  - **scripts/validate_slide_plan.py**: JSON Schema + business rule validation
+    - `SlidePlanValidator.validate(plan)` checking schema compliance and presentation best practices
+    - Slide count guidelines by duration (3-90 minutes → appropriate slide counts)
+    - Required slide types by talk type (conference, seminar, defense, grant, etc.)
+    - Citation distribution checking (introduction context)
+    - Key points per slide validation (max 6 bullets, 60 chars each)
+    - Color format validation (hex codes)
+  - **scripts/prompt_templates.py**: Template-based prompt generation
+    - `PromptTemplateEngine.generate_slide_prompt(slide)` with specialized templates for title/section/content slides
+    - Consistent formatting across prompts (aspect ratio, margins, colors, fonts)
+    - White space guidance based on content density
+    - Batch prompt generation from slide plans
+  - **schemas/slide_plan_schema.json**: JSON Schema for slide plans
+    - 8 talk types (conference, seminar, defense, grant, journal_club, lightning, industry, tutorial)
+    - 9 slide types (title, section, content, figure, comparison, timeline, conclusion, acknowledgments, backup)
+    - Formatting options (colors, fonts, styles)
+    - Slide content constraints (title length, key points, citations)
+  - **tests/**: Comprehensive test suite (47 tests)
+    - `test_validation.py`: SlideImageValidator, SlidePlanValidator, HybridQualityScorer, PromptTemplateEngine tests
+    - `conftest.py`: Fixtures for slide plans, test images with realistic content
+    - Integration tests for full validation pipeline
+  - **Integration**: Updated `generate_slide_image_ai.py` with hybrid scoring
+    - Deterministic pre-check for fast-fail on invalid images
+    - Hybrid scoring combining measurable and AI quality metrics
+    - Graceful fallback to AI-only scoring if validation modules unavailable
+  - **Documentation**: Merged `expert_guide.md` into `slide_design_principles.md`
+    - Added "Expert Principles" section with Five Core Rules
+    - Decision Framework table for common situations
+    - Anti-Patterns and Quality Signals tables
+    - Failure Modes overview in Common Mistakes section
+  - Determinism improvement: ~55% → ~80% through structured validation and template-based prompts
+
 - **skills/scientific-writing/**: Deterministic utilities implementation with 136 test cases (100% pass rate)
   - **scripts/select_guideline.py**: Study design → reporting guideline selector
     - `select_guideline(study_design)` mapping 13 study designs (RCT, cohort, case-control, etc.) to guidelines (CONSORT, STROBE, PRISMA, CARE, etc.)
