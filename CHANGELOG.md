@@ -7,6 +7,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/research-posters/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
+  - Executive summary: ~60-70% current determinism, targeting 85% (15-25% variance reduction)
+  - Key insight: Skill has strong foundations (templates, review script, quantified criteria) but validation is mostly manual
+  - 4-phase implementation plan with complete Python code:
+    - Phase 1: Core validation (`scripts/validate_poster.py` for word count, fonts, images, compilation)
+    - Phase 2: Accessibility validation (`scripts/validate_accessibility.py` for WCAG contrast, colorblind safety)
+    - Phase 3: Enhanced review script (LaTeX log parsing, word count, QR code detection)
+    - Phase 4: Examples directory with complete poster samples and expected outputs
+  - Ready-to-implement modules with complete code for all utilities
+  - Poster specification YAML schema for structured inputs
+  - Quality report JSON format for machine-readable validation results
+  - Contrast ratio calculation with WCAG 2.1 compliance checking
+  - Colorblind simulation (deuteranopia) for palette validation
+  - Word count extraction from LaTeX block structures
+  - Integration with existing `review_poster.sh` script
+  - Testing plan and success metrics (30% → 75% automated validation coverage)
+  - Dependencies documented: poppler-utils, texcount, zbar, Python 3.8+
+
 - **skills/scientific-schematics/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
   - Executive summary: ~35% current determinism, targeting 60% (25% variance reduction)
   - Key insight: Core image generation is inherently stochastic (AI-based), but significant gains possible through pre-generation validation
