@@ -7,6 +7,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/paper-2-web/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
+  - Executive summary: ~55% current determinism, targeting 85% (30% variance reduction)
+  - Key insight: Well-structured orchestration wrapper around Paper2All tool, but relies heavily on LLM interpretation of decision trees and manual quality validation
+  - 3-phase implementation plan with complete Python code:
+    - Phase 1: Quick wins (`schemas/transformation_request.yaml`, `lib/venue_database.py`, `scripts/validate_links.py`)
+    - Phase 2: Core infrastructure (`lib/cost_estimator.py`, `lib/component_router.py`, `scripts/preflight_check.py`)
+    - Phase 3: Advanced features (`lib/reproducibility.py`, `lib/quality_scorer.py`)
+  - Ready-to-implement modules with complete code for all utilities
+  - Structured input schema (YAML) replacing decision tree interpretation
+  - Venue database with 20+ conference poster specifications (NeurIPS, ICML, ISMB, etc.)
+  - Cost estimator with token-based pricing and paper complexity multipliers
+  - Component router with deterministic use-case-to-output mapping
+  - Preflight validation script checking inputs, dependencies, API keys, and figure resolution
+  - Automated link checker for generated websites using async HTTP validation
+  - Reproducibility manifest system with SHA256 hashing and config tracking
+  - Quality scorer with deterministic thresholds for website, poster, and video outputs
+  - Success metrics: input variance HIGH→LOW, quality check automation 10%→80%, preflight catch rate 0%→90%
+  - Priority matrix: input schema (P0), venue database (P0), cost estimator (P1), preflight (P1)
+
 - **skills/paper-search/DETERMINISM_AUDIT.md**: Comprehensive determinism audit and implementation plan
   - Executive summary: ~85% current determinism, targeting 95% (10% variance reduction)
   - Key insight: Skill is exceptionally well-designed with code-based search infrastructure; remaining variance is in query construction and database selection
