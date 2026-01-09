@@ -19,6 +19,36 @@ import argparse
 import sys
 from typing import Dict, List, Optional
 from pathlib import Path
+from dataclasses import dataclass
+
+
+# ============================================================================
+# VALIDATION CONSTANTS
+# ============================================================================
+
+REQUIRED_DIMENSIONS = [
+    "problem_formulation",
+    "literature_review",
+    "methodology",
+    "data_collection",
+    "analysis",
+    "results",
+    "writing",
+    "citations",
+]
+
+MIN_JUSTIFICATION_LENGTH = 50  # characters
+MIN_SCORE = 1.0
+MAX_SCORE = 5.0
+
+
+@dataclass
+class ValidationResult:
+    """Result of a validation check."""
+
+    is_valid: bool
+    errors: List[str]
+    warnings: List[str]
 
 
 # Default dimension weights (total = 100%)
@@ -142,6 +172,245 @@ def identify_strengths_weaknesses(scores: Dict[str, float]) -> tuple:
     weaknesses = [dim for dim, score in sorted_scores[-3:] if score < 3.5]
 
     return strengths, weaknesses
+
+
+# ============================================================================
+# VALIDATION FUNCTIONS
+# ============================================================================
+
+
+def validate_scores(scores: Dict[str, float]) -> ValidationResult:
+    """
+    Validate score completeness and bounds.
+
+    Checks that:
+    - All required dimensions are present
+    - All scores are within valid range [1.0, 5.0]
+
+    Args:
+        scores: Dictionary mapping dimension names to scores
+
+    Returns:
+        ValidationResult with errors for any violations
+
+    Examples:
+        >>> result = validate_scores({"methodology": 4.5})
+        >>> result.is_valid
+        False
+        >>> "Missing required dimension: problem_formulation" in result.errors
+        True
+    """
+    errors = []
+
+    # Normalize dimension keys
+    normalized_scores = {k.replace("-", "_").lower(): v for k, v in scores.items()}
+
+    # Check all dimensions present
+    for dim in REQUIRED_DIMENSIONS:
+        if dim not in normalized_scores:
+            errors.append(f"Missing required dimension: {dim}")
+        elif not MIN_SCORE <= normalized_scores[dim] <= MAX_SCORE:
+            errors.append(
+                f"Score out of bounds for {dim}: {normalized_scores[dim]} "
+                f"(must be {MIN_SCORE}-{MAX_SCORE})"
+            )
+
+    return ValidationResult(
+        is_valid=len(errors) == 0,
+        errors=errors,
+        warnings=[],
+    )
+
+
+def validate_justifications(justifications: Dict[str, str]) -> ValidationResult:
+    """
+    Validate justification completeness.
+
+    Checks that:
+    - All required dimensions have justifications
+    - Justifications meet minimum length requirement
+
+    Args:
+        justifications: Dictionary mapping dimension names to justification text
+
+    Returns:
+        ValidationResult with warnings for any violations
+
+    Examples:
+        >>> result = validate_justifications({"methodology": "Good methods"})
+        >>> result.is_valid
+        True  # Justifications are warnings, not errors
+        >>> len(result.warnings) > 0
+        True
+    """
+    warnings = []
+
+    # Normalize dimension keys
+    normalized_justifications = {
+        k.replace("-", "_").lower(): v for k, v in justifications.items()
+    }
+
+    for dim in REQUIRED_DIMENSIONS:
+        if dim not in normalized_justifications:
+            warnings.append(f"Missing justification for {dim}")
+        elif len(normalized_justifications[dim]) < MIN_JUSTIFICATION_LENGTH:
+            warnings.append(
+                f"Justification too brief for {dim} "
+                f"({len(normalized_justifications[dim])} chars, "
+                f"minimum {MIN_JUSTIFICATION_LENGTH})"
+            )
+
+    return ValidationResult(
+        is_valid=True,  # Justification issues are warnings, not errors
+        errors=[],
+        warnings=warnings,
+    )
+
+
+def validate_score_consistency(
+    scores: Dict[str, float],
+    issues: List[Dict],
+) -> ValidationResult:
+    """
+    Check that scores align with identified issues.
+
+    Validates logical consistency between assigned scores and flagged issues:
+    - Critical issues should correlate with low methodology scores
+    - Writing issues should correlate with low writing scores
+    - Major data issues should correlate with low data_collection scores
+
+    Args:
+        scores: Dictionary mapping dimension names to scores
+        issues: List of issue dictionaries with 'severity' and optionally
+               'dimension' or 'category' keys
+
+    Returns:
+        ValidationResult with warnings for inconsistencies
+
+    Examples:
+        >>> scores = {"methodology": 4.5}
+        >>> issues = [{"severity": "critical", "category": "methodology"}]
+        >>> result = validate_score_consistency(scores, issues)
+        >>> len(result.warnings) > 0
+        True
+    """
+    warnings = []
+
+    # Normalize dimension keys
+    normalized_scores = {k.replace("-", "_").lower(): v for k, v in scores.items()}
+
+    # Count issues by severity
+    critical_issues = [
+        i for i in issues if i.get("severity", "").lower() == "critical"
+    ]
+    major_issues = [i for i in issues if i.get("severity", "").lower() == "major"]
+
+    # Methodology consistency check
+    methodology_issues = [
+        i
+        for i in critical_issues + major_issues
+        if i.get("category", "").lower() in ("methodology", "statistical", "methods")
+        or i.get("dimension", "").lower() == "methodology"
+    ]
+
+    if methodology_issues and normalized_scores.get("methodology", 0) > 3.0:
+        warnings.append(
+            f"Critical/major methodology issues identified ({len(methodology_issues)}) "
+            f"but methodology score is {normalized_scores.get('methodology', 'N/A')}"
+        )
+
+    # Data collection consistency check
+    data_issues = [
+        i
+        for i in critical_issues + major_issues
+        if i.get("category", "").lower() in ("data", "data_collection", "sampling")
+        or i.get("dimension", "").lower() == "data_collection"
+    ]
+
+    if data_issues and normalized_scores.get("data_collection", 0) > 3.0:
+        warnings.append(
+            f"Critical/major data issues identified ({len(data_issues)}) "
+            f"but data_collection score is {normalized_scores.get('data_collection', 'N/A')}"
+        )
+
+    # Writing consistency check
+    writing_issues = [
+        i
+        for i in issues
+        if i.get("category", "").lower() in ("writing", "grammar", "clarity")
+        or i.get("dimension", "").lower() == "writing"
+    ]
+
+    if len(writing_issues) > 5 and normalized_scores.get("writing", 0) > 4.0:
+        warnings.append(
+            f"Multiple writing issues identified ({len(writing_issues)}) "
+            f"but writing score is {normalized_scores.get('writing', 'N/A')}"
+        )
+
+    # General critical issue check
+    if len(critical_issues) >= 2:
+        avg_score = sum(normalized_scores.values()) / len(normalized_scores)
+        if avg_score > 3.5:
+            warnings.append(
+                f"Multiple critical issues identified ({len(critical_issues)}) "
+                f"but average score is {avg_score:.2f}"
+            )
+
+    return ValidationResult(
+        is_valid=len(warnings) == 0,
+        errors=[],
+        warnings=warnings,
+    )
+
+
+def validate_complete_review(
+    scores: Dict[str, float],
+    justifications: Optional[Dict[str, str]] = None,
+    issues: Optional[List[Dict]] = None,
+) -> ValidationResult:
+    """
+    Perform comprehensive validation of a complete review.
+
+    Combines score validation, justification validation, and consistency checks.
+
+    Args:
+        scores: Dictionary mapping dimension names to scores
+        justifications: Optional dictionary of justification texts
+        issues: Optional list of identified issues
+
+    Returns:
+        Combined ValidationResult
+
+    Examples:
+        >>> result = validate_complete_review(
+        ...     scores={"methodology": 4.5, "writing": 3.0},
+        ...     justifications={"methodology": "Excellent methods"},
+        ... )
+        >>> print(result.is_valid)
+    """
+    all_errors = []
+    all_warnings = []
+
+    # Validate scores
+    score_result = validate_scores(scores)
+    all_errors.extend(score_result.errors)
+    all_warnings.extend(score_result.warnings)
+
+    # Validate justifications if provided
+    if justifications is not None:
+        just_result = validate_justifications(justifications)
+        all_warnings.extend(just_result.warnings)
+
+    # Validate consistency if issues provided
+    if issues is not None:
+        consist_result = validate_score_consistency(scores, issues)
+        all_warnings.extend(consist_result.warnings)
+
+    return ValidationResult(
+        is_valid=len(all_errors) == 0,
+        errors=all_errors,
+        warnings=all_warnings,
+    )
 
 
 def generate_report(scores: Dict[str, float], weights: Dict[str, float],

@@ -1,0 +1,151 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "manuscript_input.json",
+  "title": "ManuscriptInput",
+  "description": "Schema for manuscript metadata input to peer review workflow",
+  "type": "object",
+  "required": ["title", "manuscript_type"],
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Manuscript title"
+    },
+    "authors": {
+      "type": "string",
+      "description": "Author list (comma-separated or formatted)"
+    },
+    "manuscript_type": {
+      "type": "string",
+      "enum": [
+        "original_research",
+        "review",
+        "meta_analysis",
+        "methods",
+        "short_report",
+        "preprint",
+        "presentation",
+        "grant_proposal",
+        "thesis"
+      ],
+      "description": "Type of manuscript being reviewed"
+    },
+    "discipline": {
+      "type": "string",
+      "enum": [
+        "biomedical",
+        "computational",
+        "clinical",
+        "physical_sciences",
+        "social_sciences",
+        "engineering",
+        "environmental",
+        "other"
+      ],
+      "default": "other",
+      "description": "Scientific discipline of the manuscript"
+    },
+    "venue_tier": {
+      "type": "string",
+      "enum": ["top_tier", "standard", "student_thesis", "internal"],
+      "default": "standard",
+      "description": "Target venue quality tier (affects review stringency)"
+    },
+    "target_venue": {
+      "type": "string",
+      "description": "Specific target journal/conference name"
+    },
+    "sections_present": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "abstract",
+          "introduction",
+          "methods",
+          "results",
+          "discussion",
+          "conclusions",
+          "references",
+          "supplementary",
+          "acknowledgments",
+          "data_availability",
+          "code_availability",
+          "ethics_statement",
+          "author_contributions",
+          "competing_interests"
+        ]
+      },
+      "description": "Sections present in the manuscript"
+    },
+    "figure_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of figures in the manuscript"
+    },
+    "table_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of tables in the manuscript"
+    },
+    "supplementary_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of supplementary items"
+    },
+    "word_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Approximate word count"
+    },
+    "reference_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of references cited"
+    },
+    "reporting_guidelines": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "CONSORT",
+          "PRISMA",
+          "STROBE",
+          "ARRIVE",
+          "MIAME",
+          "MINSEQE",
+          "MDAR",
+          "TOP",
+          "SPIRIT",
+          "CHEERS",
+          "STARD",
+          "TRIPOD"
+        ]
+      },
+      "description": "Applicable reporting guidelines"
+    },
+    "has_human_subjects": {
+      "type": "boolean",
+      "description": "Whether study involves human subjects"
+    },
+    "has_animal_subjects": {
+      "type": "boolean",
+      "description": "Whether study involves animal subjects"
+    },
+    "file_path": {
+      "type": "string",
+      "description": "Path to the manuscript file"
+    },
+    "submission_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of submission for review"
+    },
+    "review_deadline": {
+      "type": "string",
+      "format": "date",
+      "description": "Deadline for completing review"
+    }
+  },
+  "additionalProperties": true
+}

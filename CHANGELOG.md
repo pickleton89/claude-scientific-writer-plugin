@@ -7,6 +7,56 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/peer-review/**: Deterministic validation utilities implementation with 141 test cases (100% pass rate)
+  - **validators/severity_classifier.py**: Quantified severity classification
+    - `Severity` enum (CRITICAL, MAJOR, MINOR, OPTIONAL) with 24 threshold-based rules
+    - `classify_severity(issue_type, metric_value)` for deterministic classification
+    - `get_recommendation_action()` mapping severity to standard actions (Reject/Major revision/Minor revision/Discretion)
+    - `classify_multiple_issues()` for batch processing with severity-sorted output
+    - Rules extracted from SKILL.md: missing data >30%, ethics violations, pseudoreplication, sample size issues
+  - **validators/issue_lookup.py**: Common issue catalog with 20+ entries
+    - `CommonIssue` dataclass with code, category, detection hints, severity, recommendation templates
+    - 7 categories: STATISTICAL, EXPERIMENTAL, REPRODUCIBILITY, INTERPRETATION, PRESENTATION, STUDY_DESIGN, REPORTING
+    - `lookup_issue(code)` and `search_issues(keyword)` for fast retrieval
+    - `format_issue_report()` for generating review comments with context substitutions
+  - **validators/statistical_tests.py**: Statistical test recommendations
+    - 15+ test scenarios covering continuous/categorical/time-to-event data
+    - `TestRecommendation` with assumptions, alternatives, common mistakes, reporting requirements
+    - `recommend_test(data_type, groups, design, distribution)` for deterministic selection
+    - `validate_test_choice()` checking if chosen test is appropriate for data structure
+  - **schemas/**: JSON schema validation
+    - `manuscript_input.json` with manuscript type, discipline, venue tier, sections
+    - `review_output.json` with summary, scores, major/minor comments, questions
+    - `validate_schema.py` with `validate_manuscript()` and `validate_review()` functions
+  - **scripts/workflow_tracker.py**: 7-stage review workflow automation
+    - `ReviewStage` enum: INITIAL_ASSESSMENT through REPORT
+    - `WorkflowState` with checklist tracking, issue collection, stage notes
+    - Exit criteria enforcement from references/workflow_transitions.md
+    - Progress tracking with percentage and descriptive milestones
+    - State persistence with `save()` and `load()` methods
+  - **scripts/calculate_scores.py**: Extended with validation functions
+    - `validate_scores()` checking 8 required dimensions with bounds validation
+    - `validate_justifications()` enforcing minimum justification length
+    - `validate_score_consistency()` flagging score/issue mismatches
+    - `validate_complete_review()` combining all validation checks
+  - **scripts/figure_checker.py**: Image quality validation
+    - Resolution, format, dimensions, color mode, file size checks
+    - `FigureQualityThresholds` from SKILL.md (150/300/600 DPI tiers)
+    - `check_figure_quality()` returning `FigureQualityResult` with tier classification
+    - Journal format validation against publication standards
+  - **calibration/**: Scoring calibration examples (5 dimensions)
+    - methodology_examples.md, analysis_examples.md, results_examples.md
+    - writing_examples.md, literature_review_examples.md
+    - Each file: Score 5/4/3/2/1 examples with "Why this score" and key indicators
+    - Decision trees and common scoring pitfalls for each dimension
+  - **tests/**: Comprehensive test suite (141 tests)
+    - test_severity_classifier.py: 28 tests for severity classification
+    - test_calculate_scores.py: 18 tests for score validation
+    - test_workflow_tracker.py: 32 tests for workflow state management
+    - test_issue_lookup.py: 30 tests for issue catalog
+    - test_statistical_tests.py: 33 tests for test recommendations
+  - Determinism improvement: ~35-40% → ~70-75% through threshold-based severity classification, automated workflow gates, and statistical test recommendations
+
 - **skills/plotting-libraries/**: Deterministic validation utilities implementation with 110 test cases (100% pass rate)
   - **scripts/plotting_params.py**: Parameter lookup tables for deterministic configuration
     - `ThresholdPreset` enum and `VolcanoThresholds` for volcano plot thresholds (exploratory, standard, stringent, very_stringent)

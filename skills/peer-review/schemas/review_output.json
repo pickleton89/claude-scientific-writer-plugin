@@ -1,0 +1,270 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "review_output.json",
+  "title": "ReviewOutput",
+  "description": "Schema for structured peer review output",
+  "type": "object",
+  "required": ["summary", "recommendation", "major_comments", "minor_comments"],
+  "properties": {
+    "summary": {
+      "type": "object",
+      "required": ["synopsis", "recommendation", "strengths", "weaknesses"],
+      "properties": {
+        "synopsis": {
+          "type": "string",
+          "minLength": 100,
+          "description": "Brief overview of the manuscript and its contribution"
+        },
+        "recommendation": {
+          "type": "string",
+          "enum": ["accept", "minor_revisions", "major_revisions", "reject"],
+          "description": "Overall recommendation"
+        },
+        "strengths": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 10},
+          "minItems": 2,
+          "maxItems": 5,
+          "description": "Key strengths of the manuscript"
+        },
+        "weaknesses": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 10},
+          "minItems": 1,
+          "maxItems": 5,
+          "description": "Key weaknesses of the manuscript"
+        },
+        "significance_statement": {
+          "type": "string",
+          "description": "Statement on the significance of the work"
+        }
+      }
+    },
+    "recommendation": {
+      "type": "string",
+      "enum": ["accept", "minor_revisions", "major_revisions", "reject"],
+      "description": "Overall recommendation (top-level for easy access)"
+    },
+    "confidence_level": {
+      "type": "string",
+      "enum": ["high", "medium", "low"],
+      "description": "Reviewer's confidence in their assessment"
+    },
+    "scores": {
+      "type": "object",
+      "properties": {
+        "problem_formulation": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Clarity, significance, novelty, feasibility (15% weight)"
+        },
+        "literature_review": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Comprehensiveness, synthesis, gap identification (15% weight)"
+        },
+        "methodology": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Appropriateness, rigor, reproducibility, ethics (20% weight)"
+        },
+        "data_collection": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Quality, sample size, procedures, reliability (10% weight)"
+        },
+        "analysis": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Method appropriateness, rigor, coherence (15% weight)"
+        },
+        "results": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Clarity, statistical rigor, visualization (10% weight)"
+        },
+        "writing": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Organization, clarity, tone, accessibility (10% weight)"
+        },
+        "citations": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Completeness, quality, accuracy, balance (5% weight)"
+        },
+        "aggregate": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Weighted aggregate score"
+        },
+        "quality_tier": {
+          "type": "string",
+          "enum": ["A", "B", "C", "D", "F"],
+          "description": "Quality tier based on aggregate score"
+        }
+      },
+      "description": "ScholarEval 8-dimension scores"
+    },
+    "major_comments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["issue", "location", "severity", "recommendation"],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Sequential comment identifier"
+          },
+          "issue": {
+            "type": "string",
+            "minLength": 20,
+            "description": "Description of the issue"
+          },
+          "location": {
+            "type": "string",
+            "description": "Where in the manuscript the issue occurs"
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["critical", "major"],
+            "description": "Issue severity level"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "methodology",
+              "statistical",
+              "data",
+              "interpretation",
+              "reproducibility",
+              "ethics",
+              "other"
+            ],
+            "description": "Issue category"
+          },
+          "recommendation": {
+            "type": "string",
+            "minLength": 20,
+            "description": "Suggested resolution"
+          },
+          "essential_for_publication": {
+            "type": "boolean",
+            "description": "Whether addressing this issue is required for publication"
+          }
+        }
+      },
+      "description": "Major issues requiring significant revision"
+    },
+    "minor_comments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["issue", "location"],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Sequential comment identifier"
+          },
+          "issue": {
+            "type": "string",
+            "description": "Description of the issue"
+          },
+          "location": {
+            "type": "string",
+            "description": "Where in the manuscript the issue occurs"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "clarity",
+              "presentation",
+              "figures",
+              "references",
+              "grammar",
+              "style",
+              "other"
+            ],
+            "description": "Issue category"
+          },
+          "recommendation": {
+            "type": "string",
+            "description": "Suggested resolution"
+          }
+        }
+      },
+      "description": "Minor issues for improvement"
+    },
+    "questions_for_authors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["question"],
+        "properties": {
+          "question": {
+            "type": "string",
+            "description": "Question requiring clarification"
+          },
+          "context": {
+            "type": "string",
+            "description": "Why this clarification is needed"
+          },
+          "location": {
+            "type": "string",
+            "description": "Related manuscript section"
+          }
+        }
+      },
+      "description": "Questions requiring author clarification"
+    },
+    "confidential_comments": {
+      "type": "string",
+      "description": "Comments for editors only (not shared with authors)"
+    },
+    "review_metadata": {
+      "type": "object",
+      "properties": {
+        "review_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date review was completed"
+        },
+        "time_spent_hours": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Estimated time spent on review"
+        },
+        "workflow_stages_completed": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "initial_assessment",
+              "section_review",
+              "methodology",
+              "reproducibility",
+              "figures",
+              "ethics",
+              "writing"
+            ]
+          },
+          "description": "Review workflow stages completed"
+        },
+        "validation_passed": {
+          "type": "boolean",
+          "description": "Whether review passed schema validation"
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}
