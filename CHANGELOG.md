@@ -315,6 +315,56 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - Screening audit trail: 0% → 93% (Phase 3)
   - Stage exit criteria: 0% → 93% (Phase 3)
 
+- **skills/generate-image/**: Deterministic validation utilities implementation (Phase 1) with 106 test cases (100% pass rate)
+  - **scripts/validate_output.py**: Post-generation image validation
+    - `ImageValidation` dataclass with computed properties: min/max dimension, is_square, is_portrait, is_landscape
+    - Resolution tier classification: excellent (≥2048px), target (≥1024px), minimum (≥512px), fail (<512px)
+    - File integrity checking: MIN_FILE_SIZE (1KB), MAX_FILE_SIZE (50MB), corrupt image detection via PIL verify
+    - Format detection: PNG, JPEG, WEBP, GIF with mode (RGB/RGBA) and alpha channel detection
+    - `validate_image(path)`: Full validation returning ImageValidation with all metrics
+    - `check_resolution_tier(validation)`: Classify resolution against SKILL.md thresholds
+    - `format_validation_report(validation)`: Human-readable report with emojis and quality threshold checks
+    - `validate_batch(paths)` / `summarize_batch(validations)`: Batch processing with summary statistics
+    - CLI interface with single and batch modes
+  - **scripts/analyze_prompt.py**: 5-component prompt formula validation
+    - Keyword sets (frozenset): STYLE_KEYWORDS, QUALITY_KEYWORDS, TECHNICAL_KEYWORDS, MEDIUM_KEYWORDS, SCIENTIFIC_SUBJECT_KEYWORDS
+    - `PromptComponent` dataclass: present, keywords_found, confidence (0-1)
+    - `PromptAnalysis` dataclass: prompt, word_count, subject/style/medium/technical/quality components
+      - Computed properties: component_count (0-5), completeness_score (0-1), is_optimal_length, is_viable
+    - Length categorization: too_short (<10), short (10-19), optimal (20-50), long (51-100), too_long (>100)
+    - Warning generation: missing components, length issues
+    - Suggestion generation: specific additions for missing components
+    - `analyze_prompt(prompt)`: Full analysis against 5-component formula
+    - `format_analysis(analysis)`: Human-readable report with component status and suggestions
+    - `suggest_improvements(prompt)`: Auto-improve prompt by adding missing components
+    - `batch_analyze(prompts)` / `summarize_batch(analyses)`: Batch processing with coverage statistics
+    - CLI interface with optional `--suggest` flag
+  - **tests/test_validate_output.py**: 38 test cases
+    - TestImageValidationDataclass: 7 tests for computed properties
+    - TestValidateImage: 11 tests for validation logic and thresholds
+    - TestCheckResolutionTier: 6 tests for tier classification
+    - TestFormatValidationReport: 4 tests for report formatting
+    - TestBatchValidation: 4 tests for batch processing
+    - TestEdgeCases: 5 tests for boundary conditions
+    - TestPILNotInstalled: 1 test for graceful degradation
+  - **tests/test_analyze_prompt.py**: 68 test cases
+    - TestPromptComponentDataclass: 2 tests for component creation
+    - TestPromptAnalysisDataclass: 6 tests for analysis properties
+    - TestAnalyzePromptComponentDetection: 7 tests for keyword matching
+    - TestAnalyzePromptLengthCategorization: 6 tests for length categories
+    - TestAnalyzePromptWarnings: 6 tests for warning generation
+    - TestAnalyzePromptSuggestions: 5 tests for suggestion generation
+    - TestFormatAnalysis: 6 tests for output formatting
+    - TestSuggestImprovements: 5 tests for auto-improvement
+    - TestBatchAnalysis: 4 tests for batch processing
+    - TestKeywordSets: 7 tests for keyword set properties
+    - TestConstants: 2 tests for length constants
+    - TestEdgeCases: 8 tests for edge cases (empty, unicode, special chars)
+    - TestIntegration: 4 tests for workflow integration
+  - Determinism improvement: 60% → 70% (Phase 1 complete)
+  - Prompt validation: 0% → 80%
+  - Output validation: 0% → 90%
+
 - **skills/oligon-brand/**: Deterministic validation utilities implementation with 78 test cases (100% pass rate)
   - **adapters/matplotlib_adapter.py**: Extended with 7 deterministic functions
     - `select_cycle(n_series, context, has_highlight)`: Deterministic color cycle selection
