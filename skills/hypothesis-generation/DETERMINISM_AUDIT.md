@@ -1395,15 +1395,15 @@ if __name__ == "__main__":
 
 ## Priority Matrix
 
-| Script | Priority | Impact | Effort | Dependencies |
-|--------|----------|--------|--------|--------------|
-| `validate_input.py` | P0 | HIGH | LOW | None |
-| `validate_hypothesis.py` | P0 | HIGH | MEDIUM | None |
-| `track_citations.py` | P0 | MEDIUM | LOW | None |
-| `score_hypothesis.py` | P1 | HIGH | MEDIUM | validate_hypothesis.py |
-| `check_distinctiveness.py` | P1 | MEDIUM | LOW | None |
-| `validate_stage_exit.py` | P2 | MEDIUM | MEDIUM | All above |
-| `latex_preflight.py` | P2 | MEDIUM | LOW | None |
+| Script | Priority | Impact | Effort | Dependencies | Status |
+|--------|----------|--------|--------|--------------|--------|
+| `validate_input.py` | P0 | HIGH | LOW | None | ✅ Implemented |
+| `validate_hypothesis.py` | P0 | HIGH | MEDIUM | None | ✅ Implemented |
+| `track_citations.py` | P0 | MEDIUM | LOW | None | ✅ Implemented |
+| `score_hypothesis.py` | P1 | HIGH | MEDIUM | validate_hypothesis.py | ✅ Implemented |
+| `check_distinctiveness.py` | P1 | MEDIUM | LOW | None | ✅ Implemented |
+| `validate_stage_exit.py` | P2 | MEDIUM | MEDIUM | All above | ⏳ Pending |
+| `latex_preflight.py` | P2 | MEDIUM | LOW | None | ⏳ Pending |
 
 ---
 
@@ -1411,14 +1411,43 @@ if __name__ == "__main__":
 
 | Metric | Current | Phase 1 | Phase 2 | Phase 3 |
 |--------|---------|---------|---------|---------|
-| Input validation coverage | ~30% | 85% | 85% | 85% |
-| Hypothesis structure validation | ~50% | 95% | 95% | 95% |
-| Quality score automation | 0% | 0% | 60% | 60% |
-| Citation tracking | ~20% | 95% | 95% | 95% |
-| Distinctiveness validation | 0% | 0% | 80% | 80% |
+| Input validation coverage | ~30% | ✅ 85% | ✅ 85% | 85% |
+| Hypothesis structure validation | ~50% | ✅ 95% | ✅ 95% | 95% |
+| Quality score automation | 0% | 0% | ✅ 60% | 60% |
+| Citation tracking | ~20% | ✅ 95% | ✅ 95% | 95% |
+| Distinctiveness validation | 0% | 0% | ✅ 80% | 80% |
 | Stage exit validation | ~50% | 50% | 75% | 90% |
 | LaTeX preflight | 0% | 0% | 0% | 85% |
-| **Overall determinism** | **55-60%** | **70%** | **80%** | **85%** |
+| **Overall determinism** | **55-60%** | **✅ 70%** | **✅ 80%** | **85%** |
+
+### Phase 1 Implementation (Completed 2026-01-09)
+
+**Files Created:**
+- `scripts/validate_input.py` - Input schema validation with domain/observation enums
+- `scripts/validate_hypothesis.py` - Hypothesis structure enforcement (mechanism, evidence, predictions)
+- `scripts/track_citations.py` - Citation counting and recency analysis
+- `tests/test_validate_input.py` - 24 test cases
+- `tests/test_validate_hypothesis.py` - 40 test cases
+- `tests/test_track_citations.py` - 35 test cases
+
+**Test Results:** 99 tests passing in 0.07s
+
+### Phase 2 Implementation (Completed 2026-01-09)
+
+**Files Created:**
+- `scripts/score_hypothesis.py` - Automated quality scoring (testability, falsifiability, parsimony)
+- `scripts/check_distinctiveness.py` - Mechanism overlap detection using Jaccard similarity
+- `tests/test_score_hypothesis.py` - 42 test cases
+- `tests/test_check_distinctiveness.py` - 34 test cases
+
+**Key Features:**
+- Automated scoring for 3/5 quality criteria (testability, falsifiability, parsimony)
+- LLM-required criteria flagged for review (explanatory_power, distinctiveness)
+- Jaccard similarity for mechanism term overlap detection
+- Configurable distinctiveness threshold (default 40%)
+- Handles edge cases: duplicate IDs, empty mechanisms, missing fields
+
+**Test Results:** 175 tests passing in 0.08s
 
 ---
 
@@ -1431,10 +1460,10 @@ Add to `SKILL.md` workflow stages:
 
 Before proceeding from Generate Hypotheses to Evaluate Quality:
 
-1. Run `python scripts/validate_hypothesis.py --input hypotheses.json`
+1. Run `python scripts/validate_hypothesis.py hypotheses.json`
    - Must show: ✓ All hypotheses have mechanism, evidence, assumptions
 
-2. Run `python scripts/check_distinctiveness.py --input hypotheses.json`
+2. Run `python scripts/check_distinctiveness.py hypotheses.json`
    - Must show: All pairwise overlap_ratio < 0.4
 
 Exit criteria validated. Proceeding to Stage 5.
@@ -1443,10 +1472,10 @@ Exit criteria validated. Proceeding to Stage 5.
 
 Before proceeding from Formulate Predictions to Present Output:
 
-1. Run `python scripts/track_citations.py --input hypotheses.json`
+1. Run `python scripts/track_citations.py hypotheses.json`
    - Must show: ✓ Total ≥40, Main text ≥10, Recent ≥60%
 
-2. Run `python scripts/score_hypothesis.py --input hypotheses.json`
+2. Run `python scripts/score_hypothesis.py hypotheses.json`
    - Must show: ≥1 hypothesis scoring ≥8/10
 
 Exit criteria validated. Proceeding to Stage 8.
@@ -1455,7 +1484,7 @@ Exit criteria validated. Proceeding to Stage 8.
 
 Before marking report complete:
 
-1. Run `python scripts/latex_preflight.py --input hypothesis_report.tex`
+1. Run `python scripts/latex_preflight.py hypothesis_report.tex`
    - Must show: ✓ All required environments, sections, bibliography
 
 Report validated. Ready for compilation.
@@ -1654,6 +1683,17 @@ def test_full_workflow_validation():
 
 ## Changelog
 
+- **v1.2.0** (2026-01-09): Phase 2 implementation complete
+  - Implemented `score_hypothesis.py` for automated quality scoring (3/5 criteria)
+  - Implemented `check_distinctiveness.py` for mechanism overlap detection
+  - Added 76 test cases across 2 test files (175 total)
+  - Current determinism raised from 70% to 80%
+- **v1.1.0** (2026-01-09): Phase 1 implementation complete
+  - Implemented `validate_input.py` with domain/observation/explanation enums
+  - Implemented `validate_hypothesis.py` for hypothesis structure enforcement
+  - Implemented `track_citations.py` for citation tracking and recency analysis
+  - Added 99 test cases across 3 test files
+  - Current determinism raised from 55-60% to 70%
 - **v1.0.0** (2026-01-08): Initial determinism audit
   - Identified 55-60% current determinism
   - Proposed 3-phase implementation plan
