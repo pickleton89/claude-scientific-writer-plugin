@@ -1,10 +1,10 @@
 # Determinism Audit: Executive Summary Skill
 
 > **Audit Date:** January 2026
-> **Development Stage:** Phase 1 Complete
-> **Current Determinism:** ~75%
+> **Development Stage:** Phase 2 Complete
+> **Current Determinism:** ~80%
 > **Target Determinism:** 85%
-> **Variance Reduction:** 10%
+> **Variance Reduction:** 5%
 
 ---
 
@@ -55,6 +55,48 @@ The executive-summary skill is well-architected for its first-draft stage, with 
 
 ---
 
+## Phase 2 Implementation (COMPLETE)
+
+**Completed:** January 9, 2026
+**Test Coverage:** 125 tests passing (225 total with Phase 1)
+
+### Deliverables
+
+| Script | Purpose | Tests |
+|--------|---------|-------|
+| `scripts/compare_to_source.py` | Source comparison & originality | 64 |
+| `scripts/check_readability.py` | Readability metrics & scoring | 61 |
+
+### compare_to_source.py Features
+
+- **Tokenization**: Lowercase word extraction with markdown removal
+- **N-gram generation**: Trigram overlap calculation for similarity scoring
+- **Similarity status**: GOOD (10-60%), TOO_SIMILAR (>60%), TOO_DIFFERENT (<10%)
+- **Verbatim phrase detection**: Finds 6+ word phrases copied from source
+- **Claim extraction**: Identifies sentences with percentages, dollar amounts, or findings verbs
+- **Claim coverage calculation**: Measures how many source claims appear in summary
+- **Issue tracking**: Generates actionable issues for revision
+
+### check_readability.py Features
+
+- **Syllable counting**: Vowel-group based estimation with silent-e and -ed adjustments
+- **Sentence splitting**: Handles abbreviations (Mr., Dr., i.e., e.g., Inc., etc.)
+- **Flesch Reading Ease**: 206.835 - 1.015×(words/sentences) - 84.6×(syllables/words)
+- **Flesch-Kincaid Grade Level**: 0.39×(words/sentences) + 11.8×(syllables/words) - 15.59
+- **Status determination**: PASS/WARN/FAIL based on sentence length (target: 15-20) and grade level (target: 10-14)
+- **Score interpretation**: Easy (70+), Moderate (50-70), Difficult (30-50), Very Difficult (<30)
+
+### Determinism Improvement
+
+| Component | After Phase 1 | After Phase 2 |
+|-----------|---------------|---------------|
+| Source fidelity | 0% | 75% |
+| Readability | 70% | 95% |
+| Quality metrics | 85% | 90% |
+| **Overall** | ~75% | ~80% |
+
+---
+
 ## Current Deterministic Components
 
 ### Already Automated in `validate_summary.py`
@@ -69,15 +111,20 @@ The executive-summary skill is well-architected for its first-draft stage, with 
 | Quantification presence | 6 regex patterns (%, $, decimals) | 95% |
 | Component detection | Keyword heuristics | 60% |
 
-### Documented But Not Validated
+### Now Automated (Phase 1 & 2)
+
+| Requirement | SKILL.md Location | Implemented By |
+|-------------|-------------------|----------------|
+| Source completeness | Workflow Step 1 | `preprocess_source.py` |
+| Source comparison | Workflow Step 5 | `compare_to_source.py` |
+| Originality (no copying) | Writing Rule 5 | `find_verbatim_phrases()` |
+| Template structure | Five-Component Structure | `validate_structure.py` |
+
+### Still Pending (Phase 3)
 
 | Requirement | SKILL.md Location | Current Status |
 |-------------|-------------------|----------------|
-| Source completeness | Workflow Step 1 | Manual verification |
-| Source comparison | Workflow Step 5 | Manual re-reading |
-| Originality (no copying) | Writing Rule 5 | Not checked |
-| Jargon translation | Writing Rule 4 | Not checked |
-| Template structure | Five-Component Structure | Keyword heuristics only |
+| Jargon translation | Writing Rule 4 | Not checked (→ `flag_jargon.py`)
 
 ---
 
@@ -1049,8 +1096,8 @@ if __name__ == "__main__":
 |----------|--------|--------|--------|--------|
 | **P0** | `preprocess_source.py` | High | Low | **IMPLEMENTED** (55 tests) |
 | **P0** | `validate_structure.py` | High | Low | **IMPLEMENTED** (45 tests) |
-| **P1** | `compare_to_source.py` | High | Medium | Ready to implement |
-| **P1** | `check_readability.py` | Medium | Low | Ready to implement |
+| **P1** | `compare_to_source.py` | High | Medium | **IMPLEMENTED** (64 tests) |
+| **P1** | `check_readability.py` | Medium | Low | **IMPLEMENTED** (61 tests) |
 | **P2** | `flag_jargon.py` | Medium | Medium | Ready to implement |
 
 ---
