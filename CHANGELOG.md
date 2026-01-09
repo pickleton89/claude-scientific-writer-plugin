@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
-- **skills/hypothesis-generation/**: Deterministic validation utilities implementation (Phase 1 & 2) with 175 test cases (100% pass rate)
+- **skills/hypothesis-generation/**: Deterministic validation utilities implementation (Phase 1, 2 & 3) with 295 test cases (100% pass rate)
   - **scripts/validate_input.py**: Input schema validation with typed enums
     - `ScientificDomain` enum: 9 domains (biomedical, chemistry, physics, ecology, materials, computational, neuroscience, engineering, other)
     - `ObservationType` enum: 6 types (unexpected_finding, correlation, pattern, anomaly, mechanism_gap, conflicting_results)
@@ -36,17 +36,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
     - `extract_mechanism_terms()`: Extracts terms from mechanism fields, removes stopwords
     - `calculate_overlap()`: Jaccard similarity between term sets
     - `check_distinctiveness()`: Pairwise comparison with configurable threshold (default 40%)
-  - **tests/*.py**: Comprehensive test suite (175 tests)
+  - **scripts/validate_stage_exit.py**: Workflow stage exit criteria validation (Phase 3)
+    - `ExitCriteria` dataclass: stage number, name, criteria list with (criterion, passed, note) tuples
+    - Stage validators for all 8 workflow stages:
+      - Stage 1: Phenomenon understanding (description ≥50 chars, scope, domain, ≥5 search terms)
+      - Stage 2: Literature search (≥3 databases, ≥40 papers, <5% saturation, ≥60% recent)
+      - Stage 3: Evidence synthesis (≥10 findings, ≥3 knowledge gaps, mechanistic patterns)
+      - Stage 4: Hypothesis generation (3-5 hypotheses, mechanism, ≥3 citations each)
+      - Stage 5: Quality evaluation (all scored, ≥1 score ≥8/10, all ≥5/10)
+      - Stage 6: Experimental design (feasibility with available methods)
+      - Stage 7: Prediction formulation (≥2 predictions/hypothesis, falsification criteria)
+      - Stage 8: Final output (completeness, ≥40 citations, structure validation)
+    - `validate_stage_exit(stage, data)`: Single stage validation with error on invalid stage
+    - `validate_all_stages(data)`: Comprehensive validation returning dict of all results
+  - **scripts/latex_preflight.py**: LaTeX document structure validation (Phase 3)
+    - `PreflightReport` dataclass: environments, sections, appendices, citations, warnings, errors
+    - Required environments: summarybox, hypothesisbox (variants 1-5), predictionbox, comparisonbox
+    - Required sections: Executive Summary, Competing Hypotheses, Testable Predictions, Critical Comparisons
+    - `check_balanced_environments()`: Detects unbalanced begin/end pairs
+    - `check_citations()`: Counts cite/citep/citet/citeauthor, detects bibliography/biblatex
+    - `check_page_breaks_before_boxes()`: Detects hypothesis boxes without preceding newpage
+    - `check_figure_references()` / `check_table_references()`: Unreferenced/missing label detection
+    - `check_latex_structure()`: Complete document validation with errors and warnings
+    - `check_latex_file()`: File-based validation with UTF-8 support
+  - **tests/*.py**: Comprehensive test suite (295 tests)
     - test_validate_input.py: 24 tests for input schema validation
     - test_validate_hypothesis.py: 40 tests for hypothesis structure
     - test_track_citations.py: 35 tests for citation analysis
     - test_score_hypothesis.py: 42 tests for quality scoring
     - test_check_distinctiveness.py: 34 tests for distinctiveness checking
-  - Determinism improvement: 55-60% → 80% (Phase 1 & 2 of 3)
+    - test_validate_stage_exit.py: 58 tests for stage exit validation (Phase 3)
+    - test_latex_preflight.py: 62 tests for LaTeX preflight checking (Phase 3)
+  - Determinism improvement: 55-60% → 85% (Phase 1, 2 & 3 complete)
   - Input validation coverage: 30% → 85%
   - Hypothesis structure validation: 50% → 95%
   - Quality score automation: 0% → 60%
   - Distinctiveness validation: 0% → 80%
+  - Stage exit validation: 50% → 90% (Phase 3)
+  - LaTeX preflight: 0% → 85% (Phase 3)
 
 - **skills/literature-review/**: Deterministic validation utilities implementation (Phase 1 & 2) with 228 test cases (100% pass rate)
   - **scripts/research_question.py**: PICO/PEO/SPIDER research question schemas
