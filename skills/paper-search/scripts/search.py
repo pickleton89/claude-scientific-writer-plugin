@@ -23,9 +23,27 @@ import json
 from pathlib import Path
 from typing import List, Dict, Optional, Set, Union
 
-# Add sources directory to path
+# Add directories to path
+scripts_dir = Path(__file__).parent
 sources_dir = Path(__file__).parent.parent / "sources"
+sys.path.insert(0, str(scripts_dir))
 sys.path.insert(0, str(sources_dir))
+
+# Import deterministic utilities
+from query_templates import (
+    build_query, list_templates, get_template_info,
+    format_template_help, TemplateError
+)
+from database_router import (
+    select_databases, get_routing_result, get_routing_explanation
+)
+from query_schema import (
+    StructuredQuery, load_query_from_json, load_query_from_string,
+    validate_query_schema
+)
+from query_validator import (
+    validate_query, validate_for_all_sources, format_validation_report
+)
 
 
 def normalize_date(
@@ -379,7 +397,9 @@ Examples:
 
     parser.add_argument(
         "query",
-        help="Search query"
+        nargs="?",  # Optional when using --list-templates
+        default="",
+        help="Search query (required unless using --list-templates)"
     )
 
     parser.add_argument(
@@ -448,10 +468,198 @@ Examples:
         help="Disable deduplication when searching multiple sources"
     )
 
+    # Deterministic query options
+    parser.add_argument(
+        "--template", "-T",
+        help="Use a query template instead of raw query. Use --list-templates to see options."
+    )
+
+    parser.add_argument(
+        "--template-params", "-P",
+        nargs="*",
+        metavar="KEY=VALUE",
+        help="Parameters for query template (e.g., topic='CRISPR' author='Doudna')"
+    )
+
+    parser.add_argument(
+        "--list-templates",
+        action="store_true",
+        help="List available query templates and exit"
+    )
+
+    parser.add_argument(
+        "--auto-route",
+        action="store_true",
+        help="Automatically select databases based on query content"
+    )
+
+    parser.add_argument(
+        "--domain-hint",
+        choices=["biomedical", "cs", "comprehensive", "preprint"],
+        help="Hint for automatic database routing"
+    )
+
+    # Phase 2: Structured query and validation
+    parser.add_argument(
+        "--query-file", "-Q",
+        help="Load query from JSON schema file (see --show-schema for format)"
+    )
+
+    parser.add_argument(
+        "--query-json",
+        help="Load query from inline JSON string"
+    )
+
+    parser.add_argument(
+        "--validate",
+        action="store_true",
+        help="Validate query syntax before searching (recommended)"
+    )
+
+    parser.add_argument(
+        "--validate-only",
+        action="store_true",
+        help="Only validate query, do not execute search"
+    )
+
+    parser.add_argument(
+        "--show-schema",
+        action="store_true",
+        help="Show JSON schema format and exit"
+    )
+
     args = parser.parse_args()
 
-    # Parse sources
-    sources = [s.strip().lower() for s in args.source.split(",")]
+    # Handle --show-schema
+    if args.show_schema:
+        print("""Structured Query JSON Schema
+============================
+
+Fields:
+  concepts          (required) List of search terms
+  operator          (optional) "AND" or "OR" (default: "AND")
+  synonyms          (optional) Term expansions as {"term": ["syn1", "syn2"]}
+  field_constraints (optional) Field filters as {"author": "...", "title": "..."}
+  date_range        (optional) Date filter as {"start": "2020", "end": "2024"}
+  publication_types (optional) PubMed types: ["Review", "Meta-Analysis", ...]
+  fields_of_study   (optional) Semantic Scholar fields: ["Biology", "Medicine", ...]
+  min_citations     (optional) Minimum citation count (integer)
+  open_access       (optional) Filter for open access only (true/false)
+  exclude_terms     (optional) Terms to exclude: ["review", "survey"]
+
+Full Example:
+{
+    "concepts": ["CRISPR", "gene therapy"],
+    "operator": "AND",
+    "synonyms": {"CRISPR": ["CRISPR-Cas9", "CRISPR/Cas9"]},
+    "field_constraints": {"author": "Doudna JA"},
+    "date_range": {"start": "2020", "end": "2024"},
+    "publication_types": ["Review"],
+    "min_citations": 10,
+    "open_access": true,
+    "exclude_terms": ["protocol"]
+}
+
+Minimal Examples:
+  {"concepts": ["CRISPR", "gene therapy"]}
+  {"concepts": ["cancer"], "date_range": {"start": "2022"}}
+""")
+        sys.exit(0)
+
+    # Handle --list-templates
+    if args.list_templates:
+        print(format_template_help())
+        sys.exit(0)
+
+    # Handle structured query from file or JSON string
+    structured_query = None
+    if args.query_file:
+        try:
+            structured_query = load_query_from_json(args.query_file)
+            print(f"Loaded query from: {args.query_file}", file=sys.stderr)
+        except FileNotFoundError:
+            print(f"Error: Query file not found: {args.query_file}", file=sys.stderr)
+            sys.exit(1)
+        except json.JSONDecodeError as e:
+            print(f"Error: Invalid JSON in query file: {e}", file=sys.stderr)
+            sys.exit(1)
+        except ValueError as e:
+            print(f"Error: Invalid query schema: {e}", file=sys.stderr)
+            sys.exit(1)
+    elif args.query_json:
+        try:
+            structured_query = load_query_from_string(args.query_json)
+            print("Loaded query from inline JSON", file=sys.stderr)
+        except json.JSONDecodeError as e:
+            print(f"Error: Invalid JSON string: {e}", file=sys.stderr)
+            sys.exit(1)
+        except ValueError as e:
+            print(f"Error: Invalid query schema: {e}", file=sys.stderr)
+            sys.exit(1)
+
+    # Validate query is provided for actual searches
+    if not args.query and not args.template and not structured_query:
+        parser.error("query is required (or use --template, --query-file, or --query-json)")
+
+    # Handle template-based query construction
+    query = args.query or ""
+    if args.template:
+        # Parse template parameters
+        template_params = {}
+        if args.template_params:
+            for param in args.template_params:
+                if "=" in param:
+                    key, value = param.split("=", 1)
+                    # Strip quotes from value
+                    value = value.strip("'\"")
+                    template_params[key.strip()] = value
+                else:
+                    print(f"Invalid parameter format: {param} (expected key=value)",
+                          file=sys.stderr)
+                    sys.exit(1)
+
+        # If query is provided without 'topic', use it as topic
+        if query and "topic" not in template_params:
+            template_params["topic"] = query
+
+        try:
+            query = build_query(args.template, **template_params)
+            print(f"Built query from template '{args.template}': {query}", file=sys.stderr)
+        except TemplateError as e:
+            print(f"Template error: {e}", file=sys.stderr)
+            sys.exit(1)
+
+    # Handle structured query (overrides template if both provided)
+    if structured_query:
+        # Use PubMed format as the default display query for routing/logging
+        # Source-specific query generation happens per-source in the search loop
+        query = structured_query.to_pubmed_query()
+        print(f"Structured query: {query}", file=sys.stderr)
+
+        # Apply structured query parameters to CLI args if not already set
+        if structured_query.publication_types and not args.type:
+            args.type = ",".join(structured_query.publication_types)
+        if structured_query.fields_of_study and not args.fields:
+            args.fields = ",".join(structured_query.fields_of_study)
+        if structured_query.min_citations is not None and not args.min_citations:
+            args.min_citations = structured_query.min_citations
+        if structured_query.open_access and not args.open_access:
+            args.open_access = True
+        if structured_query.date_range and not args.date:
+            start = structured_query.date_range.get("start", "")
+            end = structured_query.date_range.get("end", "")
+            if start or end:
+                args.date = f"{start}:{end}"
+
+    # Handle auto-routing for database selection
+    if args.auto_route or args.domain_hint:
+        routing_result = get_routing_result(query, args.domain_hint)
+        sources = list(routing_result.databases)
+        print(f"Auto-routing: {routing_result.explanation}", file=sys.stderr)
+        print(f"Confidence: {routing_result.confidence:.0%}", file=sys.stderr)
+    else:
+        # Parse sources from argument
+        sources = [s.strip().lower() for s in args.source.split(",")]
 
     # Expand "all" to all sources
     if "all" in sources:
@@ -483,36 +691,74 @@ Examples:
     if args.fields:
         fields = [f.strip() for f in args.fields.split(",")]
 
+    # Validate query syntax if requested
+    if args.validate or args.validate_only:
+        print("\n--- Query Validation ---", file=sys.stderr)
+        validation_results = validate_for_all_sources(query, sources)
+
+        has_errors = False
+        for source, result in validation_results.items():
+            print(f"\n{source.upper()}:", file=sys.stderr)
+            print(format_validation_report(result, verbose=True), file=sys.stderr)
+            if not result.is_valid:
+                has_errors = True
+
+        if has_errors:
+            print("\nValidation failed. Fix errors before searching.", file=sys.stderr)
+            sys.exit(1)
+
+        if args.validate_only:
+            print("\nValidation passed. Use without --validate-only to execute search.",
+                  file=sys.stderr)
+            sys.exit(0)
+
+        print("\nValidation passed. Proceeding with search...\n", file=sys.stderr)
+
     # Collect results from all sources
     all_results = []
 
     print(f"Searching: {', '.join(sources)}", file=sys.stderr)
-    print(f"Query: {args.query}", file=sys.stderr)
+    print(f"Query: {query}", file=sys.stderr)
     print(f"Max results per source: {args.max}", file=sys.stderr)
 
     for source in sources:
         print(f"\n--- Searching {source} ---", file=sys.stderr)
 
+        # Generate source-specific query if structured query provided
+        if structured_query:
+            if source == "pubmed":
+                source_query = structured_query.to_pubmed_query()
+            elif source in ("semantic", "scholar"):
+                source_query = structured_query.to_semantic_query()
+            elif source in ("biorxiv", "medrxiv"):
+                source_query = structured_query.to_biorxiv_query()
+            else:
+                source_query = query  # Fallback
+            if source_query != query:
+                print(f"Source-specific query: {source_query}", file=sys.stderr)
+        else:
+            source_query = query
+
         if source == "pubmed":
             results = search_pubmed(
-                args.query, args.max,
+                source_query, args.max,
                 pubmed_date_start, pubmed_date_end,
                 pub_types
             )
         elif source == "biorxiv":
-            results = search_biorxiv(args.query, args.max, biorxiv_date_start, biorxiv_date_end, "biorxiv")
+            results = search_biorxiv(source_query, args.max, biorxiv_date_start, biorxiv_date_end, "biorxiv")
         elif source == "medrxiv":
-            results = search_biorxiv(args.query, args.max, biorxiv_date_start, biorxiv_date_end, "medrxiv")
+            results = search_biorxiv(source_query, args.max, biorxiv_date_start, biorxiv_date_end, "medrxiv")
         elif source == "semantic":
             results = search_semantic_scholar(
-                args.query, args.max,
+                source_query, args.max,
                 year_start, year_end,
                 fields=fields,
                 open_access=args.open_access,
                 min_citations=args.min_citations
             )
         elif source == "scholar":
-            results = search_google_scholar(args.query, args.max, year_start, year_end)
+            results = search_google_scholar(source_query, args.max, year_start, year_end)
         else:
             print(f"Unknown source: {source}", file=sys.stderr)
             continue
@@ -537,7 +783,7 @@ Examples:
     # Format output
     if args.format == "json":
         output = json.dumps({
-            "query": args.query,
+            "query": query,
             "sources": sources,
             "count": len(all_results),
             "results": all_results

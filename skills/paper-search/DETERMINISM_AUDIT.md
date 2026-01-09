@@ -3,6 +3,8 @@
 > Audit Date: 2026-01-08
 > Skill Version: 1.0.0
 > Auditor: Claude Opus 4.5 (Deterministic Auditor)
+> **Phase 1 Completed: 2026-01-09**
+> **Phase 2 Completed: 2026-01-09**
 
 ---
 
@@ -12,10 +14,30 @@ The paper-search skill is exceptionally well-designed from a determinism perspec
 
 | Metric | Current | Target | Gap |
 |--------|---------|--------|-----|
-| Overall Determinism | 85% | 95% | 10% |
-| Input Standardization | 70% | 90% | 20% |
+| Overall Determinism | 93% | 95% | 2% |
+| Input Standardization | 92% | 90% | ACHIEVED |
 | Output Standardization | 98% | 98% | 0% |
-| Code Coverage | 85% | 95% | 10% |
+| Code Coverage | 93% | 95% | 2% |
+
+### Phase 1 Implementation Status: COMPLETE
+
+| Component | Status | File | Tests |
+|-----------|--------|------|-------|
+| Query Template Library | DONE | `scripts/query_templates.py` | 37 passing |
+| Database Router | DONE | `scripts/database_router.py` | 50 passing |
+| CLI Integration | DONE | `scripts/search.py` | Integrated |
+| **Phase 1 Total** | **87 passing** | | |
+
+### Phase 2 Implementation Status: COMPLETE
+
+| Component | Status | File | Tests |
+|-----------|--------|------|-------|
+| Structured Query Schema | DONE | `scripts/query_schema.py` | 54 passing |
+| Query Syntax Validators | DONE | `scripts/query_validator.py` | 50 passing |
+| CLI Integration | DONE | `scripts/search.py` | Integrated |
+| **Phase 2 Total** | **104 passing** | | |
+
+### Combined Test Suite: 191 TESTS PASSING
 
 ---
 
@@ -556,13 +578,24 @@ def enhanced_search(user_query: str, user_params: dict) -> dict:
 ```
 skills/paper-search/
 ├── SKILL.md                 # Main documentation
+├── DETERMINISM_AUDIT.md     # This audit document
 ├── scripts/
-│   └── search.py            # Unified CLI entry point
+│   ├── search.py            # Unified CLI entry point
+│   ├── query_templates.py   # [Phase 1] Query template library (17 templates)
+│   ├── database_router.py   # [Phase 1] Automated database selection
+│   ├── query_schema.py      # [Phase 2] Structured query specification
+│   └── query_validator.py   # [Phase 2] Query syntax validation
 ├── sources/
 │   ├── pubmed/search.py     # PubMed searcher
 │   ├── biorxiv/search.py    # bioRxiv searcher
 │   ├── semantic_scholar/search.py
 │   └── google_scholar/search.py
+├── tests/                   # Unit tests (191 total)
+│   ├── __init__.py
+│   ├── test_query_templates.py  # 37 tests
+│   ├── test_database_router.py  # 50 tests
+│   ├── test_query_schema.py     # 54 tests
+│   └── test_query_validator.py  # 50 tests
 └── references/
     ├── database_selection.md
     ├── query_best_practices.md
@@ -603,29 +636,38 @@ Adding new database sources would be straightforward following the existing patt
 
 ## Implementation Plan
 
-### Phase 1: Quick Wins (Week 1)
+### Phase 1: Quick Wins - COMPLETE
 
-1. **Query Template Library**
-   - Create `scripts/query_templates.py`
-   - Add 10-15 common patterns
-   - Integrate with CLI as `--template` option
+1. **Query Template Library** - DONE
+   - Created `scripts/query_templates.py` with 17 templates
+   - Templates: topic_search, review_search, systematic_review, recent_advances, landmark_papers, author_papers, author_topic, clinical_trials, randomized_controlled, gene_function, gene_disease, drug_target, drug_comparison, method_application, protocol_method, preprint_topic, ml_biology
+   - Integrated with CLI via `--template` and `--template-params` options
+   - CLI command: `--list-templates` to show all available templates
 
-2. **Database Router Heuristics**
-   - Create `scripts/database_router.py`
-   - Implement keyword-based selection
-   - Add `--auto-route` flag to CLI
+2. **Database Router Heuristics** - DONE
+   - Created `scripts/database_router.py` with keyword-based selection
+   - Domain keyword sets: ~100 biomedical terms, ~60 CS/AI terms, ~15 preprint indicators
+   - Automatic cross-domain detection with confidence scoring
+   - User hints supported: biomedical, cs, comprehensive, preprint
+   - Integrated with CLI via `--auto-route` and `--domain-hint` flags
 
-### Phase 2: Core Improvements (Week 2)
+### Phase 2: Core Improvements - COMPLETE
 
-3. **Structured Query Schema**
-   - Create `scripts/query_schema.py`
-   - Add JSON input support to CLI
-   - Document schema in SKILL.md
+3. **Structured Query Schema** - DONE
+   - Created `scripts/query_schema.py` with StructuredQuery dataclass
+   - Supports: concepts, operator, synonyms, field_constraints, date_range, publication_types, fields_of_study, min_citations, open_access, exclude_terms
+   - Database-specific query generators: `to_pubmed_query()`, `to_semantic_query()`, `to_biorxiv_query()`
+   - API parameter extraction via `get_api_params(source)`
+   - JSON serialization/deserialization with validation
+   - CLI integration: `--query-file`, `--query-json`, `--show-schema`
 
-4. **Query Syntax Validators**
-   - Create `scripts/query_validator.py`
-   - Add pre-flight validation
-   - Return helpful error messages
+4. **Query Syntax Validators** - DONE
+   - Created `scripts/query_validator.py` with source-specific validators
+   - `validate_pubmed_query()`: Checks brackets, parentheses, quotes, field tags, boolean operators, date ranges
+   - `validate_semantic_query()`, `validate_biorxiv_query()`: Simpler syntax validation
+   - ValidationResult with errors, warnings, and suggestions
+   - 60+ PubMed field tags recognized, 20+ publication types
+   - CLI integration: `--validate`, `--validate-only`
 
 ### Phase 3: Enhancements (Week 3)
 
@@ -641,11 +683,19 @@ Adding new database sources would be straightforward following the existing patt
 
 ### Testing Strategy
 
-| Test Type | Coverage Target |
-|-----------|-----------------|
-| Unit tests | `normalize_date()`, validators, router |
-| Integration tests | Mocked API responses |
-| Reproducibility tests | Same query → same hash |
+| Test Type | Coverage Target | Status |
+|-----------|-----------------|--------|
+| Unit tests | `normalize_date()`, validators, router, schema | 191 tests passing |
+| Integration tests | Mocked API responses | Pending (Phase 3) |
+| Reproducibility tests | Same query → same hash | Pending (Phase 3) |
+
+**Test Coverage (Phase 1):**
+- Query Templates: 37 tests covering all 17 templates, error handling, validation, determinism
+- Database Router: 50 tests covering domain detection, hints, preprints, edge cases, determinism
+
+**Test Coverage (Phase 2):**
+- Query Schema: 54 tests covering query construction, serialization, API params, examples
+- Query Validator: 50 tests covering PubMed/Semantic/bioRxiv syntax, edge cases, determinism
 
 ---
 
