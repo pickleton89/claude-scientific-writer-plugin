@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oligon.io/schemas/markdown-to-pdf/agent-definition",
+  "title": "Agent Definition Frontmatter",
+  "description": "AI agent behavior definition - meta category",
+  "type": "object",
+  "allOf": [
+    { "$ref": "_base.json" }
+  ],
+  "properties": {
+    "type": {
+      "const": "agent-definition"
+    },
+    "agent_name": {
+      "type": "string",
+      "description": "Agent identifier"
+    },
+    "model": {
+      "type": "string",
+      "description": "Underlying model (e.g., 'claude-opus-4-5', 'gpt-4')"
+    }
+  },
+  "required": ["type", "title"],
+  "required_sections": [
+    "Overview",
+    "Capabilities"
+  ],
+  "optional_sections": [
+    "Triggers",
+    "Workflow",
+    "Limitations"
+  ]
+}

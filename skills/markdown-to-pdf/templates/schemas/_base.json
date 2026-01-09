@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oligon.io/schemas/markdown-to-pdf/base",
+  "title": "Base Frontmatter Schema",
+  "description": "Common frontmatter fields shared by all document templates",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "description": "Document template type",
+      "enum": [
+        "analysis-report",
+        "literature-review",
+        "data-report",
+        "meeting-notes",
+        "project-status",
+        "phase-plan",
+        "task-list",
+        "technical-spec",
+        "method-guide",
+        "standards-guide",
+        "agent-definition",
+        "readme"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "description": "Document title",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "date": {
+      "type": "string",
+      "description": "Document date in ISO format (YYYY-MM-DD)",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "author": {
+      "type": "string",
+      "description": "Document author"
+    },
+    "version": {
+      "type": "string",
+      "description": "Document version",
+      "pattern": "^\\d+\\.\\d+(\\.\\d+)?$"
+    },
+    "status": {
+      "type": "string",
+      "description": "Document status",
+      "enum": ["Draft", "Review", "Final"]
+    }
+  },
+  "required": ["type", "title"],
+  "additionalProperties": true
+}

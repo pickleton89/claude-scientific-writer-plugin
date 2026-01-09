@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oligon.io/schemas/markdown-to-pdf/project-status",
+  "title": "Project Status Frontmatter",
+  "description": "Project status update - project-mgmt category",
+  "type": "object",
+  "allOf": [
+    { "$ref": "_base.json" }
+  ],
+  "properties": {
+    "type": {
+      "const": "project-status"
+    },
+    "project": {
+      "type": "string",
+      "description": "Project name"
+    },
+    "period": {
+      "type": "string",
+      "description": "Reporting period (e.g., 'Week 12', 'Q4 2025')"
+    }
+  },
+  "required": ["type", "title", "date"],
+  "required_sections": [
+    "Summary",
+    "Progress"
+  ],
+  "optional_sections": [
+    "Blockers",
+    "Next Steps",
+    "Metrics"
+  ]
+}

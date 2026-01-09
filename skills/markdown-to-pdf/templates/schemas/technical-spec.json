@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oligon.io/schemas/markdown-to-pdf/technical-spec",
+  "title": "Technical Spec Frontmatter",
+  "description": "Technical specification - technical category",
+  "type": "object",
+  "allOf": [
+    { "$ref": "_base.json" }
+  ],
+  "properties": {
+    "type": {
+      "const": "technical-spec"
+    },
+    "component": {
+      "type": "string",
+      "description": "Component or system being specified"
+    },
+    "api_version": {
+      "type": "string",
+      "description": "API version if applicable"
+    }
+  },
+  "required": ["type", "title", "date"],
+  "required_sections": [
+    "Overview",
+    "Requirements"
+  ],
+  "optional_sections": [
+    "Architecture",
+    "API",
+    "Implementation",
+    "Testing"
+  ]
+}

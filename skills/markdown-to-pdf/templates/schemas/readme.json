@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oligon.io/schemas/markdown-to-pdf/readme",
+  "title": "README Frontmatter",
+  "description": "Project documentation - meta category",
+  "type": "object",
+  "allOf": [
+    { "$ref": "_base.json" }
+  ],
+  "properties": {
+    "type": {
+      "const": "readme"
+    },
+    "project": {
+      "type": "string",
+      "description": "Project name"
+    },
+    "repository": {
+      "type": "string",
+      "description": "Repository URL",
+      "format": "uri"
+    },
+    "license": {
+      "type": "string",
+      "description": "License type (e.g., 'MIT', 'Apache-2.0')"
+    }
+  },
+  "required": ["type", "title"],
+  "required_sections": [
+    "Description"
+  ],
+  "optional_sections": [
+    "Installation",
+    "Usage",
+    "Contributing",
+    "License"
+  ]
+}

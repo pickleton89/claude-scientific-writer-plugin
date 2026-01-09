@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oligon.io/schemas/markdown-to-pdf/error-recovery",
+  "title": "Error Recovery Map",
+  "description": "Maps error types to deterministic recovery actions. LLM should use these exact solutions.",
+  "version": "1.0.0",
+  "errors": {
+    "FileNotFoundError": {
+      "description": "Markdown file does not exist at specified path",
+      "causes": [
+        "Typo in filename",
+        "Wrong working directory",
+        "File was moved or deleted"
+      ],
+      "recovery_steps": [
+        "Verify path exists: ls {path}",
+        "Check current directory: pwd",
+        "Search for file: find . -name '*.md' -type f | head -20"
+      ],
+      "example_fix": "ls ~/Documents/reports/  # Verify directory exists first"
+    },
+    "KeyError: 'type'": {
+      "description": "Missing type field in YAML frontmatter",
+      "causes": [
+        "Frontmatter missing entirely",
+        "type field not included",
+        "YAML syntax error preventing parsing"
+      ],
+      "recovery_steps": [
+        "Add YAML frontmatter block at file start",
+        "Include required type field",
+        "Validate YAML syntax"
+      ],
+      "example_fix": "---\ntype: analysis-report\ntitle: My Analysis\ndate: 2025-01-09\n---"
+    },
+    "ValidationError: Unknown type": {
+      "description": "Document type not in template registry",
+      "causes": [
+        "Typo in type name",
+        "Using deprecated type name",
+        "Custom type not registered"
+      ],
+      "recovery_steps": [
+        "Run /list-templates to see valid types",
+        "Check spelling of type value",
+        "Use closest matching template type"
+      ],
+      "valid_types": [
+        "analysis-report",
+        "literature-review",
+        "data-report",
+        "meeting-notes",
+        "project-status",
+        "phase-plan",
+        "task-list",
+        "technical-spec",
+        "method-guide",
+        "standards-guide",
+        "agent-definition",
+        "readme"
+      ]
+    },
+    "ValidationError: Missing sections": {
+      "description": "Required sections for template type not found",
+      "causes": [
+        "Section headings missing",
+        "Different heading levels than expected",
+        "Section names don't match template requirements"
+      ],
+      "recovery_steps": [
+        "Check template schema for required sections",
+        "Add missing section headings",
+        "Use H1 or H2 for section headers"
+      ],
+      "section_requirements": {
+        "analysis-report": ["Objective", "Methodology", "Findings"],
+        "literature-review": ["Introduction", "Methods", "Results"],
+        "data-report": ["Data Overview", "Analysis"],
+        "meeting-notes": ["Attendees", "Agenda"],
+        "project-status": ["Summary", "Progress"],
+        "phase-plan": ["Objectives", "Timeline"],
+        "task-list": ["Tasks"],
+        "technical-spec": ["Overview", "Requirements"],
+        "method-guide": ["Purpose", "Procedure"],
+        "standards-guide": ["Standards"],
+        "agent-definition": ["Overview", "Capabilities"],
+        "readme": ["Description"]
+      }
+    },
+    "PermissionError": {
+      "description": "Cannot write to output directory",
+      "causes": [
+        "Directory doesn't exist",
+        "Insufficient write permissions",
+        "Disk full"
+      ],
+      "recovery_steps": [
+        "Create output directory: mkdir -p output",
+        "Check permissions: ls -la output/",
+        "Try different output path"
+      ],
+      "example_fix": "mkdir -p output && chmod 755 output"
+    },
+    "ModuleNotFoundError: oligon_reports": {
+      "description": "Required Python package not installed",
+      "causes": [
+        "Dependencies not installed",
+        "Wrong virtual environment",
+        "Package name changed"
+      ],
+      "recovery_steps": [
+        "Install dependencies: uv sync",
+        "Verify environment: which python",
+        "Check package installed: uv pip list | grep oligon"
+      ],
+      "example_fix": "uv sync  # Install all project dependencies"
+    },
+    "YAMLError": {
+      "description": "Invalid YAML syntax in frontmatter",
+      "causes": [
+        "Incorrect indentation",
+        "Missing colons",
+        "Unquoted special characters"
+      ],
+      "recovery_steps": [
+        "Check YAML syntax with online validator",
+        "Ensure consistent indentation (2 spaces)",
+        "Quote strings with special characters"
+      ],
+      "common_fixes": {
+        "missing_colon": "title: My Title  # Needs colon after field name",
+        "bad_indentation": "  author: Jane  # Use consistent 2-space indent",
+        "special_chars": "title: \"Title: With Colon\"  # Quote if contains :"
+      }
+    },
+    "UnicodeDecodeError": {
+      "description": "File contains invalid encoding",
+      "causes": [
+        "File not UTF-8 encoded",
+        "Binary content in file",
+        "Corrupted file"
+      ],
+      "recovery_steps": [
+        "Check file encoding: file {path}",
+        "Convert to UTF-8: iconv -f ISO-8859-1 -t UTF-8 input.md > output.md",
+        "Open in editor and save as UTF-8"
+      ],
+      "example_fix": "iconv -f ISO-8859-1 -t UTF-8 document.md > document_utf8.md"
+    }
+  },
+  "quick_reference": {
+    "FileNotFoundError": "Check path: ls {path}",
+    "KeyError: 'type'": "Add frontmatter: ---\\ntype: <type>\\n---",
+    "ValidationError": "Check template requirements with /list-templates",
+    "PermissionError": "Create output dir: mkdir -p output",
+    "ModuleNotFoundError": "Install deps: uv sync",
+    "YAMLError": "Validate YAML syntax, check indentation",
+    "UnicodeDecodeError": "Convert to UTF-8: iconv -f <encoding> -t UTF-8"
+  }
+}

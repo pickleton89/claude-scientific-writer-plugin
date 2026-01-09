@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oligon.io/schemas/markdown-to-pdf/task-list",
+  "title": "Task List Frontmatter",
+  "description": "Task tracking document - project-mgmt category",
+  "type": "object",
+  "allOf": [
+    { "$ref": "_base.json" }
+  ],
+  "properties": {
+    "type": {
+      "const": "task-list"
+    },
+    "project": {
+      "type": "string",
+      "description": "Associated project"
+    },
+    "assignee": {
+      "type": "string",
+      "description": "Default assignee"
+    },
+    "priority": {
+      "type": "string",
+      "description": "Default priority level",
+      "enum": ["High", "Medium", "Low"]
+    }
+  },
+  "required": ["type", "title", "date"],
+  "required_sections": [
+    "Tasks"
+  ],
+  "optional_sections": [
+    "Completed",
+    "Blocked",
+    "Notes"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oligon.io/schemas/markdown-to-pdf/method-guide",
+  "title": "Method Guide Frontmatter",
+  "description": "Methodology documentation - technical category",
+  "type": "object",
+  "allOf": [
+    { "$ref": "_base.json" }
+  ],
+  "properties": {
+    "type": {
+      "const": "method-guide"
+    },
+    "method": {
+      "type": "string",
+      "description": "Method or procedure name"
+    },
+    "applicability": {
+      "type": "string",
+      "description": "When this method applies"
+    }
+  },
+  "required": ["type", "title", "date"],
+  "required_sections": [
+    "Purpose",
+    "Procedure"
+  ],
+  "optional_sections": [
+    "Prerequisites",
+    "Troubleshooting",
+    "References"
+  ]
+}

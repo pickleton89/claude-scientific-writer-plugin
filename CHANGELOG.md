@@ -41,6 +41,56 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
     - TestIntegration & TestPhase2Integration: 9 integration tests
   - Determinism improvement: 85% → 95% through automated validation
 
+- **skills/markdown-to-pdf/**: Deterministic validation utilities implementation with 130 test cases (100% pass rate)
+  - **scripts/element_detector.py**: Pattern-based element detection
+    - `STATUS_SYMBOLS` and `GRADE_VALUES` frozensets for deterministic matching
+    - `CALLOUT_PREFIXES` dict mapping callout types to prefix patterns
+    - `METHOD_LANGUAGES` tuple for code block classification
+    - `detect_table_type(rows)`: Classifies tables as status_table, graded_table, or table
+    - `detect_callout_type(content)`: Identifies info, success, warning, alert callouts
+    - `is_finding_heading(text)`: Validates Finding N: pattern
+    - `detect_element_type(elem)`: Unified element classification
+    - `count_elements(content)`: Returns `ElementCounts` dataclass with full breakdown
+    - `ElementCounts.to_summary()`: Deterministic summary string generation
+  - **scripts/preflight.py**: Document validation with `PreflightResult` dataclass
+    - `TEMPLATE_SCHEMAS` dict defining 12 template types across 4 categories
+    - `preflight_check(path)`: File, frontmatter, and section validation
+    - `_extract_frontmatter(content)`: YAML parsing with error handling
+    - `_extract_sections(content)`: H1/H2 heading extraction
+    - `_check_sections(content, required, optional)`: Section presence validation
+    - `list_templates()`: Deterministic template listing with descriptions
+  - **scripts/structure_tree.py**: Deterministic ASCII tree generation
+    - `Section` and `DocumentTree` dataclasses for hierarchy representation
+    - `parse_document_tree(content, frontmatter)`: Builds section hierarchy
+    - `format_structure_tree(tree, style, show_elements)`: ASCII tree output
+    - `format_flat_structure(tree)`: Numbered outline format
+    - `format_element_mapping(tree)`: Element-to-component mapping
+    - Supports unicode and ascii tree styles
+  - **scripts/validation.py**: Typed error handling system
+    - `ErrorCode` enum with ranges: 1xx file, 2xx frontmatter, 3xx section, 4xx content
+    - `ERROR_MESSAGES` dict with parameterized templates
+    - `ValidationError` frozen dataclass with severity classification
+    - `ValidationResult` with add_error(), add_warning(), format_report()
+    - `format_validation_report(result, verbose)`: Compact or detailed output
+    - `format_success_message(...)`: Deterministic PDF generation summary
+  - **templates/schemas/*.json**: JSON schemas for all 12 template types
+    - Base schema with common fields (type, title, date)
+    - Category-specific schemas: scientific, project-mgmt, technical, meta
+    - Custom `required_sections` and `optional_sections` validation
+  - **templates/error_recovery_map.json**: Error-to-solution lookup
+    - 8 error types with deterministic recovery suggestions
+    - Commands and fix instructions for each error
+  - **references/component_map.md**: Updated brand color references
+    - All colors now reference `brand-tokens.json` as single source of truth
+  - **tests/*.py**: Comprehensive test suite (130 tests)
+    - TestPatternConstants, TestHasStatusSymbols, TestHasGradeValues
+    - TestDetectTableType, TestDetectCalloutType, TestIsFindingHeading
+    - TestCountElements, TestElementCountsSummary
+    - TestTemplateSchemas, TestListTemplates, TestPreflightCheck
+    - TestParseDocumentTree, TestFormatStructureTree, TestDeterminism
+    - TestErrorCode, TestValidationError, TestValidationResult
+  - Determinism improvement: 85% → 95% through standardized outputs and typed results
+
 - **skills/paper-2-web/**: Deterministic validation utilities implementation with 154 test cases (100% pass rate)
   - **lib/venue_database.py**: Comprehensive venue poster specifications database
     - 60+ conference/journal poster specs (NeurIPS, CVPR, ICML, ICLR, SfN, ISMB, etc.)

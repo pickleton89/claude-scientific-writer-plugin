@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oligon.io/schemas/markdown-to-pdf/standards-guide",
+  "title": "Standards Guide Frontmatter",
+  "description": "Standards and guidelines - technical category",
+  "type": "object",
+  "allOf": [
+    { "$ref": "_base.json" }
+  ],
+  "properties": {
+    "type": {
+      "const": "standards-guide"
+    },
+    "scope": {
+      "type": "string",
+      "description": "Scope of standards (e.g., 'Code', 'Documentation', 'API')"
+    },
+    "enforcement": {
+      "type": "string",
+      "description": "Enforcement level",
+      "enum": ["Required", "Recommended", "Optional"]
+    }
+  },
+  "required": ["type", "title", "date"],
+  "required_sections": [
+    "Standards"
+  ],
+  "optional_sections": [
+    "Rationale",
+    "Examples",
+    "Exceptions"
+  ]
+}

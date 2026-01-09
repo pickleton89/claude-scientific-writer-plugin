@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oligon.io/schemas/markdown-to-pdf/data-report",
+  "title": "Data Report Frontmatter",
+  "description": "Data analysis and visualization - scientific category",
+  "type": "object",
+  "allOf": [
+    { "$ref": "_base.json" }
+  ],
+  "properties": {
+    "type": {
+      "const": "data-report"
+    },
+    "dataset": {
+      "type": "string",
+      "description": "Dataset name or identifier"
+    },
+    "data_source": {
+      "type": "string",
+      "description": "Source of the data"
+    }
+  },
+  "required": ["type", "title", "date"],
+  "required_sections": [
+    "Data Overview",
+    "Analysis"
+  ],
+  "optional_sections": [
+    "Methodology",
+    "Visualizations",
+    "Conclusions"
+  ]
+}

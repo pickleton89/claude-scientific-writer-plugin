@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oligon.io/schemas/markdown-to-pdf/meeting-notes",
+  "title": "Meeting Notes Frontmatter",
+  "description": "Meeting documentation - project-mgmt category",
+  "type": "object",
+  "allOf": [
+    { "$ref": "_base.json" }
+  ],
+  "properties": {
+    "type": {
+      "const": "meeting-notes"
+    },
+    "attendees": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } }
+      ],
+      "description": "Meeting attendees"
+    },
+    "location": {
+      "type": "string",
+      "description": "Meeting location or video link"
+    }
+  },
+  "required": ["type", "title", "date"],
+  "required_sections": [
+    "Attendees",
+    "Agenda"
+  ],
+  "optional_sections": [
+    "Discussion",
+    "Action Items",
+    "Next Meeting"
+  ]
+}

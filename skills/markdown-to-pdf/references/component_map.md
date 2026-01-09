@@ -264,18 +264,23 @@ def detect_callout_type(element) -> str:
 
 ## Brand Colors Applied
 
-Components automatically use Oligon brand colors:
+Components automatically use Oligon brand colors from `skills/oligon-brand/tokens/brand-tokens.json`:
 
-| Component | Primary Color | Usage |
-|-----------|---------------|-------|
-| FindingCard | `#1E3A5F` (Navy) | Card header |
-| StatusTable ✓ | `#2E7D32` (Green) | Pass indicators |
-| StatusTable ✗ | `#C62828` (Red) | Fail indicators |
-| GradedTable A | `#1B5E20` (Dark Green) | Top grade |
-| GradedTable F | `#B71C1C` (Dark Red) | Failing grade |
-| CalloutBox info | `#1565C0` (Blue) | Information |
-| CalloutBox warning | `#F57C00` (Amber) | Warnings |
-| CalloutBox alert | `#C62828` (Red) | Critical |
-| MethodBlock | `#37474F` (Blue Grey) | Code background |
+| Component | Primary Color | Role | Token Reference |
+|-----------|---------------|------|-----------------|
+| FindingCard | `#2DB2E8` (Brand Blue) | Key findings highlight | `colors.primary.brand_blue` |
+| StatusTable ✓ | `#222222` (Dark Gray) | Pass = default/baseline | `colors.neutrals.dark_gray` |
+| StatusTable ✗ | `#E8622D` (Contrast Orange) | Fail = opposition | `colors.contrast.contrast_orange` |
+| GradedTable A | `#2DB2E8` (Brand Blue) | Top grade highlight | `colors.primary.brand_blue` |
+| GradedTable F | `#E8622D` (Contrast Orange) | Failing grade opposition | `colors.contrast.contrast_orange` |
+| CalloutBox info | `#158BBB` (Medium Blue) | Information (secondary) | `colors.supporting_blues.medium_blue` |
+| CalloutBox warning | `#E8622D` (Contrast Orange) | Warnings need attention | `colors.contrast.contrast_orange` |
+| CalloutBox alert | `#7D250F` (Dark Warm) | Critical/alert extreme | `colors.contrast.dark_warm` |
+| MethodBlock | `#222222` (Dark Gray) | Code background (dark) | `colors.neutrals.dark_gray` |
 
-See `docs/template-project/brand/BRAND_COLORS_v4.md` for full palette.
+**Design Philosophy:**
+- Brand Blue (`#2DB2E8`) highlights the most important elements (1-2 per panel max)
+- Contrast Orange (`#E8622D`) shows opposition/failures/warnings
+- Neutrals (`#222222`, `#666666`) are defaults—color is earned by importance
+
+> **Single Source of Truth:** All colors reference `brand-tokens.json`. See `skills/oligon-brand/tokens/brand-tokens.json` for the complete token set.

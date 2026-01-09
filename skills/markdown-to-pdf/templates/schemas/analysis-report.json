@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oligon.io/schemas/markdown-to-pdf/analysis-report",
+  "title": "Analysis Report Frontmatter",
+  "description": "Structured analysis with findings - scientific category",
+  "type": "object",
+  "allOf": [
+    { "$ref": "_base.json" }
+  ],
+  "properties": {
+    "type": {
+      "const": "analysis-report"
+    },
+    "project": {
+      "type": "string",
+      "description": "Associated project name"
+    },
+    "objective": {
+      "type": "string",
+      "description": "Analysis objective summary"
+    }
+  },
+  "required": ["type", "title", "date"],
+  "required_sections": [
+    "Objective",
+    "Methodology",
+    "Findings"
+  ],
+  "optional_sections": [
+    "Executive Summary",
+    "Key Questions",
+    "Recommendations",
+    "Appendix"
+  ]
+}
