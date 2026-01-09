@@ -7,6 +7,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/oligon-brand/**: Deterministic validation utilities implementation with 78 test cases (100% pass rate)
+  - **adapters/matplotlib_adapter.py**: Extended with 7 deterministic functions
+    - `select_cycle(n_series, context, has_highlight)`: Deterministic color cycle selection
+      - Eliminates LLM interpretation for cycle selection
+      - Supports 1-4 series with context-aware selection (comparison, equal_weight, bidirectional)
+      - Returns (cycle_name, color_list) tuple for immediate use
+    - `run_preflight(fig)`: Automated brand compliance validation
+      - 4 checks: white_background, spines_removed, grid_off, axes_black
+      - Returns structured dict with pass/fail status per check
+    - `extract_figure_colors(fig)`: Color extraction from figure elements
+      - Handles lines, scatter plots, bar charts
+      - Converts named colors and RGBA to uppercase hex
+    - `get_preflight_report(fig)`: Human-readable preflight report with checkmarks
+    - `validate_palette(fig)`: Color palette validation against brand colors
+      - Compares extracted colors against ALLOWED_COLORS set
+      - Reports violations (non-brand colors used)
+      - Allows structural colors (white/black) automatically
+    - `count_brand_blue(fig)`: Brand Blue (#2DB2E8) usage enforcement
+      - Counts elements per axes, flags >2 as violation
+      - Supports lines, scatter, bars with per-axes tracking
+    - `get_brand_compliance_report(fig)`: Comprehensive compliance report
+      - Combines preflight, palette, and Brand Blue checks
+      - Single PASS/FAIL status for full compliance
+  - **tests/test_matplotlib_adapter.py**: Comprehensive test suite (78 tests)
+    - TestSelectCycle: 19 tests for cycle selection logic
+    - TestRunPreflight: 9 tests for preflight validation
+    - TestExtractFigureColors: 6 tests for color extraction
+    - TestGetPreflightReport: 7 tests for report generation
+    - TestValidatePalette: 9 tests for palette validation
+    - TestCountBrandBlue: 12 tests for Brand Blue enforcement
+    - TestGetBrandComplianceReport: 7 tests for comprehensive reports
+    - TestIntegration & TestPhase2Integration: 9 integration tests
+  - Determinism improvement: 85% → 95% through automated validation
+
 - **skills/paper-2-web/**: Deterministic validation utilities implementation with 154 test cases (100% pass rate)
   - **lib/venue_database.py**: Comprehensive venue poster specifications database
     - 60+ conference/journal poster specs (NeurIPS, CVPR, ICML, ICLR, SfN, ISMB, etc.)

@@ -7,16 +7,36 @@ brand identity to matplotlib and seaborn visualizations.
 Usage:
     from oligon_brand.adapters.matplotlib_adapter import (
         set_brand_style,
+        select_cycle,
+        run_preflight,
+        validate_palette,
+        count_brand_blue,
+        get_brand_compliance_report,
         BRAND_COLORS,
         CYCLE_TREATMENT_CONTROL,
-        get_divergent_cmap,
-        add_panel_label
     )
 
+    # Deterministically select color cycle
+    cycle_name, colors = select_cycle(n_series=2, context='comparison')
+
     # Apply brand style
-    set_brand_style('treatment_control')
+    set_brand_style(cycle_name)
 
     # Create your plot...
+    fig, ax = plt.subplots()
+    ax.plot([1, 2, 3], [1, 4, 9])
+
+    # Validate brand compliance (full validation)
+    preflight = run_preflight(fig)
+    palette = validate_palette(fig)
+    brand_blue = count_brand_blue(fig)
+
+    assert all(preflight.values()), "Preflight failed"
+    assert palette['valid'], f"Non-brand colors: {palette['violations']}"
+    assert brand_blue['compliant'], "Too many Brand Blue elements"
+
+    # Or use the comprehensive report
+    print(get_brand_compliance_report(fig))
 """
 
 import json
@@ -211,6 +231,84 @@ def set_brand_style(cycle: CycleType = 'treatment_control') -> None:
     })
 
 # =============================================================================
+# DETERMINISTIC SELECTORS
+# =============================================================================
+
+ContextType = Literal['comparison', 'equal_weight', 'bidirectional']
+
+
+def select_cycle(
+    n_series: int,
+    context: ContextType = 'comparison',
+    has_highlight: bool = True
+) -> tuple[str, list[str]]:
+    """
+    Deterministically select color cycle based on data characteristics.
+
+    This function eliminates LLM interpretation by providing explicit logic
+    for cycle selection based on the number of data series and scientific context.
+
+    Parameters
+    ----------
+    n_series : int
+        Number of data series to be plotted (1-4 supported)
+    context : str
+        Scientific context of the visualization:
+        - 'comparison': Control vs treatment (default)
+        - 'equal_weight': All groups have equal importance
+        - 'bidirectional': Opposing effects (up/down, gain/loss)
+    has_highlight : bool
+        Whether one series should be highlighted (default True)
+
+    Returns
+    -------
+    tuple[str, list[str]]
+        (cycle_name, color_list) - The cycle name and list of hex colors
+
+    Raises
+    ------
+    ValueError
+        If n_series > 4 (redesign with faceting recommended)
+
+    Examples
+    --------
+    >>> cycle_name, colors = select_cycle(2, context='comparison')
+    >>> print(cycle_name)  # 'treatment_control'
+    >>> print(colors)  # ['#222222', '#2DB2E8']
+
+    >>> cycle_name, colors = select_cycle(2, context='bidirectional')
+    >>> print(cycle_name)  # 'opposing'
+    >>> print(colors)  # ['#2DB2E8', '#E8622D']
+    """
+    if n_series < 1:
+        raise ValueError(f"n_series must be >= 1, got {n_series}")
+
+    if n_series == 1:
+        return 'single', [BRAND_COLORS['dark_gray']]
+
+    if n_series == 2:
+        if context == 'bidirectional':
+            return 'opposing', CYCLE_OPPOSING[:2]
+        return 'treatment_control', CYCLE_TREATMENT_CONTROL[:2]
+
+    if n_series == 3:
+        if context == 'equal_weight' or not has_highlight:
+            return 'neutrals_only', CYCLE_NEUTRALS_ONLY
+        if context == 'bidirectional':
+            return 'opposing', CYCLE_OPPOSING
+        return 'treatment_control', CYCLE_TREATMENT_CONTROL
+
+    if n_series == 4:
+        return 'multi_category', CYCLE_MULTI_CATEGORY
+
+    # 5+ series: signal redesign needed
+    raise ValueError(
+        f"Too many series ({n_series}). Maximum 4 supported. "
+        "Redesign using faceting or small multiples."
+    )
+
+
+# =============================================================================
 # HELPER FUNCTIONS
 # =============================================================================
 
@@ -398,6 +496,457 @@ def plot_volcano(
     ax.set_ylabel('-log₁₀(p-value)')
 
     return ax
+
+
+# =============================================================================
+# PREFLIGHT VALIDATORS
+# =============================================================================
+
+# Set of all allowed brand colors (uppercase hex)
+ALLOWED_COLORS = {c.upper() for c in BRAND_COLORS.values()}
+
+
+def run_preflight(fig: plt.Figure) -> dict[str, bool]:
+    """
+    Automated preflight validation for brand compliance.
+
+    Checks the figure against Oligon brand standards and returns
+    a dictionary with pass/fail status for each check.
+
+    Parameters
+    ----------
+    fig : matplotlib.figure.Figure
+        The figure to validate
+
+    Returns
+    -------
+    dict[str, bool]
+        Dictionary mapping check names to pass/fail status:
+        - 'white_background': Figure has white background
+        - 'spines_removed': Top/right spines are hidden
+        - 'grid_off': Grid is disabled (or properly styled)
+        - 'axes_black': Axis lines and ticks are black
+
+    Examples
+    --------
+    >>> fig, ax = plt.subplots()
+    >>> set_brand_style('treatment_control')
+    >>> ax.plot([1, 2, 3], [1, 4, 9])
+    >>> results = run_preflight(fig)
+    >>> all(results.values())  # True if compliant
+    True
+    """
+    results = {}
+
+    # Check 1: White background
+    facecolor = fig.get_facecolor()
+    # Compare RGB values (ignore alpha)
+    results['white_background'] = (
+        abs(facecolor[0] - 1.0) < 0.01 and
+        abs(facecolor[1] - 1.0) < 0.01 and
+        abs(facecolor[2] - 1.0) < 0.01
+    )
+
+    # Check 2: Top/right spines removed (check all axes)
+    spines_ok = True
+    for ax in fig.axes:
+        if ax.spines['top'].get_visible() or ax.spines['right'].get_visible():
+            spines_ok = False
+            break
+    results['spines_removed'] = spines_ok
+
+    # Check 3: Grid off (or if on, properly styled)
+    grid_ok = True
+    for ax in fig.axes:
+        # Check if grid is visible by examining gridlines
+        x_gridlines = ax.xaxis.get_gridlines()
+        y_gridlines = ax.yaxis.get_gridlines()
+
+        x_grid_visible = any(line.get_visible() for line in x_gridlines) if x_gridlines else False
+        y_grid_visible = any(line.get_visible() for line in y_gridlines) if y_gridlines else False
+
+        if x_grid_visible or y_grid_visible:
+            # Grid is on - check if it's properly styled (light gray)
+            for line in x_gridlines + y_gridlines:
+                if line.get_visible():
+                    color = line.get_color()
+                    # Accept gridline gray (#E5E5E5) or similar light grays
+                    if isinstance(color, str):
+                        color_upper = color.upper()
+                        if color_upper not in {'#E5E5E5', '#E0E0E0', '#EEEEEE', 'LIGHTGRAY', 'LIGHTGREY'}:
+                            grid_ok = False
+                            break
+    results['grid_off'] = grid_ok
+
+    # Check 4: Axes lines are black
+    axes_black = True
+    for ax in fig.axes:
+        for spine in ['left', 'bottom']:
+            if ax.spines[spine].get_visible():
+                ec = ax.spines[spine].get_edgecolor()
+                # Check if color is black (RGB close to 0)
+                if not (ec[0] < 0.1 and ec[1] < 0.1 and ec[2] < 0.1):
+                    axes_black = False
+                    break
+    results['axes_black'] = axes_black
+
+    return results
+
+
+def extract_figure_colors(fig: plt.Figure) -> set[str]:
+    """
+    Extract all colors used in a figure for validation.
+
+    Examines lines, scatter plots, bars, and other elements to
+    compile a set of all colors used in the visualization.
+
+    Parameters
+    ----------
+    fig : matplotlib.figure.Figure
+        The figure to analyze
+
+    Returns
+    -------
+    set[str]
+        Set of uppercase hex color strings (e.g., {'#2DB2E8', '#222222'})
+
+    Examples
+    --------
+    >>> fig, ax = plt.subplots()
+    >>> ax.plot([1, 2], [1, 2], color='#2DB2E8')
+    >>> colors = extract_figure_colors(fig)
+    >>> '#2DB2E8' in colors
+    True
+    """
+    colors = set()
+
+    def _color_to_hex(color) -> Optional[str]:
+        """Convert various color formats to hex string."""
+        if color is None:
+            return None
+        if isinstance(color, str):
+            if color.startswith('#'):
+                return color.upper()
+            # Named colors - try to convert
+            try:
+                rgb = mpl.colors.to_rgb(color)
+                return '#{:02X}{:02X}{:02X}'.format(
+                    int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)
+                )
+            except ValueError:
+                return None
+        if hasattr(color, '__len__') and len(color) >= 3:
+            # RGBA or RGB tuple
+            return '#{:02X}{:02X}{:02X}'.format(
+                int(color[0] * 255), int(color[1] * 255), int(color[2] * 255)
+            )
+        return None
+
+    for ax in fig.axes:
+        # Lines
+        for line in ax.get_lines():
+            hex_color = _color_to_hex(line.get_color())
+            if hex_color:
+                colors.add(hex_color)
+
+        # Collections (scatter, etc.)
+        for coll in ax.collections:
+            facecolors = coll.get_facecolor()
+            if len(facecolors) > 0:
+                for fc in facecolors:
+                    hex_color = _color_to_hex(fc)
+                    if hex_color:
+                        colors.add(hex_color)
+
+            edgecolors = coll.get_edgecolor()
+            if len(edgecolors) > 0:
+                for ec in edgecolors:
+                    hex_color = _color_to_hex(ec)
+                    if hex_color:
+                        colors.add(hex_color)
+
+        # Patches (bars, etc.)
+        for patch in ax.patches:
+            fc = patch.get_facecolor()
+            hex_color = _color_to_hex(fc)
+            if hex_color:
+                colors.add(hex_color)
+
+    return colors
+
+
+def get_preflight_report(fig: plt.Figure) -> str:
+    """
+    Generate a human-readable preflight report.
+
+    Parameters
+    ----------
+    fig : matplotlib.figure.Figure
+        The figure to validate
+
+    Returns
+    -------
+    str
+        Formatted report string with pass/fail indicators
+
+    Examples
+    --------
+    >>> fig, ax = plt.subplots()
+    >>> set_brand_style('treatment_control')
+    >>> print(get_preflight_report(fig))
+    Oligon Brand Preflight Check
+    ============================
+    ✓ white_background
+    ✓ spines_removed
+    ✓ grid_off
+    ✓ axes_black
+
+    Result: PASS (4/4 checks passed)
+    """
+    results = run_preflight(fig)
+
+    lines = ["Oligon Brand Preflight Check", "=" * 28]
+    for check, passed in results.items():
+        symbol = "✓" if passed else "✗"
+        lines.append(f"{symbol} {check}")
+
+    passed_count = sum(results.values())
+    total_count = len(results)
+    status = "PASS" if passed_count == total_count else "FAIL"
+    lines.append("")
+    lines.append(f"Result: {status} ({passed_count}/{total_count} checks passed)")
+
+    return "\n".join(lines)
+
+
+def validate_palette(fig: plt.Figure) -> dict:
+    """
+    Validate that all colors in a figure are from the brand palette.
+
+    Extracts colors from the figure and compares against the allowed
+    brand colors. Reports any violations (non-brand colors used).
+
+    Parameters
+    ----------
+    fig : matplotlib.figure.Figure
+        The figure to validate
+
+    Returns
+    -------
+    dict
+        Validation results containing:
+        - 'valid': bool - True if all colors are brand-compliant
+        - 'used_colors': set[str] - All colors found in the figure
+        - 'violations': set[str] - Colors not in the brand palette
+        - 'allowed_colors': set[str] - Reference set of allowed colors
+
+    Examples
+    --------
+    >>> set_brand_style('treatment_control')
+    >>> fig, ax = plt.subplots()
+    >>> ax.plot([1, 2, 3], [1, 4, 9])
+    >>> result = validate_palette(fig)
+    >>> result['valid']
+    True
+
+    >>> fig2, ax2 = plt.subplots()
+    >>> ax2.plot([1, 2, 3], [1, 4, 9], color='red')  # Non-brand color
+    >>> result2 = validate_palette(fig2)
+    >>> result2['valid']
+    False
+    >>> '#FF0000' in result2['violations']
+    True
+    """
+    used_colors = extract_figure_colors(fig)
+
+    # Structural colors (white/black) are always allowed
+    structural_colors = {'#FFFFFF', '#000000'}
+
+    # Find violations: colors used that aren't in brand palette or structural
+    violations = used_colors - ALLOWED_COLORS - structural_colors
+
+    return {
+        'valid': len(violations) == 0,
+        'used_colors': used_colors,
+        'violations': violations,
+        'allowed_colors': ALLOWED_COLORS.copy(),
+    }
+
+
+def count_brand_blue(fig: plt.Figure) -> dict:
+    """
+    Count Brand Blue (#2DB2E8) usage in a figure.
+
+    Brand guidelines specify that Brand Blue should be limited to
+    1-2 elements per panel to maintain its impact as a highlight color.
+
+    Parameters
+    ----------
+    fig : matplotlib.figure.Figure
+        The figure to analyze
+
+    Returns
+    -------
+    dict
+        Analysis results containing:
+        - 'total_count': int - Total Brand Blue elements across all axes
+        - 'per_axes': dict[int, int] - Count per axes index
+        - 'compliant': bool - True if all axes have <= 2 Brand Blue elements
+        - 'violations': list[int] - Axes indices exceeding the limit
+
+    Examples
+    --------
+    >>> set_brand_style('treatment_control')
+    >>> fig, ax = plt.subplots()
+    >>> ax.plot([1, 2, 3], [1, 4, 9])  # One Brand Blue line
+    >>> result = count_brand_blue(fig)
+    >>> result['compliant']
+    True
+    >>> result['total_count']
+    1
+    """
+    BRAND_BLUE = '#2DB2E8'
+    BRAND_BLUE_UPPER = BRAND_BLUE.upper()
+
+    per_axes = {}
+    violations = []
+
+    def _is_brand_blue(color) -> bool:
+        """Check if a color matches Brand Blue."""
+        if color is None:
+            return False
+        if isinstance(color, str):
+            if color.upper() == BRAND_BLUE_UPPER:
+                return True
+            if color.startswith('#'):
+                return color.upper() == BRAND_BLUE_UPPER
+            # Try converting named color
+            try:
+                rgb = mpl.colors.to_rgb(color)
+                hex_color = '#{:02X}{:02X}{:02X}'.format(
+                    int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)
+                )
+                return hex_color == BRAND_BLUE_UPPER
+            except ValueError:
+                return False
+        if hasattr(color, '__len__') and len(color) >= 3:
+            hex_color = '#{:02X}{:02X}{:02X}'.format(
+                int(color[0] * 255), int(color[1] * 255), int(color[2] * 255)
+            )
+            return hex_color == BRAND_BLUE_UPPER
+        return False
+
+    for ax_idx, ax in enumerate(fig.axes):
+        count = 0
+
+        # Check lines
+        for line in ax.get_lines():
+            if _is_brand_blue(line.get_color()):
+                count += 1
+
+        # Check collections (scatter plots, etc.)
+        for coll in ax.collections:
+            facecolors = coll.get_facecolor()
+            if len(facecolors) > 0:
+                # For scatter with single color, count as 1 element
+                unique_blues = set()
+                for fc in facecolors:
+                    if _is_brand_blue(fc):
+                        unique_blues.add(tuple(fc))
+                if unique_blues:
+                    count += 1  # Count collection as single element
+
+        # Check patches (bars, etc.)
+        for patch in ax.patches:
+            if _is_brand_blue(patch.get_facecolor()):
+                count += 1
+
+        per_axes[ax_idx] = count
+
+        # Check compliance (max 2 Brand Blue elements per axes)
+        if count > 2:
+            violations.append(ax_idx)
+
+    total_count = sum(per_axes.values())
+
+    return {
+        'total_count': total_count,
+        'per_axes': per_axes,
+        'compliant': len(violations) == 0,
+        'violations': violations,
+    }
+
+
+def get_brand_compliance_report(fig: plt.Figure) -> str:
+    """
+    Generate a comprehensive brand compliance report.
+
+    Combines preflight checks, palette validation, and Brand Blue usage
+    into a single human-readable report.
+
+    Parameters
+    ----------
+    fig : matplotlib.figure.Figure
+        The figure to validate
+
+    Returns
+    -------
+    str
+        Formatted compliance report
+
+    Examples
+    --------
+    >>> set_brand_style('treatment_control')
+    >>> fig, ax = plt.subplots()
+    >>> ax.plot([1, 2, 3], [1, 4, 9])
+    >>> print(get_brand_compliance_report(fig))
+    """
+    lines = ["Oligon Brand Compliance Report", "=" * 31, ""]
+
+    # Preflight checks
+    preflight = run_preflight(fig)
+    lines.append("PREFLIGHT CHECKS:")
+    for check, passed in preflight.items():
+        symbol = "✓" if passed else "✗"
+        lines.append(f"  {symbol} {check}")
+
+    lines.append("")
+
+    # Palette validation
+    palette = validate_palette(fig)
+    lines.append("PALETTE VALIDATION:")
+    if palette['valid']:
+        lines.append("  ✓ All colors are brand-compliant")
+    else:
+        lines.append("  ✗ Non-brand colors detected:")
+        for violation in sorted(palette['violations']):
+            lines.append(f"    - {violation}")
+
+    lines.append("")
+
+    # Brand Blue usage
+    brand_blue = count_brand_blue(fig)
+    lines.append("BRAND BLUE USAGE:")
+    lines.append(f"  Total elements: {brand_blue['total_count']}")
+    if brand_blue['compliant']:
+        lines.append("  ✓ Within limit (≤2 per panel)")
+    else:
+        lines.append("  ✗ Exceeds limit in panels:")
+        for ax_idx in brand_blue['violations']:
+            lines.append(f"    - Axes {ax_idx}: {brand_blue['per_axes'][ax_idx]} elements")
+
+    lines.append("")
+
+    # Overall result
+    all_passed = (
+        all(preflight.values()) and
+        palette['valid'] and
+        brand_blue['compliant']
+    )
+    status = "PASS" if all_passed else "FAIL"
+    lines.append(f"OVERALL: {status}")
+
+    return "\n".join(lines)
 
 
 # =============================================================================
