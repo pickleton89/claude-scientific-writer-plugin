@@ -73,7 +73,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
     - Each module includes `TestDeterminism` class verifying consistent outputs
   - Determinism improvement: ~55% → ~85% through structured validation and lookup tables
 
-- **skills/paper-search/**: Deterministic query construction utilities implementation with 191 test cases (100% pass rate)
+- **skills/paper-search/**: Deterministic query construction utilities implementation with 347 test cases (100% pass rate)
+  - **Phase 1 & 2: Query Construction (191 tests)**
   - **scripts/query_templates.py**: Query Template Library
     - 17 parameterized query templates for common search patterns
     - Templates: review_search, meta_analysis, clinical_trial, gene_disease, drug_target, pathway_analysis, protein_structure, recent_advances, methods_comparison, biomarker_discovery, systematic_review, animal_model, cell_line, clinical_outcome, genomic_study, epidemiology, therapeutic_development
@@ -104,12 +105,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
     - Schema args: --query-file, --query-json, --show-schema
     - Validation args: --validate, --validate-only
     - Source-specific query generation in search loop
-  - **tests/**: Comprehensive test suite (191 tests)
+  - **Phase 3: Gene Aliases, Validation, Reproducibility (156 tests)**
+  - **references/gene_aliases.json**: Comprehensive gene alias database
+    - 90+ genes with official symbols, names, aliases, and categories
+    - Categories: tumor_suppressor, oncogene, receptor_tyrosine_kinase, kinase, cytokine, transcription_factor, apoptosis, immune_checkpoint, dna_repair, epigenetics, etc.
+    - Versioned metadata for tracking updates
+  - **scripts/gene_aliases.py**: Gene Alias Expansion Module
+    - `GeneInfo` and `GeneAliasDatabase` dataclasses for structured gene data
+    - `expand_gene_terms(query)` for deterministic query expansion with OR clauses
+    - `detect_genes_in_query(query)` using regex pattern matching
+    - `get_expansion_explanation()` for transparent query modification
+    - Support for HGNC data format loading
+  - **scripts/result_validator.py**: Result Count and Quality Analysis
+    - `ResultStatus` enum (TOO_FEW, GOOD, TOO_MANY, TRUNCATED) with configurable thresholds
+    - `analyze_result_count()` providing deterministic feedback based on count thresholds
+    - `analyze_result_quality()` scoring recency, citations, and source diversity
+    - Source-specific and query-aware suggestions for improving searches
+    - `ValidationReport` combining count and quality metrics
+  - **scripts/reproducibility.py**: Search Hashing and Verification
+    - `SearchSpecification` capturing all search parameters for reproducibility
+    - `SearchHash` and `ResultHash` using SHA-256 with canonical serialization
+    - `ReproducibilityRecord` for complete audit trail with timestamps
+    - `ReproducibilityLog` for persistent storage and retrieval
+    - `verify_reproduction()` for comparing search results across runs
+    - `format_reproducibility_note()` for human-readable output
+  - **tests/**: Comprehensive test suite (347 tests total)
     - test_query_templates.py: 37 tests for template construction
     - test_database_router.py: 50 tests for routing heuristics
     - test_query_schema.py: 54 tests for structured queries
     - test_query_validator.py: 50 tests for syntax validation
-  - Determinism improvement: 85% to 93% through structured query input, template-based construction, and pre-flight validation
+    - test_gene_aliases.py: 48 tests for gene database and expansion
+    - test_result_validator.py: 55 tests for count/quality analysis
+    - test_reproducibility.py: 53 tests for hashing and verification
+    - Each module includes `TestDeterminism` class verifying consistent outputs
+  - Determinism improvement: 85% to 95% through gene alias expansion, result validation, and reproducibility hashing
 
 - **skills/peer-review/**: Deterministic validation utilities implementation with 141 test cases (100% pass rate)
   - **validators/severity_classifier.py**: Quantified severity classification

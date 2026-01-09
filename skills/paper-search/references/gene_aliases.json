@@ -1,0 +1,480 @@
+{
+  "_metadata": {
+    "description": "Gene symbol to alias mappings for query expansion",
+    "source": "Curated from HGNC, NCBI Gene, and common literature usage",
+    "last_updated": "2026-01-09",
+    "version": "1.0.0"
+  },
+  "genes": {
+    "TP53": {
+      "name": "tumor protein p53",
+      "aliases": ["p53", "tumor protein p53", "tumor protein 53", "LFS1", "TRP53"],
+      "category": "tumor_suppressor"
+    },
+    "BRCA1": {
+      "name": "BRCA1 DNA repair associated",
+      "aliases": ["breast cancer 1", "BRCA1 DNA repair", "FANCS", "RNF53"],
+      "category": "tumor_suppressor"
+    },
+    "BRCA2": {
+      "name": "BRCA2 DNA repair associated",
+      "aliases": ["breast cancer 2", "BRCA2 DNA repair", "FANCD1", "FACD"],
+      "category": "tumor_suppressor"
+    },
+    "EGFR": {
+      "name": "epidermal growth factor receptor",
+      "aliases": ["epidermal growth factor receptor", "ErbB-1", "HER1", "ERBB", "ERBB1"],
+      "category": "receptor_tyrosine_kinase"
+    },
+    "ERBB2": {
+      "name": "erb-b2 receptor tyrosine kinase 2",
+      "aliases": ["HER2", "neu", "CD340", "HER-2", "HER2/neu", "NEU"],
+      "category": "receptor_tyrosine_kinase"
+    },
+    "KRAS": {
+      "name": "KRAS proto-oncogene",
+      "aliases": ["K-RAS", "KRAS proto-oncogene", "Ki-ras", "K-ras", "KRAS2", "c-K-ras"],
+      "category": "oncogene"
+    },
+    "NRAS": {
+      "name": "NRAS proto-oncogene",
+      "aliases": ["N-RAS", "N-ras", "NRAS1", "CMNS"],
+      "category": "oncogene"
+    },
+    "HRAS": {
+      "name": "HRas proto-oncogene",
+      "aliases": ["H-RAS", "H-ras", "HRAS1", "c-H-ras", "Harvey rat sarcoma"],
+      "category": "oncogene"
+    },
+    "BRAF": {
+      "name": "B-Raf proto-oncogene",
+      "aliases": ["B-RAF", "B-raf", "BRAF1", "RAFB1", "v-raf murine sarcoma"],
+      "category": "oncogene"
+    },
+    "MYC": {
+      "name": "MYC proto-oncogene",
+      "aliases": ["c-Myc", "c-MYC proto-oncogene", "c-myc", "bHLHe39"],
+      "category": "transcription_factor"
+    },
+    "BCL2": {
+      "name": "BCL2 apoptosis regulator",
+      "aliases": ["B-cell lymphoma 2", "Bcl-2", "PPP1R50"],
+      "category": "apoptosis"
+    },
+    "BCL2L1": {
+      "name": "BCL2 like 1",
+      "aliases": ["Bcl-xL", "BCL-XL", "Bcl-X", "BCLX", "BCL2L"],
+      "category": "apoptosis"
+    },
+    "BAX": {
+      "name": "BCL2 associated X",
+      "aliases": ["Bcl-2-associated X protein", "BCL2L4"],
+      "category": "apoptosis"
+    },
+    "VEGFA": {
+      "name": "vascular endothelial growth factor A",
+      "aliases": ["VEGF", "vascular endothelial growth factor", "VPF", "VEGF-A"],
+      "category": "growth_factor"
+    },
+    "TNF": {
+      "name": "tumor necrosis factor",
+      "aliases": ["TNF-alpha", "tumor necrosis factor alpha", "TNFA", "TNF-a", "cachectin", "TNFSF2"],
+      "category": "cytokine"
+    },
+    "IL6": {
+      "name": "interleukin 6",
+      "aliases": ["interleukin-6", "IL-6", "BSF2", "HGF", "HSF", "IFNB2"],
+      "category": "cytokine"
+    },
+    "IL1B": {
+      "name": "interleukin 1 beta",
+      "aliases": ["interleukin-1 beta", "IL-1B", "IL-1beta", "catabolin"],
+      "category": "cytokine"
+    },
+    "IFNG": {
+      "name": "interferon gamma",
+      "aliases": ["interferon-gamma", "IFN-gamma", "IFN-g", "IFNG1"],
+      "category": "cytokine"
+    },
+    "ACE2": {
+      "name": "angiotensin converting enzyme 2",
+      "aliases": ["angiotensin converting enzyme 2", "ACEH", "SARS-CoV-2 receptor"],
+      "category": "enzyme"
+    },
+    "APOE": {
+      "name": "apolipoprotein E",
+      "aliases": ["apolipoprotein E", "ApoE", "AD2", "LPG"],
+      "category": "lipoprotein"
+    },
+    "APP": {
+      "name": "amyloid beta precursor protein",
+      "aliases": ["amyloid precursor protein", "A4", "AD1", "AAA", "CVAP", "PN2"],
+      "category": "alzheimers"
+    },
+    "MAPT": {
+      "name": "microtubule associated protein tau",
+      "aliases": ["tau", "tau protein", "MAPTL", "MTBT1", "PPND", "FTDP-17"],
+      "category": "alzheimers"
+    },
+    "CFTR": {
+      "name": "CF transmembrane conductance regulator",
+      "aliases": ["cystic fibrosis transmembrane conductance regulator", "ABCC7", "CFTR/MRP", "CF"],
+      "category": "ion_channel"
+    },
+    "DMD": {
+      "name": "dystrophin",
+      "aliases": ["dystrophin", "BMD", "DXS142", "DXS164", "DXS206", "DXS230", "DXS239", "DXS268", "DXS269", "DXS270", "DXS272"],
+      "category": "structural"
+    },
+    "HTT": {
+      "name": "huntingtin",
+      "aliases": ["huntingtin", "HD", "IT15", "LOMARS"],
+      "category": "neurodegeneration"
+    },
+    "SOD1": {
+      "name": "superoxide dismutase 1",
+      "aliases": ["superoxide dismutase 1", "ALS", "ALS1", "Cu/Zn SOD", "IPOA", "SOD"],
+      "category": "enzyme"
+    },
+    "PIK3CA": {
+      "name": "phosphatidylinositol-4,5-bisphosphate 3-kinase catalytic subunit alpha",
+      "aliases": ["PI3K", "PI3Kalpha", "p110alpha", "PI3K-alpha", "p110a"],
+      "category": "kinase"
+    },
+    "AKT1": {
+      "name": "AKT serine/threonine kinase 1",
+      "aliases": ["PKB", "protein kinase B", "PKB-ALPHA", "RAC", "RAC-alpha"],
+      "category": "kinase"
+    },
+    "MTOR": {
+      "name": "mechanistic target of rapamycin kinase",
+      "aliases": ["mTOR", "mammalian target of rapamycin", "FRAP", "FRAP1", "FRAP2", "RAFT1", "RAPT1"],
+      "category": "kinase"
+    },
+    "PTEN": {
+      "name": "phosphatase and tensin homolog",
+      "aliases": ["PTEN", "MMAC1", "TEP1", "BZS", "CWS1", "DEC", "GLM2", "MHAM"],
+      "category": "tumor_suppressor"
+    },
+    "RB1": {
+      "name": "RB transcriptional corepressor 1",
+      "aliases": ["Rb", "retinoblastoma", "retinoblastoma protein", "pRb", "p105-Rb", "pp110"],
+      "category": "tumor_suppressor"
+    },
+    "CDKN2A": {
+      "name": "cyclin dependent kinase inhibitor 2A",
+      "aliases": ["p16", "p16INK4a", "p14ARF", "ARF", "INK4A", "INK4", "MLM", "MTS1"],
+      "category": "tumor_suppressor"
+    },
+    "CDKN1A": {
+      "name": "cyclin dependent kinase inhibitor 1A",
+      "aliases": ["p21", "p21Cip1", "p21WAF1", "CIP1", "WAF1", "CAP20", "CDKN1"],
+      "category": "cell_cycle"
+    },
+    "MDM2": {
+      "name": "MDM2 proto-oncogene",
+      "aliases": ["HDM2", "human double minute 2", "HDMX", "ACTFS"],
+      "category": "oncogene"
+    },
+    "JAK2": {
+      "name": "Janus kinase 2",
+      "aliases": ["JAK-2", "Janus kinase 2", "JTK10", "THCYT3"],
+      "category": "kinase"
+    },
+    "STAT3": {
+      "name": "signal transducer and activator of transcription 3",
+      "aliases": ["STAT-3", "APRF", "HIES", "ADMIO1"],
+      "category": "transcription_factor"
+    },
+    "NFKB1": {
+      "name": "nuclear factor kappa B subunit 1",
+      "aliases": ["NF-kB", "NF-kappaB", "NFkappaB", "p50", "p105", "KBF1", "EBP-1"],
+      "category": "transcription_factor"
+    },
+    "TGFB1": {
+      "name": "transforming growth factor beta 1",
+      "aliases": ["TGF-beta1", "TGF-beta", "TGFbeta1", "TGFB", "DPD1", "LAP", "IBDIMDE"],
+      "category": "growth_factor"
+    },
+    "FGF2": {
+      "name": "fibroblast growth factor 2",
+      "aliases": ["bFGF", "basic FGF", "basic fibroblast growth factor", "FGF-2", "FGFB", "HBGF-2"],
+      "category": "growth_factor"
+    },
+    "PDGFRA": {
+      "name": "platelet derived growth factor receptor alpha",
+      "aliases": ["PDGFR-alpha", "PDGFR-A", "CD140a", "PDGFR2"],
+      "category": "receptor_tyrosine_kinase"
+    },
+    "KIT": {
+      "name": "KIT proto-oncogene",
+      "aliases": ["c-Kit", "CD117", "SCFR", "stem cell factor receptor", "PBT", "MASTC"],
+      "category": "receptor_tyrosine_kinase"
+    },
+    "MET": {
+      "name": "MET proto-oncogene",
+      "aliases": ["c-Met", "HGFR", "hepatocyte growth factor receptor", "RCCP2", "AUTS9"],
+      "category": "receptor_tyrosine_kinase"
+    },
+    "ALK": {
+      "name": "ALK receptor tyrosine kinase",
+      "aliases": ["anaplastic lymphoma kinase", "CD246", "NBLST3"],
+      "category": "receptor_tyrosine_kinase"
+    },
+    "RET": {
+      "name": "ret proto-oncogene",
+      "aliases": ["RET proto-oncogene", "CDHF12", "CDHR16", "HSCR1", "MEN2A", "MEN2B", "MTC1", "PTC", "RET51", "RET-ELE1"],
+      "category": "receptor_tyrosine_kinase"
+    },
+    "ABL1": {
+      "name": "ABL proto-oncogene 1",
+      "aliases": ["c-Abl", "ABL", "JTK7", "p150", "v-abl", "BCR-ABL"],
+      "category": "kinase"
+    },
+    "SRC": {
+      "name": "SRC proto-oncogene",
+      "aliases": ["c-Src", "SRC1", "p60-Src", "pp60c-src", "ASV"],
+      "category": "kinase"
+    },
+    "ERCC1": {
+      "name": "ERCC excision repair 1",
+      "aliases": ["ERCC-1", "UV20", "RAD10"],
+      "category": "dna_repair"
+    },
+    "MLH1": {
+      "name": "mutL homolog 1",
+      "aliases": ["MLH-1", "COCA2", "FCC2", "HNPCC", "HNPCC2", "hMLH1"],
+      "category": "dna_repair"
+    },
+    "MSH2": {
+      "name": "mutS homolog 2",
+      "aliases": ["MSH-2", "COCA1", "FCC1", "HNPCC1", "LCFS2", "hMSH2"],
+      "category": "dna_repair"
+    },
+    "ATM": {
+      "name": "ATM serine/threonine kinase",
+      "aliases": ["ataxia telangiectasia mutated", "AT1", "ATA", "ATC", "ATD", "ATDC", "ATE", "TEL1", "TELO1"],
+      "category": "dna_repair"
+    },
+    "CHEK2": {
+      "name": "checkpoint kinase 2",
+      "aliases": ["CHK2", "CDS1", "HuCds1", "LFS2", "PP1425", "RAD53", "hCds1"],
+      "category": "cell_cycle"
+    },
+    "PALB2": {
+      "name": "partner and localizer of BRCA2",
+      "aliases": ["FANCN", "PNCA3"],
+      "category": "dna_repair"
+    },
+    "WT1": {
+      "name": "WT1 transcription factor",
+      "aliases": ["Wilms tumor 1", "GUD", "WAGR", "WIT-2", "WT33", "EWS-WT1"],
+      "category": "transcription_factor"
+    },
+    "VHL": {
+      "name": "von Hippel-Lindau tumor suppressor",
+      "aliases": ["VHL", "von Hippel-Lindau", "HRCA1", "RCA1", "pVHL"],
+      "category": "tumor_suppressor"
+    },
+    "NF1": {
+      "name": "neurofibromin 1",
+      "aliases": ["neurofibromatosis type 1", "NFNS", "VRNF", "WSS"],
+      "category": "tumor_suppressor"
+    },
+    "NF2": {
+      "name": "NF2 tumor suppressor",
+      "aliases": ["merlin", "neurofibromatosis type 2", "ACN", "SCH"],
+      "category": "tumor_suppressor"
+    },
+    "APC": {
+      "name": "APC regulator of WNT signaling pathway",
+      "aliases": ["adenomatous polyposis coli", "DP2", "DP2.5", "DP3", "GS", "PPP1R46"],
+      "category": "tumor_suppressor"
+    },
+    "SMAD4": {
+      "name": "SMAD family member 4",
+      "aliases": ["SMAD-4", "DPC4", "JIP", "MADH4"],
+      "category": "signal_transduction"
+    },
+    "CTNNB1": {
+      "name": "catenin beta 1",
+      "aliases": ["beta-catenin", "b-catenin", "CTNNB", "armadillo"],
+      "category": "signal_transduction"
+    },
+    "NOTCH1": {
+      "name": "notch receptor 1",
+      "aliases": ["Notch1", "TAN1", "hN1", "AOVD1"],
+      "category": "receptor"
+    },
+    "SHH": {
+      "name": "sonic hedgehog signaling molecule",
+      "aliases": ["sonic hedgehog", "SHH", "HHG1", "HLP3", "HPE3", "MCOPCB5", "SMMCI", "TPT"],
+      "category": "signal_transduction"
+    },
+    "PTCH1": {
+      "name": "patched 1",
+      "aliases": ["Patched", "BCNS", "NBCCS", "PTC", "PTC1", "PTCH"],
+      "category": "receptor"
+    },
+    "SMO": {
+      "name": "smoothened, frizzled class receptor",
+      "aliases": ["Smoothened", "SMOH", "Gx", "FZD11"],
+      "category": "receptor"
+    },
+    "IDH1": {
+      "name": "isocitrate dehydrogenase 1",
+      "aliases": ["IDH", "IDCD", "IDP", "IDPC", "PICD"],
+      "category": "enzyme"
+    },
+    "IDH2": {
+      "name": "isocitrate dehydrogenase 2",
+      "aliases": ["IDH", "IDHM", "IDP", "IDPM", "mNADP-IDH"],
+      "category": "enzyme"
+    },
+    "ARID1A": {
+      "name": "AT-rich interaction domain 1A",
+      "aliases": ["BAF250a", "BAF250", "B120", "BM029", "C1orf4", "CSS2", "ELD", "MRD14", "OSA1", "P270", "SMARCF1", "hELD", "hOSA1"],
+      "category": "chromatin_remodeling"
+    },
+    "SETD2": {
+      "name": "SET domain containing 2",
+      "aliases": ["HIF-1", "HYPB", "KMT3A", "SET2"],
+      "category": "epigenetics"
+    },
+    "KMT2A": {
+      "name": "lysine methyltransferase 2A",
+      "aliases": ["MLL", "MLL1", "ALL-1", "CXXC7", "HRX", "HTRX1", "TRX1"],
+      "category": "epigenetics"
+    },
+    "EZH2": {
+      "name": "enhancer of zeste 2 polycomb repressive complex 2 subunit",
+      "aliases": ["ENX-1", "KMT6", "KMT6A", "WVS", "WVS2"],
+      "category": "epigenetics"
+    },
+    "DNMT3A": {
+      "name": "DNA methyltransferase 3 alpha",
+      "aliases": ["DNMT3A2", "HESJAS", "TBRS", "M.HsaIIIA"],
+      "category": "epigenetics"
+    },
+    "TET2": {
+      "name": "tet methylcytosine dioxygenase 2",
+      "aliases": ["KIAA1546", "MDS"],
+      "category": "epigenetics"
+    },
+    "FLT3": {
+      "name": "fms related receptor tyrosine kinase 3",
+      "aliases": ["FLK2", "STK1", "CD135", "FLK-2"],
+      "category": "receptor_tyrosine_kinase"
+    },
+    "NPM1": {
+      "name": "nucleophosmin 1",
+      "aliases": ["NPM", "B23", "numatrin"],
+      "category": "nuclear_protein"
+    },
+    "CEBPA": {
+      "name": "CCAAT enhancer binding protein alpha",
+      "aliases": ["C/EBP-alpha", "C/EBPalpha"],
+      "category": "transcription_factor"
+    },
+    "RUNX1": {
+      "name": "RUNX family transcription factor 1",
+      "aliases": ["AML1", "CBFA2", "EVI-1", "PEBP2aB", "AMLCR1"],
+      "category": "transcription_factor"
+    },
+    "GATA1": {
+      "name": "GATA binding protein 1",
+      "aliases": ["GATA-1", "GF1", "NFE1", "XLTT", "ERYF1"],
+      "category": "transcription_factor"
+    },
+    "GATA2": {
+      "name": "GATA binding protein 2",
+      "aliases": ["GATA-2", "NFE1B", "DCML"],
+      "category": "transcription_factor"
+    },
+    "TP63": {
+      "name": "tumor protein p63",
+      "aliases": ["p63", "p73L", "AIS", "B(p51A)", "B(p51B)", "EEC3", "KET", "LMS", "NBP", "OFC8", "p40", "p51", "RHS", "SHFM4", "TP53CP", "TP53L", "TP73L"],
+      "category": "transcription_factor"
+    },
+    "TP73": {
+      "name": "tumor protein p73",
+      "aliases": ["p73", "P73"],
+      "category": "transcription_factor"
+    },
+    "CASP3": {
+      "name": "caspase 3",
+      "aliases": ["caspase-3", "CPP32", "CPP32B", "SCA-1", "apopain", "YAMA"],
+      "category": "apoptosis"
+    },
+    "CASP8": {
+      "name": "caspase 8",
+      "aliases": ["caspase-8", "FLICE", "MACH", "MCH5", "Casp-8", "CAP4"],
+      "category": "apoptosis"
+    },
+    "CASP9": {
+      "name": "caspase 9",
+      "aliases": ["caspase-9", "APAF3", "ICE-LAP6", "MCH6", "Apaf-3"],
+      "category": "apoptosis"
+    },
+    "FAS": {
+      "name": "Fas cell surface death receptor",
+      "aliases": ["CD95", "TNFRSF6", "APT1", "APO-1", "FAS1", "FASTM"],
+      "category": "apoptosis"
+    },
+    "FASLG": {
+      "name": "Fas ligand",
+      "aliases": ["FasL", "CD95L", "TNFSF6", "APT1LG1", "CD178", "FASL"],
+      "category": "apoptosis"
+    },
+    "XIAP": {
+      "name": "X-linked inhibitor of apoptosis",
+      "aliases": ["IAP3", "BIRC4", "API3", "ILP1", "MIHA", "XLP2", "hIAP-3", "hIAP3"],
+      "category": "apoptosis"
+    },
+    "BIRC5": {
+      "name": "baculoviral IAP repeat containing 5",
+      "aliases": ["survivin", "API4", "EPR-1"],
+      "category": "apoptosis"
+    },
+    "CD274": {
+      "name": "CD274 molecule",
+      "aliases": ["PD-L1", "PDL1", "B7-H1", "B7H1", "PDCD1L1", "PDCD1LG1"],
+      "category": "immune_checkpoint"
+    },
+    "PDCD1": {
+      "name": "programmed cell death 1",
+      "aliases": ["PD-1", "PD1", "CD279", "SLEB2", "hPD-1", "hPD-l"],
+      "category": "immune_checkpoint"
+    },
+    "CTLA4": {
+      "name": "cytotoxic T-lymphocyte associated protein 4",
+      "aliases": ["CTLA-4", "CD152", "CELIAC3", "GRD4", "GSE", "IDDM12"],
+      "category": "immune_checkpoint"
+    },
+    "CD8A": {
+      "name": "CD8a molecule",
+      "aliases": ["CD8", "CD8alpha", "Leu2", "p32", "MAL"],
+      "category": "immune"
+    },
+    "CD4": {
+      "name": "CD4 molecule",
+      "aliases": ["CD4mut", "T4", "Leu-3", "OKT4"],
+      "category": "immune"
+    },
+    "CD19": {
+      "name": "CD19 molecule",
+      "aliases": ["B4", "Leu-12", "CVID3"],
+      "category": "immune"
+    },
+    "CD20": {
+      "name": "membrane spanning 4-domains A1",
+      "aliases": ["MS4A1", "B1", "Bp35", "CD20", "CVID5", "LEU-16", "MS4A2", "S7"],
+      "category": "immune"
+    },
+    "FOXP3": {
+      "name": "forkhead box P3",
+      "aliases": ["AIID", "DIETER", "IPEX", "JM2", "PIDX", "XPID", "scurfin"],
+      "category": "transcription_factor"
+    }
+  }
+}
