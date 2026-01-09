@@ -7,6 +7,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/reproducible-research/**: Deterministic validation utilities implementation with 78 test cases (100% pass rate)
+  - **scripts/utils/schemas.py**: Data schemas for validation I/O
+    - `ChecklistItem`, `CategoryScore` dataclasses for 20-point reproducibility checklist
+    - `EnvironmentScanResult`, `DataScanResult`, `CodeScanResult`, `DocumentationScanResult` for scan results
+    - `ReproducibilityAssessment` with score, level, category scores, and full checklist
+    - `ProjectScanResult` aggregating all scan results with serialization
+    - `EnvironmentValidationResult` and `ValidationSummary` for environment file validation
+    - Full round-trip serialization with `to_dict()` and `from_dict()`
+  - **scripts/scan_project.py**: Project reproducibility scanner CLI
+    - `scan_environment(root)` detecting env files, pinned versions, Python version, Dockerfile
+    - `scan_data(root)` checking raw data archive, processing scripts, random seeds, checksums
+    - `scan_code(root)` verifying README, LICENSE, no hardcoded paths
+    - `scan_documentation(root)` checking methods, parameters, outputs, execution order
+    - `calculate_score()` computing 20-item checklist with 4 categories (25 pts each)
+    - Level assignment: Minimal (1), Standard (2), Complete (3), Exemplary (4)
+    - `generate_recommendations()` with CRITICAL/MAJOR/MINOR prioritization
+    - JSON output mode for automation
+  - **scripts/validate_environment.py**: Environment file validator CLI
+    - `validate_conda_env(path)` checking name, channels, dependencies, Python version, pinning
+    - `validate_requirements(path)` detecting unpinned and loosely pinned deps
+    - `validate_pyproject(path)` validating pyproject.toml dependencies
+    - Strict mode treating warnings as errors
+    - Score calculation with error/warning penalties
+  - **tests/**: Comprehensive test suite (78 tests)
+    - conftest.py with fixtures for project levels (minimal, standard, complete, exemplary)
+    - Environment file fixtures (valid/invalid conda, requirements, pyproject)
+    - TestDeterminism class verifying consistent scores across multiple runs
+    - Full coverage of all scanning functions and score calculation
+    - Edge case tests (empty files, malformed YAML, unicode, nested directories)
+  - Determinism improvement: ~65% → ~85% through automated project scanning and environment validation
+
 - **skills/research-paper-summarizer/**: Deterministic validation utilities implementation with 53 test cases (100% pass rate)
   - **scripts/utils/schemas.py**: Data schemas for validation I/O
     - `ValidationResult`, `SectionMarker`, `StatisticResult` dataclasses
@@ -53,6 +84,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - Determinism improvement: ~55% → ~80% through code-based validation and regex extraction
 
 ### Fixed
+- **skills/reproducible-research/**: Fresh eyes review fixes
+  - `schemas.py`: Fixed `ChecklistItem.__post_init__` logic so `max_points` is preserved for failing items
+  - `scan_project.py`: Added `PINNED_THRESHOLD_PERCENT = 90` constant with documentation
+  - `scan_project.py`: Added `PUBLICATION_READY_THRESHOLD = 75` constant for clarity
+  - `scan_project.py`: Fixed operator precedence in `parameters_documented` check to match checksums pattern
+
 - **skills/research-paper-summarizer/**: Fresh eyes review fixes
   - `validate_summary.py`: SUBSECTION markers now detected in pending section check (was only detecting SECTION)
   - `extract_statistics.py`: Removed unused `format_statistics_table()` function
