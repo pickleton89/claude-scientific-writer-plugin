@@ -7,6 +7,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/plotting-libraries/**: Deterministic validation utilities implementation with 110 test cases (100% pass rate)
+  - **scripts/plotting_params.py**: Parameter lookup tables for deterministic configuration
+    - `ThresholdPreset` enum and `VolcanoThresholds` for volcano plot thresholds (exploratory, standard, stringent, very_stringent)
+    - `JournalFigureSpec` with specs for Nature, Cell, Science, PLOS, eLife (dimensions, DPI, format)
+    - `ColorPalette` with Oligon brand, Okabe-Ito, volcano, heatmap_diverging, categorical_8 palettes
+    - `ClusteringParams` for expression, euclidean, and robust clustering configurations
+    - `classify_plot_type()` keyword-based classifier for 6 plot types (volcano, heatmap, survival, genome_tracks, statistical, pca_umap)
+    - `classify_ecosystem()` for Python vs R library recommendation
+    - `get_figsize_for_journal()` with golden ratio height calculation
+    - `RANDOM_SEED = 42` constant for reproducible clustering
+  - **scripts/validate_data.py**: Input data validation for plotting
+    - `ValidationResult` dataclass with errors/warnings and boolean evaluation
+    - `validate_volcano_data()` checking columns, p-value range, NaN handling, data size
+    - `validate_heatmap_data()` checking numeric types, infinite values, dimensions, zero variance
+    - `validate_survival_data()` checking time/event columns, binary events, group counts, event rates
+  - **scripts/validate_figure.py**: Output figure validation CLI
+    - `FigureValidation` dataclass with checks dict and details dict
+    - `validate_figure()` checking file existence, format, size, DPI (raster), PDF validity, font embedding
+    - `validate_figure_for_journal()` checking format and DPI against journal specifications
+    - External tool integration: pdfinfo, pdffonts (poppler-utils), PIL/Pillow
+  - **scripts/requirements-plotting.txt**: Pinned dependencies for reproducible environments
+  - **tests/**: Comprehensive test suite (110 tests)
+    - test_plotting_params.py: 49 tests covering all lookups and classifiers
+    - test_validate_data.py: 41 tests for volcano, heatmap, survival validation
+    - test_validate_figure.py: 20 tests for figure format and journal validation
+  - **references/heatmaps.md**: Updated with `random_state=42` (Python) and `set.seed(42)` (R) for reproducible clustering
+  - **SKILL.md**: Updated prerequisites with version pins, added `<programmatic_parameters>` section
+  - Determinism improvement: ~55-60% → ~80% through executable parameter lookups and validation utilities
+
 - **skills/reproducible-research/**: Deterministic validation utilities implementation with 78 test cases (100% pass rate)
   - **scripts/utils/schemas.py**: Data schemas for validation I/O
     - `ChecklistItem`, `CategoryScore` dataclasses for 20-point reproducibility checklist

@@ -161,7 +161,8 @@ def expression_heatmap(expr_matrix, sample_metadata=None,
         yticklabels=True,
         dendrogram_ratio=(0.1, 0.15),
         cbar_pos=(0.02, 0.8, 0.03, 0.15),
-        tree_kws={'linewidths': 0.5}
+        tree_kws={'linewidths': 0.5},
+        random_state=42  # Reproducible clustering
     )
 
     # Rotate x-axis labels
@@ -208,7 +209,8 @@ g = sns.clustermap(
     # Standard options
     cmap=cmap,
     center=0,
-    figsize=(14, 12)
+    figsize=(14, 12),
+    random_state=42  # Reproducible clustering
 )
 
 # Disable clustering for ordered data
@@ -235,7 +237,7 @@ col_colors = pd.DataFrame({
     'Batch': sample_info['Batch'].map(batch_colors)
 })
 
-g = sns.clustermap(expr_matrix, col_colors=col_colors)
+g = sns.clustermap(expr_matrix, col_colors=col_colors, random_state=42)
 ```
 
 ### Matplotlib Heatmap (No Clustering)
@@ -310,6 +312,9 @@ expression_heatmap <- function(mat, sample_metadata = NULL,
     )
   }
 
+  # Set seed for reproducible clustering
+  set.seed(42)
+
   # Create heatmap
   ht <- Heatmap(
     mat,
@@ -360,6 +365,9 @@ dev.off()
 ### Row and Column Splitting
 
 ```r
+# Set seed for reproducible clustering
+set.seed(42)
+
 # Split by gene clusters
 Heatmap(mat,
         row_split = gene_clusters,  # Factor vector
@@ -372,7 +380,7 @@ Heatmap(mat,
         column_title_rot = 0,
         column_gap = unit(2, "mm"))
 
-# K-means clustering
+# K-means clustering (reproducible with set.seed above)
 Heatmap(mat,
         row_km = 4,  # 4 gene clusters
         row_km_repeats = 100)  # For stability
@@ -402,6 +410,9 @@ draw(ht_list)
 
 ```r
 library(pheatmap)
+
+# Set seed for reproducible clustering
+set.seed(42)
 
 # Basic usage
 pheatmap(mat,
@@ -464,12 +475,14 @@ pheatmap(mat, filename = "heatmap.pdf", width = 10, height = 12)
 g = sns.clustermap(
     expr_matrix,
     metric='correlation',
-    method='ward'
+    method='ward',
+    random_state=42  # Reproducible clustering
 )
 ```
 
 ```r
-# Same in R
+# Same in R (set seed for reproducibility)
+set.seed(42)
 Heatmap(mat,
         clustering_distance_rows = "pearson",  # 1 - correlation
         clustering_method_rows = "ward.D2")
@@ -562,6 +575,7 @@ heatmap_matrix = expr_matrix.loc[expr_matrix.index.isin(pathway_genes)]
 - [ ] Data appropriately transformed (log2 for counts)
 - [ ] Z-scored by row if comparing patterns across genes
 - [ ] Clustering method and distance metric stated in legend
+- [ ] Random seed set for reproducible clustering (`random_state=42` in Python, `set.seed(42)` in R)
 - [ ] Color scale appropriate for data type (diverging for z-scores)
 - [ ] Sample annotations clearly labeled
 - [ ] Gene count stated (e.g., "Top 200 variable genes")

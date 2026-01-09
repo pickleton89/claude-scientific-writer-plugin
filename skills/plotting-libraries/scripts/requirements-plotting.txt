@@ -1,0 +1,26 @@
+# Plotting libraries - pinned versions for reproducibility
+# Generated from DETERMINISM_AUDIT.md Phase 1
+
+# Core visualization
+matplotlib>=3.7,<4.0
+seaborn>=0.12,<0.14
+numpy>=1.24
+pandas>=2.0
+
+# Statistical analysis and annotations
+scipy>=1.10
+statsmodels>=0.14
+statannotations>=0.5,<0.7
+
+# Bioinformatics visualization
+adjustText>=0.8
+lifelines>=0.27
+
+# Optional: single-cell analysis (large dependency)
+# scanpy>=1.9
+
+# Optional: genome tracks (install via conda for dependencies)
+# pyGenomeTracks>=3.8
+
+# Image validation (optional, for validate_figure.py)
+Pillow>=9.0

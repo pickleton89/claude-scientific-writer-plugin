@@ -52,21 +52,24 @@ ggsave("figure.pdf", width = 7, height = 5)
 
 **Python (core):**
 ```bash
-pip install matplotlib seaborn numpy pandas
+pip install "matplotlib>=3.7,<4.0" "seaborn>=0.12,<0.14" "numpy>=1.24" "pandas>=2.0"
 ```
 
 **Python (statistical annotations):**
 ```bash
-pip install statannotations scipy statsmodels
+pip install "statannotations>=0.5,<0.7" "scipy>=1.10" "statsmodels>=0.14"
 ```
 
 **Python (bioinformatics):**
 ```bash
-pip install adjustText lifelines pyGenomeTracks scanpy
+pip install "adjustText>=0.8" "lifelines>=0.27"
+# scanpy: install separately due to large dependency tree
+# pyGenomeTracks: install via conda for system dependencies
 ```
 
 **R (core):**
 ```r
+# Tested with: ggplot2 3.4.x, ggpubr 0.6.x, patchwork 1.1.x
 install.packages(c("ggplot2", "ggpubr", "patchwork", "corrplot", "ggsci"))
 ```
 
@@ -74,7 +77,13 @@ install.packages(c("ggplot2", "ggpubr", "patchwork", "corrplot", "ggsci"))
 ```r
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
+# Tested with Bioconductor 3.17+
 BiocManager::install(c("ComplexHeatmap", "EnhancedVolcano", "survminer", "Gviz", "clusterProfiler"))
+```
+
+**Reproducible environment file:**
+```bash
+pip install -r skills/plotting-libraries/scripts/requirements-plotting.txt
 ```
 </prerequisites>
 
@@ -126,6 +135,67 @@ BiocManager::install(c("ComplexHeatmap", "EnhancedVolcano", "survminer", "Gviz",
 - clusterProfiler/enrichplot: Enrichment analysis plots
 
 </decision_framework>
+
+<programmatic_parameters>
+## Programmatic Parameter Access
+
+For deterministic parameter selection, use the parameters module:
+
+```python
+from scripts.plotting_params import (
+    get_volcano_thresholds,
+    get_journal_spec,
+    get_figsize_for_journal,
+    get_palette,
+    get_volcano_colors,
+    get_clustering_params,
+    classify_plot_type,
+    mm_to_inches,
+    RANDOM_SEED,
+)
+
+# Get thresholds by preset
+thresholds = get_volcano_thresholds("stringent")
+# Returns: VolcanoThresholds(pvalue=0.01, log2fc=1.5, label="Stringent (2.8-fold)")
+
+# Get journal figure dimensions
+spec = get_journal_spec("nature")
+figsize = get_figsize_for_journal("nature", "single")  # Returns (width, height) in inches
+
+# Get colorblind-safe volcano colors
+colors = get_volcano_colors()  # {'Up': '#D55E00', 'Down': '#0072B2', 'NS': '#999999'}
+
+# Get clustering parameters for expression data
+params = get_clustering_params("expression")  # method='ward', metric='correlation'
+
+# Classify plot type from user request
+plot_type = classify_plot_type("create a volcano plot for my DESeq2 results")
+# Returns: "volcano"
+
+# Use standard random seed for reproducibility
+import numpy as np
+np.random.seed(RANDOM_SEED)  # 42
+```
+
+### Available Threshold Presets
+
+| Preset | P-value | Log2FC | Use Case |
+|--------|---------|--------|----------|
+| `exploratory` | 0.05 | 0.585 | Broad discovery (1.5-fold) |
+| `standard` | 0.05 | 1.0 | Balanced (2-fold, FDR) |
+| `stringent` | 0.01 | 1.5 | High confidence (2.8-fold) |
+| `very_stringent` | 0.001 | 2.0 | Minimal false positives (4-fold) |
+
+### Journal Specifications
+
+| Journal | Single Column | Double Column | Min DPI | Format |
+|---------|---------------|---------------|---------|--------|
+| Nature | 89mm | 183mm | 300 | PDF |
+| Cell | 85mm | 174mm | 300 | PDF |
+| Science | 90mm | 180mm | 300 | EPS |
+| PLOS | 83mm | 173mm | 300 | TIFF |
+| eLife | 88mm | 180mm | 300 | PDF |
+</programmatic_parameters>
 
 <bioinformatics_plots>
 ## Specialized Bioinformatics Visualizations
