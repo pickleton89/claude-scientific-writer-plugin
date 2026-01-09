@@ -7,6 +7,51 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/research-posters/**: Deterministic validation utilities implementation with 61 test cases (100% pass rate)
+  - **scripts/utils/brand_colors.py**: Color accessibility utilities
+    - Oligon brand color palette definitions
+    - `calculate_contrast_ratio(color1, color2)` WCAG 2.1 contrast calculation
+    - `check_wcag_compliance(fg, bg)` returning WCAGCompliance with AA/AAA thresholds
+    - `simulate_deuteranopia(hex_color)` and `simulate_protanopia(hex_color)` colorblind simulation (Brettel 1997)
+    - `get_distinguishable_pairs(colors)` for CVD-safe palette validation
+    - `validate_poster_palette(colors, background)` comprehensive accessibility check
+  - **scripts/utils/dimensions.py**: Poster dimension utilities
+    - `POSTER_SIZES` dict with ISO (A0, A1, A2) and US (36x48, 42x56, etc.) sizes
+    - `PosterSize` NamedTuple with width/height in inches and PDF points
+    - `match_dimensions(width_pts, height_pts)` detecting standard sizes with tolerance
+    - `validate_dimensions()` checking against expected size/orientation
+    - `get_recommended_font_sizes(size_name)` scaled to poster area
+    - `calculate_dpi_for_image()` for print quality verification
+  - **scripts/utils/schemas.py**: Data schemas for validation I/O
+    - `PosterSpec` dataclass for YAML specification parsing with validation
+    - `QualityReport` dataclass aggregating all validation results
+    - `ValidationResult`, `WordCountResult`, `ContrastCheckResult`, `ImageCheckResult`, `FontCheckResult`
+    - Full round-trip serialization with `to_dict()` and `from_dict()`
+  - **scripts/validate_poster.py**: Core poster validation CLI
+    - Word counting from LaTeX (stripping commands, math, environments)
+    - Dimension validation via pdfinfo
+    - Font embedding check via pdffonts
+    - Image extraction and DPI estimation via pdfimages
+    - JSON output mode for automation
+  - **scripts/validate_accessibility.py**: Accessibility validation CLI
+    - Color extraction from LaTeX `\definecolor` (HTML, RGB, rgb formats)
+    - Background color detection from tikzposter themes
+    - WCAG contrast checking with colorblind simulation
+    - JSON report generation
+  - **scripts/validate_spec.py**: YAML specification validator CLI
+    - Schema validation for poster specifications
+    - Author/affiliation reference checking
+    - Figure ID validation in content sections
+    - Word budget range warnings
+  - **scripts/review_poster.sh**: Enhanced with 4 new automated checks
+    - [6] Word count via texcount with range validation
+    - [7] LaTeX log parsing for errors/warnings
+    - [8] QR code detection via zbarimg
+    - [9] Python validation script integration
+  - **tests/**: Comprehensive test suite (61 tests)
+    - conftest.py with fixtures for colors, dimensions, LaTeX samples, specs
+    - Full coverage of utility functions and schema round-trips
+
 - **skills/scientific-schematics/**: Deterministic utilities implementation with 72 test cases (100% pass rate)
   - **scripts/validate_prompt.py**: Pre-generation prompt validation
     - `validate_prompt(prompt)` detecting diagram types, layout keywords, quantitative details, component counts

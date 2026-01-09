@@ -144,8 +144,122 @@ else
 fi
 echo ""
 
-# 6. Manual Checks Required
-echo -e "${YELLOW}[6] Manual Visual Inspection Required:${NC}"
+# 6. Word Count Check
+echo -e "${YELLOW}[6] Word Count:${NC}"
+TEX_FILE="${POSTER_FILE%.pdf}.tex"
+if [ -f "$TEX_FILE" ]; then
+    if command_exists texcount; then
+        WORD_COUNT=$(texcount -inc -sum -brief "$TEX_FILE" 2>/dev/null | grep -oE '^[0-9]+' | head -1)
+        if [ -n "$WORD_COUNT" ]; then
+            echo "    Total words: $WORD_COUNT"
+            if [ "$WORD_COUNT" -gt 800 ]; then
+                echo -e "    ${RED}✗ Exceeds 800 word maximum (too verbose for poster)${NC}"
+            elif [ "$WORD_COUNT" -lt 300 ]; then
+                echo -e "    ${YELLOW}⚠ Below 300 word minimum (may lack detail)${NC}"
+            elif [ "$WORD_COUNT" -ge 400 ] && [ "$WORD_COUNT" -le 600 ]; then
+                echo -e "    ${GREEN}✓ Ideal range (400-600 words)${NC}"
+            else
+                echo -e "    ${GREEN}✓ Within acceptable range (300-800)${NC}"
+            fi
+        else
+            echo -e "    ${YELLOW}⚠ Could not parse word count${NC}"
+        fi
+    else
+        echo -e "    ${YELLOW}⚠ texcount not installed (install: brew install texcount or apt-get install texcount)${NC}"
+        # Fallback: rough word count from tex file
+        ROUGH_COUNT=$(grep -v '^%' "$TEX_FILE" | grep -v '\\' | wc -w | tr -d ' ')
+        if [ "$ROUGH_COUNT" -gt 0 ]; then
+            echo "    Rough estimate (from non-command text): ~$ROUGH_COUNT words"
+        fi
+    fi
+else
+    echo -e "    ${YELLOW}⚠ Source .tex file not found: $TEX_FILE${NC}"
+fi
+echo ""
+
+# 7. LaTeX Compilation Warnings
+echo -e "${YELLOW}[7] LaTeX Compilation Warnings:${NC}"
+LOG_FILE="${POSTER_FILE%.pdf}.log"
+if [ -f "$LOG_FILE" ]; then
+    OVERFULL=$(grep -c "Overfull" "$LOG_FILE" 2>/dev/null || echo "0")
+    UNDERFULL=$(grep -c "Underfull" "$LOG_FILE" 2>/dev/null || echo "0")
+    WARNINGS=$(grep -c "Warning" "$LOG_FILE" 2>/dev/null || echo "0")
+    ERRORS=$(grep -c "^!" "$LOG_FILE" 2>/dev/null || echo "0")
+
+    echo "    Errors: $ERRORS"
+    echo "    Overfull boxes: $OVERFULL"
+    echo "    Underfull boxes: $UNDERFULL"
+    echo "    Other warnings: $WARNINGS"
+
+    if [ "$ERRORS" -gt 0 ]; then
+        echo -e "    ${RED}✗ LaTeX errors found - review log file${NC}"
+        echo "    First error:"
+        grep -A 2 "^!" "$LOG_FILE" 2>/dev/null | head -3 | while IFS= read -r line; do
+            echo "      $line"
+        done
+    elif [ "$OVERFULL" -gt 10 ] || [ "$UNDERFULL" -gt 10 ]; then
+        echo -e "    ${YELLOW}⚠ Many box warnings - review spacing${NC}"
+    else
+        echo -e "    ${GREEN}✓ Acceptable warning count${NC}"
+    fi
+else
+    echo -e "    ${YELLOW}⚠ Log file not found: $LOG_FILE${NC}"
+fi
+echo ""
+
+# 8. QR Code Detection
+echo -e "${YELLOW}[8] QR Code Presence:${NC}"
+if command_exists zbarimg; then
+    QR_CONTENT=$(zbarimg --quiet "$POSTER_FILE" 2>/dev/null)
+    QR_COUNT=$(echo "$QR_CONTENT" | grep -c "QR-Code" || echo "0")
+    if [ "$QR_COUNT" -gt 0 ]; then
+        echo -e "    ${GREEN}✓ QR code(s) detected: $QR_COUNT found${NC}"
+        echo "    QR code content:"
+        echo "$QR_CONTENT" | head -5 | while IFS= read -r line; do
+            echo "      $line"
+        done
+    else
+        echo -e "    ${YELLOW}⚠ No QR code detected${NC}"
+        echo -e "    ${BLUE}  Consider adding QR code linking to paper/data/contact${NC}"
+    fi
+else
+    echo -e "    ${YELLOW}⚠ zbarimg not installed (install: brew install zbar or apt-get install zbar-tools)${NC}"
+fi
+echo ""
+
+# 9. Python Validation (if available)
+echo -e "${YELLOW}[9] Python Validation:${NC}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VALIDATE_SCRIPT="$SCRIPT_DIR/validate_poster.py"
+if [ -f "$VALIDATE_SCRIPT" ]; then
+    if command_exists python3; then
+        if [ -f "$TEX_FILE" ]; then
+            echo "    Running comprehensive validation..."
+            VALIDATION_OUTPUT=$(python3 "$VALIDATE_SCRIPT" "$TEX_FILE" "$POSTER_FILE" --json 2>/dev/null)
+            if [ $? -eq 0 ]; then
+                OVERALL_PASS=$(echo "$VALIDATION_OUTPUT" | grep -o '"overall_pass": true' || echo "")
+                if [ -n "$OVERALL_PASS" ]; then
+                    echo -e "    ${GREEN}✓ All automated checks passed${NC}"
+                else
+                    echo -e "    ${RED}✗ Some automated checks failed${NC}"
+                    echo -e "    ${BLUE}  Run: python3 $VALIDATE_SCRIPT $TEX_FILE $POSTER_FILE${NC}"
+                fi
+            else
+                echo -e "    ${YELLOW}⚠ Validation script encountered an error${NC}"
+            fi
+        else
+            echo -e "    ${YELLOW}⚠ Skipped - requires .tex source file${NC}"
+        fi
+    else
+        echo -e "    ${YELLOW}⚠ python3 not available${NC}"
+    fi
+else
+    echo -e "    ${YELLOW}⚠ validate_poster.py not found${NC}"
+fi
+echo ""
+
+# 10. Manual Checks Required
+echo -e "${YELLOW}[10] Manual Visual Inspection Required:${NC}"
 echo ""
 echo -e "${BLUE}Layout and Spacing:${NC}"
 echo "    [ ] Content fills entire page (no large white margins)"
@@ -179,8 +293,8 @@ echo "    [ ] Contact information visible"
 echo "    [ ] No placeholder text (Lorem ipsum, TODO, etc.)"
 echo ""
 
-# 7. Recommended Tests
-echo -e "${YELLOW}[7] Recommended Next Steps:${NC}"
+# 11. Recommended Tests
+echo -e "${YELLOW}[11] Recommended Next Steps:${NC}"
 echo ""
 echo -e "${BLUE}Test Print:${NC}"
 echo "    • Print at 25% scale (A0→A4, 36×48→Letter)"
@@ -201,7 +315,7 @@ echo "    • Confirm all statistics and numbers"
 echo "    • Ask colleague to review"
 echo ""
 
-# 8. Summary
+# 12. Summary
 echo -e "${BLUE}═══════════════════════════════════════════════${NC}"
 echo -e "${BLUE}   Quality Check Complete${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════${NC}"
