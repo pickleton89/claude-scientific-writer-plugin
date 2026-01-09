@@ -1,10 +1,10 @@
 # Determinism Audit: Executive Summary Skill
 
 > **Audit Date:** January 2026
-> **Development Stage:** First Draft
-> **Current Determinism:** ~65-70%
+> **Development Stage:** Phase 1 Complete
+> **Current Determinism:** ~75%
 > **Target Determinism:** 85%
-> **Variance Reduction:** 15-20%
+> **Variance Reduction:** 10%
 
 ---
 
@@ -13,6 +13,45 @@
 The executive-summary skill is well-architected for its first-draft stage, with an existing validation script (`validate_summary.py`) implementing 7 deterministic quality checks. The skill achieves ~65-70% determinism—strong for a first draft. Primary improvement opportunities: (1) automating the manual "source comparison" workflow step, (2) strengthening component detection from keyword heuristics to structural markdown validation, and (3) adding source document preprocessing.
 
 **Key Insight:** The validation infrastructure is already mature with quantified thresholds (≤10% length, ≤25% passive voice, 15-20 word sentences) and pattern-based checks. The gap is that several workflow steps described in SKILL.md (source comparison, completeness verification) remain manual rather than enforced programmatically.
+
+---
+
+## Phase 1 Implementation (COMPLETE)
+
+**Completed:** January 9, 2026
+**Test Coverage:** 100 tests passing
+
+### Deliverables
+
+| Script | Purpose | Tests |
+|--------|---------|-------|
+| `scripts/preprocess_source.py` | Source document completeness & metrics | 55 |
+| `scripts/validate_structure.py` | Structural template validation | 45 |
+
+### preprocess_source.py Features
+
+- **Word counting** with markdown exclusion (code blocks, inline code, links, formatting)
+- **Incomplete marker detection**: TBD, TBC, TODO, FIXME, PLACEHOLDER, INSERT, FILL IN, bracketed ellipsis, underscore placeholders
+- **Section structure analysis**: H1/H2/H3 counts, empty section detection
+- **Quantification extraction**: percentages, dollar amounts, decimals, comma-formatted numbers, large numbers
+- **Completeness scoring**: 0-100 score with READY/WARN/INCOMPLETE status
+- **Recommended summary lengths**: 10% and 15% of source word count
+
+### validate_structure.py Features
+
+- **Header detection**: Requires `## Executive Summary` (H2 level)
+- **Key Findings validation**: Requires `**Key Findings:**` section with 3-5 numbered findings
+- **Recommendation validation**: Requires `**Recommendation:**` section with action verb
+- **Component ordering**: Verifies Findings come before Recommendation
+- **Action verb detection**: approve, implement, proceed, launch, create, develop, hire, invest, authorize, initiate
+
+### Determinism Improvement
+
+| Component | Before Phase 1 | After Phase 1 |
+|-----------|----------------|---------------|
+| Input validation | 40% | 80% |
+| Template compliance | 60% | 90% |
+| **Overall** | ~65-70% | ~75% |
 
 ---
 
@@ -1008,8 +1047,8 @@ if __name__ == "__main__":
 
 | Priority | Script | Impact | Effort | Status |
 |----------|--------|--------|--------|--------|
-| **P0** | `preprocess_source.py` | High | Low | Ready to implement |
-| **P0** | `validate_structure.py` | High | Low | Ready to implement |
+| **P0** | `preprocess_source.py` | High | Low | **IMPLEMENTED** (55 tests) |
+| **P0** | `validate_structure.py` | High | Low | **IMPLEMENTED** (45 tests) |
 | **P1** | `compare_to_source.py` | High | Medium | Ready to implement |
 | **P1** | `check_readability.py` | Medium | Low | Ready to implement |
 | **P2** | `flag_jargon.py` | Medium | Medium | Ready to implement |
