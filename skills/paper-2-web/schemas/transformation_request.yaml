@@ -1,0 +1,240 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "paper-2-web/transformation_request"
+title: "Paper Transformation Request Schema"
+description: "Schema for validating paper-to-web transformation requests"
+
+type: object
+required:
+  - paper_source
+  - outputs
+
+properties:
+  paper_source:
+    type: object
+    description: "Source paper specification"
+    required:
+      - type
+      - path
+    properties:
+      type:
+        type: string
+        enum:
+          - latex_dir
+          - pdf_file
+        description: "Type of paper source"
+      path:
+        type: string
+        description: "Path to the paper source"
+    additionalProperties: false
+
+  outputs:
+    type: array
+    description: "List of desired output formats"
+    minItems: 1
+    items:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum:
+            - website
+            - poster
+            - video
+          description: "Output format type"
+        priority:
+          type: integer
+          minimum: 1
+          maximum: 3
+          default: 2
+          description: "Priority level (1=highest, 3=lowest)"
+      additionalProperties: false
+
+  poster_config:
+    type: object
+    description: "Poster-specific configuration"
+    properties:
+      venue:
+        type: string
+        description: "Conference venue name for standard poster dimensions"
+      custom_dimensions:
+        type: object
+        properties:
+          width_inches:
+            type: number
+            minimum: 10
+            maximum: 100
+            description: "Poster width in inches"
+          height_inches:
+            type: number
+            minimum: 10
+            maximum: 100
+            description: "Poster height in inches"
+          orientation:
+            type: string
+            enum:
+              - portrait
+              - landscape
+              - square
+            description: "Poster orientation"
+        required:
+          - width_inches
+          - height_inches
+        additionalProperties: false
+    additionalProperties: false
+
+  video_config:
+    type: object
+    description: "Video-specific configuration"
+    properties:
+      target_duration:
+        type: string
+        enum:
+          - short_2min
+          - abstract_5min
+          - talk_15min
+          - extended_30min
+        default: abstract_5min
+        description: "Target video duration"
+      style:
+        type: string
+        enum:
+          - academic
+          - conference
+          - public
+          - tutorial
+        default: academic
+        description: "Video presentation style"
+      talking_head:
+        type: boolean
+        default: false
+        description: "Include AI-generated presenter"
+      resolution:
+        type: string
+        enum:
+          - 720p
+          - 1080p
+          - 4k
+        default: 1080p
+        description: "Video resolution"
+    additionalProperties: false
+
+  website_config:
+    type: object
+    description: "Website-specific configuration"
+    properties:
+      style:
+        type: string
+        enum:
+          - minimal
+          - academic
+          - modern
+          - interactive
+        default: academic
+        description: "Website design style"
+      include_bibtex:
+        type: boolean
+        default: true
+        description: "Include BibTeX citation block"
+      include_code_link:
+        type: boolean
+        default: false
+        description: "Include link to code repository"
+      code_url:
+        type: string
+        format: uri
+        description: "URL to code repository"
+    additionalProperties: false
+
+  model_tier:
+    type: string
+    enum:
+      - draft
+      - production
+      - premium
+    default: production
+    description: "LLM model tier for generation quality"
+
+  branding:
+    type: object
+    description: "Branding and styling options"
+    properties:
+      institution:
+        type: string
+        description: "Institution name for branding"
+      color_scheme:
+        type: string
+        enum:
+          - institutional
+          - professional
+          - vibrant
+          - nature
+          - tech
+          - custom
+        default: professional
+        description: "Color scheme preset"
+      custom_colors:
+        type: object
+        description: "Custom color definitions (required if color_scheme is 'custom')"
+        properties:
+          primary:
+            type: string
+            pattern: "^#[0-9a-fA-F]{6}$"
+          secondary:
+            type: string
+            pattern: "^#[0-9a-fA-F]{6}$"
+          accent:
+            type: string
+            pattern: "^#[0-9a-fA-F]{6}$"
+        additionalProperties: false
+      logo_path:
+        type: string
+        description: "Path to institution/lab logo"
+    additionalProperties: false
+
+  budget_limit_usd:
+    type: number
+    minimum: 0
+    description: "Maximum budget in USD for API calls"
+
+  use_case:
+    type: string
+    enum:
+      - conference_oral
+      - conference_poster
+      - journal_publication
+      - preprint_promotion
+      - lab_website
+      - social_media
+      - video_abstract
+    description: "Use case for automatic component recommendations"
+
+additionalProperties: false
+
+# Conditional requirements
+allOf:
+  - if:
+      properties:
+        outputs:
+          contains:
+            properties:
+              type:
+                const: poster
+    then:
+      anyOf:
+        - required: [poster_config]
+        - properties:
+            poster_config:
+              required: [venue]
+
+  - if:
+      properties:
+        branding:
+          properties:
+            color_scheme:
+              const: custom
+    then:
+      properties:
+        branding:
+          required: [custom_colors]

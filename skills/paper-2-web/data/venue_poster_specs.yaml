@@ -1,0 +1,160 @@
+# Venue Poster Specifications Database
+# This file provides a reference for all supported conference poster dimensions.
+# For programmatic access, use lib/venue_database.py
+
+version: "1.0"
+last_updated: "2025-01-09"
+
+# Machine Learning / AI Conferences
+ml_ai:
+  neurips:
+    width_inches: 48
+    height_inches: 36
+    orientation: landscape
+    dpi: 300
+    url: https://neurips.cc
+    notes: "NeurIPS standard poster format"
+
+  icml:
+    width_inches: 48
+    height_inches: 36
+    orientation: landscape
+    dpi: 300
+    url: https://icml.cc
+    notes: "ICML standard poster format"
+
+  iclr:
+    width_inches: 48
+    height_inches: 36
+    orientation: landscape
+    dpi: 300
+    url: https://iclr.cc
+    notes: "ICLR standard poster format"
+
+  aaai:
+    width_inches: 48
+    height_inches: 36
+    orientation: landscape
+    dpi: 300
+    url: https://aaai.org
+    notes: "AAAI standard poster format"
+
+# Computer Vision Conferences
+computer_vision:
+  cvpr:
+    width_inches: 60
+    height_inches: 40
+    orientation: landscape
+    dpi: 300
+    url: https://cvpr.thecvf.com
+    notes: "CVPR larger format poster"
+
+  iccv:
+    width_inches: 60
+    height_inches: 40
+    orientation: landscape
+    dpi: 300
+    url: https://iccv.thecvf.com
+    notes: "ICCV larger format poster"
+
+  eccv:
+    width_inches: 48
+    height_inches: 36
+    orientation: landscape
+    dpi: 300
+    url: https://eccv.ecva.net
+    notes: "ECCV standard poster format"
+
+# NLP Conferences
+nlp:
+  acl:
+    width_inches: 48
+    height_inches: 36
+    orientation: landscape
+    dpi: 300
+    url: https://aclweb.org
+    notes: "ACL standard poster format"
+
+  emnlp:
+    width_inches: 48
+    height_inches: 36
+    orientation: landscape
+    dpi: 300
+    url: https://aclweb.org/emnlp
+    notes: "EMNLP standard poster format"
+
+# Biology / Bioinformatics
+biology:
+  ismb:
+    width_inches: 48
+    height_inches: 36
+    orientation: landscape
+    dpi: 300
+    url: https://www.iscb.org/ismb
+    notes: "ISMB standard poster format"
+
+  recomb:
+    width_inches: 36
+    height_inches: 48
+    orientation: portrait
+    dpi: 300
+    url: https://recomb.org
+    notes: "RECOMB prefers portrait orientation"
+
+  ashg:
+    width_inches: 48
+    height_inches: 36
+    orientation: landscape
+    dpi: 300
+    url: https://www.ashg.org
+    notes: "ASHG standard poster format"
+
+# Neuroscience
+neuroscience:
+  sfn:
+    width_inches: 45
+    height_inches: 45
+    orientation: square
+    dpi: 300
+    url: https://www.sfn.org
+    notes: "SfN unique square format - verify each year"
+
+  cosyne:
+    width_inches: 36
+    height_inches: 48
+    orientation: portrait
+    dpi: 300
+    url: https://www.cosyne.org
+    notes: "COSYNE portrait format"
+
+# ISO Paper Standards (A-series)
+paper_standards:
+  a0_portrait:
+    width_inches: 33.1
+    height_inches: 46.8
+    orientation: portrait
+    dpi: 300
+    notes: "ISO A0 841mm x 1189mm"
+
+  a0_landscape:
+    width_inches: 46.8
+    height_inches: 33.1
+    orientation: landscape
+    dpi: 300
+    notes: "ISO A0 1189mm x 841mm"
+
+  a1_portrait:
+    width_inches: 23.4
+    height_inches: 33.1
+    orientation: portrait
+    dpi: 300
+    notes: "ISO A1 594mm x 841mm"
+
+# Default specifications
+defaults:
+  standard:
+    width_inches: 48
+    height_inches: 36
+    orientation: landscape
+    dpi: 300
+    notes: "Default when venue not specified"
