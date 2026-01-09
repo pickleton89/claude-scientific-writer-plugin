@@ -1,0 +1,169 @@
+# summary_output.yaml
+# JSON Schema for validating YAML summary output before PDF generation
+#
+# Usage:
+#   python validate_yaml.py summary.yaml --schema ../schemas/summary_output.yaml
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: "Research Paper Summary"
+description: "Schema for research paper summary YAML files"
+type: object
+
+required:
+  - metadata
+  - overview
+  - key_findings
+  - methods
+  - limitations
+
+properties:
+  metadata:
+    type: object
+    description: "Paper metadata and citation information"
+    required:
+      - title
+      - authors
+      - year
+    properties:
+      title:
+        type: string
+        minLength: 10
+        description: "Full paper title"
+      authors:
+        type: string
+        minLength: 3
+        description: "Author list (e.g., 'Smith J, Jones A, et al.')"
+      journal:
+        type: string
+        description: "Journal name"
+      year:
+        type: [integer, string]
+        description: "Publication year"
+      doi:
+        type: string
+        pattern: "^10\\."
+        description: "Digital Object Identifier"
+      pmid:
+        type: string
+        pattern: "^\\d+$"
+        description: "PubMed ID"
+      article_type:
+        type: string
+        enum: ["Primary Research", "Review", "Computational", "Cell & Molecular"]
+        description: "Article classification type"
+
+  overview:
+    type: string
+    minLength: 100
+    maxLength: 1000
+    description: "Executive summary of the paper (100-1000 chars)"
+
+  key_findings:
+    type: array
+    minItems: 3
+    maxItems: 10
+    description: "List of key findings with supporting statistics"
+    items:
+      type: object
+      required:
+        - finding
+      properties:
+        finding:
+          type: string
+          minLength: 20
+          description: "The key finding statement"
+        statistics:
+          type: string
+          description: "Supporting statistical values"
+        figure_ref:
+          type: string
+          pattern: "^(Figure|Fig|Table)\\s*\\d+"
+          description: "Reference to supporting figure/table"
+        context:
+          type: string
+          description: "Additional context for the finding"
+
+  key_figures:
+    type: array
+    description: "Important figures and tables from the paper"
+    items:
+      type: object
+      required:
+        - number
+      properties:
+        number:
+          type: string
+          pattern: "^(Figure|Table)\\s*\\d+"
+          description: "Figure or table number"
+        title:
+          type: string
+          description: "Figure/table title or caption"
+        importance:
+          type: string
+          description: "Why this figure is important"
+        key_findings:
+          type: string
+          description: "Key takeaways from this figure"
+
+  methods:
+    type: object
+    description: "Methodology summary"
+    required:
+      - study_design
+      - sample_size
+    properties:
+      study_design:
+        type: string
+        description: "Type of study (e.g., RCT, cohort, case-control)"
+      model_system:
+        type: string
+        description: "Model organism or system used"
+      sample_size:
+        type: string
+        description: "Sample size and grouping"
+      key_techniques:
+        type: string
+        description: "Main experimental techniques"
+      statistical_analysis:
+        type: string
+        description: "Statistical methods used"
+      key_parameters:
+        type: string
+        description: "Important experimental parameters"
+      controls:
+        type: string
+        description: "Control conditions"
+
+  limitations:
+    type: object
+    description: "Study limitations"
+    properties:
+      author_stated:
+        type: array
+        description: "Limitations acknowledged by authors"
+        items:
+          type: string
+      additional:
+        type: array
+        description: "Additional limitations identified by reviewer"
+        items:
+          type: string
+
+  implications:
+    type: string
+    description: "Clinical or research implications"
+
+  relevance_notes:
+    type: string
+    description: "Notes on relevance to current research"
+
+  future_directions:
+    type: array
+    description: "Suggested future research directions"
+    items:
+      type: string
+
+  synthesis:
+    type: string
+    minLength: 100
+    description: "One-paragraph synthesis of the paper"

@@ -7,6 +7,62 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/research-paper-summarizer/**: Deterministic validation utilities implementation with 53 test cases (100% pass rate)
+  - **scripts/utils/schemas.py**: Data schemas for validation I/O
+    - `ValidationResult`, `SectionMarker`, `StatisticResult` dataclasses
+    - `SummaryValidationReport` aggregating all validation results with serialization
+    - `ArticleTypeResult` with confidence scoring and keyword matching
+    - `YAMLValidationResult` for structured YAML validation output
+    - Full round-trip serialization with `to_dict()` and `from_dict()`
+  - **scripts/utils/statistics.py**: Regex-based statistics extraction
+    - 10 statistic types: p-values, CIs, sample sizes, fold changes, hazard/odds ratios, effect sizes, correlations, mean±SD
+    - `extract_statistics(text)` with context extraction and deduplication
+    - `summarize_statistics(stats)` for type-grouped summaries
+    - `has_sufficient_statistics(text, min_count)` for quality gating
+  - **scripts/validate_summary.py**: Summary markdown validation CLI
+    - 11 quality checks: pending sections, executive summary, statistics, figure refs, limitations, sample sizes, quotes, synthesis, placeholders, word count, methods
+    - JSON output mode for automation
+    - Strict mode treating warnings as errors
+  - **scripts/validate_yaml.py**: YAML schema validation CLI
+    - Validates metadata, overview, key_findings, methods, limitations, key_figures
+    - Optional JSON Schema validation with jsonschema library
+    - Structured error/warning reporting
+  - **schemas/summary_output.yaml**: JSON Schema for YAML summaries
+    - Complete schema for PDF generation input validation
+    - Required fields: metadata, overview, key_findings, methods, limitations
+    - Pattern validation for DOIs and figure references
+  - **scripts/extract_statistics.py**: Statistics extraction CLI
+    - Detailed and summary output modes
+    - Type filtering with `--type` option
+    - JSON output for downstream processing
+  - **scripts/detect_article_type.py**: Article type detection CLI
+    - Keyword-based classification (review, compbio, cellmolbio, general)
+    - Confidence scoring with matched keyword tracking
+    - Verbose mode showing score breakdown
+  - **scripts/update_markers.py**: Section marker management CLI
+    - Status display, complete/skip/pending updates
+    - Reset-all functionality for workflow resets
+    - Dry-run mode for safe preview
+  - **tests/**: Comprehensive test suite (53 tests)
+    - Statistics extraction tests for all 10 statistic types
+    - Article type detection tests for all 4 categories
+    - Section marker management tests
+    - Summary and YAML validation tests
+    - Schema serialization round-trip tests
+    - Edge case tests (unicode, newlines, large numbers)
+  - Determinism improvement: ~55% → ~80% through code-based validation and regex extraction
+
+### Fixed
+- **skills/research-paper-summarizer/**: Fresh eyes review fixes
+  - `validate_summary.py`: SUBSECTION markers now detected in pending section check (was only detecting SECTION)
+  - `extract_statistics.py`: Removed unused `format_statistics_table()` function
+  - `statistics.py`: Removed unused `stat_type` parameter from `normalize_statistic()`
+  - `statistics.py`: Added `DEDUP_POSITION_WINDOW` constant for deduplication logic
+  - `detect_article_type.py`: Added `CONFIDENCE_SCORE_THRESHOLD` and `MIN_CLASSIFICATION_SCORE` constants
+  - `validate_yaml.py`: Changed `methods.study_design` and `methods.sample_size` from warnings to errors (matching schema)
+  - `test_validation.py`: Added proper temp file cleanup with `try/finally` blocks
+  - `conftest.py`: Removed 4 unused test fixtures
+
 - **skills/research-posters/**: Deterministic validation utilities implementation with 61 test cases (100% pass rate)
   - **scripts/utils/brand_colors.py**: Color accessibility utilities
     - Oligon brand color palette definitions

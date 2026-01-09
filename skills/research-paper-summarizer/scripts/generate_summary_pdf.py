@@ -22,26 +22,22 @@ import argparse
 import yaml
 import os
 import re
-import io
 from pathlib import Path
 from datetime import datetime
-from typing import Optional, Dict, List, Tuple
+from typing import Optional, Dict
 
 # PDF libraries
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.colors import HexColor, Color
-from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_JUSTIFY
+from reportlab.lib.colors import HexColor
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
 from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
-    Image, PageBreak, KeepTogether, HRFlowable
+    Image, HRFlowable
 )
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
 
 # Image handling
-from PIL import Image as PILImage
 
 # PDF reading for figure extraction
 try:
@@ -514,7 +510,7 @@ def add_figure(story: list, figure_path: str, caption: str, styles,
             
             story.append(Paragraph(caption, styles['Caption']))
             
-        except Exception as e:
+        except Exception:
             story.append(Paragraph(
                 f"<i>[Figure could not be loaded: {os.path.basename(figure_path)}]</i>",
                 styles['Caption']
