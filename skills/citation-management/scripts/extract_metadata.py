@@ -148,7 +148,7 @@ class MetadataExtractor:
         Returns:
             Metadata dictionary or None
         """
-        url = f'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi'
+        url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi'
         params = {
             'db': 'pubmed',
             'id': pmid,
@@ -311,7 +311,7 @@ class MetadataExtractor:
         if entry_type == 'article' and metadata.get('journal'):
             lines.append(f'  journal = {{{metadata["journal"]}}},')
         elif entry_type == 'misc' and metadata.get('type') == 'arxiv':
-            lines.append(f'  howpublished = {{arXiv}},')
+            lines.append('  howpublished = {arXiv},')
         
         if metadata.get('year'):
             lines.append(f'  year    = {{{metadata["year"]}}},')
@@ -335,7 +335,7 @@ class MetadataExtractor:
             lines.append(f'  note    = {{PMID: {metadata["pmid"]}}},')
         
         if metadata.get('type') == 'arxiv' and not metadata.get('doi'):
-            lines.append(f'  note    = {{Preprint}},')
+            lines.append('  note    = {Preprint},')
         
         # Remove trailing comma from last field
         if lines[-1].endswith(','):
@@ -411,10 +411,21 @@ class MetadataExtractor:
                     year = year_match.group()
         return year
     
-    def _generate_citation_key(self, metadata: Dict) -> str:
-        """Generate a citation key from metadata."""
+    def _generate_citation_key(
+        self, metadata: Dict, existing_keys: Optional[set] = None
+    ) -> str:
+        """
+        Generate a unique citation key from metadata.
+
+        Args:
+            metadata: Metadata dictionary with authors, year, title
+            existing_keys: Optional set of already-used keys for collision detection
+
+        Returns:
+            Unique citation key in format AuthorYearkeyword (with suffix if needed)
+        """
         # Get first author last name
-        authors = metadata.get('authors', '')
+        authors = metadata.get('authors') or ''
         if authors:
             first_author = authors.split(' and ')[0]
             if ',' in first_author:
@@ -423,21 +434,71 @@ class MetadataExtractor:
                 last_name = first_author.split()[-1] if first_author else 'Unknown'
         else:
             last_name = 'Unknown'
-        
+
         # Get year
-        year = metadata.get('year', '').strip()
+        year = metadata.get('year') or ''
+        year = year.strip() if isinstance(year, str) else ''
         if not year:
             year = 'XXXX'
-        
+
         # Clean last name (remove special characters)
         last_name = re.sub(r'[^a-zA-Z]', '', last_name)
-        
+
         # Get keyword from title
-        title = metadata.get('title', '')
+        title = metadata.get('title') or ''
         words = re.findall(r'\b[a-zA-Z]{4,}\b', title)
         keyword = words[0].lower() if words else 'paper'
-        
-        return f'{last_name}{year}{keyword}'
+
+        base_key = f'{last_name}{year}{keyword}'
+
+        # Collision detection
+        if existing_keys is None:
+            return base_key
+
+        key = base_key
+        suffix_idx = 0
+        while key in existing_keys:
+            # Generate suffix: a, b, ..., z, aa, ab, ...
+            suffix = self._generate_suffix(suffix_idx)
+            key = f'{base_key}{suffix}'
+            suffix_idx += 1
+            # Safety limit to prevent infinite loop (supports 18,278 unique suffixes)
+            if suffix_idx > 18277:
+                break
+
+        return key
+
+    def _generate_suffix(self, index: int) -> str:
+        """
+        Generate alphabetic suffix for citation key collision resolution.
+
+        Supports up to 18,278 unique suffixes:
+        - 0-25: single letters (a-z) = 26
+        - 26-701: two letters (aa-zz) = 676
+        - 702-18277: three letters (aaa-zzz) = 17,576
+
+        Args:
+            index: Zero-based index (0='a', 25='z', 26='aa', 702='aaa', etc.)
+
+        Returns:
+            Alphabetic suffix string
+        """
+        if index < 26:
+            # Single letter: a-z
+            return chr(ord('a') + index)
+        elif index < 702:
+            # Two letters: aa-zz (26 + 676 = 702)
+            idx = index - 26
+            first = idx // 26
+            second = idx % 26
+            return chr(ord('a') + first) + chr(ord('a') + second)
+        else:
+            # Three letters: aaa-zzz (702 + 17576 = 18278)
+            idx = index - 702
+            first = idx // (26 * 26)
+            second = (idx // 26) % 26
+            third = idx % 26
+            return chr(ord('a') + first) + chr(ord('a') + second) + chr(ord('a') + third)
     
     def _protect_title(self, title: str) -> str:
         """Protect capitalization in title for BibTeX."""
