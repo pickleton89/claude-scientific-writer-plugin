@@ -5,6 +5,7 @@ This script provides deterministic validation of:
 - Python docstrings (NumPy or Google style via pydocstyle)
 - Docstring examples (via doctest)
 - README section completeness (by project type)
+- Docstring style inference based on project characteristics
 
 Usage:
     # Validate Python docstrings
@@ -15,6 +16,9 @@ Usage:
 
     # Validate entire project
     python validate_documentation.py /path/to/project --all
+
+    # Infer recommended docstring style
+    python validate_documentation.py /path/to/project --infer-style
 """
 
 from __future__ import annotations
@@ -35,6 +39,10 @@ from utils.readme_checker import (
     ReadmeValidation,
     format_validation_report as format_readme_report,
     validate_readme_sections,
+)
+from utils.infer_style import (
+    analyze_project,
+    format_analysis_report,
 )
 
 
@@ -231,6 +239,9 @@ Examples:
     # Validate entire project
     %(prog)s /path/to/project --all
 
+    # Infer recommended docstring style
+    %(prog)s /path/to/project --infer-style
+
     # Quick validation (skip doctests)
     %(prog)s module.py --style google --no-tests
         """,
@@ -263,6 +274,11 @@ Examples:
         help="Validate entire project (README + Python files)",
     )
     parser.add_argument(
+        "--infer-style",
+        action="store_true",
+        help="Analyze project and recommend docstring style",
+    )
+    parser.add_argument(
         "--no-tests",
         action="store_true",
         help="Skip doctest execution",
@@ -276,10 +292,29 @@ Examples:
     args = parser.parse_args()
 
     # Validate arguments
-    if not args.path and not args.readme:
-        parser.error("Either path or --readme is required")
+    if not args.path and not args.readme and not args.infer_style:
+        parser.error("Either path, --readme, or --infer-style is required")
 
     exit_code = 0
+
+    # Style inference mode
+    if args.infer_style:
+        if not args.path:
+            parser.error("--infer-style requires a project path")
+        path = Path(args.path)
+        if not path.is_dir():
+            parser.error("--infer-style requires a directory path")
+
+        try:
+            analysis = analyze_project(path)
+            if not args.quiet:
+                print(format_analysis_report(analysis))
+            else:
+                print(f"Recommended: {analysis.recommended_style.value} ({analysis.decision_reason})")
+            return 0
+        except (FileNotFoundError, NotADirectoryError) as e:
+            print(f"Error: {e}")
+            return 1
 
     # README-only validation
     if args.readme and not args.path:
