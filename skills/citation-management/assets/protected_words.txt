@@ -1,0 +1,121 @@
+# Protected words for BibTeX title capitalization
+# Lines starting with # are comments
+# Add domain-specific terms as needed
+
+# Acronyms - General
+DNA
+RNA
+mRNA
+siRNA
+tRNA
+rRNA
+PCR
+ELISA
+CRISPR
+Cas9
+COVID
+HIV
+AIDS
+AI
+ML
+DL
+GPU
+CPU
+TPU
+API
+URL
+PDF
+HTML
+CSS
+
+# Acronyms - Methods
+HPLC
+NMR
+MRI
+fMRI
+PET
+CT
+MS
+LC-MS
+GC-MS
+FACS
+qPCR
+RT-PCR
+ChIP
+ATAC
+scRNA
+
+# Software/Tools
+AlphaFold
+PyTorch
+TensorFlow
+Python
+NumPy
+SciPy
+Pandas
+Matplotlib
+Seaborn
+Jupyter
+GitHub
+Docker
+Kubernetes
+AWS
+GCP
+Azure
+
+# Databases
+PubMed
+UniProt
+GenBank
+PDB
+NCBI
+Ensembl
+RefSeq
+dbSNP
+ClinVar
+COSMIC
+
+# Proper Nouns - Geographic
+USA
+UK
+EU
+NIH
+NSF
+FDA
+EMA
+WHO
+
+# Proper Nouns - Scientific
+Bayesian
+Gaussian
+Markov
+Boolean
+Turing
+Nobel
+
+# Chemical/Biological Terms
+ATP
+ADP
+GTP
+NAD
+NADH
+NADPH
+CoA
+UDP
+GFP
+mAb
+IgG
+IgM
+HLA
+MHC
+TCR
+BCR
+
+# Model Organisms
+Escherichia
+Saccharomyces
+Drosophila
+Caenorhabditis
+Arabidopsis
+Xenopus
+Danio

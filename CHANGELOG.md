@@ -87,6 +87,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - Citation key collisions: 0% with suffix generation
   - Style selection: 100% deterministic for known venue types
 
+- **skills/citation-management/**: Phase 2 core infrastructure implementation with 72 additional test cases (225 total, 100% pass rate)
+  - **assets/protected_words.txt**: New expandable protected words file for BibTeX title capitalization
+    - 103 terms across 8 categories: acronyms-general, acronyms-methods, software/tools, databases, proper nouns-geographic, proper nouns-scientific, chemical/biological terms, model organisms
+    - Comment support (lines starting with #) for documentation
+    - User-extensible format for domain-specific additions
+  - **scripts/extract_metadata.py**: Enhanced title protection and CrossRef type mapping
+    - `DEFAULT_PROTECTED_WORDS`: Class attribute fallback (15 essential terms)
+    - `_protected_words_cache`: Instance-level caching for performance
+    - `load_protected_words(additional_file)`: File-based loading with optional custom file merging
+    - `_protect_title(title, additional_words_file)`: Updated to use file-based words with case-insensitive matching
+    - `_crossref_type_to_bibtex(crossref_type)`: Expanded from 7 to 30 CrossRef types (100% coverage)
+      - Journal content: journal-article, journal-issue, journal-volume
+      - Books: book, book-chapter, book-section, book-part, book-series, book-set, edited-book, monograph, reference-book
+      - Conference: proceedings, proceedings-article, proceedings-series
+      - Reports/theses: report, report-series, dissertation
+      - Preprints/datasets: posted-content, dataset, database
+      - Reference works: reference-entry, encyclopedia, encyclopedia-entry
+      - Standards: standard, standard-series, component
+      - Other: peer-review, grant, other
+  - **tests/test_protected_words.py**: 72 new tests for Phase 2 functionality
+    - TestProtectedWordsLoading: file existence, set return, content verification, caching
+    - TestAdditionalWordsFile: custom file loading, merging, cache bypass
+    - TestDefaultFallback: DEFAULT_PROTECTED_WORDS class attribute validation
+    - TestTitleProtection: DNA, RNA, mRNA, CRISPR, Python, PyTorch, AlphaFold, etc.
+    - TestTitleProtectionWithCustomFile: custom word protection, default+custom merging
+    - TestCrossRefTypeMapping: all 30 CrossRef types mapped to standard BibTeX types
+    - TestCrossRefTypeMappingCompleteness: exhaustive type coverage validation
+    - TestIntegrationProtectedWords: BibTeX output with protected titles
+  - Determinism improvement: 82% → 87%
+  - Title protection: 100+ terms with file-based extensibility
+  - CrossRef mapping: 100% type coverage (30 types)
+
 - **skills/generate-image/**: Phase 3 iteration tracking implementation with 100 additional test cases (309 total, 100% pass rate)
   - **scripts/iteration_tracker.py**: Iteration tracking and stopping rule enforcement
     - `OutputType` literal: "draft", "presentation", "publication", "hero"

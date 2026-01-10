@@ -17,11 +17,17 @@ from urllib.parse import urlparse
 
 class MetadataExtractor:
     """Extract metadata from various sources and generate BibTeX."""
-    
+
+    # Default protected words (fallback if file not found)
+    DEFAULT_PROTECTED_WORDS = {
+        'DNA', 'RNA', 'CRISPR', 'COVID', 'HIV', 'AIDS', 'AlphaFold',
+        'Python', 'AI', 'ML', 'GPU', 'CPU', 'USA', 'UK', 'EU'
+    }
+
     def __init__(self, email: Optional[str] = None):
         """
         Initialize extractor.
-        
+
         Args:
             email: Email for Entrez API (recommended for PubMed)
         """
@@ -30,6 +36,7 @@ class MetadataExtractor:
             'User-Agent': 'MetadataExtractor/1.0 (Citation Management Tool)'
         })
         self.email = email or os.getenv('NCBI_EMAIL', '')
+        self._protected_words_cache: Optional[set] = None
     
     def identify_type(self, identifier: str) -> Tuple[str, str]:
         """
@@ -346,16 +353,66 @@ class MetadataExtractor:
         return '\n'.join(lines)
     
     def _crossref_type_to_bibtex(self, crossref_type: str) -> str:
-        """Map CrossRef type to BibTeX entry type."""
+        """
+        Map CrossRef content type to BibTeX entry type.
+
+        Complete mapping covering all CrossRef types.
+        Reference: https://api.crossref.org/types
+
+        Args:
+            crossref_type: CrossRef type string
+
+        Returns:
+            BibTeX entry type string
+        """
         type_map = {
+            # Journal content
             'journal-article': 'article',
+            'journal-issue': 'misc',
+            'journal-volume': 'misc',
+
+            # Books
             'book': 'book',
             'book-chapter': 'incollection',
+            'book-section': 'incollection',
+            'book-part': 'incollection',
+            'book-series': 'misc',
+            'book-set': 'misc',
+            'edited-book': 'book',
+            'monograph': 'book',
+            'reference-book': 'book',
+
+            # Conference
+            'proceedings': 'proceedings',
             'proceedings-article': 'inproceedings',
-            'posted-content': 'misc',
+            'proceedings-series': 'misc',
+
+            # Reports and theses
+            'report': 'techreport',
+            'report-series': 'techreport',
+            'dissertation': 'phdthesis',
+
+            # Preprints and datasets
+            'posted-content': 'misc',  # Preprints
             'dataset': 'misc',
-            'report': 'techreport'
+            'database': 'misc',
+
+            # Reference works
+            'reference-entry': 'misc',
+            'encyclopedia': 'misc',
+            'encyclopedia-entry': 'misc',
+
+            # Standards and components
+            'standard': 'misc',
+            'standard-series': 'misc',
+            'component': 'misc',
+
+            # Other
+            'peer-review': 'misc',
+            'grant': 'misc',
+            'other': 'misc',
         }
+
         return type_map.get(crossref_type, 'misc')
     
     def _format_authors_crossref(self, authors: List[Dict]) -> str:
@@ -500,17 +557,74 @@ class MetadataExtractor:
             third = idx % 26
             return chr(ord('a') + first) + chr(ord('a') + second) + chr(ord('a') + third)
     
-    def _protect_title(self, title: str) -> str:
-        """Protect capitalization in title for BibTeX."""
-        # Protect common acronyms and proper nouns
-        protected_words = [
-            'DNA', 'RNA', 'CRISPR', 'COVID', 'HIV', 'AIDS', 'AlphaFold',
-            'Python', 'AI', 'ML', 'GPU', 'CPU', 'USA', 'UK', 'EU'
-        ]
-        
+    def load_protected_words(self, additional_file: Optional[str] = None) -> set:
+        """
+        Load protected words for title capitalization.
+
+        Words are loaded from the default assets/protected_words.txt file
+        and optionally merged with an additional user-provided file.
+        Results are cached for efficiency.
+
+        Args:
+            additional_file: Optional path to additional protected words file
+
+        Returns:
+            Set of words to protect in titles
+        """
+        # Return cached version if available and no additional file requested
+        if self._protected_words_cache is not None and additional_file is None:
+            return self._protected_words_cache
+
+        # Load from assets file
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        default_file = os.path.join(base_dir, 'assets', 'protected_words.txt')
+
+        words = set()
+
+        for filepath in [default_file, additional_file]:
+            if filepath and os.path.exists(filepath):
+                try:
+                    with open(filepath, 'r', encoding='utf-8') as f:
+                        for line in f:
+                            line = line.strip()
+                            if line and not line.startswith('#'):
+                                words.add(line)
+                except Exception as e:
+                    print(f'Warning: Could not load {filepath}: {e}', file=sys.stderr)
+
+        # Use defaults if no words loaded
+        if not words:
+            words = self.DEFAULT_PROTECTED_WORDS.copy()
+
+        # Cache if no additional file (standard case)
+        if additional_file is None:
+            self._protected_words_cache = words
+
+        return words
+
+    def _protect_title(
+        self, title: str, additional_words_file: Optional[str] = None
+    ) -> str:
+        """
+        Protect capitalization in title for BibTeX.
+
+        Wraps protected words (acronyms, proper nouns, etc.) in braces
+        to preserve their capitalization when processed by BibTeX.
+
+        Args:
+            title: Original title string
+            additional_words_file: Optional path to additional protected words file
+
+        Returns:
+            Title with protected words wrapped in braces
+        """
+        protected_words = self.load_protected_words(additional_words_file)
+
         for word in protected_words:
-            title = re.sub(rf'\b{word}\b', f'{{{word}}}', title, flags=re.IGNORECASE)
-        
+            # Case-insensitive matching, replacing with canonical form from file
+            pattern = rf'\b{re.escape(word)}\b'
+            title = re.sub(pattern, f'{{{word}}}', title, flags=re.IGNORECASE)
+
         return title
     
     def extract(self, identifier: str) -> Optional[str]:
