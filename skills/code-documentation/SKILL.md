@@ -339,7 +339,38 @@ def make_plot(data, x, y):
 <validation>
 ## Verification Steps
 
-### After Generating Docstrings
+### Automated Validation (Recommended)
+
+Use the built-in validation scripts for consistent, deterministic checks:
+
+```bash
+# Validate Python docstrings (auto-detects or specify style)
+uv run python skills/code-documentation/scripts/validate_documentation.py module.py
+uv run python skills/code-documentation/scripts/validate_documentation.py module.py --style numpy
+
+# Validate README completeness (auto-detects or specify project type)
+uv run python skills/code-documentation/scripts/validate_documentation.py --readme README.md
+uv run python skills/code-documentation/scripts/validate_documentation.py --readme README.md --project-type analysis
+
+# Validate entire project (docstrings + README)
+uv run python skills/code-documentation/scripts/validate_documentation.py /path/to/project --all
+
+# Infer recommended docstring style for a project
+uv run python skills/code-documentation/scripts/validate_documentation.py /path/to/project --infer-style
+
+# Skip doctests for faster validation
+uv run python skills/code-documentation/scripts/validate_documentation.py module.py --no-tests
+```
+
+**Validation outputs:**
+- **Docstring coverage**: Percentage of public functions/classes documented
+- **pydocstyle compliance**: Format errors by convention (NumPy/Google)
+- **Doctest results**: Pass/fail for executable examples
+- **README score**: 0-100 based on required (80%) and optional (20%) sections
+
+### Manual Verification (Alternative)
+
+If automated tools are unavailable:
 
 1. **Validate examples execute:**
    ```bash
@@ -388,6 +419,152 @@ devtools::document()
 devtools::check()  # Includes documentation checks
 ```
 </validation>
+
+<input_schema>
+## Structured Input Format
+
+For deterministic documentation generation, provide structured inputs:
+
+### Docstring Generation Request
+
+```yaml
+task: generate_docstring
+target:
+  file: "path/to/module.py"
+  function: "function_name"  # or class: "ClassName"
+style: numpy | google | minimal  # Use --infer-style if unsure
+include:
+  - parameters      # Document all parameters
+  - returns         # Document return value
+  - raises          # Document exceptions (if any)
+  - examples        # Include runnable example
+  - see_also        # Cross-references (optional)
+  - notes           # Implementation notes (optional)
+```
+
+### README Generation Request
+
+```yaml
+task: generate_readme
+project_type: analysis | software | data_repo | compendium
+project_path: "/path/to/project"
+include:
+  title: true
+  description: true
+  installation: true      # Required for software
+  usage: true
+  data_requirements: true # Required for analysis/data_repo
+  output: true            # Required for analysis
+  citation: true
+  license: true
+```
+
+### Style Inference Request
+
+```yaml
+task: infer_style
+project_path: "/path/to/project"
+output: recommendation | detailed_report
+```
+
+### Batch Documentation Request
+
+```yaml
+task: document_project
+project_path: "/path/to/project"
+scope:
+  - docstrings    # All public functions/classes
+  - readme        # Project README
+  - inline        # Inline comments for complex logic
+style: auto       # Infer from project or specify
+validation: true  # Run validation after generation
+```
+</input_schema>
+
+<output_schema>
+## Output Format Specifications
+
+### Docstring Section Order
+
+Documentation must follow canonical section ordering by style:
+
+**NumPy Style:**
+1. Short summary (required)
+2. Extended summary (optional)
+3. Parameters (required if function has params)
+4. Returns (required if non-None return)
+5. Yields (required if generator)
+6. Raises (optional)
+7. See Also (optional)
+8. Notes (optional)
+9. References (optional)
+10. Examples (recommended)
+
+**Google Style:**
+1. Summary (required)
+2. Args (required if function has params)
+3. Returns (required if non-None return)
+4. Raises (optional)
+5. Example (recommended)
+
+### README Section Order
+
+**Analysis Projects:**
+1. Title & Description
+2. Data Requirements
+3. Environment Setup
+4. Usage
+5. Output
+6. Citation
+
+**Software Tools:**
+1. Title & Badges
+2. Description
+3. Installation
+4. Quick Start
+5. Documentation
+6. Contributing
+7. License & Citation
+
+**Data Repositories:**
+1. Title & DOI
+2. Description
+3. Data Dictionary
+4. Collection Methods
+5. Usage Terms
+6. Related Publications
+
+### Validation Report Format
+
+```json
+{
+  "file": "path/to/module.py",
+  "style": "numpy",
+  "coverage": {
+    "total_items": 10,
+    "documented": 8,
+    "percentage": 80.0
+  },
+  "pydocstyle": {
+    "errors": 2,
+    "warnings": 1,
+    "issues": [
+      {"code": "D100", "line": 1, "message": "Missing docstring in public module"}
+    ]
+  },
+  "doctests": {
+    "total": 5,
+    "passed": 4,
+    "failed": 1,
+    "failures": [
+      {"function": "calculate_mean", "error": "Expected 2.5, got 2.0"}
+    ]
+  },
+  "readme_score": 85,
+  "missing_sections": ["contributing"]
+}
+```
+</output_schema>
 
 <quality_standards>
 ## Documentation Quality Standards
