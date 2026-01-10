@@ -9,8 +9,45 @@ import re
 import requests
 import argparse
 import json
+from datetime import datetime, timezone
 from typing import Dict, List, Tuple, Optional
 from collections import defaultdict
+from pathlib import Path
+
+# Schema version for validation reports
+SCHEMA_VERSION = "1.0.0"
+
+
+def validate_report_schema(report: Dict) -> Tuple[bool, List[str]]:
+    """
+    Validate a report dictionary against the JSON schema.
+
+    Args:
+        report: Report dictionary to validate
+
+    Returns:
+        Tuple of (is_valid, list_of_errors)
+    """
+    try:
+        import jsonschema
+    except ImportError:
+        return True, ["jsonschema not installed, skipping schema validation"]
+
+    # Load schema from file
+    schema_path = Path(__file__).parent.parent / "schemas" / "validation_report.json"
+    if not schema_path.exists():
+        return True, [f"Schema file not found: {schema_path}"]
+
+    try:
+        with open(schema_path, 'r', encoding='utf-8') as f:
+            schema = json.load(f)
+
+        jsonschema.validate(report, schema)
+        return True, []
+    except jsonschema.ValidationError as e:
+        return False, [f"Schema validation error: {e.message}"]
+    except Exception as e:
+        return False, [f"Error loading schema: {e}"]
 
 class CitationValidator:
     """Validate BibTeX entries for errors and inconsistencies."""
@@ -303,47 +340,42 @@ class CitationValidator:
     def validate_file(self, filepath: str, check_dois: bool = False) -> Dict:
         """
         Validate entire BibTeX file.
-        
+
         Args:
             filepath: Path to BibTeX file
             check_dois: Whether to verify DOIs (slow)
-            
+
         Returns:
-            Validation report dictionary
+            Validation report dictionary (schema-compliant)
         """
         print(f'Parsing {filepath}...', file=sys.stderr)
         entries = self.parse_bibtex_file(filepath)
-        
+
         if not entries:
-            return {
-                'total_entries': 0,
-                'errors': [],
-                'warnings': [],
-                'duplicates': []
-            }
-        
+            return self._build_report(filepath, [], [], [], [])
+
         print(f'Found {len(entries)} entries', file=sys.stderr)
-        
+
         all_errors = []
         all_warnings = []
-        
+
         # Validate each entry
         for i, entry in enumerate(entries):
             print(f'Validating entry {i+1}/{len(entries)}: {entry["key"]}', file=sys.stderr)
             errors, warnings = self.validate_entry(entry)
-            
+
             for error in errors:
                 error['entry'] = entry['key']
                 all_errors.append(error)
-            
+
             for warning in warnings:
                 warning['entry'] = entry['key']
                 all_warnings.append(warning)
-        
+
         # Check for duplicates
         print('Checking for duplicates...', file=sys.stderr)
         duplicates = self.detect_duplicates(entries)
-        
+
         # Verify DOIs if requested
         doi_errors = []
         if check_dois:
@@ -353,25 +385,73 @@ class CitationValidator:
                 if doi:
                     print(f'Verifying DOI {i+1}: {doi}', file=sys.stderr)
                     is_valid, metadata = self.verify_doi(doi)
-                    
+
                     if not is_valid:
                         doi_errors.append({
-                            'type': 'invalid_doi',
+                            'type': 'unresolvable_doi',
                             'entry': entry['key'],
-                            'doi': doi,
+                            'field': 'doi',
+                            'value': doi,
                             'severity': 'high',
                             'message': f'Entry {entry["key"]}: DOI does not resolve: {doi}'
                         })
-        
+
         all_errors.extend(doi_errors)
-        
+
+        return self._build_report(filepath, entries, all_errors, all_warnings, duplicates)
+
+    def _build_report(self, filepath: str, entries: List[Dict],
+                      errors: List[Dict], warnings: List[Dict],
+                      duplicates: List[Dict]) -> Dict:
+        """
+        Build schema-compliant validation report.
+
+        Args:
+            filepath: Path to BibTeX file
+            entries: List of parsed entries
+            errors: List of errors
+            warnings: List of warnings
+            duplicates: List of duplicates
+
+        Returns:
+            Schema-compliant report dictionary
+        """
+        # Count entry types
+        entry_types = defaultdict(int)
+        for entry in entries:
+            entry_types[entry['type']] += 1
+
+        # Count errors/warnings by type
+        errors_by_type = defaultdict(int)
+        for error in errors:
+            errors_by_type[error['type']] += 1
+
+        warnings_by_type = defaultdict(int)
+        for warning in warnings:
+            warnings_by_type[warning['type']] += 1
+
+        # Calculate valid entries (no high-severity errors)
+        entries_with_errors = set(e['entry'] for e in errors if e.get('severity') == 'high')
+        valid_entries = len(entries) - len(entries_with_errors)
+
         return {
             'filepath': filepath,
+            'validation_date': datetime.now(timezone.utc).isoformat(),
+            'schema_version': SCHEMA_VERSION,
             'total_entries': len(entries),
-            'valid_entries': len(entries) - len([e for e in all_errors if e['severity'] == 'high']),
-            'errors': all_errors,
-            'warnings': all_warnings,
-            'duplicates': duplicates
+            'valid_entries': valid_entries,
+            'entry_types': dict(entry_types),
+            'errors': errors,
+            'warnings': warnings,
+            'duplicates': duplicates,
+            'summary': {
+                'error_count': len(errors),
+                'warning_count': len(warnings),
+                'duplicate_count': len(duplicates),
+                'validation_passed': len(errors) == 0,
+                'errors_by_type': dict(errors_by_type),
+                'warnings_by_type': dict(warnings_by_type)
+            }
         }
     
     def _extract_year_crossref(self, message: Dict) -> str:
@@ -436,24 +516,50 @@ def main():
         action='store_true',
         help='Show detailed output'
     )
-    
+
+    parser.add_argument(
+        '--validate-schema',
+        action='store_true',
+        help='Validate output report against JSON schema'
+    )
+
     args = parser.parse_args()
     
     # Validate file
     validator = CitationValidator()
     report = validator.validate_file(args.file, check_dois=args.check_dois)
     
+    # Validate schema if requested
+    if args.validate_schema:
+        is_valid, schema_errors = validate_report_schema(report)
+        if not is_valid:
+            print('Schema validation failed:', file=sys.stderr)
+            for err in schema_errors:
+                print(f'  {err}', file=sys.stderr)
+            sys.exit(2)
+
+    # Get summary
+    summary = report.get('summary', {})
+
     # Print summary
     print('\n' + '='*60)
     print('CITATION VALIDATION REPORT')
     print('='*60)
-    print(f'\nFile: {args.file}')
-    print(f'Total entries: {report["total_entries"]}')
+    print(f'\nFile: {report["filepath"]}')
+    print(f'Validated: {report.get("validation_date", "N/A")}')
+    print(f'Schema version: {report.get("schema_version", "N/A")}')
+    print(f'\nTotal entries: {report["total_entries"]}')
     print(f'Valid entries: {report["valid_entries"]}')
-    print(f'Errors: {len(report["errors"])}')
-    print(f'Warnings: {len(report["warnings"])}')
-    print(f'Duplicates: {len(report["duplicates"])}')
-    
+    print(f'Errors: {summary.get("error_count", len(report["errors"]))}')
+    print(f'Warnings: {summary.get("warning_count", len(report["warnings"]))}')
+    print(f'Duplicates: {summary.get("duplicate_count", len(report["duplicates"]))}')
+
+    # Print entry type breakdown if verbose
+    if args.verbose and report.get('entry_types'):
+        print('\nEntry types:')
+        for entry_type, count in sorted(report['entry_types'].items()):
+            print(f'  {entry_type}: {count}')
+
     # Print errors
     if report['errors']:
         print('\n' + '-'*60)
@@ -464,7 +570,7 @@ def main():
             if args.verbose:
                 print(f'  Type: {error["type"]}')
                 print(f'  Severity: {error["severity"]}')
-    
+
     # Print warnings
     if report['warnings'] and args.verbose:
         print('\n' + '-'*60)
@@ -472,7 +578,7 @@ def main():
         print('-'*60)
         for warning in report['warnings']:
             print(f'\n{warning["message"]}')
-    
+
     # Print duplicates
     if report['duplicates']:
         print('\n' + '-'*60)
@@ -480,13 +586,21 @@ def main():
         print('-'*60)
         for dup in report['duplicates']:
             print(f'\n{dup["message"]}')
-    
+
+    # Print validation result
+    print('\n' + '='*60)
+    if summary.get('validation_passed', len(report['errors']) == 0):
+        print('RESULT: PASSED')
+    else:
+        print('RESULT: FAILED')
+    print('='*60)
+
     # Save report
     if args.report:
         with open(args.report, 'w', encoding='utf-8') as f:
             json.dump(report, f, indent=2)
         print(f'\nDetailed report saved to: {args.report}')
-    
+
     # Exit with error code if there are errors
     if report['errors']:
         sys.exit(1)

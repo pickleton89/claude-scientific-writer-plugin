@@ -1,0 +1,284 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/claude-scientific-writer/citation-management/schemas/validation_report.json",
+  "title": "Citation Validation Report",
+  "description": "Schema for citation validation output from validate_citations.py",
+  "type": "object",
+  "required": ["filepath", "total_entries", "valid_entries", "errors", "warnings", "duplicates"],
+  "properties": {
+    "filepath": {
+      "type": "string",
+      "description": "Path to validated BibTeX file"
+    },
+    "validation_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of validation"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Schema version for compatibility tracking",
+      "default": "1.0.0"
+    },
+    "total_entries": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of BibTeX entries in the file"
+    },
+    "valid_entries": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of entries passing all high-severity checks"
+    },
+    "entry_types": {
+      "type": "object",
+      "description": "Count of entries by BibTeX type",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "errors": {
+      "type": "array",
+      "description": "High-severity issues that must be fixed",
+      "items": {
+        "$ref": "#/definitions/error"
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "description": "Medium/low-severity issues that should be fixed",
+      "items": {
+        "$ref": "#/definitions/warning"
+      }
+    },
+    "duplicates": {
+      "type": "array",
+      "description": "Detected duplicate entries",
+      "items": {
+        "$ref": "#/definitions/duplicate"
+      }
+    },
+    "summary": {
+      "type": "object",
+      "description": "Aggregated statistics for quick review",
+      "properties": {
+        "error_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warning_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "duplicate_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "validation_passed": {
+          "type": "boolean",
+          "description": "True if no high-severity errors"
+        },
+        "errors_by_type": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "warnings_by_type": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "error": {
+      "type": "object",
+      "required": ["type", "entry", "severity", "message"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "missing_required_field",
+            "invalid_year",
+            "invalid_doi",
+            "invalid_author_format",
+            "syntax_error",
+            "unresolvable_doi"
+          ],
+          "description": "Error type identifier"
+        },
+        "entry": {
+          "type": "string",
+          "description": "Citation key of affected entry"
+        },
+        "field": {
+          "type": "string",
+          "description": "Affected BibTeX field name"
+        },
+        "value": {
+          "type": "string",
+          "description": "Current invalid value"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["high"],
+          "description": "Error severity (always high for errors)"
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable error message"
+        },
+        "fix": {
+          "type": "string",
+          "description": "Suggested fix for the error"
+        },
+        "line_number": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Line number in source file (if available)"
+        }
+      }
+    },
+    "warning": {
+      "type": "object",
+      "required": ["type", "entry", "severity", "message"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "missing_recommended_field",
+            "suspicious_year",
+            "page_range_format",
+            "invalid_doi_format",
+            "unprotected_acronym",
+            "preprint_available_as_published"
+          ],
+          "description": "Warning type identifier"
+        },
+        "entry": {
+          "type": "string",
+          "description": "Citation key of affected entry"
+        },
+        "field": {
+          "type": "string",
+          "description": "Affected BibTeX field name"
+        },
+        "value": {
+          "type": "string",
+          "description": "Current value triggering warning"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["medium", "low"],
+          "description": "Warning severity level"
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable warning message"
+        },
+        "suggestion": {
+          "type": "string",
+          "description": "Suggested improvement"
+        }
+      }
+    },
+    "duplicate": {
+      "type": "object",
+      "required": ["type", "entries", "severity", "message"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["duplicate_doi", "duplicate_key", "similar_title"],
+          "description": "Duplicate detection method"
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2,
+          "description": "Citation keys of duplicate entries"
+        },
+        "doi": {
+          "type": "string",
+          "description": "Shared DOI (for duplicate_doi type)"
+        },
+        "key": {
+          "type": "string",
+          "description": "Duplicate citation key (for duplicate_key type)"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 2,
+          "description": "Number of occurrences (for duplicate_key type)"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["high", "medium"],
+          "description": "Duplicate severity level"
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable duplicate message"
+        },
+        "suggested_action": {
+          "type": "string",
+          "enum": ["remove_duplicate", "merge_entries", "review_manually"],
+          "description": "Recommended action to resolve"
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "filepath": "references.bib",
+      "validation_date": "2026-01-10T10:30:00Z",
+      "schema_version": "1.0.0",
+      "total_entries": 25,
+      "valid_entries": 23,
+      "entry_types": {
+        "article": 18,
+        "book": 3,
+        "inproceedings": 4
+      },
+      "errors": [
+        {
+          "type": "missing_required_field",
+          "entry": "Smith2024protein",
+          "field": "journal",
+          "severity": "high",
+          "message": "Entry Smith2024protein: Missing required field \"journal\""
+        }
+      ],
+      "warnings": [
+        {
+          "type": "missing_recommended_field",
+          "entry": "Jones2023deep",
+          "field": "doi",
+          "severity": "medium",
+          "message": "Entry Jones2023deep: Missing recommended field \"doi\""
+        }
+      ],
+      "duplicates": [],
+      "summary": {
+        "error_count": 1,
+        "warning_count": 1,
+        "duplicate_count": 0,
+        "validation_passed": false,
+        "errors_by_type": {
+          "missing_required_field": 1
+        },
+        "warnings_by_type": {
+          "missing_recommended_field": 1
+        }
+      }
+    }
+  ]
+}
