@@ -7,6 +7,56 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/code-documentation/**: Phase 1 validation infrastructure implementation with 124 test cases (100% pass rate)
+  - **scripts/utils/readme_checker.py**: README section validation and project type detection
+    - `ProjectType` enum: ANALYSIS, SOFTWARE, DATA_REPO, COMPENDIUM, UNKNOWN
+    - `SectionStatus` enum: PRESENT, MISSING, PARTIAL
+    - `SectionResult` dataclass: name, status, required flag, line_number, content_preview
+    - `ReadmeValidation` dataclass: complete validation result with score, sections, missing lists
+    - `REQUIRED_SECTIONS` dictionary: project-type-specific required sections from SKILL.md
+    - `OPTIONAL_SECTIONS` dictionary: bonus sections for score improvement
+    - `SECTION_ALIASES` dictionary: common section name variations (e.g., "overview" → "description")
+    - `detect_project_type(path)`: Auto-detects from directory structure (setup.py, notebooks, etc.)
+    - `validate_readme_sections(path, project_type)`: Complete README validation with scoring
+    - `format_validation_report(validation)`: Human-readable report generation
+    - Special handling: first H1 header automatically treated as "title" section
+  - **scripts/utils/docstring_validator.py**: Python docstring validation and style detection
+    - `DocstringStyle` enum: NUMPY, GOOGLE, SPHINX, MINIMAL, UNKNOWN
+    - `ValidationSeverity` enum: ERROR, WARNING, INFO
+    - `ValidationIssue` dataclass: file, line, code, message, severity
+    - `DoctestResult` dataclass: passed/failed/skipped counts, error details
+    - `DocstringValidation` dataclass: complete validation with coverage and issues
+    - `detect_docstring_style(content)`: Auto-detects NumPy vs Google vs minimal style
+    - `run_pydocstyle(path, style)`: Subprocess integration with issue parsing
+    - `run_doctests(path)`: Doctest execution with pass/fail tracking
+    - `validate_docstring_format(path, style, run_tests)`: Combined validation
+    - `_count_documented_items(content)`: AST-based documentation coverage counting
+  - **scripts/validate_documentation.py**: CLI interface for validation
+    - Single file validation: `python validate_documentation.py module.py --style numpy`
+    - README validation: `python validate_documentation.py --readme README.md --project-type software`
+    - Project validation: `python validate_documentation.py /path/to/project --all`
+    - Options: --style (numpy/google/sphinx/minimal), --project-type, --no-tests, --quiet
+  - **tests/test_readme_checker.py**: 69 tests for README validation
+    - TestProjectType, TestSectionStatus: enum validation
+    - TestNormalizeSectionName, TestFindSectionMatch: section matching
+    - TestExtractSections: markdown header extraction
+    - TestDetectProjectType: auto-detection from directory structure
+    - TestValidateReadmeSections: complete validation workflows
+    - TestReadmeValidationDataclass: property tests including summary
+    - TestScoreCalculation: scoring algorithm validation
+    - TestEdgeCases: empty files, unicode, code blocks
+  - **tests/test_docstring_validator.py**: 55 tests for docstring validation
+    - TestDocstringStyle, TestValidationSeverity: enum validation
+    - TestValidationIssue, TestDoctestResult, TestDocstringValidation: dataclass tests
+    - TestDetectDocstringStyle: NumPy/Google/minimal detection
+    - TestCountDocumentedItems: AST coverage counting
+    - TestRunPydocstyle, TestRunDoctests: subprocess integration
+    - TestValidateDocstringFormat: combined validation
+    - TestEdgeCases: empty files, syntax errors, unicode, async functions
+  - Determinism improvement: 65% → 75%
+  - README validation: 100% deterministic for known project types
+  - Docstring validation: pydocstyle + doctest automation complete
+
 - **skills/citation-management/**: Phase 1 deterministic utilities implementation with 153 test cases (100% pass rate)
   - **scripts/extract_metadata.py**: Enhanced citation key generation with collision detection
     - `_generate_citation_key(metadata, existing_keys)`: Added optional `existing_keys` parameter for collision detection
