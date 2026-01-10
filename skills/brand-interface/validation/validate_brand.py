@@ -231,6 +231,15 @@ def validate_tokens(brand_path: Path, report: ValidationReport) -> dict | None:
     # Validate all hex colors
     _validate_hex_colors(tokens, report)
 
+    # Validate color roles (vocabulary standardization)
+    _validate_color_roles(tokens, report)
+
+    # Validate cycle names (vocabulary standardization)
+    _validate_cycle_names(tokens, report)
+
+    # Validate free-text fields
+    _validate_free_text_fields(tokens, report)
+
     return tokens
 
 
@@ -317,6 +326,168 @@ def _validate_hex_colors(tokens: dict, report: ValidationReport) -> None:
                 check_colors(item, f"{path}[{i}]")
 
     check_colors(tokens)
+
+
+def _validate_color_roles(tokens: dict, report: ValidationReport) -> None:
+    """
+    Validate and normalize color role fields.
+
+    Checks free-text 'role' fields in color definitions and suggests
+    standardized ColorRole enum values for consistency.
+    """
+    # Dual-import pattern: Try relative import first (when run as part of package),
+    # then absolute import (when run directly or from tests with sys.path manipulation)
+    try:
+        from .controlled_vocabularies import normalize_role, ColorRole, get_valid_values
+    except ImportError:
+        try:
+            from controlled_vocabularies import normalize_role, ColorRole, get_valid_values
+        except ImportError:
+            return  # Skip if vocabulary module not available
+
+    def check_roles(obj: Any, path: str = "") -> None:
+        if isinstance(obj, dict):
+            for key, value in obj.items():
+                current_path = f"{path}.{key}" if path else key
+                if key == "role" and isinstance(value, str):
+                    normalized = normalize_role(value)
+                    if normalized is None:
+                        # Could not normalize - suggest standardization
+                        report.add_issue(ValidationIssue(
+                            severity=Severity.WARNING,
+                            category="vocabulary",
+                            message=f"Non-standard role: '{value}'",
+                            path=current_path,
+                            suggestion=f"Consider using a standard role from: {', '.join(get_valid_values(ColorRole)[:5])}..."
+                        ))
+                    else:
+                        # Successfully normalized - suggest using standard value
+                        # Note: This comparison handles the common case of space-to-dash conversion.
+                        # Edge cases with underscores or other delimiters may not trigger suggestions.
+                        if normalized.value != value.lower().replace(" ", "-"):
+                            report.add_issue(ValidationIssue(
+                                severity=Severity.INFO,
+                                category="vocabulary",
+                                message=f"Role '{value}' normalized to '{normalized.value}'",
+                                path=current_path,
+                                suggestion=f"Consider updating to standard role: '{normalized.value}'"
+                            ))
+                elif isinstance(value, (dict, list)):
+                    check_roles(value, current_path)
+        elif isinstance(obj, list):
+            for i, item in enumerate(obj):
+                if isinstance(item, (dict, list)):
+                    check_roles(item, f"{path}[{i}]")
+
+    if "colors" in tokens:
+        check_roles(tokens["colors"], "colors")
+
+
+def _validate_cycle_names(tokens: dict, report: ValidationReport) -> None:
+    """
+    Validate color cycle names against standard vocabulary.
+
+    Flags custom cycle names that are not in the standard vocabulary.
+    """
+    # Dual-import pattern: Try relative import first (when run as part of package),
+    # then absolute import (when run directly or from tests with sys.path manipulation)
+    try:
+        from .controlled_vocabularies import validate_cycle_name, REQUIRED_CYCLES, RECOMMENDED_CYCLES
+    except ImportError:
+        try:
+            from controlled_vocabularies import validate_cycle_name, REQUIRED_CYCLES, RECOMMENDED_CYCLES
+        except ImportError:
+            return
+
+    if "color_cycles" not in tokens:
+        return
+
+    cycles = tokens["color_cycles"]
+    found_cycles = set(cycles.keys())
+
+    # Check required cycles
+    for required in REQUIRED_CYCLES:
+        if required not in found_cycles:
+            report.add_issue(ValidationIssue(
+                severity=Severity.WARNING,
+                category="vocabulary",
+                message=f"Missing required cycle: '{required}'",
+                suggestion=f"Add a '{required}' color cycle"
+            ))
+
+    # Check recommended cycles
+    for recommended in RECOMMENDED_CYCLES:
+        if recommended not in found_cycles:
+            report.add_issue(ValidationIssue(
+                severity=Severity.INFO,
+                category="vocabulary",
+                message=f"Missing recommended cycle: '{recommended}'",
+                suggestion=f"Consider adding a '{recommended}' color cycle"
+            ))
+
+    # Validate each cycle name
+    for cycle_name in cycles.keys():
+        is_valid, suggestion = validate_cycle_name(cycle_name)
+        if suggestion:
+            report.add_issue(ValidationIssue(
+                severity=Severity.INFO,
+                category="vocabulary",
+                message=f"Cycle name note: {suggestion}",
+                path=f"color_cycles.{cycle_name}"
+            ))
+
+
+def _validate_free_text_fields(tokens: dict, report: ValidationReport) -> None:
+    """
+    Validate free-text fields that could benefit from standardization.
+
+    Flags philosophy.guidelines and preflight_checklist items that
+    are too long or too vague for deterministic use.
+    """
+    MAX_GUIDELINE_LENGTH = 200
+    MAX_CHECKLIST_LENGTH = 150
+
+    # Check philosophy.guidelines
+    if "philosophy" in tokens and "guidelines" in tokens["philosophy"]:
+        guidelines = tokens["philosophy"]["guidelines"]
+        if isinstance(guidelines, list):
+            for i, guideline in enumerate(guidelines):
+                if isinstance(guideline, str):
+                    if len(guideline) > MAX_GUIDELINE_LENGTH:
+                        report.add_issue(ValidationIssue(
+                            severity=Severity.INFO,
+                            category="vocabulary",
+                            message=f"Long guideline ({len(guideline)} chars): '{guideline[:50]}...'",
+                            path=f"philosophy.guidelines[{i}]",
+                            suggestion="Consider breaking into shorter, more specific guidelines"
+                        ))
+
+    # Check preflight_checklist
+    if "preflight_checklist" in tokens:
+        checklist = tokens["preflight_checklist"]
+        if isinstance(checklist, list):
+            for i, item in enumerate(checklist):
+                if isinstance(item, str):
+                    if len(item) > MAX_CHECKLIST_LENGTH:
+                        report.add_issue(ValidationIssue(
+                            severity=Severity.INFO,
+                            category="vocabulary",
+                            message=f"Long checklist item ({len(item)} chars): '{item[:40]}...'",
+                            path=f"preflight_checklist[{i}]",
+                            suggestion="Consider using shorter, more actionable checklist items"
+                        ))
+                    # Check for vague terms
+                    vague_terms = ["maybe", "possibly", "consider", "etc", "if needed", "as appropriate"]
+                    for term in vague_terms:
+                        if term in item.lower():
+                            report.add_issue(ValidationIssue(
+                                severity=Severity.INFO,
+                                category="vocabulary",
+                                message=f"Vague term '{term}' in checklist item",
+                                path=f"preflight_checklist[{i}]",
+                                suggestion="Use specific, deterministic criteria for checklist items"
+                            ))
+                            break
 
 
 def validate_adapter_api(brand_path: Path, report: ValidationReport) -> None:
