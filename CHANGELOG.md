@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- **skills/paper-search/sources/pubmed/references/pubmed_search.md**: Merged unique content from external pubmed-database skill
+  - Added My NCBI research management workflow (saved searches, email alerts)
+  - Added Collections documentation (clipboard vs permanent storage)
+  - Added RSS feed setup for monitoring new publications
+  - Added Search History features reference
+
+### Removed
+- **pubmed-database/**: Deleted redundant external skill (reference files were duplicates of paper-search content)
+
 ### Added
 - **skills/brand-interface/**: Complete determinism audit with comprehensive test suite (173 tests, 100% pass rate)
   - **tests/test_accessibility.py**: 58 tests for WCAG accessibility validation

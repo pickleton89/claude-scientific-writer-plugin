@@ -774,6 +774,40 @@ python scripts/extract_metadata.py \
    "Church GM"[Author]
    ```
 
+### My NCBI for Research Management
+
+Use My NCBI for persistent search management and alerts.
+
+**Creating Saved Searches:**
+1. Run your search in PubMed
+2. Click "Save" in results page
+3. Name your search
+4. Choose email frequency (daily, weekly, monthly)
+
+**Collections:**
+- Clipboard: Temporary storage, 500 items max, 8-hour expiration
+- Collections: Permanent storage via My NCBI account
+- Organize by project or topic
+
+**RSS Feeds:**
+Create RSS feeds for any search to monitor new publications:
+1. Run search in PubMed
+2. Click "Create RSS" below search box
+3. Copy feed URL to your feed reader
+4. Receive updates as new papers match
+
+### Search History Features
+
+PubMed maintains search history in Advanced Search:
+- Up to 100 searches stored
+- Expires after 8 hours of inactivity
+- Combine searches using # references:
+  ```
+  #1 AND #2
+  #3 OR #4
+  ```
+- Preview result counts before executing
+
 ## Common Issues and Solutions
 
 ### Issue: MeSH Term Not Found
