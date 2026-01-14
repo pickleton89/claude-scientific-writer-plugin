@@ -6,6 +6,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- **skills/generate-image**: FLUX.2 model deprecation and simplification (Phase 2, Tasks 2.1-2.4)
+  - **scripts/utils/models.py**: Added deprecation infrastructure
+    - `ModelInfo` dataclass: New `deprecated` and `deprecation_message` fields
+    - `ValidationResult`: New `deprecation_warning` field
+    - Marked FLUX.2 Pro and FLUX.2 Flex as deprecated with migration messages
+    - `select_model()`: New `include_deprecated` parameter (default False excludes deprecated)
+    - `is_deprecated()`, `get_deprecation_message()`: New helper functions
+    - `format_model_list()`: Shows [DEPRECATED] status and warning messages
+    - Emits `DeprecationWarning` when deprecated models are validated
+  - **scripts/generate_image.py**: Simplified and integrated validation
+    - Updated docstring to focus on Gemini 3 Pro as default model
+    - Simplified CLI examples (removed FLUX.2 references)
+    - Added model validation integration with deprecation warnings at runtime
+    - Graceful fallback when utils.models import fails
+  - **references/model_capabilities.md**: Updated for single-model recommendation
+    - New "Recommended Model" section highlighting Gemini 3 Pro
+    - Added Status column to capabilities table (Recommended vs Deprecated)
+    - Simplified decision flow (always use default)
+    - Added Migration Guide section for FLUX.2 users
+  - **tests/test_models.py**: Comprehensive deprecation test coverage
+    - Tests for deprecation warning emission
+    - Tests for `include_deprecated` parameter behavior
+    - Tests for helper functions (`is_deprecated`, `get_deprecation_message`)
+    - Tests for UI display of deprecated models
+
 ### Fixed
 - **skills/research-paper-summarizer/scripts/generate_summary_pdf.py**: Fix output path behavior for figure extraction
   - Figure extraction now outputs to source PDF's directory instead of current working directory

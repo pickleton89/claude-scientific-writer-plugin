@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-Generate and edit images using OpenRouter API with various image generation models.
+Generate and edit images using OpenRouter API.
 
-Supports models like:
-- google/gemini-3-pro-image-preview (generation and editing)
-- black-forest-labs/flux.2-pro (generation and editing)
-- black-forest-labs/flux.2-flex (generation)
-- And more image generation models available on OpenRouter
+Default model: google/gemini-3-pro-image-preview
+- Supports generation, editing, and inpainting
+- Best overall quality for scientific visualizations
 
 For image editing, provide an input image along with an editing prompt.
+
+Note: FLUX.2 models are deprecated. Use Gemini 3 Pro for all use cases.
 """
 
 import sys
@@ -17,6 +17,15 @@ import base64
 import argparse
 from pathlib import Path
 from typing import Optional
+
+# Import model validation utilities
+try:
+    from utils.models import validate_model, DEFAULT_MODEL
+except ImportError:
+    # Fallback if running from different directory - validation will be skipped
+    # but core functionality still works
+    validate_model = None
+    DEFAULT_MODEL = "google/gemini-3-pro-image-preview"
 
 
 def check_env_file() -> Optional[str]:
@@ -97,6 +106,18 @@ def generate_image(
     except ImportError:
         print("Error: 'requests' library not found. Install with: pip install requests")
         sys.exit(1)
+
+    # Validate model and check for deprecation
+    if validate_model is not None:
+        result = validate_model(model, warn_deprecated=False)
+        if not result.valid:
+            print(f"⚠️  {result.error}")
+            if result.suggestion:
+                print(f"   {result.suggestion}")
+            sys.exit(1)
+        if result.deprecation_warning:
+            print(f"⚠️  Deprecation Warning: {result.deprecation_warning}")
+            print(f"   Continuing with {model}, but consider switching to {DEFAULT_MODEL}")
 
     # Check for API key
     if not api_key:
@@ -212,11 +233,8 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Generate with default model (Gemini 3 Pro Image Preview)
+  # Generate an image
   python generate_image.py "A beautiful sunset over mountains"
-
-  # Use a specific model
-  python generate_image.py "A cat in space" --model "black-forest-labs/flux.2-pro"
 
   # Specify output path
   python generate_image.py "Abstract art" --output my_image.png
@@ -224,13 +242,15 @@ Examples:
   # Edit an existing image
   python generate_image.py "Make the sky purple" --input photo.jpg --output edited.png
 
-  # Edit with a specific model
-  python generate_image.py "Add a hat to the person" --input portrait.png -m "black-forest-labs/flux.2-pro"
+  # Edit with specific instructions
+  python generate_image.py "Add a hat to the person" --input portrait.png --output edited.png
 
-Popular image models:
-  - google/gemini-3-pro-image-preview (default, high quality, generation + editing)
-  - black-forest-labs/flux.2-pro (fast, high quality, generation + editing)
-  - black-forest-labs/flux.2-flex (development version)
+Default model: google/gemini-3-pro-image-preview
+  - High quality generation and editing
+  - Supports inpainting
+  - Best for scientific visualizations
+
+Note: FLUX.2 models are deprecated and will show warnings if used.
         """
     )
 

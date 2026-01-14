@@ -4,7 +4,12 @@ This module provides deterministic model selection and validation to prevent
 typos and enforce the allowlist from references/model_capabilities.md.
 
 Phase 2 Implementation - Core Infrastructure
+
+Note: FLUX.2 models are deprecated as of 2026-01-14. Gemini 3 Pro is the
+recommended model for all use cases (generation, editing, inpainting).
 """
+
+import warnings
 
 from dataclasses import dataclass
 from enum import Enum
@@ -40,6 +45,8 @@ class ModelInfo:
     cost_tier: str  # "$$$", "$$", "$"
     max_resolution: int
     notes: str = ""
+    deprecated: bool = False
+    deprecation_message: str = ""
 
     @property
     def capabilities(self) -> list[ModelCapability]:
@@ -78,6 +85,8 @@ VALID_MODELS: dict[str, ModelInfo] = {
         cost_tier="$$",
         max_resolution=2048,
         notes="Fast, high quality, good for iterations",
+        deprecated=True,
+        deprecation_message="FLUX.2 Pro is deprecated. Use google/gemini-3-pro-image-preview instead.",
     ),
     "black-forest-labs/flux.2-flex": ModelInfo(
         id="black-forest-labs/flux.2-flex",
@@ -89,6 +98,8 @@ VALID_MODELS: dict[str, ModelInfo] = {
         cost_tier="$",
         max_resolution=1024,
         notes="Budget option, generation only",
+        deprecated=True,
+        deprecation_message="FLUX.2 Flex is deprecated. Use google/gemini-3-pro-image-preview instead.",
     ),
 }
 
@@ -119,24 +130,40 @@ class ValidationResult:
     error: Optional[str] = None
     suggestion: Optional[str] = None
     info: Optional[ModelInfo] = None
+    deprecation_warning: Optional[str] = None
 
 
-def validate_model(model_id: str) -> ValidationResult:
+def validate_model(model_id: str, warn_deprecated: bool = True) -> ValidationResult:
     """
     Validate model ID against allowed list.
 
     Args:
         model_id: The model ID to validate
+        warn_deprecated: If True, emit DeprecationWarning for deprecated models
 
     Returns:
         ValidationResult with validity status and optional suggestions
     """
     # Exact match
     if model_id in VALID_MODELS:
+        model_info = VALID_MODELS[model_id]
+        deprecation_warning = None
+
+        # Check if model is deprecated
+        if model_info.deprecated:
+            deprecation_warning = model_info.deprecation_message
+            if warn_deprecated:
+                warnings.warn(
+                    deprecation_warning,
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+
         return ValidationResult(
             valid=True,
             model_id=model_id,
-            info=VALID_MODELS[model_id],
+            info=model_info,
+            deprecation_warning=deprecation_warning,
         )
 
     # Check for known typos
@@ -183,23 +210,30 @@ def select_model(
     needs_editing: bool = False,
     needs_inpainting: bool = False,
     min_resolution: Optional[int] = None,
+    include_deprecated: bool = False,
 ) -> str:
     """
     Deterministically select model based on requirements.
 
     Implements decision tree from references/model_capabilities.md.
+    By default, deprecated models are excluded from selection.
 
     Args:
         priority: Quality, speed, or budget priority
         needs_editing: Whether image editing is required
         needs_inpainting: Whether inpainting is required
         min_resolution: Minimum required resolution
+        include_deprecated: If True, include deprecated models in selection
 
     Returns:
         Selected model ID
     """
     # Filter by capability requirements
     candidates = list(VALID_MODELS.values())
+
+    # Filter out deprecated models by default
+    if not include_deprecated:
+        candidates = [m for m in candidates if not m.deprecated]
 
     if needs_inpainting:
         candidates = [m for m in candidates if m.inpainting]
@@ -228,10 +262,10 @@ def select_model(
             )
         )
     elif priority == Priority.SPEED:
-        # FLUX.2 Pro is fastest among high-quality options
+        # Prefer models with excellent quality (Gemini is now the only non-deprecated option)
         candidates.sort(
             key=lambda m: (
-                0 if "flux" in m.id.lower() and m.quality_tier == "excellent" else 1,
+                0 if m.quality_tier == "excellent" else 1,
                 m.id,
             )
         )
@@ -285,18 +319,35 @@ def get_cost_tier(model_id: str) -> Optional[str]:
     return model.cost_tier if model else None
 
 
+def is_deprecated(model_id: str) -> bool:
+    """Check if a model is deprecated."""
+    model = VALID_MODELS.get(model_id)
+    return model.deprecated if model else False
+
+
+def get_deprecation_message(model_id: str) -> Optional[str]:
+    """Get deprecation message for a model, or None if not deprecated."""
+    model = VALID_MODELS.get(model_id)
+    if model and model.deprecated:
+        return model.deprecation_message
+    return None
+
+
 def format_model_list() -> str:
     """Format all models for display."""
     lines = ["Available Models:", ""]
     for model_id, info in VALID_MODELS.items():
         caps = ", ".join(c.value for c in info.capabilities)
-        lines.append(f"  {info.display_name}")
+        status = " [DEPRECATED]" if info.deprecated else ""
+        lines.append(f"  {info.display_name}{status}")
         lines.append(f"    ID: {model_id}")
         lines.append(f"    Quality: {info.quality_tier} | Cost: {info.cost_tier}")
         lines.append(f"    Capabilities: {caps}")
         lines.append(f"    Max Resolution: {info.max_resolution}px")
         if info.notes:
             lines.append(f"    Notes: {info.notes}")
+        if info.deprecated and info.deprecation_message:
+            lines.append(f"    Warning: {info.deprecation_message}")
         lines.append("")
     return "\n".join(lines)
 
@@ -309,7 +360,7 @@ if __name__ == "__main__":
         sys.exit(0)
 
     model_id = sys.argv[1]
-    result = validate_model(model_id)
+    result = validate_model(model_id, warn_deprecated=False)  # Don't double-print warning
 
     if result.valid:
         print(f"Model '{model_id}' is valid.")
@@ -317,6 +368,9 @@ if __name__ == "__main__":
             print(f"  Display Name: {result.info.display_name}")
             print(f"  Quality: {result.info.quality_tier}")
             print(f"  Cost: {result.info.cost_tier}")
+            if result.info.deprecated:
+                print("  Status: DEPRECATED")
+                print(f"  Warning: {result.info.deprecation_message}")
     else:
         print(f"Error: {result.error}")
         if result.suggestion:

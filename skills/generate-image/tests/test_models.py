@@ -20,8 +20,10 @@ from utils.models import (
     ValidationResult,
     format_model_list,
     get_cost_tier,
+    get_deprecation_message,
     get_model_info,
     get_quality_tier,
+    is_deprecated,
     list_models_by_capability,
     select_model,
     supports_editing,
@@ -217,15 +219,32 @@ class TestSelectModel:
         model = select_model(priority=Priority.QUALITY)
         assert model == "google/gemini-3-pro-image-preview"
 
-    def test_speed_priority_selects_flux_pro(self):
-        """Test speed priority selects FLUX Pro."""
+    def test_speed_priority_selects_gemini_since_flux_deprecated(self):
+        """Test speed priority selects Gemini (FLUX.2 is deprecated)."""
         model = select_model(priority=Priority.SPEED)
-        assert "flux" in model.lower()
+        # FLUX.2 models are deprecated, so Gemini is selected
+        assert model == "google/gemini-3-pro-image-preview"
 
-    def test_budget_priority_selects_flex(self):
-        """Test budget priority selects FLUX Flex."""
+    def test_budget_priority_selects_gemini_since_flux_deprecated(self):
+        """Test budget priority selects Gemini (FLUX.2 Flex is deprecated)."""
         model = select_model(priority=Priority.BUDGET)
-        assert "flex" in model.lower()
+        # FLUX.2 Flex is deprecated, so Gemini is selected
+        assert model == "google/gemini-3-pro-image-preview"
+
+    def test_speed_priority_with_deprecated_models_included(self):
+        """Test speed priority selects FLUX Pro when deprecated models included."""
+        model = select_model(priority=Priority.SPEED, include_deprecated=True)
+        # With deprecated models included, FLUX.2 Pro is selected (excellent quality,
+        # alphabetically first among excellent-tier models)
+        assert model == "black-forest-labs/flux.2-pro"
+        assert is_deprecated(model)
+
+    def test_budget_priority_with_deprecated_models_included(self):
+        """Test budget priority selects FLUX Flex when deprecated models included."""
+        model = select_model(priority=Priority.BUDGET, include_deprecated=True)
+        # With deprecated models included, FLUX.2 Flex is selected (cheapest at $)
+        assert model == "black-forest-labs/flux.2-flex"
+        assert is_deprecated(model)
 
     def test_needs_editing_filters_models(self):
         """Test needs_editing filters to editing-capable models."""
@@ -494,3 +513,98 @@ class TestEdgeCases:
         # No model has resolution > 10000
         model = select_model(min_resolution=10000)
         assert model == DEFAULT_MODEL
+
+
+class TestDeprecation:
+    """Tests for model deprecation features."""
+
+    def test_flux_pro_is_deprecated(self):
+        """Test FLUX.2 Pro is marked as deprecated."""
+        assert is_deprecated("black-forest-labs/flux.2-pro") is True
+
+    def test_flux_flex_is_deprecated(self):
+        """Test FLUX.2 Flex is marked as deprecated."""
+        assert is_deprecated("black-forest-labs/flux.2-flex") is True
+
+    def test_gemini_not_deprecated(self):
+        """Test Gemini is not deprecated."""
+        assert is_deprecated("google/gemini-3-pro-image-preview") is False
+
+    def test_invalid_model_not_deprecated(self):
+        """Test invalid model returns False for is_deprecated."""
+        assert is_deprecated("invalid/model") is False
+
+    def test_get_deprecation_message_for_deprecated_model(self):
+        """Test get_deprecation_message returns message for deprecated model."""
+        msg = get_deprecation_message("black-forest-labs/flux.2-pro")
+        assert msg is not None
+        assert "deprecated" in msg.lower() or "FLUX" in msg
+
+    def test_get_deprecation_message_for_active_model(self):
+        """Test get_deprecation_message returns None for active model."""
+        msg = get_deprecation_message("google/gemini-3-pro-image-preview")
+        assert msg is None
+
+    def test_get_deprecation_message_for_invalid_model(self):
+        """Test get_deprecation_message returns None for invalid model."""
+        msg = get_deprecation_message("invalid/model")
+        assert msg is None
+
+    def test_validate_deprecated_model_returns_warning(self):
+        """Test validate_model returns deprecation_warning for deprecated model."""
+        result = validate_model("black-forest-labs/flux.2-pro", warn_deprecated=False)
+        assert result.valid is True
+        assert result.deprecation_warning is not None
+        assert "deprecated" in result.deprecation_warning.lower() or "FLUX" in result.deprecation_warning
+
+    def test_validate_active_model_no_warning(self):
+        """Test validate_model returns no warning for active model."""
+        result = validate_model("google/gemini-3-pro-image-preview")
+        assert result.valid is True
+        assert result.deprecation_warning is None
+
+    def test_validate_deprecated_model_emits_warning(self):
+        """Test validate_model emits DeprecationWarning for deprecated model."""
+        import warnings
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            validate_model("black-forest-labs/flux.2-pro", warn_deprecated=True)
+            assert len(w) == 1
+            assert issubclass(w[0].category, DeprecationWarning)
+            assert "FLUX.2 Pro" in str(w[0].message)
+
+    def test_validate_deprecated_model_no_warning_when_disabled(self):
+        """Test validate_model does not emit warning when warn_deprecated=False."""
+        import warnings
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            validate_model("black-forest-labs/flux.2-pro", warn_deprecated=False)
+            assert len(w) == 0
+
+    def test_model_info_deprecated_field(self):
+        """Test ModelInfo has deprecated field."""
+        info = get_model_info("black-forest-labs/flux.2-pro")
+        assert info is not None
+        assert info.deprecated is True
+        assert info.deprecation_message != ""
+
+    def test_model_info_active_not_deprecated(self):
+        """Test active ModelInfo has deprecated=False."""
+        info = get_model_info("google/gemini-3-pro-image-preview")
+        assert info is not None
+        assert info.deprecated is False
+
+    def test_format_model_list_shows_deprecated(self):
+        """Test format_model_list shows DEPRECATED tag."""
+        output = format_model_list()
+        assert "[DEPRECATED]" in output
+        # Check FLUX models are marked as deprecated
+        assert "FLUX.2 Pro" in output
+        assert "FLUX.2 Flex" in output
+
+    def test_select_model_excludes_deprecated_by_default(self):
+        """Test select_model excludes deprecated models by default."""
+        # All priorities should return Gemini since FLUX models are deprecated
+        for priority in Priority:
+            model = select_model(priority=priority)
+            assert not is_deprecated(model), f"Priority {priority} selected deprecated model"

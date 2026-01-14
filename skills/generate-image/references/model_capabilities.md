@@ -3,77 +3,77 @@
 > OpenRouter model capabilities and selection guide.
 > For current pricing and availability, see: https://openrouter.ai/models
 
-## Model Selection Matrix
+## Recommended Model
 
-| Use Case | Recommended Model | Rationale |
-|----------|------------------|-----------|
-| High-quality generation | `google/gemini-3-pro-image-preview` | Best overall quality |
-| Fast generation | `black-forest-labs/flux.2-pro` | Speed + quality balance |
-| Image editing | `google/gemini-3-pro-image-preview` | Best editing capabilities |
-| Budget generation | `black-forest-labs/flux.2-flex` | Lower cost option |
+**Use `google/gemini-3-pro-image-preview` for all image generation tasks.**
+
+This is the default and recommended model because it:
+- Supports generation, editing, AND inpainting (all capabilities)
+- Provides excellent quality for scientific visualizations
+- Works well with technical and scientific subjects
 
 ## Model Capabilities Comparison
 
-| Model | Generation | Editing | Quality | Cost |
-|-------|------------|---------|---------|------|
-| `google/gemini-3-pro-image-preview` | Yes | Yes | Excellent | $$ |
-| `black-forest-labs/flux.2-pro` | Yes | Yes | Excellent | $$ |
-| `black-forest-labs/flux.2-flex` | Yes | No | Good | $ |
+| Model | Generation | Editing | Inpainting | Quality | Cost | Status |
+|-------|------------|---------|------------|---------|------|--------|
+| `google/gemini-3-pro-image-preview` | Yes | Yes | Yes | Excellent | $$ | **Recommended** |
+| `black-forest-labs/flux.2-pro` | Yes | Yes | No | Excellent | $$ | ⚠️ Deprecated |
+| `black-forest-labs/flux.2-flex` | Yes | No | No | Good | $ | ⚠️ Deprecated |
 
 ## Model Details
 
-### Google Gemini 3 Pro Image Preview
+### Google Gemini 3 Pro Image Preview (Recommended)
 - **Model ID:** `google/gemini-3-pro-image-preview`
-- **Best for:** High-quality generation, complex edits, scientific visualizations
-- **Strengths:** Excellent prompt adherence, good at scientific/technical subjects
+- **Status:** Active, Recommended
+- **Best for:** All use cases - generation, editing, inpainting, scientific visualizations
+- **Strengths:** Excellent prompt adherence, good at scientific/technical subjects, full feature support
 - **Limitations:** Preview model, may have rate limits
 
-### FLUX.2 Pro (Black Forest Labs)
+### FLUX.2 Pro (Deprecated)
 - **Model ID:** `black-forest-labs/flux.2-pro`
-- **Best for:** Fast iteration, artistic images, photorealistic content
-- **Strengths:** Fast generation, consistent quality, good editing
-- **Limitations:** May require more specific prompts for technical accuracy
+- **Status:** ⚠️ **DEPRECATED** - Use Gemini 3 Pro instead
+- **Note:** This model will show deprecation warnings when used. It remains functional but is not recommended for new projects.
 
-### FLUX.2 Flex (Black Forest Labs)
+### FLUX.2 Flex (Deprecated)
 - **Model ID:** `black-forest-labs/flux.2-flex`
-- **Best for:** Drafts, exploration, budget-conscious generation
-- **Strengths:** Lower cost, reasonable quality
-- **Limitations:** No editing support, may have quality variance
+- **Status:** ⚠️ **DEPRECATED** - Use Gemini 3 Pro instead
+- **Note:** This model will show deprecation warnings when used. It remains functional but is not recommended for new projects.
 
 ## Usage Examples
 
-### Default (Gemini)
+> **Note:** In examples below, run from the `scripts/` directory or adjust the path accordingly.
+
+### Basic Generation (Recommended)
 ```bash
-python {baseDir}/scripts/generate_image.py "Your prompt here"
+python generate_image.py "Your prompt here"
 ```
 
-### Specify FLUX.2 Pro
+### With Custom Output Path
 ```bash
-python {baseDir}/scripts/generate_image.py "Your prompt" --model "black-forest-labs/flux.2-pro"
+python generate_image.py "Your prompt" --output my_image.png
 ```
 
-### Specify FLUX.2 Flex (budget)
+### Image Editing
 ```bash
-python {baseDir}/scripts/generate_image.py "Your prompt" --model "black-forest-labs/flux.2-flex"
+python generate_image.py "Make the sky purple" --input photo.jpg --output edited.png
 ```
 
 ## Decision Flow
 
 ```
-What's your priority?
+What do you need?
 │
-├─ Quality is critical (publication, hero image)
-│  └─ Use: google/gemini-3-pro-image-preview
+├─ Generate new image
+│  └─ Use: google/gemini-3-pro-image-preview (default)
 │
-├─ Speed is important (iteration, drafts)
-│  └─ Use: black-forest-labs/flux.2-pro
+├─ Edit existing image
+│  └─ Use: google/gemini-3-pro-image-preview (default)
 │
-├─ Budget constrained
-│  └─ Use: black-forest-labs/flux.2-flex
-│
-└─ Need to edit existing image
-   └─ Use: google/gemini-3-pro-image-preview
-      (or flux.2-pro as fallback)
+└─ Inpainting (fill in parts of image)
+   └─ Use: google/gemini-3-pro-image-preview (only option)
+
+Note: FLUX.2 models are deprecated. The decision is simple now:
+      Always use the default Gemini 3 Pro model.
 ```
 
 ## API Configuration
@@ -97,6 +97,19 @@ export OPENROUTER_API_KEY=your-key-here
 Check current pricing at: https://openrouter.ai/models
 
 General guidance:
-- Gemini models: Higher quality, moderate cost
-- FLUX models: Good balance of speed and cost
-- Budget generation: Use flux.2-flex for exploration
+- Gemini 3 Pro: Excellent quality, moderate cost, all features supported
+- FLUX models: Deprecated, will show warnings if used
+
+## Migration Guide
+
+If you were using FLUX.2 models, simply remove the `--model` flag to use the default Gemini 3 Pro:
+
+```bash
+# Before (deprecated)
+python generate_image.py "prompt" --model "black-forest-labs/flux.2-pro"
+
+# After (recommended)
+python generate_image.py "prompt"
+```
+
+The default model handles all use cases that FLUX.2 supported, plus inpainting.
