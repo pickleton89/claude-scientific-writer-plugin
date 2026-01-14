@@ -26,6 +26,31 @@ from .schemas import (
     hash_prompt,
     validate_results_dict,
 )
+from .mermaid_templates import (
+    TEMPLATES as MERMAID_TEMPLATES,
+    DIAGRAM_TYPE_TO_TEMPLATES,
+    TemplateInfo,
+    fill_template,
+    get_template_for_type,
+    get_template,
+    list_templates,
+    list_diagram_types,
+    get_template_metadata,
+    get_required_fields,
+    validate_template_data,
+    build_nodes_string,
+    build_connections_string,
+    build_flowchart,
+)
+from .mermaid_renderer import (
+    MermaidRenderer,
+    RenderBackend,
+    RenderConfig,
+    RenderResult,
+    render_mermaid,
+    validate_mermaid_syntax,
+    get_mermaid_version,
+)
 
 __all__ = [
     # Complexity limits
@@ -47,4 +72,27 @@ __all__ = [
     "ScoreTrend",
     "hash_prompt",
     "validate_results_dict",
+    # Mermaid templates
+    "MERMAID_TEMPLATES",
+    "DIAGRAM_TYPE_TO_TEMPLATES",
+    "TemplateInfo",
+    "fill_template",
+    "get_template_for_type",
+    "get_template",
+    "list_templates",
+    "list_diagram_types",
+    "get_template_metadata",
+    "get_required_fields",
+    "validate_template_data",
+    "build_nodes_string",
+    "build_connections_string",
+    "build_flowchart",
+    # Mermaid renderer
+    "MermaidRenderer",
+    "RenderBackend",
+    "RenderConfig",
+    "RenderResult",
+    "render_mermaid",
+    "validate_mermaid_syntax",
+    "get_mermaid_version",
 ]

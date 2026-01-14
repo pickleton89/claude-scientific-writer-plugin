@@ -28,6 +28,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **pubmed-database/**: Deleted redundant external skill (reference files were duplicates of paper-search content)
 
 ### Added
+- **skills/scientific-schematics/scripts/utils/**: Mermaid diagram generation tier (Phase 1, Steps 1.1-1.2)
+  - **mermaid_templates.py**: 24 reusable Mermaid diagram templates
+    - Study design: CONSORT (basic, with follow-up), PRISMA (basic, with duplicates)
+    - Process flows: flowcharts (TD, LR, BT, RL directions), methods pipeline, data processing
+    - Sequence diagrams: 2-party, 3-party, API request/response pattern
+    - State machines: basic, with annotation notes
+    - Class/ER diagrams, timelines, decision trees, algorithm flowcharts
+    - Charts: pie charts, mind maps, block diagrams
+    - `fill_template()`: Template filling with placeholder validation
+    - `build_flowchart()`: Programmatic flowchart construction from nodes/connections
+    - `validate_template_data()`: Pre-fill validation for required fields
+    - Complete `TEMPLATE_METADATA` for all 24 templates
+  - **mermaid_renderer.py**: Multi-backend Mermaid rendering to PNG/SVG/PDF
+    - `MermaidRenderer` class with 3 backends: mmdc (mermaid-cli), mermaid-py, kroki.io API
+    - Auto-detection of available backends with graceful fallback
+    - `RenderConfig` dataclass: theme, dimensions, scale, background, CSS
+    - `RenderResult` dataclass: success status, timing, hash for reproducibility
+    - `render_mermaid()`: Convenience function for quick rendering
+    - `validate_mermaid_syntax()`: Syntax validation without rendering
+    - Cross-platform support (uses `os.devnull` for Windows compatibility)
+  - **__init__.py**: Updated exports for new modules
+  - Part of cost optimization initiative: Mermaid tier provides $0 instant rendering for simple diagrams
+
+- **docs/IMAGE_GENERATION_REFACTORING_PLAN.md**: Comprehensive refactoring plan for image generation skills
+  - Comparative analysis of generate-image vs scientific-schematics skills
+  - Tiered architecture design: Mermaid (free/instant) vs AI generation (publication quality)
+  - Decision matrix for automatic tier selection based on complexity
+  - Cost savings analysis: projected 40% reduction in API costs
+  - 4-phase implementation plan with detailed module specifications
+
 - **skills/brand-interface/**: Complete determinism audit with comprehensive test suite (173 tests, 100% pass rate)
   - **tests/test_accessibility.py**: 58 tests for WCAG accessibility validation
     - Hex color to RGB conversion
