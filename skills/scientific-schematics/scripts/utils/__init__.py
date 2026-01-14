@@ -51,6 +51,19 @@ from .mermaid_renderer import (
     validate_mermaid_syntax,
     get_mermaid_version,
 )
+from .complexity_analyzer import (
+    GenerationTier,
+    ComplexityAnalysis,
+    analyze_complexity,
+    is_mermaid_compatible,
+    get_quality_requirement,
+    detect_diagram_type,
+    should_use_mermaid,
+    get_tier_summary,
+    QUALITY_THRESHOLDS,
+    MERMAID_SUPPORTED_TYPES,
+    AI_ONLY_TYPES,
+)
 
 __all__ = [
     # Complexity limits
@@ -95,4 +108,16 @@ __all__ = [
     "render_mermaid",
     "validate_mermaid_syntax",
     "get_mermaid_version",
+    # Complexity analyzer
+    "GenerationTier",
+    "ComplexityAnalysis",
+    "analyze_complexity",
+    "is_mermaid_compatible",
+    "get_quality_requirement",
+    "detect_diagram_type",
+    "should_use_mermaid",
+    "get_tier_summary",
+    "QUALITY_THRESHOLDS",
+    "MERMAID_SUPPORTED_TYPES",
+    "AI_ONLY_TYPES",
 ]

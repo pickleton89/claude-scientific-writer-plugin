@@ -50,6 +50,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
     - Cross-platform support (uses `os.devnull` for Windows compatibility)
   - **__init__.py**: Updated exports for new modules
   - Part of cost optimization initiative: Mermaid tier provides $0 instant rendering for simple diagrams
+  - **complexity_analyzer.py**: Tier selection logic for diagram generation (Phase 1, Step 1.3)
+    - `GenerationTier` enum: MERMAID (free/instant), AI (publication quality), MERMAID_PLUS_POLISH
+    - `ComplexityAnalysis` dataclass: nodes, edges, type, compatibility, recommendation, confidence, reasoning
+    - `analyze_complexity()`: Main entry point for tier selection decisions
+    - `is_mermaid_compatible()`: Check if diagram type can be rendered with Mermaid
+    - `detect_diagram_type()`: Keyword-based diagram type detection from prompts
+    - `get_quality_requirement()`: Document type to quality threshold mapping
+    - `should_use_mermaid()`: Quick boolean helper for tier decisions
+    - `get_tier_summary()`: Tier characteristics (cost, speed, quality)
+    - Decision factors: Mermaid compatibility, node/edge complexity, doc type quality, keyword analysis
+    - Word-boundary matching for diagram types (prevents false positives like "pipeline" matching "pie")
+    - 26 AI-only diagram types (neural networks, pathways, circuits)
+    - 13 Mermaid-compatible diagram types from templates
 
 - **docs/IMAGE_GENERATION_REFACTORING_PLAN.md**: Comprehensive refactoring plan for image generation skills
   - Comparative analysis of generate-image vs scientific-schematics skills
