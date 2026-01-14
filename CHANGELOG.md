@@ -78,6 +78,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **pubmed-database/**: Deleted redundant external skill (reference files were duplicates of paper-search content)
 
 ### Added
+- **skills/shared/**: New shared utilities package for cross-skill code reuse (Phase 3, Steps 3.1-3.2)
+  - **api_utils.py**: Unified OpenRouter API configuration and request handling
+    - `APIConfig` dataclass: API settings (key, base_url, timeout, referer, title)
+    - `APIError` exception: Structured errors with status code and detail
+    - `load_api_key()`: Priority-based key loading (explicit → env var → .env search)
+    - `get_api_config()`: Primary entry point, raises helpful error if key not found
+    - `make_openrouter_request()`: Execute API requests with proper OpenRouter headers
+    - `caller_file` parameter: Optional script-location .env search (pass `__file__`)
+    - Supports both python-dotenv and manual .env parsing (graceful fallback)
+    - Searches from cwd and optionally caller's script directory
+  - **__init__.py**: Public exports for all utilities
+  - Consolidates duplicated API handling from generate-image and scientific-schematics
+
 - **skills/scientific-schematics/scripts/generate_schematic.py**: Tiered router for diagram generation (Phase 1, Step 1.5)
   - Complete rewrite as router/orchestrator for tiered architecture
   - `--engine` flag: auto (default), mermaid, ai, mermaid+ai
