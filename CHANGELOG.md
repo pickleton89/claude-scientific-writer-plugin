@@ -78,6 +78,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **pubmed-database/**: Deleted redundant external skill (reference files were duplicates of paper-search content)
 
 ### Added
+- **skills/literature-review/assets/review_template_v2.md**: New high-impact literature review template
+  - Restructured around Pyramid Principle (answer-first architecture)
+  - New KEY FINDING callout box at top, echoed in conclusions
+  - New Executive Summary section for non-specialist readers
+  - New Reading Pathways table (5/15/30/60+ min routes for different audiences)
+  - Visual Abstract placeholder with design guidance
+  - Restructured Abstract around Gap → Contribution → Key Findings → Implications
+  - Declarative section headers with transformation examples in usage guide
+  - Elevated Recommendations to standalone section with evidence-strength tiers
+  - Compressed Methods Summary in main body; detailed methodology in appendices
+  - New Appendix H: Figure Design Guidelines (chart selection, design principles, color/typography, forest plot best practices)
+  - Thematic synthesis guidance with anti-pattern warnings
+  - Quality Assurance Checklist and Template Usage Guide
 - **skills/shared/**: New shared utilities package for cross-skill code reuse (Phase 3, Steps 3.1-3.2)
   - **api_utils.py**: Unified OpenRouter API configuration and request handling
     - `APIConfig` dataclass: API settings (key, base_url, timeout, referer, title)
