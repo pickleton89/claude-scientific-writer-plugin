@@ -28,6 +28,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **pubmed-database/**: Deleted redundant external skill (reference files were duplicates of paper-search content)
 
 ### Added
+- **skills/scientific-schematics/scripts/generate_schematic.py**: Tiered router for diagram generation (Phase 1, Step 1.5)
+  - Complete rewrite as router/orchestrator for tiered architecture
+  - `--engine` flag: auto (default), mermaid, ai, mermaid+ai
+  - `--analyze` flag: Complexity analysis without generation
+  - Auto-selection: Routes simple diagrams to Mermaid ($0), complex to AI
+  - `run_mermaid_generation()`: Subprocess wrapper for Tier 1
+  - `run_ai_generation()`: Subprocess wrapper for Tier 2
+  - `run_mermaid_plus_ai()`: Hybrid mode with Mermaid fallback
+  - Maintains backward compatibility with existing --doc-type, --iterations flags
+  - Clear cost/speed reporting in output
+
 - **skills/scientific-schematics/scripts/utils/**: Mermaid diagram generation tier (Phase 1, Steps 1.1-1.2)
   - **mermaid_templates.py**: 24 reusable Mermaid diagram templates
     - Study design: CONSORT (basic, with follow-up), PRISMA (basic, with duplicates)
