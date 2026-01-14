@@ -6,7 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **skills/research-paper-summarizer/scripts/generate_summary_pdf.py**: Fix output path behavior for figure extraction
+  - Figure extraction now outputs to source PDF's directory instead of current working directory
+  - Added `.resolve()` to handle relative paths correctly (e.g., `paper.pdf` → full absolute path)
+  - Fixes issue where extracted figures were scattered to unexpected locations
+
 ### Changed
+- **skills/research-paper-summarizer/SKILL.md**: Added comprehensive output path documentation
+  - New `<output_paths>` section with location rules table and visual example
+  - New anti-pattern documenting "Outputting to wrong directory" pitfall
+  - Updated success criteria to emphasize correct output path behavior
+
 - **skills/paper-search/sources/pubmed/references/pubmed_search.md**: Merged unique content from external pubmed-database skill
   - Added My NCBI research management workflow (saved searches, email alerts)
   - Added Collections documentation (clipboard vs permanent storage)

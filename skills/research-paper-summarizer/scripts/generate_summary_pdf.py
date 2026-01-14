@@ -102,7 +102,13 @@ class FigureExtractor:
     
     def __init__(self, pdf_path: str, output_dir: str = None):
         self.pdf_path = pdf_path
-        self.output_dir = output_dir or Path(pdf_path).stem + "_figures"
+        # Default to same directory as source PDF, not current working directory
+        if output_dir:
+            self.output_dir = output_dir
+        else:
+            # Use resolve() to handle relative paths (e.g., "paper.pdf" → full absolute path)
+            pdf_resolved = Path(pdf_path).resolve()
+            self.output_dir = str(pdf_resolved.parent / (pdf_resolved.stem + "_figures"))
         self.figures: Dict[str, dict] = {}
         
     def extract_figures(self) -> Dict[str, dict]:
@@ -551,13 +557,17 @@ def generate_summary_pdf(
     extracted_figures = {}
     if source_pdf and auto_extract and os.path.exists(source_pdf):
         print(f"📄 Extracting figures from {source_pdf}...")
+        # Default figures_dir to same directory as source PDF
+        # Use resolve() to handle relative paths (e.g., "paper.pdf" → full absolute path)
+        source_resolved = Path(source_pdf).resolve()
+        default_figures_dir = str(source_resolved.parent / (source_resolved.stem + "_figures"))
         extracted_figures = extract_figures_from_pdf(
             source_pdf,
-            output_dir=figures_dir or (Path(source_pdf).stem + "_figures")
+            output_dir=figures_dir or default_figures_dir
         )
         # Update figures_dir to point to extracted location
         if extracted_figures:
-            figures_dir = figures_dir or (Path(source_pdf).stem + "_figures")
+            figures_dir = figures_dir or default_figures_dir
     
     # Setup document
     doc = SimpleDocTemplate(

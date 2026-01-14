@@ -169,6 +169,54 @@ Ask: "What type of article is this?"
 
 ---
 
+<output_paths>
+
+## Output Path Behavior
+
+**All outputs are saved to the same directory as the source document.** This ensures outputs stay with their source and are easy to find.
+
+### Output Location Rules
+
+| Output Type | Location | Example |
+|-------------|----------|---------|
+| Markdown summary | Source document directory | `/path/to/paper.pdf` → `/path/to/paper_summary.md` |
+| HTML report | Source document directory | `/path/to/paper.pdf` → `/path/to/paper_report.html` |
+| SVG infographic | Source document directory | `/path/to/paper.pdf` → `/path/to/paper_infographic.svg` |
+| YAML (for PDF) | Source document directory | `/path/to/paper.pdf` → `/path/to/paper_summary.yaml` |
+| PDF summary | Source document directory | `/path/to/paper.pdf` → `/path/to/paper_summary.pdf` |
+| Extracted figures | Subdirectory in source location | `/path/to/paper.pdf` → `/path/to/paper_figures/` |
+
+> **Note:** `{filename}` refers to the PDF's filename without extension (stem), e.g., `smith2024_cancer.pdf` → `smith2024_cancer_figures/`
+
+### Important Notes
+
+1. **Source document = the PDF file provided by the user** - outputs go next to this file
+2. **Never output to current working directory** - always use the source document's parent directory
+3. **Figures subdirectory** - extracted figures go in `{filename}_figures/` alongside the source PDF
+4. **Absolute paths preferred** - when in doubt, use the full absolute path to the source document
+
+### Example
+
+```
+User provides: ~/Documents/papers/smith2024_cancer.pdf
+
+Outputs created:
+~/Documents/papers/
+├── smith2024_cancer.pdf              (original)
+├── smith2024_cancer_summary.md       (markdown)
+├── smith2024_cancer_report.html      (HTML)
+├── smith2024_cancer_infographic.svg  (SVG)
+├── smith2024_cancer_summary.yaml     (YAML)
+├── smith2024_cancer_summary.pdf      (PDF)
+└── smith2024_cancer_figures/         (extracted figures)
+    ├── figure_001.png
+    └── figure_002.png
+```
+
+</output_paths>
+
+---
+
 <workflow>
 
 ## Workflow Overview
@@ -555,6 +603,23 @@ For detailed anti-patterns with examples, see: `{baseDir}/references/common-pitf
 | Missing figure references | Link every finding to source figure |
 | Paraphrasing terminology | Use exact technical terms from paper |
 | Omitting negative results | Include all results with statistical context |
+| **Outputting to wrong directory** | Always save to source PDF's directory, never to CWD |
+
+### Output Path Pitfall (Critical)
+
+**Anti-pattern:**
+```
+# PDF is at: ~/Documents/papers/smith2024.pdf
+# But outputs go to: ~/current_working_directory/smith2024_summary.md  ❌
+```
+
+**Correct behavior:**
+```
+# PDF is at: ~/Documents/papers/smith2024.pdf
+# Outputs go to: ~/Documents/papers/smith2024_summary.md  ✓
+```
+
+Use `Path(pdf_path).parent` to get the source document's directory, not `Path.cwd()`.
 
 </anti_patterns>
 
@@ -605,7 +670,8 @@ Before delivering any summary, verify compliance with these rules:
 ### Process Compliance
 - [ ] User was asked to confirm article type
 - [ ] Processing mode was announced to user
-- [ ] Output file was saved to source document directory
+- [ ] **All outputs saved to source document directory** (not current working directory)
+- [ ] Extracted figures saved to `{filename}_figures/` subdirectory alongside source PDF
 - [ ] Visual format options were offered after summary completion
 
 </success_criteria>
