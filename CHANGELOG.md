@@ -13,6 +13,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - Fixes issue where extracted figures were scattered to unexpected locations
 
 ### Changed
+- **skills/scientific-schematics/SKILL.md**: Updated with tiered generation documentation (Phase 1, Step 1.7)
+  - Version bump: 2.3.0 → 2.4.0
+  - New overview describing tiered approach (Tier 1: Mermaid, Tier 2: AI)
+  - New `<generation_tiers>` section with comprehensive tier documentation:
+    - Tier 1 (Mermaid): Best for, characteristics, limitations
+    - Tier 2 (AI): Best for, characteristics
+    - Tier selection CLI commands with `--engine` flag examples
+    - Tier decision matrix (12 conditions with recommended tiers)
+    - Automatic engine selection description (diagram type, complexity, quality, compatibility)
+  - Updated `<prerequisites>` with mermaid-cli dependency and tier-specific requirements
+  - Updated Tool Selection Matrix: Now shows Tier 1 (Simple) and Tier 2 (Complex) columns
+  - New workflow Stage 2: Tier Selection (decision flow, `--analyze` command)
+  - Renumbered stages: Prompt Construction → Stage 3, Generation → Stage 4, etc.
+  - Updated Stage 4 (Generation) with separate steps for Tier 1 and Tier 2
+  - New `<error_handling>` categories: Tier 1 (Mermaid) errors, Tier 2 (AI) errors, General errors
+  - Updated `<templates>` section with tiered command examples
+
 - **skills/research-paper-summarizer/SKILL.md**: Added comprehensive output path documentation
   - New `<output_paths>` section with location rules table and visual example
   - New anti-pattern documenting "Outputting to wrong directory" pitfall

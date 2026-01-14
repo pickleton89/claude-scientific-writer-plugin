@@ -1,8 +1,8 @@
 ---
 name: scientific-schematics
-version: 2.3.0
+version: 2.4.0
 extends: visual-design
-description: "Create publication-quality scientific diagrams using Nano Banana Pro AI with iterative refinement and Gemini 3 Flash/Pro quality review. Specialized in neural networks, flowcharts, biological pathways, and system architectures."
+description: "Create publication-quality scientific diagrams using a tiered approach: free Mermaid rendering for simple diagrams, AI generation for complex publication-quality figures. Specialized in neural networks, flowcharts, biological pathways, and system architectures."
 allowed-tools: [Read, Write, Edit, Bash]
 shared-thresholds: "../QUANTIFICATION_THRESHOLDS.md"
 ---
@@ -14,7 +14,7 @@ shared-thresholds: "../QUANTIFICATION_THRESHOLDS.md"
 > **Quantified Thresholds:** This skill references shared thresholds from [`QUANTIFICATION_THRESHOLDS.md`](../QUANTIFICATION_THRESHOLDS.md) §7 (Quality Rubrics) and §8 (Iteration & Stopping Criteria).
 
 <overview>
-Generate publication-quality scientific diagrams through AI-powered creation with iterative refinement. Uses Nano Banana Pro for image generation and Gemini 3 Flash (default) or Pro for quality review. Smart iteration stops early when quality score ≥ document threshold (6.5-8.5/10), with soft limit of 3 iterations and hard limit of 5 iterations per diagram.
+Generate publication-quality scientific diagrams using a tiered approach that optimizes for cost and speed. **Tier 1 (Mermaid)** handles simple diagrams for free with instant local rendering. **Tier 2 (AI)** uses Nano Banana Pro for complex diagrams with Gemini 3 Flash/Pro quality review. The complexity analyzer automatically routes requests to the appropriate tier based on diagram type, node count, and quality requirements. For AI generation, smart iteration stops early when quality score ≥ document threshold (6.5-8.5/10).
 </overview>
 
 <when_to_use>
@@ -39,26 +39,38 @@ Do NOT use this skill when:
 <prerequisites>
 ## Prerequisites
 
-| Dependency | Version | Purpose |
-|------------|---------|---------|
-| Python | ≥3.9 | Runtime environment |
-| requests | any | HTTP API calls to OpenRouter |
-| OPENROUTER_API_KEY | required | Environment variable for API authentication |
+| Dependency | Version | Purpose | Required For |
+|------------|---------|---------|--------------|
+| Python | ≥3.9 | Runtime environment | All |
+| requests | any | HTTP API calls to OpenRouter | Tier 2 (AI) |
+| OPENROUTER_API_KEY | required | Environment variable for API authentication | Tier 2 (AI) |
+| mermaid-cli (mmdc) | ≥10.0 | Mermaid diagram rendering | Tier 1 (Mermaid) |
 
 **Installation:**
 ```bash
-# Install Python dependency
+# Install Python dependency (for AI generation)
 pip install requests
 
-# Set API key (get from https://openrouter.ai/keys)
+# Set API key (get from https://openrouter.ai/keys) - only needed for Tier 2
 export OPENROUTER_API_KEY='sk-or-v1-your_key_here'
+
+# Install mermaid-cli for Tier 1 rendering (requires Node.js)
+npm install -g @mermaid-js/mermaid-cli
+
+# Or use Python fallback (limited features)
+pip install mermaid-py
 ```
 
 **Verification:**
 ```bash
-# Verify setup
+# Verify full setup
 python {baseDir}/scripts/generate_schematic.py --help
+
+# Verify Mermaid CLI (for Tier 1)
+mmdc --version
 ```
+
+> **Note:** Tier 1 (Mermaid) works without an API key. Only Tier 2 (AI) requires OPENROUTER_API_KEY.
 </prerequisites>
 
 <brand_application>
@@ -183,16 +195,106 @@ What do you need to visualize?
 
 ### Tool Selection Matrix
 
-| Diagram Type | Primary Tool | Alternative | Export Format |
-|--------------|--------------|-------------|---------------|
-| Flowcharts (CONSORT, PRISMA) | Nano Banana Pro | TikZ/LaTeX | PNG, PDF |
-| Neural Network Architecture | Nano Banana Pro | draw.io | PNG, SVG |
-| Biological Pathways | Nano Banana Pro | BioRender | PNG, PDF |
-| Circuit Diagrams | Nano Banana Pro | Schemdraw | PNG, PDF |
-| System Architecture | Nano Banana Pro | Mermaid | PNG, SVG |
-| Block Diagrams | Nano Banana Pro | TikZ/LaTeX | PNG, PDF |
+| Diagram Type | Tier 1 (Simple) | Tier 2 (Complex) | Export Format |
+|--------------|-----------------|------------------|---------------|
+| Flowcharts (CONSORT, PRISMA) | Mermaid | Nano Banana Pro | PNG, SVG, PDF |
+| Sequence Diagrams | Mermaid | Nano Banana Pro | PNG, SVG |
+| State Machines | Mermaid | Nano Banana Pro | PNG, SVG |
+| Class Diagrams | Mermaid | Nano Banana Pro | PNG, SVG |
+| Neural Network Architecture | — | Nano Banana Pro | PNG, SVG |
+| Biological Pathways | — | Nano Banana Pro | PNG, PDF |
+| Circuit Diagrams | — | Nano Banana Pro | PNG, PDF |
+| System Architecture | Mermaid | Nano Banana Pro | PNG, SVG |
+| Block Diagrams | Mermaid | Nano Banana Pro | PNG, SVG |
+| Gantt Charts | Mermaid | — | PNG, SVG |
+| ER Diagrams | Mermaid | Nano Banana Pro | PNG, SVG |
 
 </decision_framework>
+
+<generation_tiers>
+## Generation Tiers
+
+This skill uses a tiered approach to optimize cost and speed:
+
+### Tier 1: Mermaid (Free, Instant)
+
+**Best for:**
+- Simple flowcharts (<10 nodes)
+- Basic sequence diagrams
+- State machines
+- CONSORT/PRISMA (simple versions)
+- Draft/internal documents
+
+**Characteristics:**
+- Cost: $0 (local rendering)
+- Speed: ~100ms
+- Output: Deterministic (same input = same output)
+- Quality: Good for presentations, drafts
+
+**Limitations:**
+- No custom positioning
+- Limited styling options
+- No domain-specific rendering (pathways, neural networks)
+
+### Tier 2: AI Generation (Publication Quality)
+
+**Best for:**
+- Complex diagrams (≥10 nodes)
+- Neural network architectures
+- Biological pathways
+- Publication-quality figures
+- Custom branding/styling
+
+**Characteristics:**
+- Cost: ~$0.02-0.05 per generation
+- Speed: 10-30 seconds
+- Output: Variable (AI creativity)
+- Quality: Publication-ready
+
+### Tier Selection
+
+```bash
+# Auto-select based on complexity (default)
+python {baseDir}/scripts/generate_schematic.py "prompt" -o output.png
+
+# Force Mermaid (skip AI)
+python {baseDir}/scripts/generate_schematic.py "prompt" -o output.png --engine mermaid
+
+# Force AI generation
+python {baseDir}/scripts/generate_schematic.py "prompt" -o output.png --engine ai
+
+# Analyze complexity without generating (dry run)
+python {baseDir}/scripts/generate_schematic.py "prompt" -o output.png --analyze
+```
+
+### Tier Decision Matrix
+
+| Condition | Recommended Tier |
+|-----------|------------------|
+| <10 nodes, draft/presentation | Mermaid |
+| <10 nodes, publication | AI |
+| ≥10 nodes | AI |
+| Neural network | AI |
+| Biological pathway | AI |
+| Custom branding | AI |
+| CONSORT/PRISMA (simple) | Mermaid |
+| CONSORT/PRISMA (detailed) | AI |
+| Sequence diagram | Mermaid |
+| State machine | Mermaid |
+| Class diagram | Mermaid |
+
+### Automatic Engine Selection
+
+When `--engine auto` (default), the complexity analyzer evaluates:
+
+1. **Diagram type detection** - Identifies type from keywords (flowchart, sequence, state, neural network, pathway)
+2. **Complexity estimation** - Counts nodes, edges, and hierarchy levels from prompt
+3. **Quality requirements** - Checks document type threshold (journal=8.5, presentation=6.5)
+4. **Mermaid compatibility** - Verifies diagram type is supported by Mermaid
+
+The analyzer outputs a recommendation with confidence score and reasoning.
+
+</generation_tiers>
 
 <workflow>
 ## Workflow
@@ -217,9 +319,42 @@ What do you need to visualize?
 
 ---
 
-### Stage 2: Prompt Construction
+### Stage 2: Tier Selection
 
-**Objective:** Create effective prompt for AI generation
+**Objective:** Route to appropriate generation engine
+
+**Steps:**
+1. Run complexity analysis (automatic or manual)
+2. Review tier recommendation and reasoning
+3. Override if needed based on specific requirements
+
+**Decision Flow:**
+```
+Is diagram type Mermaid-compatible?
+│
+├─ NO → Tier 2 (AI generation)
+│
+└─ YES → Check complexity
+         │
+         ├─ <10 nodes AND draft/presentation → Tier 1 (Mermaid)
+         │
+         └─ ≥10 nodes OR publication quality → Tier 2 (AI generation)
+```
+
+**Command (optional analysis):**
+```bash
+python {baseDir}/scripts/generate_schematic.py "prompt" -o output.png --analyze
+```
+
+**Exit Criteria:**
+- [ ] Tier selected (Mermaid or AI)
+- [ ] If overriding auto-selection, documented reason
+
+---
+
+### Stage 3: Prompt Construction
+
+**Objective:** Create effective prompt for generation (applies to both tiers)
 
 **Steps:**
 1. Start with diagram type and layout specification
@@ -256,11 +391,16 @@ Visual style: {{style preferences}}
 
 ---
 
-### Stage 3: AI Generation
+### Stage 4: Generation
 
-**Objective:** Generate diagram with quality review
+**Objective:** Generate diagram (Mermaid or AI based on tier selection)
 
-**Steps:**
+**Steps (Tier 1 - Mermaid):**
+1. Convert prompt to Mermaid syntax (automatic)
+2. Render diagram using mermaid-cli
+3. Output PNG/SVG to specified path
+
+**Steps (Tier 2 - AI):**
 1. Set OPENROUTER_API_KEY environment variable
 2. Execute generation script with document type
 3. Nano Banana Pro generates initial image
@@ -268,20 +408,33 @@ Visual style: {{style preferences}}
 5. If quality < threshold AND iterations < max, improve and regenerate
 
 **Exit Criteria:**
-- [ ] API key configured and valid
 - [ ] Generation completed without errors
-- [ ] Quality score ≥ document type threshold
+- [ ] For Tier 2: Quality score ≥ document type threshold
 - [ ] Image saved to figures/ directory
-- [ ] Review log saved as JSON
+- [ ] For Tier 2: Review log saved as JSON
 
-**Command:**
+**Commands:**
 ```bash
+# Auto-select tier (recommended)
 python {baseDir}/scripts/generate_schematic.py "{{prompt}}" \
   -o figures/{{output_name}}.png \
   --doc-type {{document_type}} \
+  -v
+
+# Force Mermaid (Tier 1) - free, instant
+python {baseDir}/scripts/generate_schematic.py "{{prompt}}" \
+  -o figures/{{output_name}}.png \
+  --engine mermaid
+
+# Force AI (Tier 2) - publication quality
+python {baseDir}/scripts/generate_schematic.py "{{prompt}}" \
+  -o figures/{{output_name}}.png \
+  --engine ai \
+  --doc-type {{document_type}} \
   --iterations 2 \
   -v
-# For high-stakes work, use Pro review:
+
+# For high-stakes AI work, use Pro review:
 # --review-model pro
 ```
 
@@ -318,9 +471,9 @@ Generate Image → Review Quality → Score >= Threshold?
 
 ---
 
-### Stage 4: Quality Verification
+### Stage 5: Quality Verification
 
-**Objective:** Verify diagram meets publication standards
+**Objective:** Verify diagram meets publication standards (primarily for Tier 2)
 
 **Steps:**
 1. Review quality assessment from Gemini 3 Flash/Pro
@@ -356,7 +509,7 @@ Generate Image → Review Quality → Score >= Threshold?
 
 ---
 
-### Stage 5: Integration
+### Stage 6: Integration
 
 **Objective:** Integrate diagram into manuscript/presentation
 
@@ -531,6 +684,17 @@ Limit complexity per diagram type:
 <error_handling>
 ## Error Handling
 
+### Tier 1 (Mermaid) Errors
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `mmdc: command not found` | mermaid-cli not installed | Run `npm install -g @mermaid-js/mermaid-cli` |
+| `Mermaid syntax error` | Invalid diagram syntax | Check generated Mermaid code, simplify prompt |
+| `No Mermaid backend available` | Neither mmdc nor mermaid-py installed | Install mermaid-cli or run `pip install mermaid-py` |
+| `Puppeteer launch failed` | Chrome/Chromium missing | Install Chrome or use `--puppeteerConfigFile` |
+
+### Tier 2 (AI) Errors
+
 | Error | Cause | Solution |
 |-------|-------|----------|
 | `OPENROUTER_API_KEY not set` | Missing environment variable | Run `export OPENROUTER_API_KEY='your_key'` |
@@ -538,33 +702,52 @@ Limit complexity per diagram type:
 | `429 Rate Limited` | Too many requests | Wait 60 seconds, reduce iteration count |
 | `Connection timeout` | Network issues | Check internet connection, retry |
 | `Score < threshold after max iterations` | Complex diagram or vague prompt | Refine prompt with more specific details |
+
+### General Errors
+
+| Error | Cause | Solution |
+|-------|-------|----------|
 | `FileNotFoundError: scripts/` | Wrong working directory | Run from skill directory or use `{baseDir}` paths |
 | `ImportError: requests` | Missing dependency | Run `pip install requests` |
+| `Diagram type not supported` | Unsupported type for selected tier | Use `--engine ai` for complex diagram types |
 
 **Recovery Patterns:**
 
-1. **API failures**: The script saves partial results; check `*_review_log.json` for last successful iteration
-2. **Low scores**: Review critique in JSON log, improve prompt specificity
-3. **Timeout**: Reduce diagram complexity or break into multiple figures
+1. **Mermaid failures**: Fall back to AI with `--engine ai`
+2. **API failures**: The script saves partial results; check `*_review_log.json` for last successful iteration
+3. **Low scores**: Review critique in JSON log, improve prompt specificity
+4. **Timeout**: Reduce diagram complexity or break into multiple figures
 </error_handling>
 
 <templates>
 ## Output Templates
 
-### Generation Command
+### Generation Commands
 
 ```bash
-# Basic usage
+# Auto-select tier (recommended for most use cases)
 python {baseDir}/scripts/generate_schematic.py "{{prompt}}" -o figures/{{name}}.png
 
-# With document type
+# Force Mermaid tier (free, instant - best for drafts)
 python {baseDir}/scripts/generate_schematic.py "{{prompt}}" \
   -o figures/{{name}}.png \
+  --engine mermaid
+
+# Force AI tier (publication quality)
+python {baseDir}/scripts/generate_schematic.py "{{prompt}}" \
+  -o figures/{{name}}.png \
+  --engine ai \
   --doc-type {{journal|conference|thesis|grant|preprint|report|poster|presentation}}
 
-# Verbose with custom iterations
+# Analyze complexity without generating
 python {baseDir}/scripts/generate_schematic.py "{{prompt}}" \
   -o figures/{{name}}.png \
+  --analyze
+
+# Verbose AI generation with custom iterations
+python {baseDir}/scripts/generate_schematic.py "{{prompt}}" \
+  -o figures/{{name}}.png \
+  --engine ai \
   --doc-type journal \
   --iterations 2 \
   -v
