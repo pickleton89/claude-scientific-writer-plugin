@@ -1,7 +1,8 @@
 # Image Generation Skills Refactoring Plan
 
-> **Status:** Planning
+> **Status:** Phase 1 Complete | Phase 2-4 Pending
 > **Created:** 2026-01-14
+> **Phase 1 Completed:** 2026-01-14
 > **Scope:** Consolidate image generation, add Mermaid tier for cost optimization
 
 ---
@@ -1201,11 +1202,13 @@ class TestTieredGeneration:
 ## Part 9: Success Criteria
 
 ### Phase 1 (Mermaid) Complete When:
-- [ ] `generate_mermaid.py` renders basic flowcharts
-- [ ] Complexity analyzer correctly routes simple vs complex
-- [ ] Auto-selection matches expected tier >90% of cases
-- [ ] All tests pass
-- [ ] SKILL.md documents tiered approach
+- [x] `generate_mermaid.py` renders basic flowcharts
+- [x] Complexity analyzer correctly routes simple vs complex
+- [x] Auto-selection matches expected tier >90% of cases
+- [x] All tests pass (247 tests)
+- [x] SKILL.md documents tiered approach
+
+**✅ Phase 1 Complete (2026-01-14)** - Tiered diagram generation with Mermaid support fully implemented.
 
 ### Phase 2 (Simplification) Complete When:
 - [ ] FLUX.2 models show deprecation warning
