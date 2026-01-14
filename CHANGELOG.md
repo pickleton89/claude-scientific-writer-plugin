@@ -63,6 +63,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
     - Word-boundary matching for diagram types (prevents false positives like "pipeline" matching "pie")
     - 26 AI-only diagram types (neural networks, pathways, circuits)
     - 13 Mermaid-compatible diagram types from templates
+  - **generate_mermaid.py**: Mermaid diagram generation engine (Phase 1, Step 1.4)
+    - `generate_mermaid_diagram()`: Main entry point for Tier 1 diagram generation
+    - `prompt_to_mermaid()`: Natural language to Mermaid syntax conversion
+    - `MermaidResult` dataclass: Generation result with success, output path, code, timing, cost ($0)
+    - Template-based generation for CONSORT, PRISMA with automatic number extraction
+    - Pattern parsing for flowcharts (arrows, "then", numbered steps, comma-separated)
+    - Sequence and state diagram parsing from natural language
+    - `_escape_mermaid_label()`: HTML entity escaping for special characters in labels
+    - CLI interface with comprehensive options:
+      - `--raw`: Direct Mermaid code input
+      - `--type`: Diagram type hint (consort, prisma, flowchart, sequence, state, etc.)
+      - `--format`: Output format (png, svg, pdf)
+      - `--theme`: Mermaid themes (default, dark, forest, neutral, base)
+      - `--analyze`: Complexity analysis without generation
+      - `--list-templates`, `--list-types`, `--check-backends`: Discovery commands
+    - Automatic .mmd source file saving alongside rendered output for version control
+    - Integrates with complexity_analyzer for auto-detection and tier recommendations
 
 - **docs/IMAGE_GENERATION_REFACTORING_PLAN.md**: Comprehensive refactoring plan for image generation skills
   - Comparative analysis of generate-image vs scientific-schematics skills
