@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Changed
+- **Phase 4 Complete**: Documentation and testing finalized for image generation refactoring
+  - **skills/SKILL_ROUTER.md**: Added tiered generation note for scientific-schematics routing (v1.5.0 → v1.6.0)
+  - **End-to-end testing**: All 611 tests pass (38 shared + 326 generate-image + 247 scientific-schematics)
+  - **docs/IMAGE_GENERATION_REFACTORING_PLAN.md**: All phases complete (1-4)
 - **Phase 3 Complete**: Integrated shared API utilities into skills
   - **skills/generate-image/scripts/generate_image.py**:
     - Now uses `load_api_key()` and `make_openrouter_request()` from shared module

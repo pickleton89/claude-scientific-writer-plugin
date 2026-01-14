@@ -2,13 +2,13 @@
 name: skill-router
 description: Decision trees for selecting the correct skill when multiple options apply. Consult when task scope is ambiguous or spans multiple scientific writing domains.
 when_to_use: When a user request could be handled by 2+ skills, when unclear which skill is primary vs. supporting, or when planning multi-skill workflows.
-version: 1.5.0
+version: 1.6.0
 ---
 
 # Skill Router
 
 > Decision trees and routing logic for selecting the right skill(s) for scientific writing tasks
-> Version: 1.5.0 | Updated: 2026-01-04
+> Version: 1.6.0 | Updated: 2026-01-14
 
 ---
 
@@ -52,7 +52,11 @@ User wants to create a visual
 │          │         ├─ Molecular structure → Structure schematic
 │          │         ├─ Experimental setup → Methods diagram
 │          │         ├─ Conceptual model → Concept map
-│          │         └─ Mechanism → Mechanism diagram
+│          │         ├─ Mechanism → Mechanism diagram
+│          │         │
+│          │         └─ NOTE: Tiered generation (see SKILL.md)
+│          │            ├─ Tier 1 (Mermaid): Free, instant, <10 nodes
+│          │            └─ Tier 2 (AI): Publication quality, complex
 │          │
 │          └─ NO → Is it PHOTOREALISTIC or AI-GENERATED imagery?
 │                   │
