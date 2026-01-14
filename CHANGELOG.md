@@ -6,7 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- **docs/SKILLS_DOCUMENTATION.md**: Comprehensive skills documentation (~2,100 lines)
+  - Architecture overview with directory structure and routing system explanation
+  - All 23 skills documented across 6 categories:
+    - Visual Creation (4): visual-design, plotting-libraries, scientific-schematics, generate-image
+    - Document Creation (8): scientific-writing, executive-summary, scientific-slides, research-posters, venue-templates, hypothesis-generation, markdown-to-pdf, document-skills
+    - Research Workflow (5): paper-search, literature-review, citation-management, peer-review, research-paper-summarizer
+    - Analysis & Code (3): statistical-analysis, reproducible-research, code-documentation
+    - Conversion (2): markitdown, paper-2-web
+    - Brand (1): oligon-brand
+  - Each skill entry includes: version, purpose, capabilities, decision frameworks, workflows, when to use/not use, integrations
+  - Integration matrix showing skill relationships and data flow
+  - Common workflows: Research Paper (11 steps), Conference Poster (5 steps), Presentation (4 steps), Paper Promotion (3 steps)
+  - Quality standards and iteration stopping rules
+  - Quick reference appendix with all skills and key commands
+
 ### Changed
+- **docs/SKILLS_CONSOLIDATION_PLAN.md**: Archived to `docs/archive/` (completed work)
 - **Phase 4 Complete**: Documentation and testing finalized for image generation refactoring
   - **skills/SKILL_ROUTER.md**: Added tiered generation note for scientific-schematics routing (v1.5.0 → v1.6.0)
   - **End-to-end testing**: All 611 tests pass (38 shared + 326 generate-image + 247 scientific-schematics)
