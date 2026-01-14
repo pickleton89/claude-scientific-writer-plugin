@@ -1,8 +1,8 @@
 ---
 name: generate-image
-version: 2.2.0
+version: 2.3.0
 extends: visual-design
-description: "Generate and edit images using AI models (FLUX, Gemini) via OpenRouter. For photos, illustrations, artwork, and visual assets. Use scientific-schematics for technical diagrams."
+description: "Generate and edit images using Gemini 3 Pro via OpenRouter. For photos, illustrations, artwork, and visual assets. Use scientific-schematics for technical diagrams."
 allowed-tools: [Read, Write, Edit, Bash]
 quantification-reference: "../QUANTIFICATION_THRESHOLDS.md"
 ---
@@ -12,7 +12,7 @@ quantification-reference: "../QUANTIFICATION_THRESHOLDS.md"
 > **Design Foundation**: This skill extends [`visual-design`](../visual-design/SKILL.md) for typography, color, composition, and accessibility standards.
 
 <overview>
-Generate and edit high-quality images using OpenRouter's image generation models including FLUX.2 Pro and Gemini 3 Pro. Produces photos, illustrations, artwork, and visual assets for scientific documents, presentations, and publications. For technical diagrams (flowcharts, circuits, pathways), use `scientific-schematics` instead.
+Generate and edit high-quality images using Google's Gemini 3 Pro model via OpenRouter. Produces photos, illustrations, artwork, and visual assets for scientific documents, presentations, and publications. Supports image generation, editing, and inpainting in a single unified model. For technical diagrams (flowcharts, circuits, pathways), use `scientific-schematics` instead.
 </overview>
 
 <when_to_use>
@@ -62,12 +62,17 @@ What kind of image is needed?
 
 > **Full Reference:** See `{baseDir}/references/model_capabilities.md` for detailed model comparison, capabilities, and pricing.
 
-| Use Case | Recommended Model |
-|----------|------------------|
-| High-quality generation | `google/gemini-3-pro-image-preview` |
-| Fast generation | `black-forest-labs/flux.2-pro` |
-| Image editing | `google/gemini-3-pro-image-preview` |
-| Budget generation | `black-forest-labs/flux.2-flex` |
+**Recommended Model:** `google/gemini-3-pro-image-preview` (Gemini 3 Pro)
+
+| Capability | Support |
+|------------|---------|
+| Image generation | Yes |
+| Image editing | Yes |
+| Inpainting | Yes |
+| Max resolution | 2048px |
+| Quality tier | Excellent |
+
+> **Note:** FLUX.2 models (Pro and Flex) are deprecated. Use Gemini 3 Pro for all image generation tasks. See `{baseDir}/references/model_capabilities.md` for migration details.
 
 </decision_framework>
 
@@ -81,13 +86,13 @@ What kind of image is needed?
 **Steps:**
 1. Clarify the image purpose (document, presentation, poster)
 2. Determine image type using decision tree
-3. Select appropriate model based on requirements
+3. Confirm Gemini 3 Pro is appropriate for the task
 4. Define output specifications (size, format, style)
 
 **Exit Criteria:**
 - [ ] Image purpose defined
 - [ ] Confirmed this skill is appropriate (not scientific-schematics)
-- [ ] Model selected from matrix
+- [ ] Model confirmed (Gemini 3 Pro)
 - [ ] Output format specified (PNG, size)
 
 ---

@@ -1,8 +1,9 @@
 # Image Generation Skills Refactoring Plan
 
-> **Status:** Phase 1 Complete | Phase 2-4 Pending
+> **Status:** Phase 1-2 Complete | Phase 3-4 Pending
 > **Created:** 2026-01-14
 > **Phase 1 Completed:** 2026-01-14
+> **Phase 2 Completed:** 2026-01-14
 > **Scope:** Consolidate image generation, add Mermaid tier for cost optimization
 
 ---
@@ -1211,10 +1212,12 @@ class TestTieredGeneration:
 **✅ Phase 1 Complete (2026-01-14)** - Tiered diagram generation with Mermaid support fully implemented.
 
 ### Phase 2 (Simplification) Complete When:
-- [ ] FLUX.2 models show deprecation warning
-- [ ] Default model is Gemini 3 Pro
-- [ ] Tests updated and passing
-- [ ] Documentation updated
+- [x] FLUX.2 models show deprecation warning
+- [x] Default model is Gemini 3 Pro
+- [x] Tests updated and passing
+- [x] Documentation updated
+
+**✅ Phase 2 Complete (2026-01-14)** - FLUX.2 models deprecated, Gemini 3 Pro set as default, documentation updated.
 
 ### Phase 3 (Shared Utils) Complete When:
 - [ ] Both skills use shared `api_utils.py`
