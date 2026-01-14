@@ -92,6 +92,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
     - Automatic .mmd source file saving alongside rendered output for version control
     - Integrates with complexity_analyzer for auto-detection and tier recommendations
 
+- **skills/scientific-schematics/tests/**: Comprehensive test suite for Mermaid modules (Phase 1, Step 1.6)
+  - **test_complexity_analyzer.py**: 68 tests for tier selection logic
+    - `TestGenerationTier`: Enum values and string conversion
+    - `TestDetectDiagramType`: 15 tests for diagram type detection from prompts
+    - `TestMermaidCompatibility`: 14 tests for Mermaid support checking
+    - `TestQualityThresholds`: Document type to quality requirement mapping
+    - `TestEdgeEstimation`: Edge count heuristics (arrows, keywords, branching)
+    - `TestAnalyzeComplexity`: Full complexity analysis and tier routing
+    - `TestTierSummary`: Tier info retrieval (cost, speed, quality)
+    - `TestEdgeCases`: Empty prompts, long prompts, special characters
+  - **test_mermaid_templates.py**: 42 tests for template system
+    - `TestTemplateListing`: Template and diagram type enumeration
+    - `TestTemplateRetrieval`: Getting templates by name/type
+    - `TestFillTemplate`: Template filling with CONSORT, PRISMA, flowchart data
+    - `TestRequiredFields`: Extracting placeholder fields from templates
+    - `TestValidateTemplateData`: Pre-fill validation for completeness
+    - `TestTemplateMetadata`: Metadata consistency with actual templates
+    - `TestBuildNodesString`: Node shape rendering (rect, rounded, diamond, circle, stadium)
+    - `TestBuildConnectionsString`: Connection rendering with labels
+    - `TestBuildFlowchart`: Complete flowchart construction (TD, LR, BT, RL)
+  - **test_mermaid.py**: 65 tests for renderer and generation
+    - `TestRenderBackend`: Backend enum (mmdc, python, api, auto)
+    - `TestRenderConfig`: Configuration dataclass defaults and customization
+    - `TestRenderResult`: Result dataclass and dict conversion
+    - `TestMermaidRenderer`: Renderer class, backend detection, install instructions
+    - `TestValidateMermaidSyntax`: Syntax validation for flowchart, sequence, state, pie, gantt
+    - `TestPromptToMermaid`: Natural language to Mermaid conversion
+    - `TestGenerateMermaidDiagram`: Main generation function with themes, formats
+    - `TestIntegrationWithBackend`: End-to-end rendering (skipped if no backend)
+    - `TestEdgeCases`: Unicode, special characters, output path creation
+  - 175 total tests covering tier selection, template filling, syntax validation, and rendering
+
 - **docs/IMAGE_GENERATION_REFACTORING_PLAN.md**: Comprehensive refactoring plan for image generation skills
   - Comparative analysis of generate-image vs scientific-schematics skills
   - Tiered architecture design: Mermaid (free/instant) vs AI generation (publication quality)
