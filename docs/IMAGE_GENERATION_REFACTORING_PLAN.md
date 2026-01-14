@@ -1,9 +1,10 @@
 # Image Generation Skills Refactoring Plan
 
-> **Status:** Phase 1-2 Complete | Phase 3-4 Pending
+> **Status:** Phase 1-3 Complete | Phase 4 Pending
 > **Created:** 2026-01-14
 > **Phase 1 Completed:** 2026-01-14
 > **Phase 2 Completed:** 2026-01-14
+> **Phase 3 Completed:** 2026-01-14
 > **Scope:** Consolidate image generation, add Mermaid tier for cost optimization
 
 ---
@@ -1220,10 +1221,12 @@ class TestTieredGeneration:
 **✅ Phase 2 Complete (2026-01-14)** - FLUX.2 models deprecated, Gemini 3 Pro set as default, documentation updated.
 
 ### Phase 3 (Shared Utils) Complete When:
-- [ ] Both skills use shared `api_utils.py`
-- [ ] No duplicate API key loading code
-- [ ] All tests pass
-- [ ] No behavior changes
+- [x] Both skills use shared `api_utils.py`
+- [x] No duplicate API key loading code
+- [x] All tests pass (611 tests: 38 shared + 326 generate-image + 247 scientific-schematics)
+- [x] No behavior changes
+
+**✅ Phase 3 Complete (2026-01-14)** - Shared API utilities module created and integrated into both skills.
 
 ### Overall Success:
 - [ ] 40%+ cost reduction for typical workflows

@@ -27,21 +27,17 @@ except ImportError:
     validate_model = None
     DEFAULT_MODEL = "google/gemini-3-pro-image-preview"
 
-
-def check_env_file() -> Optional[str]:
-    """Check if .env file exists and contains OPENROUTER_API_KEY."""
-    # Look for .env in current directory and parent directories
-    current_dir = Path.cwd()
-    for parent in [current_dir] + list(current_dir.parents):
-        env_file = parent / ".env"
-        if env_file.exists():
-            with open(env_file, 'r') as f:
-                for line in f:
-                    if line.startswith('OPENROUTER_API_KEY='):
-                        api_key = line.split('=', 1)[1].strip().strip('"').strip("'")
-                        if api_key:
-                            return api_key
-    return None
+# Import shared API utilities
+try:
+    # When running from within skills directory structure
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent / "shared"))
+    from api_utils import load_api_key, get_api_config, make_openrouter_request, APIError
+except ImportError:
+    # Fallback: shared module not available, will use inline implementation
+    load_api_key = None
+    get_api_config = None
+    make_openrouter_request = None
+    APIError = None
 
 
 def load_image_as_base64(image_path: str) -> str:
@@ -101,29 +97,30 @@ def generate_image(
     Returns:
         dict: Response from OpenRouter API
     """
-    try:
-        import requests
-    except ImportError:
-        print("Error: 'requests' library not found. Install with: pip install requests")
-        sys.exit(1)
-
     # Validate model and check for deprecation
     if validate_model is not None:
-        result = validate_model(model, warn_deprecated=False)
-        if not result.valid:
-            print(f"⚠️  {result.error}")
-            if result.suggestion:
-                print(f"   {result.suggestion}")
+        validation = validate_model(model, warn_deprecated=False)
+        if not validation.valid:
+            print(f"⚠️  {validation.error}")
+            if validation.suggestion:
+                print(f"   {validation.suggestion}")
             sys.exit(1)
-        if result.deprecation_warning:
-            print(f"⚠️  Deprecation Warning: {result.deprecation_warning}")
+        if validation.deprecation_warning:
+            print(f"⚠️  Deprecation Warning: {validation.deprecation_warning}")
             print(f"   Continuing with {model}, but consider switching to {DEFAULT_MODEL}")
 
-    # Check for API key
-    if not api_key:
-        api_key = check_env_file()
+    # Load API key using shared utilities if available
+    if load_api_key is not None:
+        resolved_api_key = load_api_key(
+            explicit_key=api_key,
+            caller_file=__file__
+        )
+    else:
+        # Fallback: only use explicit key or environment variable
+        import os
+        resolved_api_key = api_key or os.environ.get("OPENROUTER_API_KEY")
 
-    if not api_key:
+    if not resolved_api_key:
         print("❌ Error: OPENROUTER_API_KEY not found!")
         print("\nPlease create a .env file in your project directory with:")
         print("OPENROUTER_API_KEY=your-api-key-here")
@@ -134,15 +131,15 @@ def generate_image(
 
     # Determine if this is generation or editing
     is_editing = input_image is not None
-    
+
     if is_editing:
         print(f"✏️ Editing image with model: {model}")
         print(f"📷 Input image: {input_image}")
         print(f"📝 Edit prompt: {prompt}")
-        
+
         # Load input image as base64
         image_data_url = load_image_as_base64(input_image)
-        
+
         # Build multimodal message content for image editing
         message_content = [
             {
@@ -161,31 +158,58 @@ def generate_image(
         print(f"📝 Prompt: {prompt}")
         message_content = prompt
 
-    # Make API request
-    response = requests.post(
-        url="https://openrouter.ai/api/v1/chat/completions",
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-        json={
-            "model": model,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": message_content
-                }
-            ],
-            "modalities": ["image", "text"]
+    # Build messages for API request
+    messages = [
+        {
+            "role": "user",
+            "content": message_content
         }
-    )
+    ]
 
-    # Check for errors
-    if response.status_code != 200:
-        print(f"❌ API Error ({response.status_code}): {response.text}")
-        sys.exit(1)
+    # Make API request using shared utilities if available
+    if make_openrouter_request is not None and get_api_config is not None:
+        try:
+            config = get_api_config(api_key=resolved_api_key)
+            result = make_openrouter_request(
+                config=config,
+                model=model,
+                messages=messages,
+                modalities=["image", "text"]
+            )
+        except APIError as e:
+            print(f"❌ API Error ({e.status_code}): {e.detail}")
+            sys.exit(1)
+        except ImportError as e:
+            # Handles case where shared module loads but requests isn't installed
+            print(f"❌ Error: {e}")
+            sys.exit(1)
+    else:
+        # Fallback: make request directly
+        try:
+            import requests
+        except ImportError:
+            print("Error: 'requests' library not found. Install with: pip install requests")
+            sys.exit(1)
 
-    result = response.json()
+        response = requests.post(
+            url="https://openrouter.ai/api/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {resolved_api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": model,
+                "messages": messages,
+                "modalities": ["image", "text"]
+            }
+        )
+
+        # Check for errors
+        if response.status_code != 200:
+            print(f"❌ API Error ({response.status_code}): {response.text}")
+            sys.exit(1)
+
+        result = response.json()
 
     # Extract and save image
     if result.get("choices"):

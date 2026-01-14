@@ -33,47 +33,14 @@ except ImportError:
     print("Error: requests library not found. Install with: pip install requests")
     sys.exit(1)
 
-# Try to load .env file from multiple potential locations
-def _load_env_file():
-    """Load .env file from current directory, parent directories, or package directory.
-    
-    Returns True if a .env file was found and loaded, False otherwise.
-    Note: This does NOT override existing environment variables.
-    """
-    try:
-        from dotenv import load_dotenv
-    except ImportError:
-        return False  # python-dotenv not installed
-    
-    # Try current working directory first
-    env_path = Path.cwd() / ".env"
-    if env_path.exists():
-        load_dotenv(dotenv_path=env_path, override=False)
-        return True
-        
-    # Try parent directories (up to 5 levels)
-    cwd = Path.cwd()
-    for _ in range(5):
-        env_path = cwd / ".env"
-        if env_path.exists():
-            load_dotenv(dotenv_path=env_path, override=False)
-            return True
-        cwd = cwd.parent
-        if cwd == cwd.parent:  # Reached root
-            break
-    
-    # Try the package's parent directory (scientific-writer project root)
-    script_dir = Path(__file__).resolve().parent
-    for _ in range(5):
-        env_path = script_dir / ".env"
-        if env_path.exists():
-            load_dotenv(dotenv_path=env_path, override=False)
-            return True
-        script_dir = script_dir.parent
-        if script_dir == script_dir.parent:
-            break
-            
-    return False
+# Import shared API utilities for API key loading
+try:
+    # When running from within skills directory structure
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent / "shared"))
+    from api_utils import load_api_key as shared_load_api_key
+except ImportError:
+    # Fallback: shared module not available
+    shared_load_api_key = None
 
 
 class ScientificSchematicGenerator:
@@ -147,13 +114,15 @@ LAYOUT:
             verbose: Print detailed progress information
             review_model: "flash" (default, faster/cheaper) or "pro" (higher quality)
         """
-        # Priority: 1) explicit api_key param, 2) environment variable, 3) .env file
-        self.api_key = api_key or os.getenv("OPENROUTER_API_KEY")
-
-        # If not found in environment, try loading from .env file
-        if not self.api_key:
-            _load_env_file()
-            self.api_key = os.getenv("OPENROUTER_API_KEY")
+        # Load API key using shared utilities if available
+        if shared_load_api_key is not None:
+            self.api_key = shared_load_api_key(
+                explicit_key=api_key,
+                caller_file=__file__
+            )
+        else:
+            # Fallback: only use explicit key or environment variable
+            self.api_key = api_key or os.getenv("OPENROUTER_API_KEY")
 
         if not self.api_key:
             raise ValueError(
@@ -651,7 +620,7 @@ USER REQUEST: {user_prompt}
 Generate a publication-quality scientific diagram that meets all the guidelines above."""
         
         print(f"\n{'='*60}")
-        print(f"Generating Scientific Schematic")
+        print("Generating Scientific Schematic")
         print(f"{'='*60}")
         print(f"Description: {user_prompt}")
         print(f"Document Type: {doc_type}")
@@ -665,7 +634,7 @@ Generate a publication-quality scientific diagram that meets all the guidelines 
             print("-" * 40)
             
             # Generate image
-            print(f"Generating image...")
+            print("Generating image...")
             image_data = self.generate_image(current_prompt)
             
             if not image_data:
@@ -706,7 +675,7 @@ Generate a publication-quality scientific diagram that meets all the guidelines 
             # Check if quality is acceptable - STOP EARLY if so
             if not needs_improvement:
                 print(f"\n✓ Quality meets {doc_type} threshold ({score} >= {threshold})")
-                print(f"  No further iterations needed!")
+                print("  No further iterations needed!")
                 results["final_image"] = str(iter_path)
                 results["final_score"] = score
                 results["success"] = True
@@ -716,7 +685,7 @@ Generate a publication-quality scientific diagram that meets all the guidelines 
             
             # If this is the last iteration, we're done regardless
             if i == iterations:
-                print(f"\n⚠ Maximum iterations reached")
+                print("\n⚠ Maximum iterations reached")
                 results["final_image"] = str(iter_path)
                 results["final_score"] = score
                 results["success"] = True
@@ -724,7 +693,7 @@ Generate a publication-quality scientific diagram that meets all the guidelines 
             
             # Quality below threshold - improve prompt for next iteration
             print(f"\n⚠ Quality below threshold ({score} < {threshold})")
-            print(f"Improving prompt based on feedback...")
+            print("Improving prompt based on feedback...")
             current_prompt = self.improve_prompt(user_prompt, critique, i + 1)
         
         # Copy final version to output path
@@ -742,7 +711,7 @@ Generate a publication-quality scientific diagram that meets all the guidelines 
         print(f"✓ Review log: {log_path}")
         
         print(f"\n{'='*60}")
-        print(f"Generation Complete!")
+        print("Generation Complete!")
         print(f"Final Score: {results['final_score']}/10")
         if results["early_stop"]:
             print(f"Iterations Used: {len([r for r in results['iterations'] if r.get('success')])}/{iterations} (early stop)")
@@ -837,7 +806,7 @@ Environment:
                 print(f"  (Completed in {len([r for r in results['iterations'] if r.get('success')])} iteration(s) - quality threshold met)")
             sys.exit(0)
         else:
-            print(f"\n✗ Generation failed. Check review log for details.")
+            print("\n✗ Generation failed. Check review log for details.")
             sys.exit(1)
     except Exception as e:
         print(f"\n✗ Error: {str(e)}")

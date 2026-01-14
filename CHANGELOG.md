@@ -7,6 +7,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Changed
+- **Phase 3 Complete**: Integrated shared API utilities into skills
+  - **skills/generate-image/scripts/generate_image.py**:
+    - Now uses `load_api_key()` and `make_openrouter_request()` from shared module
+    - Added graceful fallback when shared module unavailable
+    - Fixed variable naming (`result` → `validation`) for clarity
+    - Added ImportError handling for edge case where requests isn't installed
+  - **skills/scientific-schematics/scripts/generate_schematic_ai.py**:
+    - Now uses `shared_load_api_key()` for API key loading
+    - Removed redundant `_load_env_file()` function (40+ lines)
+    - Fixed f-string linting issues (removed extraneous `f` prefixes)
+  - **docs/IMAGE_GENERATION_REFACTORING_PLAN.md**: Phase 3 marked complete
+
+### Added
+- **skills/shared/tests/**: Test suite for shared API utilities (38 tests)
+  - `test_api_utils.py`: Comprehensive tests for APIConfig, APIError, load_api_key,
+    get_api_config, make_openrouter_request, and .env file parsing
+
 - **skills/generate-image**: FLUX.2 model deprecation and simplification (Phase 2 Complete)
   - **SKILL.md**: Simplified documentation to focus on single model (Tasks 2.5-2.6)
     - Version bump: 2.2.0 → 2.3.0
