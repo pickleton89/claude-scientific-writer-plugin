@@ -32,6 +32,7 @@ Use this skill when:
 Do NOT use this skill when:
 - Creating data visualizations (plots, charts) → use `plotting-libraries`
 - Generating photorealistic images → use `generate-image`
+- Graphical abstracts or visual summaries from paper text → use `paperbanana`
 - Designing slides or posters → use `scientific-slides`, `research-posters`
 - Need design philosophy guidance → use `visual-design`
 </when_to_use>
@@ -821,6 +822,7 @@ Vertical top-to-bottom layout.
 | `plotting-libraries` | Use for data visualizations (plots, charts); schematics for diagrams |
 | `visual-design` | Consult for design principles before creating schematics |
 | `generate-image` | Use for photorealistic images; schematics for diagrams |
+| `paperbanana` | Use for text-to-visual (graphical abstracts, visual summaries); schematics for specified diagrams |
 | `scientific-slides` | Schematics integrates into slide presentations |
 | `research-posters` | Schematics provides figures for posters |
 | `scientific-writing` | Schematics provides methodology diagrams for papers |

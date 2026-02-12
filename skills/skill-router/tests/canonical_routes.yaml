@@ -111,6 +111,50 @@ scientific_schematics_cases:
     notes: "Weak signal - only 'concept map' matches"
 
 # ============================================================
+# VISUAL CREATION - paperbanana
+# ============================================================
+
+paperbanana_cases:
+  - request: "Create a graphical abstract for this paper"
+    expected_skill: paperbanana
+    min_confidence: 0.3
+    category: visual
+
+  - request: "Make a visual summary of this methodology"
+    expected_skill: paperbanana
+    min_confidence: 0.3
+    category: visual
+
+  - request: "Illustrate this method as an overview figure"
+    expected_skill: paperbanana
+    min_confidence: 0.3
+    category: visual
+    notes: "Moderate signal - trigger match for illustrate"
+
+  - request: "Create a visual executive summary diagram"
+    expected_skill: executive-summary
+    min_confidence: 0.5
+    category: document
+    notes: "Routes to executive-summary (strong keyword match); paperbanana available as supporting"
+
+  - request: "Explain this approach visually"
+    expected_skill: paperbanana
+    min_confidence: 0.1
+    category: visual
+    notes: "Weak signal - only 'explain visually' trigger"
+
+  - request: "Generate a paperbanana figure from this paper text"
+    expected_skill: paperbanana
+    min_confidence: 0.3
+    category: visual
+    notes: "Explicit paperbanana mention ensures correct routing"
+
+  - request: "Use paperbanana to create a figure"
+    expected_skill: paperbanana
+    min_confidence: 0.3
+    category: visual
+
+# ============================================================
 # VISUAL CREATION - generate-image
 # ============================================================
 
@@ -601,3 +645,15 @@ negative_cases:
     not_expected: paper-search
     min_confidence: 0.5
     notes: "Systematic/comprehensive goes to literature-review"
+
+  - request: "Create a CONSORT flowchart"
+    expected_skill: scientific-schematics
+    not_expected: paperbanana
+    min_confidence: 0.5
+    notes: "Specific diagram type goes to schematics, not paperbanana"
+
+  - request: "Plot this data as a bar chart"
+    expected_skill: plotting-libraries
+    not_expected: paperbanana
+    min_confidence: 0.5
+    notes: "Data visualization goes to plotting-libraries, not paperbanana"

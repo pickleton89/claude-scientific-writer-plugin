@@ -408,3 +408,4 @@ Avoid these errors that reduce executive summary effectiveness:
 - `../visual-design/SKILL.md` - Design philosophy for scientific visuals
 - `../plotting-libraries/SKILL.md` - Python plotting implementations
 - `../scientific-writing/SKILL.md` - Abstract vs. executive summary distinction
+- `../paperbanana/SKILL.md` - Visual executive summary figures from text

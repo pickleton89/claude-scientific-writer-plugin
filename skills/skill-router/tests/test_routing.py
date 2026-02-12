@@ -156,6 +156,7 @@ def run_all_tests(verbose: bool = True) -> tuple[int, int, dict[str, list[TestRe
     standard_categories = [
         "plotting_libraries_cases",
         "scientific_schematics_cases",
+        "paperbanana_cases",
         "generate_image_cases",
         "scientific_writing_cases",
         "executive_summary_cases",
@@ -303,6 +304,19 @@ def test_scientific_schematics_routing():
         result = router.route(case["request"])
         assert result.primary_skill == case["expected_skill"], \
             f"Request '{case['request']}' routed to {result.primary_skill}"
+
+
+def test_paperbanana_routing():
+    """Test routing for text-to-visual requests."""
+    test_cases = load_test_cases()
+    router = SkillRouter()
+
+    for case in test_cases.get("paperbanana_cases", []):
+        result = router.route(case["request"])
+        assert result.primary_skill == case["expected_skill"], \
+            f"Request '{case['request']}' routed to {result.primary_skill}"
+        assert result.confidence >= case.get("min_confidence", 0.5), \
+            f"Confidence {result.confidence} below threshold"
 
 
 def test_scientific_writing_routing():

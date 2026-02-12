@@ -63,7 +63,7 @@ A literature search is **comprehensive** when ALL criteria are met:
 
 ## §2 Visual Quality
 
-**Referenced by:** `visual-design`, `peer-review`, `generate-image`, `plotting-libraries`
+**Referenced by:** `visual-design`, `peer-review`, `generate-image`, `plotting-libraries`, `paperbanana`
 
 ### Resolution Standards
 
@@ -223,7 +223,7 @@ A literature search is **comprehensive** when ALL criteria are met:
 
 ## §7 Quality Scoring Rubrics
 
-**Referenced by:** `scientific-writing`, `scientific-schematics`, `peer-review`, `generate-image`
+**Referenced by:** `scientific-writing`, `scientific-schematics`, `peer-review`, `generate-image`, `paperbanana`
 
 ### §7.1 Writing Quality Rubric
 
@@ -267,7 +267,7 @@ A literature search is **comprehensive** when ALL criteria are met:
 
 ## §8 Iteration & Stopping Criteria
 
-**Referenced by:** `scientific-schematics`, `generate-image`
+**Referenced by:** `scientific-schematics`, `generate-image`, `paperbanana`
 
 ### Quality Thresholds by Document Type
 

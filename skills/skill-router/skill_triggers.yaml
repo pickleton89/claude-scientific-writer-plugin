@@ -60,6 +60,12 @@ skills:
       - workflow
       - mechanism
       - pathway
+      - graphical abstract
+      - visual abstract
+      - visual summary
+      - figure from paper
+      - figure from text
+      - figure from method
 
   scientific-schematics:
     description: Diagrams, flowcharts, pathways, mechanism illustrations
@@ -133,6 +139,44 @@ skills:
       - schematic
       - histogram
       - scatter
+
+  paperbanana:
+    description: Generate visual figures from text (graphical abstracts, visual summaries, methodology overviews)
+    category: visual
+    keywords:
+      - paperbanana
+      - graphical abstract
+      - visual abstract
+      - visual summary
+      - visual executive summary
+      - figure from paper
+      - figure from text
+      - figure from methodology
+      - illustrate method
+      - paper overview figure
+      - methodology overview
+      - explain visually
+    triggers:
+      - "graphical.*abstract"
+      - "visual.*(abstract|summary|executive)"
+      - "figure.*from.*(paper|text|method|context|excerpt)"
+      - "illustrate.*(this|my|the).*(method|approach|pipeline|workflow)"
+      - "explain.*visual"
+      - "paperbanana"
+      - "overview.*figure"
+      - "methodology.*overview"
+    output_formats: [png, pdf]
+    negative_keywords:
+      - bar chart
+      - scatter plot
+      - histogram
+      - heatmap
+      - volcano plot
+      - photorealistic
+      - consort
+      - prisma
+      - circuit
+      - signaling pathway
 
   visual-design:
     description: Design guidance, color theory, typography, layout, accessibility

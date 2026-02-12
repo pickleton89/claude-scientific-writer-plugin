@@ -1,0 +1,43 @@
+# Oligon Scientific Brand — Aesthetic Guidelines for PaperBanana
+# These guidelines are injected into PaperBanana's Stylist agent
+# to ensure generated figures follow Oligon brand standards.
+
+brand:
+  name: "Oligon Scientific"
+  version: "1.0.0"
+
+color_palette:
+  primary: "#2DB2E8"          # Brand Blue - highlights, key components
+  contrast: "#E8622D"         # Orange - warnings, opposing elements
+  text: "#222222"             # Dark Gray - primary text, labels
+  secondary: "#666666"        # Medium Gray - supporting components
+  background: "#FFFFFF"       # White - clean background
+
+typography:
+  font_family: "sans-serif"
+  title_size: "14pt"
+  label_size: "10pt"
+  annotation_size: "8pt"
+  minimum_size: "7pt"
+
+layout:
+  background: "clean white"
+  borders: "minimal, #222222 when needed"
+  spacing: "generous whitespace"
+  alignment: "balanced, logical flow"
+
+style_rules:
+  - "Use Brand Blue (#2DB2E8) for primary elements, highlights, and key components"
+  - "Use Contrast Orange (#E8622D) sparingly for alerts, opposing elements, or emphasis"
+  - "Use Dark Gray (#222222) for all text and labels"
+  - "Use Medium Gray (#666666) for secondary/supporting elements"
+  - "Maintain white background for clean, professional appearance"
+  - "Ensure minimum 4.5:1 contrast ratio for text elements"
+  - "Use consistent line weights (minimum 1pt)"
+  - "Labels must be readable at final reproduction size"
+
+accessibility:
+  colorblind_safe: true
+  min_contrast_ratio: 4.5
+  redundant_encoding: "Use shapes and labels in addition to color"
+  notes: "Brand Blue and Contrast Orange are distinguishable under common forms of color vision deficiency"

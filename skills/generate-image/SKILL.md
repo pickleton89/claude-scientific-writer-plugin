@@ -31,6 +31,7 @@ Do NOT use this skill when:
 - Creating biological pathways or signaling cascades → use `scientific-schematics`
 - Creating system architecture diagrams → use `scientific-schematics`
 - Creating data visualizations (charts, plots) → use `plotting-libraries`
+- Creating graphical abstracts or visual summaries from text → use `paperbanana`
 </when_to_use>
 
 <decision_framework>

@@ -7,6 +7,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **skills/paperbanana**: New text-to-visual figure generation skill (v1.0.0)
+  - Multi-agent pipeline using PaperBanana (Retriever, Planner, Stylist, Visualizer, Critic)
+  - Generates graphical abstracts, visual summaries, methodology overviews from prose text
+  - Oligon brand integration via custom guidelines and Stylist prompt injection
+  - Quality bridge maps PaperBanana 4-dim scores to existing 5-point rubric (10 points)
+  - CLI: `generate_figure.py` (generation) and `evaluate_figure.py` (standalone evaluation)
+  - Uses `GOOGLE_API_KEY` with Google Gemini + Imagen (free from AI Studio)
+  - Skill router integration with triggers for "graphical abstract", "visual summary", etc.
+  - Cross-references added to `scientific-schematics`, `generate-image`, `executive-summary`
+  - 24 skills total (was 23)
+
 - **docs/SKILLS_DOCUMENTATION.md**: Comprehensive skills documentation (~2,100 lines)
   - Architecture overview with directory structure and routing system explanation
   - All 23 skills documented across 6 categories:

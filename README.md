@@ -1,6 +1,6 @@
 # Claude Scientific Writer Plugin
 
-A comprehensive Claude Code plugin with 23 specialized skills for end-to-end scientific research workflows — from literature search and analysis to publication-ready documents, presentations, and figures.
+A comprehensive Claude Code plugin with 24 specialized skills for end-to-end scientific research workflows — from literature search and analysis to publication-ready documents, presentations, and figures.
 
 ## Features
 
@@ -37,13 +37,14 @@ claude --plugin-dir /path/to/claude-scientific-writer-plugin
 
 ## Skills Included
 
-### Visual Creation (4 skills)
+### Visual Creation (5 skills)
 | Skill | Description |
 |-------|-------------|
 | `visual-design` | Publication-quality figure standards and design principles |
 | `plotting-libraries` | matplotlib, seaborn, ggplot2, Bioconductor patterns |
 | `scientific-schematics` | Diagrams and illustrations (Mermaid + AI tiered generation) |
 | `generate-image` | AI image generation for scientific illustrations |
+| `paperbanana` | Text-to-visual figures (graphical abstracts, visual summaries) |
 
 ### Document Creation (8 skills)
 | Skill | Description |
@@ -91,6 +92,7 @@ Some skills require API keys for full functionality:
 | Feature | Environment Variable | Required For |
 |---------|---------------------|--------------|
 | OpenRouter API | `OPENROUTER_API_KEY` | AI image generation, document conversion with vision |
+| Google AI | `GOOGLE_API_KEY` | PaperBanana text-to-visual generation (free from AI Studio) |
 
 Set in your shell profile or `.env` file:
 ```bash

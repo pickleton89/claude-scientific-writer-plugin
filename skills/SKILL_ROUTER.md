@@ -43,9 +43,9 @@ User wants to create a visual
 │  │         │
 │  │         └─ Then consult → visual-design (for styling guidance)
 │  │
-│  └─ NO → Is it a DIAGRAM or SCHEMATIC?
+│  └─ NO → Is it a DIAGRAM or SCHEMATIC with specific layout?
 │          │
-│          ├─ YES → scientific-schematics
+│          ├─ YES (user specifies type/nodes/layout) → scientific-schematics
 │          │         │
 │          │         ├─ Workflow/process → Flowchart
 │          │         ├─ Biological pathway → Pathway diagram
@@ -58,18 +58,29 @@ User wants to create a visual
 │          │            ├─ Tier 1 (Mermaid): Free, instant, <10 nodes
 │          │            └─ Tier 2 (AI): Publication quality, complex
 │          │
-│          └─ NO → Is it PHOTOREALISTIC or AI-GENERATED imagery?
+│          └─ NO → Is it TEXT to be visualized?
+│                   (graphical abstract, visual summary, methodology overview)
 │                   │
-│                   ├─ YES → generate-image
+│                   ├─ YES → paperbanana
 │                   │         │
-│                   │         ├─ Scientific illustration → Claude/DALL-E
-│                   │         ├─ Artistic/creative → Image generation models
-│                   │         └─ Photo-style → Photorealistic models
+│                   │         ├─ Graphical abstract from paper text
+│                   │         ├─ Visual executive summary
+│                   │         ├─ Methodology overview figure
+│                   │         ├─ "Explain this visually"
+│                   │         └─ Workflow from prose description
 │                   │
-│                   └─ NO → visual-design (general guidance)
+│                   └─ NO → Is it PHOTOREALISTIC or AI-GENERATED imagery?
 │                            │
-│                            └─ Provides: color theory, typography,
-│                               layout principles, accessibility
+│                            ├─ YES → generate-image
+│                            │         │
+│                            │         ├─ Scientific illustration → Claude/DALL-E
+│                            │         ├─ Artistic/creative → Image generation models
+│                            │         └─ Photo-style → Photorealistic models
+│                            │
+│                            └─ NO → visual-design (general guidance)
+│                                     │
+│                                     └─ Provides: color theory, typography,
+│                                        layout principles, accessibility
 ```
 
 ### Figure Creation: Quick Selection
@@ -80,6 +91,10 @@ User wants to create a visual
 | Heatmap, volcano plot, PCA | plotting-libraries | visual-design |
 | Flowchart, pathway diagram | scientific-schematics | visual-design |
 | Molecular mechanism | scientific-schematics | generate-image |
+| Graphical abstract from paper text | paperbanana | visual-design |
+| Visual executive summary | paperbanana | executive-summary |
+| Methodology overview figure | paperbanana | visual-design |
+| "Explain this visually" | paperbanana | visual-design |
 | Conceptual illustration | generate-image | visual-design |
 | Infographic elements | visual-design | generate-image |
 
@@ -617,6 +632,7 @@ User has content ready for final document format
 | **Visuals** | | |
 | Data visualization | plotting-libraries | + visual-design |
 | Schematic/diagram | scientific-schematics | + visual-design |
+| Text-to-visual (graphical abstract, visual summary) | paperbanana | + visual-design |
 | AI-generated image | generate-image | + visual-design |
 | Design guidance | visual-design | (supporting role) |
 | **Brand** | | |
@@ -751,6 +767,7 @@ User has content ready for final document format
                                            │  plotting-libraries  │ visual-  │
                                            │  scientific-schematics│ design  │
                                            │  generate-image       │         │
+                                           │  paperbanana          │         │
                                            └─────────────────────────────────┘
                                                          │
            ┌─────────────────────────────────────────────┘
@@ -778,9 +795,10 @@ User has content ready for final document format
 
 **Clarifying questions:**
 1. Is it based on data/numbers? → plotting-libraries
-2. Is it a diagram/schematic? → scientific-schematics
-3. Is it an illustration/artistic? → generate-image
-4. Need design guidance only? → visual-design
+2. Is it a diagram/schematic with specific layout? → scientific-schematics
+3. Is it a visual from text (graphical abstract, visual summary)? → paperbanana
+4. Is it an illustration/artistic? → generate-image
+5. Need design guidance only? → visual-design
 
 ### "I need to review something"
 
@@ -846,7 +864,7 @@ Each skill's `<cross_references>` section should include:
 
 ---
 
-*This router provides deterministic skill selection for the 23-skill scientific writing library (19 top-level + 4 document-skills sub-skills). For threshold values and quality criteria, see `QUANTIFICATION_THRESHOLDS.md`.*
+*This router provides deterministic skill selection for the 24-skill scientific writing library (20 top-level + 4 document-skills sub-skills). For threshold values and quality criteria, see `QUANTIFICATION_THRESHOLDS.md`.*
 
 ---
 
