@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PaperBanana Variant Review</title>
+<style>
+/* ── CSS Custom Properties ─────────────────────────────────────── */
+:root {
+  --brand-primary: #2DB2E8;
+  --brand-contrast: #E8622D;
+  --brand-text: #222222;
+  --brand-secondary: #666666;
+  --brand-bg: #FFFFFF;
+  --card-bg: #FFFFFF;
+  --card-border: #E0E0E0;
+  --surface: #F5F5F5;
+  --bar-bg: #E8E8E8;
+  --rank-1: #FFD700;
+  --rank-2: #C0C0C0;
+  --rank-3: #CD7F32;
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+  --radius: 8px;
+  --transition: 0.2s ease;
+}
+
+[data-theme="dark"] {
+  --brand-text: #E8E8E8;
+  --brand-secondary: #AAAAAA;
+  --brand-bg: #1a1a2e;
+  --card-bg: #16213e;
+  --card-border: #2a2a4e;
+  --surface: #0f0f23;
+  --bar-bg: #2a2a4e;
+  --shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* ── Reset & Base ──────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--brand-bg);
+  color: var(--brand-text);
+  line-height: 1.5;
+  transition: background var(--transition), color var(--transition);
+}
+
+/* ── Navigation Bar ────────────────────────────────────────────── */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: var(--card-bg);
+  border-bottom: 2px solid var(--brand-primary);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow);
+}
+.navbar-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--brand-primary);
+  letter-spacing: -0.3px;
+}
+.navbar-controls { display: flex; align-items: center; gap: 8px; }
+.tab-group { display: flex; border: 1px solid var(--card-border); border-radius: var(--radius); overflow: hidden; }
+.tab-btn {
+  padding: 6px 16px;
+  border: none;
+  background: var(--card-bg);
+  color: var(--brand-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.tab-btn.active {
+  background: var(--brand-primary);
+  color: #FFFFFF;
+}
+.theme-toggle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--brand-text);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  margin-left: 8px;
+}
+.theme-toggle:hover { border-color: var(--brand-primary); }
+
+/* ── Header Panel ──────────────────────────────────────────────── */
+.header-panel {
+  max-width: 1400px;
+  margin: 24px auto;
+  padding: 0 24px;
+}
+.header-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+.header-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.badge-doctype { background: var(--brand-primary); color: #FFF; }
+.badge-threshold { background: var(--surface); color: var(--brand-secondary); border: 1px solid var(--card-border); }
+.header-caption {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--brand-text);
+}
+.header-source {
+  font-size: 13px;
+  color: var(--brand-secondary);
+  margin-bottom: 12px;
+  font-style: italic;
+}
+.header-rationale {
+  font-size: 13px;
+  color: var(--brand-secondary);
+  padding: 12px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border-left: 3px solid var(--brand-primary);
+}
+
+/* ── Gallery Mode ──────────────────────────────────────────────── */
+.gallery-grid {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.variant-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  position: relative;
+}
+.variant-card:hover { border-color: var(--brand-primary); box-shadow: 0 4px 16px rgba(45,178,232,0.15); }
+.variant-card.selected { border-color: var(--brand-primary); border-width: 2px; }
+
+/* Image container */
+.card-image {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  background: var(--surface);
+  cursor: pointer;
+}
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.rank-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
+  color: #222;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* Card body */
+.card-body { padding: 16px; }
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.strategy-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--surface);
+  color: var(--brand-secondary);
+  border: 1px solid var(--card-border);
+}
+.composite-score {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--brand-primary);
+  line-height: 1;
+}
+.composite-label { font-size: 10px; color: var(--brand-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Score bars */
+.score-bars { margin-bottom: 12px; }
+.score-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.score-label { font-size: 11px; font-weight: 600; color: var(--brand-secondary); width: 90px; flex-shrink: 0; }
+.score-bar-track {
+  flex: 1;
+  height: 8px;
+  background: var(--bar-bg);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.score-bar-fill {
+  height: 100%;
+  background: var(--brand-primary);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+.score-value { font-size: 11px; font-weight: 700; color: var(--brand-text); width: 36px; text-align: right; flex-shrink: 0; }
+
+/* Critic notes */
+.critic-notes {
+  font-size: 12px;
+  color: var(--brand-secondary);
+  padding: 8px 10px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+.critic-notes::before { content: "Critic: "; font-weight: 700; }
+
+/* Feedback & select */
+.card-feedback textarea {
+  width: 100%;
+  min-height: 60px;
+  padding: 8px 10px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  background: var(--brand-bg);
+  color: var(--brand-text);
+  font-size: 12px;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color var(--transition);
+}
+.card-feedback textarea:focus { outline: none; border-color: var(--brand-primary); }
+.card-feedback textarea::placeholder { color: var(--brand-secondary); }
+.card-select {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--card-border);
+}
+.card-select label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brand-secondary);
+  cursor: pointer;
+}
+.card-select input[type="radio"] { accent-color: var(--brand-primary); cursor: pointer; }
+
+/* ── Compare Mode ──────────────────────────────────────────────── */
+.compare-panel {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px 24px;
+  display: none;
+}
+.compare-selectors {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.compare-selectors label { font-size: 13px; font-weight: 600; color: var(--brand-secondary); }
+.compare-selectors select {
+  padding: 6px 12px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  background: var(--card-bg);
+  color: var(--brand-text);
+  font-size: 13px;
+  cursor: pointer;
+}
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.compare-image-box {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.compare-image-box img {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: contain;
+  display: block;
+  background: var(--surface);
+}
+.compare-image-label {
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand-text);
+  border-top: 1px solid var(--card-border);
+}
+.compare-table {
+  margin-top: 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.compare-table table { width: 100%; border-collapse: collapse; }
+.compare-table th, .compare-table td {
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 13px;
+  border-bottom: 1px solid var(--card-border);
+}
+.compare-table th { background: var(--surface); font-weight: 700; color: var(--brand-secondary); text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+.compare-table td { color: var(--brand-text); }
+.delta-pos { color: #22C55E; font-weight: 700; }
+.delta-neg { color: #EF4444; font-weight: 700; }
+.delta-zero { color: var(--brand-secondary); }
+.compare-bar-cell { display: flex; align-items: center; gap: 8px; }
+.compare-bar {
+  height: 8px;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+/* ── Feedback Panel ────────────────────────────────────────────── */
+.feedback-panel {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+}
+.feedback-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+.feedback-card h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--brand-text);
+  margin-bottom: 16px;
+}
+.feedback-summary {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  font-size: 13px;
+}
+.feedback-summary-item { margin-bottom: 8px; }
+.feedback-summary-item:last-child { margin-bottom: 0; }
+.feedback-summary-label { font-weight: 700; color: var(--brand-primary); }
+.global-notes {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px 12px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  background: var(--brand-bg);
+  color: var(--brand-text);
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  margin-bottom: 12px;
+  transition: border-color var(--transition);
+}
+.global-notes:focus { outline: none; border-color: var(--brand-primary); }
+.btn-row { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.btn-primary { background: var(--brand-primary); color: #FFF; }
+.btn-primary:hover { filter: brightness(1.1); }
+.btn-secondary { background: var(--surface); color: var(--brand-text); border: 1px solid var(--card-border); }
+.btn-secondary:hover { border-color: var(--brand-primary); }
+.compiled-output {
+  width: 100%;
+  min-height: 200px;
+  padding: 12px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--brand-text);
+  font-size: 12px;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+  resize: vertical;
+  white-space: pre-wrap;
+}
+
+/* ── Lightbox ──────────────────────────────────────────────────── */
+.lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+.lightbox.active { display: flex; }
+.lightbox-close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: rgba(255,255,255,0.15);
+  color: #FFF;
+  font-size: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition);
+}
+.lightbox-close:hover { background: rgba(255,255,255,0.3); }
+.lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border: none;
+  background: rgba(255,255,255,0.15);
+  color: #FFF;
+  font-size: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition);
+}
+.lightbox-nav:hover { background: rgba(255,255,255,0.3); }
+.lightbox-prev { left: 20px; }
+.lightbox-next { right: 20px; }
+.lightbox-img {
+  max-width: 90vw;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: var(--radius);
+}
+.lightbox-info {
+  margin-top: 16px;
+  padding: 12px 20px;
+  background: rgba(255,255,255,0.1);
+  border-radius: var(--radius);
+  color: #FFF;
+  font-size: 13px;
+  text-align: center;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.lightbox-info span { font-weight: 600; }
+
+/* ── Responsive ────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .gallery-grid { grid-template-columns: 1fr; padding: 0 12px 12px; }
+  .header-panel { padding: 0 12px; margin: 12px auto; }
+  .compare-grid { grid-template-columns: 1fr; }
+  .compare-panel, .feedback-panel { padding: 0 12px 24px; }
+  .navbar { padding: 10px 12px; }
+  .navbar-title { font-size: 15px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Navigation Bar -->
+<nav class="navbar">
+  <div class="navbar-title">PaperBanana Variant Review</div>
+  <div class="navbar-controls">
+    <div class="tab-group">
+      <button class="tab-btn active" data-mode="gallery">Gallery</button>
+      <button class="tab-btn" data-mode="compare">Compare</button>
+    </div>
+    <button class="theme-toggle" id="themeToggle" title="Toggle theme">
+      <span id="themeIcon">&#9789;</span>
+    </button>
+  </div>
+</nav>
+
+<!-- Header Panel -->
+<section class="header-panel">
+  <div class="header-card">
+    <div class="header-meta">
+      <span class="badge badge-doctype" id="docTypeBadge"></span>
+      <span class="badge badge-threshold" id="thresholdBadge"></span>
+    </div>
+    <div class="header-caption" id="captionText"></div>
+    <div class="header-source" id="sourceText"></div>
+    <div class="header-rationale" id="rationaleText" style="display:none"></div>
+  </div>
+</section>
+
+<!-- Gallery Mode -->
+<section class="gallery-grid" id="galleryGrid"></section>
+
+<!-- Compare Mode -->
+<section class="compare-panel" id="comparePanel">
+  <div class="compare-selectors">
+    <label>Left: <select id="compareLeft"></select></label>
+    <label>Right: <select id="compareRight"></select></label>
+  </div>
+  <div class="compare-grid" id="compareGrid"></div>
+  <div class="compare-table" id="compareTable"></div>
+</section>
+
+<!-- Feedback Panel -->
+<section class="feedback-panel">
+  <div class="feedback-card">
+    <h3>Review Feedback</h3>
+    <div class="feedback-summary" id="feedbackSummary"></div>
+    <label style="font-size:13px;font-weight:600;color:var(--brand-secondary);display:block;margin-bottom:6px;">Overall Direction</label>
+    <textarea class="global-notes" id="globalNotes" placeholder="Overall revision direction, preferences, constraints..."></textarea>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="compileBtn">Compile Revision Prompt</button>
+      <button class="btn btn-secondary" id="copyBtn" style="display:none">Copy to Clipboard</button>
+    </div>
+    <textarea class="compiled-output" id="compiledOutput" readonly style="display:none"></textarea>
+  </div>
+</section>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose">&times;</button>
+  <button class="lightbox-nav lightbox-prev" id="lightboxPrev">&#8249;</button>
+  <button class="lightbox-nav lightbox-next" id="lightboxNext">&#8250;</button>
+  <img class="lightbox-img" id="lightboxImg" src="" alt="Variant preview">
+  <div class="lightbox-info" id="lightboxInfo"></div>
+</div>
+
+<script>
+/* ── Data Injection ────────────────────────────────────────────── */
+var VARIANTS = {{ variants_json }};
+var METADATA = {{ metadata_json }};
+var TIMESTAMP = "{{ timestamp }}";
+
+/* ── Helpers ───────────────────────────────────────────────────── */
+var STORAGE_KEY = "pb_review_" + TIMESTAMP;
+function ls(key) { try { return JSON.parse(localStorage.getItem(STORAGE_KEY + "_" + key)); } catch(e) { return null; } }
+function ss(key, val) { try { localStorage.setItem(STORAGE_KEY + "_" + key, JSON.stringify(val)); } catch(e) {} }
+function letter(i) { return String.fromCharCode(65 + i); }
+function fmt(v) { return (v * 10).toFixed(1); }
+function rankColor(rank) { return rank === 1 ? "var(--rank-1)" : rank === 2 ? "var(--rank-2)" : rank === 3 ? "var(--rank-3)" : "var(--surface)"; }
+var DIMS = ["faithfulness","readability","conciseness","aesthetics"];
+var DIM_LABELS = {faithfulness:"Faithfulness",readability:"Readability",conciseness:"Conciseness",aesthetics:"Aesthetics"};
+
+/* Sort variants by rank */
+VARIANTS.sort(function(a,b){ return (a.rank||999) - (b.rank||999); });
+
+/* ── Theme ─────────────────────────────────────────────────────── */
+(function initTheme(){
+  var saved = localStorage.getItem("pb_theme");
+  if (saved) document.documentElement.setAttribute("data-theme", saved);
+  updateThemeIcon();
+})();
+function updateThemeIcon() {
+  var dark = document.documentElement.getAttribute("data-theme") === "dark";
+  document.getElementById("themeIcon").innerHTML = dark ? "&#9788;" : "&#9789;";
+}
+document.getElementById("themeToggle").addEventListener("click", function(){
+  var current = document.documentElement.getAttribute("data-theme");
+  var next = current === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  localStorage.setItem("pb_theme", next);
+  updateThemeIcon();
+});
+
+/* ── Mode Tabs ─────────────────────────────────────────────────── */
+var tabs = document.querySelectorAll(".tab-btn");
+tabs.forEach(function(btn){
+  btn.addEventListener("click", function(){
+    tabs.forEach(function(t){ t.classList.remove("active"); });
+    btn.classList.add("active");
+    var mode = btn.getAttribute("data-mode");
+    document.getElementById("galleryGrid").style.display = mode === "gallery" ? "grid" : "none";
+    document.getElementById("comparePanel").style.display = mode === "compare" ? "block" : "none";
+    if (mode === "compare") renderCompare();
+  });
+});
+
+/* ── Header ────────────────────────────────────────────────────── */
+document.getElementById("docTypeBadge").textContent = METADATA.doc_type || "document";
+document.getElementById("thresholdBadge").textContent = "Threshold: " + (METADATA.quality_threshold || "N/A");
+document.getElementById("captionText").textContent = METADATA.caption || "";
+document.getElementById("sourceText").textContent = METADATA.source_text_preview || "";
+if (METADATA.ranking_rationale) {
+  var el = document.getElementById("rationaleText");
+  el.textContent = METADATA.ranking_rationale;
+  el.style.display = "block";
+}
+
+/* ── Gallery ───────────────────────────────────────────────────── */
+var savedFeedback = ls("feedback") || {};
+var savedWinner = ls("winner");
+
+function renderGallery() {
+  var grid = document.getElementById("galleryGrid");
+  grid.innerHTML = "";
+  VARIANTS.forEach(function(v) {
+    var idx = v.index;
+    var l = letter(idx);
+    var card = document.createElement("div");
+    card.className = "variant-card" + (savedWinner === idx ? " selected" : "");
+    card.setAttribute("data-index", idx);
+
+    var scores = v.scores || {};
+    var barsHtml = DIMS.map(function(d){
+      var val = scores[d] || 0;
+      return '<div class="score-row">' +
+        '<span class="score-label">' + DIM_LABELS[d] + '</span>' +
+        '<div class="score-bar-track"><div class="score-bar-fill" style="width:' + (val*100) + '%"></div></div>' +
+        '<span class="score-value">' + fmt(val) + '</span>' +
+      '</div>';
+    }).join("");
+
+    card.innerHTML =
+      '<div class="card-image" data-lightbox="' + idx + '">' +
+        '<img src="' + (v.image_path || "") + '" alt="Variant ' + l + '" loading="lazy">' +
+        '<div class="rank-badge" style="background:' + rankColor(v.rank) + '">' + (v.rank || "-") + '</div>' +
+      '</div>' +
+      '<div class="card-body">' +
+        '<div class="card-header">' +
+          '<span class="strategy-chip">' + (v.strategy || "UNKNOWN") + '</span>' +
+          '<div style="text-align:right"><div class="composite-score">' + (v.composite_score != null ? v.composite_score.toFixed(1) : "-") + '</div><div class="composite-label">Composite</div></div>' +
+        '</div>' +
+        '<div class="score-bars">' + barsHtml + '</div>' +
+        (v.critic_notes ? '<div class="critic-notes">' + escHtml(v.critic_notes) + '</div>' : '') +
+        '<div class="card-feedback">' +
+          '<textarea placeholder="Feedback for Variant ' + l + '..." data-fb="' + idx + '">' + escHtml(savedFeedback[idx] || "") + '</textarea>' +
+        '</div>' +
+        '<div class="card-select">' +
+          '<input type="radio" name="winner" id="win_' + idx + '" value="' + idx + '"' + (savedWinner === idx ? " checked" : "") + '>' +
+          '<label for="win_' + idx + '">Select as Winner</label>' +
+        '</div>' +
+      '</div>';
+    grid.appendChild(card);
+  });
+
+  /* Event: feedback textarea */
+  grid.querySelectorAll("textarea[data-fb]").forEach(function(ta){
+    ta.addEventListener("input", function(){
+      var i = parseInt(ta.getAttribute("data-fb"));
+      savedFeedback[i] = ta.value;
+      ss("feedback", savedFeedback);
+      updateFeedbackSummary();
+    });
+  });
+
+  /* Event: winner radio */
+  grid.querySelectorAll('input[name="winner"]').forEach(function(r){
+    r.addEventListener("change", function(){
+      savedWinner = parseInt(r.value);
+      ss("winner", savedWinner);
+      grid.querySelectorAll(".variant-card").forEach(function(c){
+        c.classList.toggle("selected", parseInt(c.getAttribute("data-index")) === savedWinner);
+      });
+    });
+  });
+
+  /* Event: lightbox */
+  grid.querySelectorAll(".card-image").forEach(function(el){
+    el.addEventListener("click", function(){
+      openLightbox(parseInt(el.getAttribute("data-lightbox")));
+    });
+  });
+}
+renderGallery();
+
+/* ── Escape HTML ───────────────────────────────────────────────── */
+function escHtml(s) {
+  var d = document.createElement("div");
+  d.appendChild(document.createTextNode(s || ""));
+  return d.innerHTML;
+}
+
+/* ── Lightbox ──────────────────────────────────────────────────── */
+var lbIdx = 0;
+function openLightbox(variantIndex) {
+  lbIdx = VARIANTS.findIndex(function(v){ return v.index === variantIndex; });
+  if (lbIdx < 0) return;
+  showLightboxSlide();
+  document.getElementById("lightbox").classList.add("active");
+}
+function showLightboxSlide() {
+  var v = VARIANTS[lbIdx];
+  document.getElementById("lightboxImg").src = v.image_path || "";
+  var scores = v.scores || {};
+  document.getElementById("lightboxInfo").innerHTML =
+    '<span>Variant ' + letter(v.index) + '</span>' +
+    '<span>' + (v.strategy || "") + '</span>' +
+    '<span>Rank #' + (v.rank || "-") + '</span>' +
+    '<span>Score: ' + (v.composite_score != null ? v.composite_score.toFixed(1) : "-") + '/10</span>' +
+    DIMS.map(function(d){ return '<span>' + DIM_LABELS[d][0] + '=' + fmt(scores[d]||0) + '</span>'; }).join("");
+}
+document.getElementById("lightboxClose").addEventListener("click", closeLightbox);
+document.getElementById("lightboxPrev").addEventListener("click", function(){ lbIdx = (lbIdx - 1 + VARIANTS.length) % VARIANTS.length; showLightboxSlide(); });
+document.getElementById("lightboxNext").addEventListener("click", function(){ lbIdx = (lbIdx + 1) % VARIANTS.length; showLightboxSlide(); });
+function closeLightbox() { document.getElementById("lightbox").classList.remove("active"); }
+document.addEventListener("keydown", function(e){
+  if (!document.getElementById("lightbox").classList.contains("active")) return;
+  if (e.key === "Escape") closeLightbox();
+  if (e.key === "ArrowLeft") { lbIdx = (lbIdx - 1 + VARIANTS.length) % VARIANTS.length; showLightboxSlide(); }
+  if (e.key === "ArrowRight") { lbIdx = (lbIdx + 1) % VARIANTS.length; showLightboxSlide(); }
+});
+
+/* ── Compare Mode ──────────────────────────────────────────────── */
+function populateCompareSelects() {
+  var opts = VARIANTS.map(function(v){ return '<option value="' + v.index + '">Variant ' + letter(v.index) + ' (' + v.strategy + ')</option>'; }).join("");
+  document.getElementById("compareLeft").innerHTML = opts;
+  document.getElementById("compareRight").innerHTML = opts;
+  if (VARIANTS.length > 1) document.getElementById("compareRight").selectedIndex = 1;
+}
+populateCompareSelects();
+document.getElementById("compareLeft").addEventListener("change", renderCompare);
+document.getElementById("compareRight").addEventListener("change", renderCompare);
+
+function renderCompare() {
+  var li = parseInt(document.getElementById("compareLeft").value);
+  var ri = parseInt(document.getElementById("compareRight").value);
+  var lv = VARIANTS.find(function(v){ return v.index === li; });
+  var rv = VARIANTS.find(function(v){ return v.index === ri; });
+  if (!lv || !rv) return;
+
+  document.getElementById("compareGrid").innerHTML =
+    '<div class="compare-image-box"><img src="' + (lv.image_path||"") + '" alt="Left"><div class="compare-image-label">Variant ' + letter(li) + ' — ' + lv.strategy + ' (Rank #' + lv.rank + ')</div></div>' +
+    '<div class="compare-image-box"><img src="' + (rv.image_path||"") + '" alt="Right"><div class="compare-image-label">Variant ' + letter(ri) + ' — ' + rv.strategy + ' (Rank #' + rv.rank + ')</div></div>';
+
+  var ls2 = lv.scores || {};
+  var rs = rv.scores || {};
+  var rows = DIMS.map(function(d){
+    var lVal = ls2[d]||0, rVal = rs[d]||0;
+    var delta = rVal - lVal;
+    var deltaStr = delta > 0 ? "+" + (delta*10).toFixed(1) : delta < 0 ? (delta*10).toFixed(1) : "0.0";
+    var deltaClass = delta > 0.001 ? "delta-pos" : delta < -0.001 ? "delta-neg" : "delta-zero";
+    return '<tr>' +
+      '<td>' + DIM_LABELS[d] + '</td>' +
+      '<td><div class="compare-bar-cell"><div class="compare-bar" style="width:' + (lVal*100) + '%;background:var(--brand-primary)"></div>' + fmt(lVal) + '</div></td>' +
+      '<td><div class="compare-bar-cell"><div class="compare-bar" style="width:' + (rVal*100) + '%;background:var(--brand-contrast)"></div>' + fmt(rVal) + '</div></td>' +
+      '<td class="' + deltaClass + '">' + deltaStr + '</td>' +
+    '</tr>';
+  }).join("");
+
+  /* Composite row */
+  var lcd = lv.composite_score || 0, rcd = rv.composite_score || 0;
+  var cDelta = rcd - lcd;
+  var cDeltaStr = cDelta > 0 ? "+" + cDelta.toFixed(1) : cDelta < 0 ? cDelta.toFixed(1) : "0.0";
+  var cDeltaClass = cDelta > 0.01 ? "delta-pos" : cDelta < -0.01 ? "delta-neg" : "delta-zero";
+  rows += '<tr style="font-weight:700">' +
+    '<td>Composite</td>' +
+    '<td>' + lcd.toFixed(1) + '</td>' +
+    '<td>' + rcd.toFixed(1) + '</td>' +
+    '<td class="' + cDeltaClass + '">' + cDeltaStr + '</td>' +
+  '</tr>';
+
+  document.getElementById("compareTable").innerHTML =
+    '<table><thead><tr><th>Dimension</th><th>Variant ' + letter(li) + '</th><th>Variant ' + letter(ri) + '</th><th>Delta</th></tr></thead><tbody>' + rows + '</tbody></table>';
+}
+
+/* ── Feedback Summary & Compile ────────────────────────────────── */
+var globalNotesEl = document.getElementById("globalNotes");
+var savedGlobal = ls("global_notes");
+if (savedGlobal) globalNotesEl.value = savedGlobal;
+globalNotesEl.addEventListener("input", function(){ ss("global_notes", globalNotesEl.value); });
+
+function updateFeedbackSummary() {
+  var html = "";
+  VARIANTS.forEach(function(v){
+    var fb = savedFeedback[v.index];
+    if (fb && fb.trim()) {
+      html += '<div class="feedback-summary-item"><span class="feedback-summary-label">Variant ' + letter(v.index) + ':</span> ' + escHtml(fb.trim()) + '</div>';
+    }
+  });
+  document.getElementById("feedbackSummary").innerHTML = html || '<div style="color:var(--brand-secondary)">No per-variant feedback entered yet.</div>';
+}
+updateFeedbackSummary();
+
+document.getElementById("compileBtn").addEventListener("click", function(){
+  var lines = [];
+
+  /* Selected variant */
+  lines.push("## Selected Variant");
+  if (savedWinner != null) {
+    var wv = VARIANTS.find(function(v){ return v.index === savedWinner; });
+    if (wv) {
+      lines.push("Winner: Variant " + letter(wv.index) + " (v" + (wv.index+1) + ") -- " + wv.strategy);
+      lines.push("Score: " + (wv.composite_score != null ? wv.composite_score.toFixed(1) : "N/A") + "/10");
+    }
+  } else {
+    lines.push("No variant selected.");
+  }
+
+  /* Per-variant feedback */
+  lines.push("");
+  lines.push("## Per-Variant Feedback");
+  VARIANTS.forEach(function(v){
+    var fb = savedFeedback[v.index];
+    if (fb && fb.trim()) {
+      lines.push("### Variant " + letter(v.index) + " (v" + (v.index+1) + ")");
+      lines.push(fb.trim());
+      lines.push("");
+    }
+  });
+
+  /* Overall direction */
+  lines.push("## Overall Direction");
+  lines.push(globalNotesEl.value.trim() || "(none)");
+  lines.push("");
+
+  /* Auto-ranking context */
+  lines.push("## Auto-Ranking Context");
+  VARIANTS.forEach(function(v){
+    var s = v.scores || {};
+    lines.push("- Variant " + letter(v.index) + ": F=" + fmt(s.faithfulness||0) + " R=" + fmt(s.readability||0) + " C=" + fmt(s.conciseness||0) + " A=" + fmt(s.aesthetics||0) + " (" + (v.composite_score != null ? v.composite_score.toFixed(1) : "N/A") + ")");
+  });
+
+  var output = lines.join("\n");
+  var el = document.getElementById("compiledOutput");
+  el.value = output;
+  el.style.display = "block";
+  document.getElementById("copyBtn").style.display = "inline-block";
+});
+
+document.getElementById("copyBtn").addEventListener("click", function(){
+  var el = document.getElementById("compiledOutput");
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(el.value).then(function(){
+      var btn = document.getElementById("copyBtn");
+      btn.textContent = "Copied!";
+      setTimeout(function(){ btn.textContent = "Copy to Clipboard"; }, 1500);
+    });
+  } else {
+    el.select();
+    document.execCommand("copy");
+  }
+});
+</script>
+</body>
+</html>

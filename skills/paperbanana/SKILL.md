@@ -15,6 +15,8 @@ shared-thresholds: "../QUANTIFICATION_THRESHOLDS.md"
 
 <overview>
 Generate publication-quality academic figures from prose text using PaperBanana's multi-agent pipeline. Five specialized agents (Retriever, Planner, Stylist, Visualizer, Critic) collaborate with iterative refinement to produce figures that faithfully communicate the source text's content. Powered by Google Gemini for vision-language understanding and Google Imagen for image generation. Oligon brand styling is applied by default through custom guidelines injected into the Stylist agent.
+
+**Multi-Variant Mode** (`--variants N`): Generate N different visual interpretations of the same text, automatically rank them, refine the winner, and produce an interactive HTML review tool for comparing and annotating variants.
 </overview>
 
 <when_to_use>
@@ -192,6 +194,83 @@ python {baseDir}/scripts/generate_figure.py \
 
 ---
 
+### Stage 2b: Multi-Variant Generation (Optional)
+
+**Objective:** Generate multiple visual interpretations and select the best one
+
+**When to use:** Add `--variants N` to produce N different figure variants instead of a single figure. Recommended for high-stakes figures (journal submissions, graphical abstracts) where exploring multiple visual approaches yields better results.
+
+**Steps:**
+1. Generate N variant communicative intents using different strategies:
+   - **FAITHFUL**: Original caption verbatim (always included as baseline)
+   - **ENHANCED**: Elevated visual detail and scientific precision
+   - **ALT_COMPOSITION**: Fundamentally different layout/composition
+   - **STYLE_VARIATION**: Different visual style emphasis
+   - **BOLD_CREATIVE**: Unconventional approach with scientific rigor
+2. Run PaperBanana pipeline for each intent (1 iteration each)
+3. Rank all variants via multimodal Gemini evaluation on 4 dimensions
+4. Optionally refine the winning variant with additional iterations
+
+**Command:**
+```bash
+python {baseDir}/scripts/generate_figure.py \
+  --input "methodology_text.txt" \
+  --caption "Overview of the RNA-seq analysis pipeline" \
+  --output figures/graphical_abstract.png \
+  --variants 3 \
+  --doc-type journal \
+  -v
+```
+
+**Architecture:**
+```
+generate_figure.py --variants 3
+  ├─ variant_intents.py → 3 different captions (FAITHFUL, ENHANCED, ALT_COMPOSITION)
+  ├─ variant_orchestrator.py → 3 sequential pipeline runs (30s delay between)
+  ├─ variant_ranker.py → single multimodal Gemini call to rank all 3
+  ├─ Refine winner with 2 additional iterations
+  └─ Save JSON log + HTML review tool
+```
+
+**Exit Criteria:**
+- [ ] N variant images generated
+- [ ] Variants ranked with composite scores
+- [ ] Winner refined (unless `--no-refine`)
+- [ ] Review log JSON and HTML saved
+
+---
+
+### Stage 2c: Visual Review (Optional)
+
+**Objective:** Interactively compare, annotate, and select variant figures
+
+**When to use:** After multi-variant generation, open the HTML review tool to visually compare variants, add per-figure feedback, and compile a revision prompt.
+
+**Steps:**
+1. Open the generated HTML review file in a browser
+2. Gallery view: compare all variants with score breakdowns
+3. Compare view: side-by-side with score deltas
+4. Add per-variant annotations and global notes
+5. Click "Compile Revision Prompt" to generate structured feedback
+
+**Command:**
+```bash
+# Generate HTML from an existing review log
+python {baseDir}/scripts/review_variants.py \
+  --input figures/fig_variant_review_log.json \
+  --embed-images \
+  --open
+```
+
+The compiled revision prompt can be used as `--caption` input for a focused refinement run.
+
+**Exit Criteria:**
+- [ ] HTML review page opens in browser
+- [ ] Variant selection and annotations captured
+- [ ] Revision prompt compiled (if needed)
+
+---
+
 ### Stage 3: Quality Evaluation
 
 **Objective:** Evaluate figure against publication standards
@@ -305,7 +384,16 @@ python {baseDir}/scripts/generate_figure.py --input paper.txt \
   --output fig.png
 ```
 
-### 4. Wrong Quality Threshold
+### 4. Overusing Variant Mode
+
+**Anti-pattern:** Using `--variants 5` for every quick draft or internal figure.
+
+**Solution:** Variant mode costs ~2-3x a single run. Use it strategically:
+- Quick drafts / presentations: single mode (no `--variants`)
+- Journal figures / graphical abstracts: `--variants 3`
+- High-stakes competition figures: `--variants 5`
+
+### 5. Wrong Quality Threshold
 
 **Anti-pattern:** Using journal threshold (8.5) for a quick internal presentation.
 
@@ -331,6 +419,7 @@ python {baseDir}/scripts/generate_figure.py --input paper.txt \
 1. **Low scores:** Review critique in review_log.json, improve caption specificity
 2. **API failures:** Script saves partial results; check review log for last successful iteration
 3. **Style issues:** Try `--no-brand` to see if brand injection causes problems
+4. **Variant mode failures:** Individual variant failures are caught and skipped; ranking falls back to equal scores if Gemini call fails; partial results are always saved
 </error_handling>
 
 <templates>
@@ -368,6 +457,41 @@ python {baseDir}/scripts/generate_figure.py \
   --caption "Data processing pipeline" \
   --output figures/pipeline.png \
   --reference-dir path/to/example_figures/
+```
+
+### Multi-Variant Generation Commands
+
+```bash
+# Generate 3 variants with ranking and refinement
+python {baseDir}/scripts/generate_figure.py \
+  --input methods.txt \
+  --caption "Methodology overview" \
+  --output figures/fig.png \
+  --variants 3 \
+  --doc-type journal \
+  -v
+
+# Generate 5 variants without winner refinement
+python {baseDir}/scripts/generate_figure.py \
+  --input methods.txt \
+  --caption "Overview of experimental pipeline" \
+  --output figures/fig.png \
+  --variants 5 \
+  --no-refine
+
+# Generate variants with custom delay between runs
+python {baseDir}/scripts/generate_figure.py \
+  --input abstract.txt \
+  --caption "Graphical abstract" \
+  --output figures/abstract.png \
+  --variants 3 \
+  --variant-delay 45
+
+# Generate HTML review from existing log
+python {baseDir}/scripts/review_variants.py \
+  --input figures/fig_variant_review_log.json \
+  --embed-images \
+  --open
 ```
 
 ### Standalone Evaluation
@@ -412,6 +536,35 @@ python {baseDir}/scripts/evaluate_figure.py \
   ],
   "final_score": 8.7,
   "final_image": "figures/graphical_abstract.png"
+}
+```
+
+### Variant Review Log Structure
+
+```json
+{
+  "source_text_preview": "First 200 chars...",
+  "caption": "Communicative intent",
+  "doc_type": "journal",
+  "brand_enabled": true,
+  "n_variants": 3,
+  "variants": [
+    {
+      "index": 0,
+      "strategy": "faithful",
+      "image_path": "figures/fig_v0.png",
+      "communicative_intent": "Original caption...",
+      "scores": {"faithfulness": 0.85, "readability": 0.78, "conciseness": 0.82, "aesthetics": 0.90}
+    }
+  ],
+  "ranking": {
+    "winner_index": 1,
+    "rationale": "Variant 1 scored highest...",
+    "scores": [
+      {"variant_index": 1, "strategy": "enhanced", "faithfulness": 0.92, "readability": 0.85, "conciseness": 0.80, "aesthetics": 0.88, "composite_score": 0.87, "rank": 1}
+    ]
+  },
+  "refined_image_path": "figures/fig_refined.png"
 }
 ```
 

@@ -39,6 +39,7 @@ Examples:
   %(prog)s --input methods.txt --caption "Methodology overview" --output fig.png
   %(prog)s --input abstract.txt --output graphical_abstract.png --doc-type journal
   %(prog)s --input pipeline.txt --output fig.png --no-brand --iterations 2
+  %(prog)s --input methods.txt --output fig.png --variants 3 -v
         """,
     )
     parser.add_argument(
@@ -94,6 +95,26 @@ Examples:
         action="store_true",
         help="Verbose output",
     )
+    # Multi-variant mode
+    parser.add_argument(
+        "--variants",
+        type=int,
+        default=0,
+        metavar="N",
+        help="Generate N variant figures and rank them (1-5, default: off)",
+    )
+    parser.add_argument(
+        "--variant-delay",
+        type=float,
+        default=30.0,
+        metavar="S",
+        help="Seconds between pipeline runs in variant mode (default: 30)",
+    )
+    parser.add_argument(
+        "--no-refine",
+        action="store_true",
+        help="Skip winner refinement in variant mode",
+    )
     return parser.parse_args()
 
 
@@ -145,6 +166,13 @@ def main() -> None:
         print(f"Doc type: {args.doc_type}")
         print(f"Iterations: {args.iterations}")
         print(f"Brand: {'enabled' if not args.no_brand else 'disabled'}")
+        if args.variants > 0:
+            print(f"Variants: {args.variants}")
+
+    # Multi-variant mode dispatch
+    if args.variants > 0:
+        _run_variant_mode(args, source_text, api_key)
+        return
 
     # Import PaperBanana
     try:
@@ -247,6 +275,93 @@ def main() -> None:
 
     print(f"\nOutput: {output_path}")
     print(f"Review log: {log_path}")
+
+
+def _run_variant_mode(
+    args: argparse.Namespace, source_text: str, api_key: str
+) -> None:
+    """Run multi-variant generation, ranking, and review."""
+    import logging
+
+    from utils.config import create_settings
+    from variant_orchestrator import (
+        MultiVariantResult,
+        VariantConfig,
+        build_variant_review_log,
+        run_multi_variant,
+    )
+
+    if args.verbose:
+        logging.basicConfig(level=logging.INFO)
+
+    output_path = Path(args.output)
+    output_dir = str(output_path.parent)
+    output_stem = output_path.stem
+
+    caption = args.caption or "Visual summary of the provided text"
+    ref_dir = Path(args.reference_dir) if args.reference_dir else None
+
+    def settings_factory(iterations: int):
+        return create_settings(
+            api_key=api_key,
+            iterations=iterations,
+            brand_enabled=not args.no_brand,
+            reference_dir=ref_dir,
+        )
+
+    config = VariantConfig(
+        n_variants=args.variants,
+        delay_between_runs=args.variant_delay,
+        refine_winner=not args.no_refine,
+        verbose=args.verbose,
+    )
+
+    result: MultiVariantResult = asyncio.run(
+        run_multi_variant(
+            source_text=source_text,
+            caption=caption,
+            output_dir=output_dir,
+            output_stem=output_stem,
+            settings_factory=settings_factory,
+            api_key=api_key,
+            config=config,
+        )
+    )
+
+    # Build and save review log
+    review_log = build_variant_review_log(
+        result=result,
+        source_text=source_text,
+        caption=caption,
+        doc_type=args.doc_type,
+        brand_enabled=not args.no_brand,
+    )
+
+    log_path = output_path.with_name(output_stem + "_variant_review_log.json")
+    log_path.write_text(json.dumps(review_log, indent=2), encoding="utf-8")
+
+    # Generate HTML review
+    try:
+        from review_variants import generate_review_html
+
+        html_path = output_path.with_name(output_stem + "_variant_review.html")
+        generate_review_html(review_log, html_path)
+        print(f"Review tool: {html_path}")
+    except ImportError:
+        pass  # review_variants not available
+
+    # Copy final winner to output path
+    final_path = Path(output_dir) / f"{output_stem}_final.png"
+    if final_path.exists() and final_path != output_path:
+        import shutil
+
+        shutil.copy2(final_path, output_path)
+
+    print(f"\nOutput: {output_path}")
+    print(f"Review log: {log_path}")
+    print(f"Variants generated: {len(result.variants)}")
+    if result.ranking:
+        print(f"Winner: variant {result.ranking.winner_index}")
 
 
 if __name__ == "__main__":
