@@ -24,3 +24,15 @@ tmp/
 *.aux
 *.log
 *.out
+
+# Claude Code local settings (user-specific, never commit)
+.claude/settings.local.json
+.claude/projects/
+
+# Generated outputs
+outputs/
+
+# Working files
+Markdown_Files/
+diagrams/
+scratch/
