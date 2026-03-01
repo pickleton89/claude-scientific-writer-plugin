@@ -1,0 +1,312 @@
+# tool-lookup.yaml — Capability-to-Tool Mapping
+# Version: 1.1.0
+#
+# Skills reference capability KEYS (e.g., "disambiguation.gene_to_ensembl"),
+# not raw tool names. This lookup resolves capabilities to tools with
+# preference tiers:
+#   primary   — Existing MCP (Open Targets, PubMed, Consensus). Always preferred.
+#   tooluniverse — ToolUniverse MCP tools. Used when primary unavailable or
+#                  when capability has no primary equivalent.
+#   fallback  — Alternative tools or manual approaches.
+#
+# Convention: tools listed in order of preference within each tier.
+# Tool naming: Use ToolUniverse canonical names (PascalCase, e.g.,
+#   GPCRdb_get_protein, DailyMed_search_spls). Some Phase 1 entries
+#   use lowercase shorthand (e.g., interpro_protein); both resolve
+#   correctly. See known_param_corrections.md for canonical mappings.
+
+# ─── ENTITY DISAMBIGUATION ───────────────────────────────────────────────────
+
+disambiguation:
+  gene_to_ensembl:
+    description: "Resolve gene symbol/name to Ensembl Gene ID"
+    primary:
+      - tool: search_entities  # Open Targets MCP
+        notes: "Returns Ensembl ID directly; pass entity_names=['target']"
+    tooluniverse:
+      - tool: mygene_query
+        notes: "query parameter (not 'q'); returns Ensembl, Entrez, UniProt"
+      - tool: ensembl_lookup_gene
+        notes: "Requires gene_id + species='homo_sapiens'; response in data wrapper"
+    fallback:
+      - tool: hgnc_search
+        notes: "HGNC REST API; reliable for official gene symbols"
+
+  compound_to_chembl:
+    description: "Resolve drug/compound name to ChEMBL ID"
+    primary:
+      - tool: search_entities  # Open Targets MCP
+        notes: "Pass entity_names=['drug']; returns ChEMBL ID"
+    tooluniverse:
+      - tool: chembl_molecule_search
+        notes: "Search by name, synonym, or trade name"
+      - tool: pubchem_cid_lookup
+        notes: "Returns PubChem CID; cross-reference to ChEMBL via ID mapping"
+    fallback:
+      - tool: drugbank_search
+      - tool: chemspider_search
+
+  disease_to_efo:
+    description: "Resolve disease name to EFO/MONDO ID"
+    primary:
+      - tool: search_entities  # Open Targets MCP
+        notes: "Pass entity_names=['disease']; returns EFO or MONDO ID"
+    tooluniverse:
+      - tool: open_targets_disease_search
+        notes: "Skip if primary MCP available (redundant)"
+    fallback: []
+
+  protein_to_uniprot:
+    description: "Resolve protein name to UniProt accession"
+    tooluniverse:
+      - tool: uniprot_search
+        notes: "Search by protein name, gene symbol, or accession"
+      - tool: uniprot_id_mapping
+        notes: "Convert between ID types (Ensembl <-> UniProt <-> PDB)"
+    fallback: []
+
+# ─── TARGET BIOLOGY ──────────────────────────────────────────────────────────
+
+target_structure:
+  domains:
+    description: "Protein domain architecture"
+    tooluniverse:
+      - tool: interpro_protein
+      - tool: pfam_search
+    fallback: []
+  three_d:
+    description: "3D structure data"
+    tooluniverse:
+      - tool: pdb_search
+      - tool: alphafold_get_prediction
+        notes: "Parameter is 'qualifier', not 'uniprot_accession'"
+    fallback: []
+  binding_sites:
+    description: "Binding pocket and active site identification"
+    tooluniverse:
+      - tool: proteins_plus_dogsite
+    fallback: []
+
+target_biology:
+  gpcr_detection:
+    description: "GPCR target detection and specialized data (~35% of approved drug targets)"
+    tooluniverse:
+      - tool: GPCRdb_get_protein
+        notes: "operation='get_protein', protein='{symbol_lower}_human'"
+      - tool: GPCRdb_get_structures
+        notes: "Returns active/inactive state structures"
+      - tool: GPCRdb_get_ligands
+        notes: "Curated agonists, antagonists, allosteric modulators"
+      - tool: GPCRdb_get_mutations
+        notes: "Mutation data with Ballesteros-Weinstein numbering"
+    fallback: []
+  druggability_class:
+    description: "Target development level and druggability classification"
+    tooluniverse:
+      - tool: Pharos_get_target
+        notes: "Returns TDL (Tclin/Tchem/Tbio/Tdark), protein family, novelty score"
+      - tool: DGIdb_get_gene_druggability
+        notes: "Gene druggability categories and interaction counts"
+    fallback: []
+  assay_data:
+    description: "High-throughput screening and assay results for target"
+    tooluniverse:
+      - tool: PubChem_search_assays_by_target_gene
+        notes: "Returns HTS assay summaries for gene target"
+    fallback: []
+
+expression:
+  tissue:
+    description: "Tissue-level gene expression"
+    tooluniverse:
+      - tool: gtex_get_median_gene_expression
+        notes: "Requires gencode_id + operation='median'; try unversioned ID if versioned fails"
+      - tool: hpa_tissue
+    fallback: []
+  single_cell:
+    description: "Single-cell expression data"
+    tooluniverse:
+      - tool: hpa_single_cell
+      - tool: hpa_get_rna_expression_by_source
+        notes: "Requires gene_name + source_type + source_name (ALL three mandatory)"
+    fallback: []
+
+interactions:
+  ppi:
+    description: "Protein-protein interactions"
+    tooluniverse:
+      - tool: string_interactions
+        notes: "protein_ids must be array; species=9606 for human"
+      - tool: intact_search
+    fallback: []
+  pathways:
+    description: "Biological pathway context"
+    tooluniverse:
+      - tool: reactome_pathways
+        notes: "UniProt → pathways via Reactome_map_uniprot_to_pathways (param is 'id', not 'uniprot_id')"
+      - tool: kegg_pathway
+    fallback: []
+
+genetic_variation:
+  population:
+    description: "Population frequency and constraint data"
+    tooluniverse:
+      - tool: gnomad_variant
+      - tool: gnomad_get_gene_constraints
+        notes: "Uses gene_symbol, not gene_id"
+      - tool: clinvar_search
+    fallback: []
+  essentiality:
+    description: "Gene essentiality screens (CRISPR knockout data)"
+    tooluniverse:
+      - tool: DepMap_get_gene_dependencies
+        notes: "Uses gene_symbol, not gene_id; negative scores = essential"
+      - tool: DepMap_search_genes
+        notes: "Search gene names to confirm DepMap availability"
+    fallback: []
+
+# ─── DRUG / COMPOUND DATA ───────────────────────────────────────────────────
+
+drug_data:
+  bioactivity:
+    description: "Compound bioactivity and binding data"
+    tooluniverse:
+      - tool: chembl_bioactivity
+        notes: "For target-specific: use target_chembl_id__exact (double underscore)"
+      - tool: bindingdb_search
+        notes: "Affinity reported in nM (not uM)"
+    fallback: []
+  clinical:
+    description: "Clinical trial and approval status"
+    tooluniverse:
+      - tool: clinicaltrials_search
+      - tool: fda_approval
+    fallback: []
+  safety:
+    description: "Adverse events and drug safety"
+    primary:
+      - tool: query_open_targets_graphql  # Open Targets safety data
+        notes: "Use target safety query from OT GraphQL schema"
+    tooluniverse:
+      - tool: sider_side_effects
+      - tool: drugbank_get_safety
+        notes: "ALL params required: query, case_sensitive, exact_match, limit"
+    fallback: []
+  admet:
+    description: "ADMET prediction and metabolism"
+    tooluniverse:
+      - tool: admet_ai_predict
+      - tool: drugbank_admet
+    fallback: []
+  label:
+    description: "FDA drug label (DailyMed SPL) parsed sections"
+    tooluniverse:
+      - tool: DailyMed_search_spls
+        notes: "Search by drug name; returns set_id for subsequent queries"
+      - tool: DailyMed_parse_adverse_reactions
+        notes: "Requires setid from DailyMed_search_spls"
+      - tool: DailyMed_parse_dosing
+        notes: "Requires setid"
+      - tool: DailyMed_parse_drug_interactions
+        notes: "Requires setid"
+      - tool: DailyMed_parse_clinical_pharmacology
+        notes: "Requires setid"
+      - tool: DailyMed_parse_contraindications
+        notes: "Requires setid"
+    fallback: []
+  faers:
+    description: "FDA Adverse Event Reporting System post-marketing safety"
+    tooluniverse:
+      - tool: FAERS_count_reactions_by_drug_event
+        notes: "Param is 'medicinalproduct' (not drug_name)"
+      - tool: FAERS_count_seriousness_by_drug_event
+        notes: "Param is 'medicinalproduct'"
+      - tool: FAERS_count_outcomes_by_drug_event
+        notes: "Param is 'medicinalproduct'"
+      - tool: FAERS_count_death_related_by_drug
+        notes: "Param is 'medicinalproduct'"
+      - tool: FAERS_count_patient_age_distribution
+        notes: "Param is 'medicinalproduct'"
+    fallback: []
+  pgx:
+    description: "Pharmacogenomics associations and dosing guidelines"
+    tooluniverse:
+      - tool: PharmGKB_search_drugs
+        notes: "Returns PharmGKB drug ID (PA...)"
+      - tool: PharmGKB_get_drug_details
+        notes: "Cross-references and related genes"
+      - tool: PharmGKB_get_clinical_annotations
+        notes: "Variant-drug associations with evidence levels"
+      - tool: PharmGKB_get_dosing_guidelines
+        notes: "CPIC/DPWG guideline recommendations"
+    fallback:
+      - tool: DailyMed_parse_clinical_pharmacology
+        notes: "Fallback for PGx from FDA label"
+  regulatory:
+    description: "FDA Orange Book approval, patents, and exclusivity"
+    tooluniverse:
+      - tool: FDA_OrangeBook_search_drug
+        notes: "Search by brand_name or generic_name"
+      - tool: FDA_OrangeBook_get_approval_history
+      - tool: FDA_OrangeBook_get_exclusivity
+      - tool: FDA_OrangeBook_get_patent_info
+      - tool: FDA_OrangeBook_check_generic_availability
+    fallback: []
+  chemistry:
+    description: "Physicochemical properties and drug-likeness"
+    tooluniverse:
+      - tool: PubChem_get_compound_properties_by_CID
+        notes: "MW, formula, XLogP, TPSA, HBD, HBA, rotatable bonds"
+      - tool: ADMETAI_predict_physicochemical_properties
+        notes: "SMILES passed as list: [\"SMILES_STRING\"]"
+      - tool: ADMETAI_pred_solu_lipo_hydr
+        notes: "Solubility, lipophilicity, hydration; SMILES as list"
+    fallback: []
+
+# ─── LITERATURE ──────────────────────────────────────────────────────────────
+
+literature:
+  search:
+    description: "Literature search across databases"
+    primary:
+      - tool: search_articles  # PubMed MCP
+        notes: "Structured search with field tags, MeSH, date filters"
+      - tool: search  # Consensus MCP (mcp__claude_ai_Consensus__search)
+        notes: "Semantic search over 200M+ papers"
+    tooluniverse:
+      - tool: europe_pmc_search
+        notes: "Includes full-text snippet extraction via extract_terms_from_fulltext"
+      - tool: semantic_scholar_search
+    fallback: []
+  full_text:
+    description: "Full-text article retrieval"
+    primary:
+      - tool: get_full_text_article  # PubMed MCP (PMC)
+        notes: "Requires PMC ID; use convert_article_ids to get from PMID"
+    tooluniverse:
+      - tool: europe_pmc_fulltext
+      - tool: semantic_scholar_pdf
+    fallback: []
+  citations:
+    description: "Citation network traversal"
+    primary:
+      - tool: find_related_articles  # PubMed MCP
+    tooluniverse:
+      - tool: openalex_citations
+      - tool: semantic_scholar_citations
+    fallback: []
+
+# ─── ML PREDICTIONS ──────────────────────────────────────────────────────────
+
+prediction:
+  binding:
+    description: "Protein-ligand binding prediction"
+    tooluniverse:
+      - tool: boltz2_predict
+    fallback: []
+  admet:
+    description: "ADMET property prediction via ML"
+    # Same tool as drug_data.admet; listed here for ML-prediction-focused queries
+    tooluniverse:
+      - tool: admet_ai_predict
+    fallback: []

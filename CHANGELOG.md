@@ -6,7 +6,78 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Phase 2 Complete: Target & Drug Intelligence Skills
+- **skills/target-intelligence/SKILL.md**: Target intelligence skill (v1.0.0)
+  - 6-stage workflow: report init -> OT foundation -> structure/domains/function -> interactions/expression -> variants/disease/safety -> druggability/audit
+  - 12-section report template with evidence grading (T1-T4)
+  - GPCR specialized branch, GTEx versioned ID fallback, completeness audit
+  - Receives resolved IDs from entity-resolution; delegates literature to literature-review
+- **skills/drug-intelligence/SKILL.md**: Drug intelligence skill (v1.0.0)
+  - 6-stage workflow: report init/label -> chemistry -> mechanism/targets -> ADMET/clinical -> safety/DDI/PGx -> regulatory/audit
+  - 10-section report with mandatory FAERS structure (seriousness, outcomes, limitations)
+  - DailyMed parsed sections as FDA label backbone, ADMET-AI with label fallback
+  - ChEMBL target derivation from activities (pChEMBL>=6.0), PharmGKB PGx, FDA Orange Book
+- **skills/shared/tool-lookup.yaml**: Added ~80 lines of new capability mappings (v1.1.0)
+  - target_biology: gpcr_detection, druggability_class, assay_data
+  - drug_data: label (DailyMed parsed), faers (5-tool chain), pgx (PharmGKB), regulatory (Orange Book), chemistry
+  - Updated essentiality with DepMap_search_genes
+- **skills/shared/references/known_param_corrections.md**: Added Phase 2 quirks
+  - FAERS: medicinalproduct param, ADMET-AI: SMILES as list, DailyMed: setid dependency, PharmGKB/OrangeBook params
+
+### Fixed
+- **skills/target-intelligence/SKILL.md**: Fixed section reference (Section 1 -> Section 2 for Target Identifiers)
+- **skills/shared/tool-lookup.yaml**: Updated version header to 1.1.0, documented naming convention
+- **skills/shared/references/known_param_corrections.md**: Updated version header to 1.1.0
+- Both intelligence skills: Added explicit `<key_principles>` with citation mandate and evidence grading
+- **skills/SKILL_ROUTER.md**: Corrected skill count from 30 to 29 (target-validation not yet created)
+
+### Changed
+- **skills/SKILL_ROUTER.md**: v1.7.0 — Added biological research decision tree
+  - Routes gene/protein -> entity-resolution -> target-intelligence
+  - Routes drug/compound -> entity-resolution -> drug-intelligence
+  - Routes combined queries through both intel skills -> target-validation
+
+### Added — Phase 1 Complete: ToolUniverse Foundation
+- **ToolUniverse MCP server**: Configured for project (`uvx --refresh tooluniverse`, compact mode)
+  - 5 meta-tools expose 600+ scientific database tools on demand
+  - Requires session restart to activate; no API keys needed for most tools
+- **skills/entity-resolution/SKILL.md**: New entity resolution skill (v1.0.0)
+  - 5-stage workflow: classify → resolve → cross-reference → collision detect → output
+  - Handles genes, drugs, diseases, and ambiguous symbols
+  - Collision detection with negative filter construction for short/ambiguous symbols
+  - Tested against 4 cases: BRCA2 (gene), imatinib (drug), ACE (ambiguous), Alzheimer's (disease)
+- **skills/shared/tool-lookup.yaml**: Capability-to-tool mapping (v1.0.0, 215 lines)
+  - 3-tier preference system: primary (existing MCP) → tooluniverse → fallback
+  - Covers 25+ capabilities across disambiguation, target biology, drug data, literature, predictions
+- **skills/shared/references/tool_availability_audit.md**: Tool verification checklist
+  - 8 primary tier tools verified active, 26 ToolUniverse tools pending verification
+- **skills/shared/references/known_param_corrections.md**: ToolUniverse API quirks
+  - Documented parameter naming issues for 10+ tools (ensembl, mygene, gtex, reactome, etc.)
+- **skills/shared/references/evidence_grading.md**: T1-T4 evidence grading framework
+- **skills/entity-resolution/references/known_collisions.md**: Gene symbol collision catalog
+- **docs/phase1-completion-report.md**: Full Phase 1 test results and findings
+  - All 4 entity types tested successfully; ACE collision detection caught 72% off-topic rate
+  - Identified OT GraphQL synonym field failures and query complexity limits
+
 ### Added
+- **docs/TOOLUNIVERSE_INTEGRATION_DESIGN.md**: Design document for integrating ToolUniverse capabilities into the skill ecosystem
+  - Covers current system overview, gap analysis, integration strategy, and MCP server as cross-cutting data layer
+  - Defines four new ToolUniverse skills with implementation roadmap
+- **docs/tooluniverse-drug-research/**: Skill design docs for drug research via ToolUniverse (11 files)
+  - Full SKILL.md, implementation roadmap, tools reference, audit, examples, and phase completion records
+- **docs/tooluniverse-drug-target-validation/**: Skill design docs for drug-target validation (3 files)
+  - SKILL.md, quick start guide, and test script
+- **docs/tooluniverse-literature-deep-research/**: Skill design docs for literature deep research (5 files)
+  - SKILL.md, examples, quick reference, tool names reference, and README
+- **docs/tooluniverse-target-research/**: Skill design docs for target research (4 files)
+  - SKILL.md, examples, reference, and report format specification
+- **skills/oligon-brand/AUDIT.md**: SkillsBench audit of oligon-brand skill (v4.0.1)
+
+### Changed
+- **docs/archive/**: Moved completed planning docs to archive
+  - `CONTENT_REVIEWER_IMPLEMENTATION_PLAN.md`, `SCIENTIFIC_OUTPUT_DESIGN_SPEC.md`, `SKILLS_DOCUMENTATION.md`
+
+### Added (prior)
 - **skills/paperbanana**: New text-to-visual figure generation skill (v1.0.0)
   - Multi-agent pipeline using PaperBanana (Retriever, Planner, Stylist, Visualizer, Critic)
   - Generates graphical abstracts, visual summaries, methodology overviews from prose text

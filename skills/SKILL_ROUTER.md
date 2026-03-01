@@ -2,13 +2,13 @@
 name: skill-router
 description: Decision trees for selecting the correct skill when multiple options apply. Consult when task scope is ambiguous or spans multiple scientific writing domains.
 when_to_use: When a user request could be handled by 2+ skills, when unclear which skill is primary vs. supporting, or when planning multi-skill workflows.
-version: 1.6.0
+version: 1.7.0
 ---
 
 # Skill Router
 
 > Decision trees and routing logic for selecting the right skill(s) for scientific writing tasks
-> Version: 1.6.0 | Updated: 2026-01-14
+> Version: 1.7.0 | Updated: 2026-03-01
 
 ---
 
@@ -303,6 +303,55 @@ User needs research/information support
 | "Is this paper reliable?" | peer-review | Full Review or Review + Scoring mode |
 | "Score this paper's quality" | peer-review | Scoring Only mode (8-dimension assessment) |
 | "Analyze this argument" | peer-review | Logic/evidence analysis (Critical Analysis Framework) |
+
+---
+
+## Decision Tree: Biological & Drug Research
+
+```
+User needs biological/drug research data
+│
+├─ About a GENE, PROTEIN, or TARGET?
+│  │
+│  ├─ IDs already resolved?
+│  │  ├─ Yes → target-intelligence (6-stage dossier)
+│  │  └─ No → entity-resolution → target-intelligence
+│  │
+│  └─ Output: 12-section target dossier
+│     ├─ Druggability assessed? → Check Section 9
+│     ├─ Drugs identified? → entity-resolution → drug-intelligence
+│     └─ Need validation scoring? → target-validation
+│
+├─ About a DRUG or COMPOUND?
+│  │
+│  ├─ IDs already resolved?
+│  │  ├─ Yes → drug-intelligence (6-stage dossier)
+│  │  └─ No → entity-resolution → drug-intelligence
+│  │
+│  └─ Output: 10-section drug dossier
+│     ├─ Targets identified? → entity-resolution → target-intelligence
+│     └─ Need comparative analysis? → target-validation
+│
+├─ About BOTH target AND drug?
+│  │
+│  └─ entity-resolution (both) → target-intelligence + drug-intelligence
+│     └─ target-validation (comparative analysis)
+│
+└─ About a DISEASE (target landscape)?
+   │
+   └─ entity-resolution (disease) → Open Targets disease associations
+      └─ For each target: target-intelligence
+```
+
+### Biological Research: Quick Selection
+
+| Task | Primary Skill | Prerequisite | Downstream |
+|------|---------------|--------------|------------|
+| "Tell me about EGFR" | target-intelligence | entity-resolution | drug-intelligence |
+| "Profile imatinib" | drug-intelligence | entity-resolution | target-intelligence |
+| "BRCA2 druggability" | target-intelligence | entity-resolution | target-validation |
+| "Compare drugs for target" | target-validation | entity-resolution + both intel skills | — |
+| "What targets for Alzheimer's?" | target-intelligence (multi) | entity-resolution | — |
 
 ---
 
@@ -652,6 +701,11 @@ User has content ready for final document format
 | Score paper quality | peer-review | Scoring Only mode (8-dimension ScholarEval) |
 | Comprehensive evaluation | peer-review | Review + Scoring mode |
 | Analyze arguments | peer-review | (use Critical Analysis Framework) |
+| **Biological Research** | | |
+| Target profiling | target-intelligence | entity-resolution → target-intelligence |
+| Drug profiling | drug-intelligence | entity-resolution → drug-intelligence |
+| Entity disambiguation | entity-resolution | (prerequisite for intel skills) |
+| Target-drug comparison | target-validation | entity-resolution + both intel skills |
 | **Analysis** | | |
 | Statistical guidance | statistical-analysis | + reproducible-research |
 | Visualize statistical results | statistical-analysis | + plotting-libraries |
@@ -864,7 +918,7 @@ Each skill's `<cross_references>` section should include:
 
 ---
 
-*This router provides deterministic skill selection for the 24-skill scientific writing library (20 top-level + 4 document-skills sub-skills). For threshold values and quality criteria, see `QUANTIFICATION_THRESHOLDS.md`.*
+*This router provides deterministic skill selection for the 29-skill scientific writing library (22 top-level + 4 document-skills sub-skills + 3 biological research skills). For threshold values and quality criteria, see `QUANTIFICATION_THRESHOLDS.md`.*
 
 ---
 
