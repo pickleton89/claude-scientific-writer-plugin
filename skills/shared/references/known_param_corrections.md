@@ -1,7 +1,7 @@
 # Known Parameter Corrections
 
 > Consolidated ToolUniverse API quirks that cause silent failures.
-> Version: 1.1.0
+> Version: 1.2.0
 > Source: Verified across all four reference skills.
 >
 > **Naming convention:** Tool names here match `tool-lookup.yaml` keys.
@@ -76,6 +76,18 @@ These tools require **all** listed parameters (none are optional):
 | `DailyMed_parse_*` (parsed section tools) | `drug_name` | `setid` | Requires `setid` from `DailyMed_search_spls` first |
 | `PharmGKB_get_clinical_annotations` | `drug_name` | `annotation_id` or gene-based query | May need annotation ID; check tool info |
 | `FDA_OrangeBook_search_drug` | `drug` | `brand_name` or `generic_name` | Use exact trade name or generic name |
+
+---
+
+## Phase 3 Parameter Corrections
+
+| Tool | Common Mistake | Correct Usage | Notes |
+|------|---------------|---------------|-------|
+| `search_clinical_trials` (TU: `ClinicalTrials_search`) | `query` | `query_term` | **REQUIRED** param; use for failed program searches |
+| `CTD_get_gene_diseases` | `gene` or `gene_symbol` | `input_terms` | Accepts gene symbol as value but param name is `input_terms` |
+| `GO_get_annotations_for_gene` | `gene_symbol` | `gene_id` | Accepts gene symbol as value despite param name |
+| `EuropePMC_get_fulltext_snippets` | `article_id` or `pmid` | `pmcid` + `terms` | Must use **PMC ID** (not PMID); `terms` specifies search terms within full text |
+| `SemanticScholar_get_pdf_snippets` | `paper_id` | `open_access_pdf_url` + `terms` | Requires the actual PDF URL, not a paper ID |
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: literature-review
-version: 2.2.0
+version: 2.3.0
 description: "Conduct systematic literature reviews using multiple academic databases with quantified coverage thresholds. Provides structured methodology for search, screening, synthesis, and citation verification with professional output in markdown and PDF formats."
 when_to_use: "Systematic, scoping, narrative, or rapid literature reviews requiring multi-database search strategies and PRISMA-compliant documentation"
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep, WebFetch, WebSearch]
@@ -128,6 +128,18 @@ Do NOT use this skill when:
 4. Select databases (minimum 3 for systematic reviews)
 5. Define search strategy with Boolean operators
 
+6. **Select review mode** based on scope and user intent:
+
+| Mode | Scope | Output | Stages Used |
+|------|-------|--------|-------------|
+| **Factoid** | Single question / fact-check | `[topic]_factcheck.md` (≤1 page) | 1 → 2 → 7 |
+| **Mini-review** | Narrow topic, focused synthesis | `[topic]_review.md` (1-3 pages) | 1 → 2 → 3 → 6 → 7 |
+| **Full deep-research** | Comprehensive systematic review | Full PRISMA workflow | All 8 stages |
+
+   - **Factoid mode:** Skip screening/extraction/quality stages. Search 2 databases, verify top 5-10 hits, produce concise answer with citations. Use for "What is the primary target of X?" type questions.
+   - **Mini-review mode:** Abbreviated screening (title + abstract only), thematic synthesis of 10-30 papers, no formal quality assessment. Use for focused topics where comprehensive PRISMA is overkill.
+   - **Full mode (default):** Complete PRISMA-compliant workflow. Use for systematic reviews, scoping reviews, or any review intended for publication.
+
 **Exit Criteria:**
 - [ ] Research question documented (PICO/PEO/SPIDER format)
 - [ ] Protocol registered (if systematic review)
@@ -153,7 +165,22 @@ Do NOT use this skill when:
    Concept 3 terms: (term3 OR synonym5)
    ```
 
-2. Execute searches using `paper-search` and document:
+2. **Collision-aware search construction** (if `entity-resolution` identity table available):
+   - Check collision risk level from identity table
+   - If **HIGH collision** (e.g., ACE, SET, CAT): prepend negative filters to all search strings
+     ```
+     Example: "ACE cardiovascular" → "ACE cardiovascular -\"ACE inhibitor\" -\"angiotensin converting enzyme inhibitor\" -\"ACE2\""
+     ```
+   - If **LOW collision**: proceed with standard search strings
+   - Document collision status and any negative filters applied in search log
+   - **ToolUniverse fallback search tools** (when primary databases insufficient):
+     - `EuropePMC_search_articles` (capability: `literature.search`) — includes full-text snippet extraction
+     - `SemanticScholar_search_papers` (capability: `literature.search`) — cross-domain coverage
+   - **Citation network expansion** (after initial results):
+     - `EuropePMC_get_citations` (capability: `literature.citations`) — forward citations from Europe PMC (see also: `openalex_citations`, `semantic_scholar_citations` in tool-lookup)
+     - `SemanticScholar_get_recommendations` (capability: `literature.recommendations`) — AI-powered related papers
+
+3. Execute searches using `paper-search` and document:
    ```bash
    # PubMed search
    python ../paper-search/scripts/search.py "your query" \
@@ -174,11 +201,11 @@ Do NOT use this skill when:
 | bioRxiv | YYYY-MM-DD | [full query] | N papers |
 | Semantic Scholar | YYYY-MM-DD | [full query] | N papers |
 
-3. Export results in structured format (JSON, BibTeX)
-4. Search citation networks:
+4. Export results in structured format (JSON, BibTeX)
+5. Search citation networks:
    - Forward citations: Papers citing key papers (use `--source semantic` with paper ID)
    - Backward citations: References from included papers
-5. Search grey literature if appropriate (theses, reports, preprints)
+6. Search grey literature if appropriate (theses, reports, preprints)
 
 **Search Saturation Criteria:**
 - [ ] No new relevant papers in last 50 screened titles
@@ -304,9 +331,27 @@ Do NOT use this skill when:
    - Conflicting findings (document discrepancies)
    - Gaps (what's not studied)
 
-4. Write thematic synthesis (NOT study-by-study) with 4-6 citations per paragraph
-5. Create summary tables per theme (see template in [`references/output_templates.md`]({baseDir}/references/output_templates.md))
-6. If meta-analysis: calculate pooled effects, heterogeneity (I²)
+4. **Apply T1-T4 evidence grading** per `../shared/references/evidence_grading.md`:
+   - Grade every key claim with inline evidence label: `[T{n}: source]`
+   - T1 (Mechanistic/Direct): causal mechanism demonstrated, human clinical proof
+   - T2 (Functional): model organism data, biochemical assays with phenotype
+   - T3 (Association): GWAS, screen hits, correlations without mechanism
+   - T4 (Mention/Review): review mentions, computational predictions, annotations
+   - **Theme-level evidence summary** per theme:
+     ```
+     Theme: EGFR in NSCLC resistance — Strong (8 mechanistic [T1], 3 functional [T2], 1 association [T3])
+     ```
+   - Flag themes supported only by T3/T4 evidence as evidence gaps
+
+5. **Theme clustering and sizing:**
+   - Extract keywords from each paper -> group into semantic clusters
+   - Minimum 3 papers per theme to be considered a valid cluster
+   - Size labels: **Major** (10+ papers), **Minor** (3-9 papers), **Insufficient** (<3 papers — merge or note as gap)
+   - Report theme distribution in results section
+
+6. Write thematic synthesis (NOT study-by-study) with 4-6 citations per paragraph
+7. Create summary tables per theme (see template in [`references/output_templates.md`]({baseDir}/references/output_templates.md))
+8. If meta-analysis: calculate pooled effects, heterogeneity (I²)
 
 > **The "So What?" Test:** For each theme, don't just describe *what* the literature says—explain *why it matters*. If a reader could ask "So what?" after reading your synthesis, you haven't explained the significance. Every theme should connect to: implications for the field, gaps that need addressing, or actionable conclusions.
 
@@ -329,6 +374,19 @@ Do NOT use this skill when:
 2. Verify each DOI resolves correctly
 3. Cross-check metadata (authors, title, year, journal)
 4. Format citations consistently (see Citation Style Matrix)
+
+5. **Full-text verification** for high-value claims (T1/T2 evidence, controversial findings):
+
+   | Tier | Tool | Use Case | Capability Key |
+   |------|------|----------|----------------|
+   | 1 (preferred) | `EuropePMC_get_fulltext_snippets` | Quick, OA articles, bounded snippets | `literature.full_text_snippets` |
+   | 2 | `SemanticScholar_get_pdf_snippets` | High-value papers with OA PDFs | `literature.full_text_snippets` |
+   | 3 (deepest) | `get_full_text_article` (PubMed MCP) | PMC full text, detailed verification | `literature.full_text` |
+
+   - Prioritize full-text verification for: claims that drive conclusions, contradictory findings, T1 evidence supporting major themes
+   - Document coverage: "Full-text verification on X/Y papers (Z% coverage)"
+   - Flag papers where full text was unavailable: "Abstract-only verification — full text behind paywall"
+   - Minimum target: verify ≥50% of T1 claims and ≥30% of T2 claims via full text
 
 **Citation Verification Checklist:**
 
@@ -469,6 +527,23 @@ Available templates in [`references/output_templates.md`]({baseDir}/references/o
 Identification → Screening → Eligibility → Included
 ```
 
+**Factoid Template** (for Factoid mode):
+```markdown
+# Factoid: {QUESTION}
+
+**Answer:** {concise answer, 1-3 sentences}
+
+**Evidence:**
+| # | Source | Year | Finding | Tier |
+|---|--------|------|---------|------|
+| 1 | {Author et al.} | {year} | {key finding} | T{n} |
+| 2 | ... | ... | ... | ... |
+
+**Databases searched:** {list}
+**Search date:** {date}
+**Confidence:** {High/Medium/Low} based on {N} concordant sources
+```
+
 </templates>
 
 <cross_references>
@@ -476,6 +551,7 @@ Identification → Screening → Eligibility → Included
 
 | Skill | Relationship |
 |-------|-------------|
+| `entity-resolution` | **Prerequisite** (if biomedical) — provides collision filters for search construction |
 | `paper-search` | Use for multi-database searching in Stage 2 (PubMed, bioRxiv, Semantic Scholar, Google Scholar) |
 | `citation-management` | Use for citation formatting after extraction |
 | `scientific-schematics` | Generate PRISMA diagrams and synthesis figures |
@@ -484,6 +560,11 @@ Identification → Screening → Eligibility → Included
 | `scientific-writing` | Write manuscript sections from review |
 | `venue-templates` | Format for specific journal requirements |
 | `research-paper-summarizer` | Summarize individual papers found during review; use for key papers requiring deep analysis |
+| `target-validation` | **Downstream** — consumes literature evidence with T1-T4 grading for validation scoring |
+
+**Shared References:**
+- `../shared/references/evidence_grading.md` — T1-T4 tier definitions for evidence grading
+- `../shared/tool-lookup.yaml` — capability keys for ToolUniverse search/citation tools
 
 **Skill Selection:**
 See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.

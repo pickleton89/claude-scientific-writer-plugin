@@ -1,6 +1,6 @@
 ---
 name: scientific-schematics
-version: 2.4.0
+version: 2.5.0
 extends: visual-design
 description: "Create publication-quality scientific diagrams using a tiered approach: free Mermaid rendering for simple diagrams, AI generation for complex publication-quality figures. Specialized in neural networks, flowcharts, biological pathways, and system architectures."
 allowed-tools: [Read, Write, Edit, Bash]
@@ -296,6 +296,55 @@ When `--engine auto` (default), the complexity analyzer evaluates:
 The analyzer outputs a recommendation with confidence score and reasoning.
 
 </generation_tiers>
+
+<data_driven_diagrams>
+## Data-Driven Diagrams
+
+**When the diagram subject involves a specific gene, protein, drug, or pathway**, query real biological data from ToolUniverse before constructing the diagram prompt. This produces diagrams with verified components rather than hallucinated topology.
+
+**Pattern:** Query data → Extract diagram elements → Feed into prompt → Generate with verified components.
+
+### Supported Data-Fed Diagram Types
+
+| Diagram Type | Data Source (tool-lookup.yaml key) | What Data Provides |
+|--------------|------------------------------------|--------------------|
+| Pathway diagram | `interactions.pathways` (Reactome/KEGG) | Verified pathway steps, enzyme names, metabolite flow |
+| PPI network | `visualization_data.ppi_network` (STRING) | Confidence-scored edges, node list, cluster structure |
+| Domain architecture | `target_structure.domains` (InterPro/Pfam) | Domain boundaries, families, functional annotations |
+| Expression profile | `visualization_data.expression_heatmap` (GTEx) | Tissue names, TPM values for relative sizing |
+| Variant landscape | `visualization_data.variant_frequency` (gnomAD) | Variant positions, frequencies, constraint regions |
+
+### Modified Workflow for Data-Fed Diagrams
+
+**Stage 1 addition:** Before listing components, query the relevant database to get real data. Use capability keys from `tool-lookup.yaml` — never hardcode tool names.
+
+**Stage 3 addition:** Incorporate queried data into the prompt. Example data-fed prompt:
+
+```
+PPI network diagram for TP53.
+Layout: force-directed, circular for core interactors.
+
+Verified interactors from STRING (score ≥ 700):
+- TP53 ↔ MDM2 (score: 999, inhibition)
+- TP53 ↔ CDKN1A (score: 998, activation)
+- TP53 ↔ BAX (score: 990, activation)
+- [... additional edges from query ...]
+
+Edge thickness proportional to STRING confidence score.
+Node color by functional category (apoptosis=blue, cell cycle=green, DNA repair=orange).
+Colorblind-friendly palette. Label all nodes with gene symbols.
+```
+
+### When NOT to Use Data-Fed Diagrams
+
+- **Conceptual/theoretical diagrams** — no specific gene/protein to query
+- **Generic methodology flowcharts** — CONSORT, PRISMA templates don't need live data
+- **Diagrams of hypothetical mechanisms** — use standard prompt construction
+- **Diagram subjects not in databases** — novel proteins, non-model organisms
+
+**Dossier-first principle:** If an upstream target-intelligence or drug-intelligence dossier exists, extract diagram data from it rather than re-querying ToolUniverse.
+
+</data_driven_diagrams>
 
 <workflow>
 ## Workflow
@@ -826,6 +875,10 @@ Vertical top-to-bottom layout.
 | `scientific-slides` | Schematics integrates into slide presentations |
 | `research-posters` | Schematics provides figures for posters |
 | `scientific-writing` | Schematics provides methodology diagrams for papers |
+| `literature-review` | Provides PRISMA flow diagrams — schematics generates the diagram layout |
+| `entity-resolution` | Upstream: resolve gene/drug/disease IDs before data-fed diagram queries |
+| `target-intelligence` | Dossier source: extract PPI, pathway, domain data for diagrams |
+| `tool-lookup.yaml` | Capability key reference for data-fed diagram queries |
 
 **Skill Selection:**
 See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.

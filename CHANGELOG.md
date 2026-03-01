@@ -6,6 +6,79 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Phase 5 Complete: Broader Ecosystem Benefits
+- **skills/shared/tool-lookup.yaml**: v1.3.0 — 5 new capability sections
+  - `visualization_data`: expression heatmap, PPI network, variant frequency, enrichment results, network data
+  - `data_validation`: claim verification for interactions, expression, disease, variant, accession
+  - `enrichment`: gProfiler, STRING enrichment, MSigDB gene sets
+  - `molecular_images`: PubChem/ChEMBL 2D images, ProteinsPlus interaction diagrams
+  - `database_versions`: Reactome, GTEx, Ensembl version tracking
+- **skills/SKILL_ROUTER.md**: v2.1.0 — Workflow 8 (Data-Enriched Research Output)
+- **skills/skill-router/tests/canonical_routes.yaml**: v1.2.0 — 6 data-enriched test cases (136 total)
+
+### Changed — Phase 5
+- **skills/skill-router/skill_triggers.yaml**: Added `network diagram`, `interaction network`, `domain architecture` keywords and draw-network/draw-pathway triggers to scientific-schematics; added `verify` keyword and verify-claim trigger to peer-review
+- **skills/skill-router/tests/test_routing.py**: Added `data_enriched_cases` to standard test categories + `test_data_enriched_routing()` pytest function
+- **skills/hypothesis-generation/SKILL.md**: v2.3.0 — bio entity context in Stages 2-4 (GO, PPI, expression, constraint grounding)
+- **skills/scientific-schematics/SKILL.md**: v2.5.0 — `<data_driven_diagrams>` section (5 data-fed diagram types)
+- **skills/plotting-libraries/SKILL.md**: v1.5.0 — `<biological_data_visualization>` recipes (expression heatmap, PPI network, constraint chart)
+- **skills/peer-review/SKILL.md**: v2.3.0 — database claim verification protocol (5 claim types, Supported/Unsupported/Unverifiable)
+- **skills/research-paper-summarizer/SKILL.md**: v1.2.0 — `<entity_enrichment>` callout for biomedical papers
+- **skills/scientific-writing/SKILL.md**: v2.5.0 — §9b database version tracking in Methods (7 commonly cited databases)
+- **skills/statistical-analysis/SKILL.md**: v1.3.0 — `<population_context>` section (gnomAD variant frequency, GTEx expression baseline)
+
+### Fixed — Phase 5 (fresh-eyes review)
+- **skills/plotting-libraries/SKILL.md**: Added missing `import matplotlib.pyplot as plt` to Recipe 1 (expression heatmap) and Recipe 2 (PPI network)
+- **skills/SKILL_ROUTER.md**: Fixed version mismatch — body text said v2.0.0 while frontmatter said v2.1.0; fixed stale test count (130 → 136) in file structure listing
+
+### Added — Phase 4 Complete: Router and Graph Wiring
+- **skills/skill-router/skill_triggers.yaml**: v1.1.0 — registered 4 biological research skills (27 total)
+  - entity-resolution, target-intelligence, drug-intelligence, target-validation
+  - New `biological_research` category with disambiguation tree
+  - Category default: `biological_research → entity-resolution`
+- **skills/skill-router/tests/canonical_routes.yaml**: v1.1.0 — added 24 test cases (130 total)
+  - 5 entity-resolution, 5 target-intelligence, 5 drug-intelligence, 5 target-validation, 4 hypothesis-generation
+- **skills/SKILL_ROUTER.md**: v2.0.0 — Workflow 7 (Target Validation Pipeline), updated relationship diagram
+
+### Changed — Phase 4
+- **skills/skill-router/route.py**: Added `biological_research` category to `_detect_category()`
+- **skills/skill-router/tests/test_routing.py**: Added 5 new pytest test functions + category entries
+- **skills/hypothesis-generation/SKILL.md**: Added cross-references to entity-resolution, target/drug-intelligence, literature-review
+- **skills/scientific-writing/SKILL.md**: Added target-intelligence, drug-intelligence, target-validation to Uses (Input From)
+- **skills/peer-review/SKILL.md**: Added target-validation cross-reference
+- **skills/scientific-schematics/SKILL.md**: Added literature-review cross-reference (PRISMA diagrams)
+- **skills/plotting-libraries/SKILL.md**: Added literature-review cross-reference (forest plots)
+- **skills/statistical-analysis/SKILL.md**: Added literature-review cross-reference (meta-analysis)
+
+### Fixed — Phase 4
+- **skills/research-paper-summarizer/SKILL.md**: Removed stale `scientific-critical-thinking` reference (nonexistent skill), replaced with `peer-review`
+
+### Added — Phase 3 Complete: Target Validation + Literature Review Enhancement
+- **skills/target-validation/SKILL.md**: Target validation integrator skill (v1.0.0)
+  - 5-stage workflow: dossier intake -> disease+druggability scoring -> safety+clinical+validation -> pathway redundancy+modality -> synthesis+roadmap+audit
+  - Quantitative 0-100 score across 5 dimensions (12 sub-components), priority tiers T1-T4 (GO/CONDITIONAL/CAUTION/NO-GO)
+  - Consumes upstream dossiers — only queries for genuinely new data (CTD, GO, failed clinical trials, pathway redundancy)
+  - 9-section report template with validation scorecard, roadmap, and completeness audit
+  - Modality assessment table (small molecule, antibody, PROTAC, gene therapy, oligonucleotide)
+
+### Changed — Phase 3
+- **skills/literature-review/SKILL.md**: Enhanced to v2.3.0
+  - Mode selection: Factoid (≤1 page) / Mini-review (1-3 pages) / Full PRISMA (all 8 stages)
+  - Collision-aware search: consumes negative filters from entity-resolution identity table
+  - T1-T4 evidence grading with inline labels and theme-level evidence summaries
+  - Theme clustering with size labels (Major 10+, Minor 3-9, Insufficient <3)
+  - Three-tier full-text verification: EuropePMC snippets -> SemanticScholar PDF snippets -> PubMed MCP
+  - Added factoid template to output templates
+  - Cross-references: entity-resolution (prerequisite), target-validation (downstream), evidence_grading.md
+- **skills/shared/tool-lookup.yaml**: v1.2.0 — added 4 capability keys
+  - target_biology.disease_complement (CTD_get_gene_diseases)
+  - interactions.go_annotations (GO_get_annotations_for_gene)
+  - literature.full_text_snippets (EuropePMC, SemanticScholar snippet tools)
+  - literature.recommendations (SemanticScholar_get_recommendations)
+- **skills/shared/references/known_param_corrections.md**: v1.2.0 — added Phase 3 corrections
+  - search_clinical_trials: query_term (not query), CTD: input_terms, GO: gene_id, EuropePMC: pmcid+terms, SemanticScholar: open_access_pdf_url+terms
+- **skills/SKILL_ROUTER.md**: v1.8.0 — target-validation confirmed as full skill (30 total), literature-review mode selection noted
+
 ### Added — Phase 2 Complete: Target & Drug Intelligence Skills
 - **skills/target-intelligence/SKILL.md**: Target intelligence skill (v1.0.0)
   - 6-stage workflow: report init -> OT foundation -> structure/domains/function -> interactions/expression -> variants/disease/safety -> druggability/audit

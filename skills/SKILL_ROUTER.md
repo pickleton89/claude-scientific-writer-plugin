@@ -2,13 +2,13 @@
 name: skill-router
 description: Decision trees for selecting the correct skill when multiple options apply. Consult when task scope is ambiguous or spans multiple scientific writing domains.
 when_to_use: When a user request could be handled by 2+ skills, when unclear which skill is primary vs. supporting, or when planning multi-skill workflows.
-version: 1.7.0
+version: 2.1.0
 ---
 
 # Skill Router
 
 > Decision trees and routing logic for selecting the right skill(s) for scientific writing tasks
-> Version: 1.7.0 | Updated: 2026-03-01
+> Version: 2.1.0 | Updated: 2026-03-01
 
 ---
 
@@ -257,8 +257,9 @@ User needs research/information support
 │  └─ Systematic literature search (50+ papers)?
 │     └─ YES → literature-review
 │              │
-│              ├─ Uses paper-search for Stage 2
-│              ├─ PRISMA-style screening
+│              ├─ Mode selection: Factoid (≤1 page) / Mini-review (1-3 pages) / Full (PRISMA)
+│              ├─ Uses paper-search for Stage 2 (collision-aware if entity-resolution available)
+│              ├─ T1-T4 evidence grading + full-text verification
 │              └─ Then → citation-management (for references)
 │
 ├─ Need to MANAGE citations?
@@ -320,7 +321,7 @@ User needs biological/drug research data
 │  └─ Output: 12-section target dossier
 │     ├─ Druggability assessed? → Check Section 9
 │     ├─ Drugs identified? → entity-resolution → drug-intelligence
-│     └─ Need validation scoring? → target-validation
+│     └─ Need validation scoring? → target-validation (5-stage, 0-100 scorecard)
 │
 ├─ About a DRUG or COMPOUND?
 │  │
@@ -705,7 +706,8 @@ User has content ready for final document format
 | Target profiling | target-intelligence | entity-resolution → target-intelligence |
 | Drug profiling | drug-intelligence | entity-resolution → drug-intelligence |
 | Entity disambiguation | entity-resolution | (prerequisite for intel skills) |
-| Target-drug comparison | target-validation | entity-resolution + both intel skills |
+| Target-drug validation | target-validation | entity-resolution + both intel skills |
+| GO/NO-GO scoring | target-validation | entity-resolution + target-intelligence |
 | **Analysis** | | |
 | Statistical guidance | statistical-analysis | + reproducible-research |
 | Visualize statistical results | statistical-analysis | + plotting-libraries |
@@ -793,6 +795,35 @@ User has content ready for final document format
 5. visual-design          → Validate accessibility
 ```
 
+### Workflow 7: Target Validation Pipeline
+
+```
+1. entity-resolution      → Resolve gene/drug/disease identifiers
+2. target-intelligence    → Build 12-section target dossier (6 stages)
+3. drug-intelligence      → Build 10-section drug dossier (6 stages)
+4. target-validation      → Score 0-100 across 5 dimensions, assign T1-T4 tier
+5. literature-review      → Deep-dive on specific evidence gaps (optional)
+6. scientific-writing     → Draft target assessment manuscript (optional)
+```
+
+### Workflow 8: Data-Enriched Research Output
+
+```
+1. entity-resolution      → Resolve gene/drug/disease identifiers (if not already resolved)
+2. target-intelligence     → Build dossier with expression, PPI, pathway data (optional)
+   OR drug-intelligence    → Build dossier with pharmacology, ADMET data (optional)
+3. OUTPUT SKILL (any of):
+   - plotting-libraries    → Biological data visualization (heatmap, network, constraint)
+   - scientific-schematics → Data-fed diagrams (pathway, PPI network, domain architecture)
+   - peer-review           → Database claim verification for biomedical manuscripts
+   - research-paper-summarizer → Entity enrichment callout for biomedical summaries
+   - scientific-writing    → Database version tracking in Methods sections
+   - statistical-analysis  → Population context for variant/expression analyses
+   - hypothesis-generation → Database-grounded hypothesis development
+```
+
+**Key principle:** Dossier-first — output skills extract data from upstream dossiers when available, avoiding redundant ToolUniverse queries. Data-enriched requests route to the OUTPUT skill (not to bio research skills), since the output skill controls rendering.
+
 ---
 
 ## Skill Relationships Diagram
@@ -838,6 +869,16 @@ User has content ready for final document format
     ┌─────────────────────────────────────────────────────────────────┐
     │                     CONVERSION SKILLS                           │
     │  markitdown (file → markdown)  │  paper-2-web (paper → web)    │
+    └─────────────────────────────────────────────────────────────────┘
+
+    ┌─────────────────────────────────────────────────────────────────┐
+    │                 BIOLOGICAL RESEARCH PIPELINE                    │
+    │                                                                 │
+    │  entity-resolution ──► target-intelligence ──┐                  │
+    │        │                                     ├─► target-        │
+    │        └─────────────► drug-intelligence ────┘   validation     │
+    │                                                                 │
+    │  (upstream: resolve IDs)  (downstream: 0-100 GO/NO-GO score)   │
     └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -918,7 +959,7 @@ Each skill's `<cross_references>` section should include:
 
 ---
 
-*This router provides deterministic skill selection for the 29-skill scientific writing library (22 top-level + 4 document-skills sub-skills + 3 biological research skills). For threshold values and quality criteria, see `QUANTIFICATION_THRESHOLDS.md`.*
+*This router provides deterministic skill selection for the 30-skill scientific writing library (22 top-level + 4 document-skills sub-skills + 4 biological research skills). All 27 deterministic skills are registered in `skill_triggers.yaml` v1.1.0 with 136 canonical test cases (Phase 5: +6 data-enriched routing tests). 7 existing skills now consume ToolUniverse data feeds via `tool-lookup.yaml` v1.3.0. For threshold values and quality criteria, see `QUANTIFICATION_THRESHOLDS.md`.*
 
 ---
 
@@ -932,10 +973,10 @@ The skill router includes programmatic validation tools for deterministic routin
 skills/skill-router/
 ├── __init__.py           # Package exports
 ├── route.py              # Deterministic routing module
-├── skill_triggers.yaml   # Keyword registry for all 23 skills
+├── skill_triggers.yaml   # Keyword registry for all 27 skills
 └── tests/
     ├── __init__.py
-    ├── canonical_routes.yaml  # 97 canonical test cases
+    ├── canonical_routes.yaml  # 136 canonical test cases
     └── test_routing.py        # Validation script
 ```
 

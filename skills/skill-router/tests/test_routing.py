@@ -172,6 +172,12 @@ def run_all_tests(verbose: bool = True) -> tuple[int, int, dict[str, list[TestRe
         "markitdown_cases",
         "oligon_brand_cases",
         "document_skills_cases",
+        "entity_resolution_cases",
+        "target_intelligence_cases",
+        "drug_intelligence_cases",
+        "target_validation_cases",
+        "hypothesis_generation_cases",
+        "data_enriched_cases",
     ]
 
     for category in standard_categories:
@@ -361,6 +367,84 @@ def test_statistical_analysis_routing():
         result = router.route(case["request"])
         assert result.primary_skill == case["expected_skill"], \
             f"Request '{case['request']}' routed to {result.primary_skill}"
+
+
+def test_entity_resolution_routing():
+    """Test routing for entity resolution requests."""
+    test_cases = load_test_cases()
+    router = SkillRouter()
+
+    for case in test_cases.get("entity_resolution_cases", []):
+        result = router.route(case["request"])
+        assert result.primary_skill == case["expected_skill"], \
+            f"Request '{case['request']}' routed to {result.primary_skill}"
+        assert result.confidence >= case.get("min_confidence", 0.5), \
+            f"Confidence {result.confidence} below threshold"
+
+
+def test_target_intelligence_routing():
+    """Test routing for target intelligence requests."""
+    test_cases = load_test_cases()
+    router = SkillRouter()
+
+    for case in test_cases.get("target_intelligence_cases", []):
+        result = router.route(case["request"])
+        assert result.primary_skill == case["expected_skill"], \
+            f"Request '{case['request']}' routed to {result.primary_skill}"
+        assert result.confidence >= case.get("min_confidence", 0.5), \
+            f"Confidence {result.confidence} below threshold"
+
+
+def test_drug_intelligence_routing():
+    """Test routing for drug intelligence requests."""
+    test_cases = load_test_cases()
+    router = SkillRouter()
+
+    for case in test_cases.get("drug_intelligence_cases", []):
+        result = router.route(case["request"])
+        assert result.primary_skill == case["expected_skill"], \
+            f"Request '{case['request']}' routed to {result.primary_skill}"
+        assert result.confidence >= case.get("min_confidence", 0.5), \
+            f"Confidence {result.confidence} below threshold"
+
+
+def test_target_validation_routing():
+    """Test routing for target validation requests."""
+    test_cases = load_test_cases()
+    router = SkillRouter()
+
+    for case in test_cases.get("target_validation_cases", []):
+        result = router.route(case["request"])
+        assert result.primary_skill == case["expected_skill"], \
+            f"Request '{case['request']}' routed to {result.primary_skill}"
+        assert result.confidence >= case.get("min_confidence", 0.5), \
+            f"Confidence {result.confidence} below threshold"
+
+
+def test_hypothesis_generation_routing():
+    """Test routing for hypothesis generation requests."""
+    test_cases = load_test_cases()
+    router = SkillRouter()
+
+    for case in test_cases.get("hypothesis_generation_cases", []):
+        result = router.route(case["request"])
+        assert result.primary_skill == case["expected_skill"], \
+            f"Request '{case['request']}' routed to {result.primary_skill}"
+        assert result.confidence >= case.get("min_confidence", 0.5), \
+            f"Confidence {result.confidence} below threshold"
+
+
+def test_data_enriched_routing():
+    """Test routing for data-enriched requests (routes to output skills, not bio skills)."""
+    test_cases = load_test_cases()
+    router = SkillRouter()
+
+    for case in test_cases.get("data_enriched_cases", []):
+        result = router.route(case["request"])
+        assert result.primary_skill == case["expected_skill"], \
+            f"Request '{case['request']}' routed to {result.primary_skill}, expected {case['expected_skill']}"
+        assert result.confidence >= case.get("min_confidence", 0.5), \
+            f"Confidence {result.confidence} below threshold"
 
 
 def test_negative_cases():

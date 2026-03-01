@@ -1,6 +1,6 @@
 ---
 name: peer-review
-version: 2.2.0
+version: 2.3.0
 description: "Systematic peer review toolkit. Evaluate methodology, statistics, design, reproducibility, ethics, figure integrity, reporting standards, for manuscript and grant review across disciplines."
 when_to_use: "For journal manuscript review, grant proposal evaluation, methodology assessment, statistical analysis review, presentation feedback, or compliance checking against reporting guidelines (CONSORT, STROBE, PRISMA, ARRIVE)."
 allowed-tools: [Read, Write, Edit, Bash]
@@ -236,6 +236,29 @@ Conduct a thorough evaluation of each manuscript section, documenting specific c
 - Causal claims from correlational data
 - Inadequate discussion of limitations
 - Mechanistic claims without mechanistic evidence
+
+#### Database Claim Verification
+
+**For biomedical papers with specific, verifiable claims about genes, proteins, drugs, or diseases**, supplement the section review with database cross-checks. This adds an empirical verification layer beyond literature consistency.
+
+**Activation gate:** Only apply when the manuscript (a) is biomedical and (b) makes specific, database-verifiable claims (e.g., "Gene X interacts with Gene Y", "Variant Z is rare in the population").
+
+**Protocol:**
+1. **Identify 3-5 key verifiable claims** from Results and Discussion (interaction claims, expression claims, disease associations, variant frequencies, accession validity)
+2. **Query databases per claim type:**
+
+| Claim Type | Capability Key (`tool-lookup.yaml`) | Verdict Criteria |
+|------------|-------------------------------------|-----------------|
+| Protein interaction | `data_validation.claim_check_interaction` | STRING score ≥ 400 = Supported |
+| Tissue expression | `data_validation.claim_check_expression` | GTEx TPM ≥ 1 in claimed tissue = Supported |
+| Disease association | `data_validation.claim_check_disease` | OT score > 0 = Supported |
+| Variant frequency | `data_validation.claim_check_variant` | gnomAD AF matches claimed rarity = Supported |
+| Data accession | `data_validation.accession_validation` | Accession resolves with metadata = Valid |
+
+3. **Report verdict per claim:** Supported / Unsupported / Unverifiable (no database coverage)
+4. **Integrate into Major/Minor comments** — unsupported claims flagged as Major; unverifiable noted as Minor
+
+**Dossier-first:** If a target-intelligence or drug-intelligence dossier exists for the paper's subject, extract verification data from it rather than re-querying.
 
 #### References
 - **Completeness:** Are key relevant papers cited?
@@ -607,6 +630,9 @@ This skill includes reference materials to support comprehensive peer review:
 - **venue-templates**: `reviewer_expectations.md` for venue-specific review standards
 - **reproducible-research**: Assess data availability, code sharing, and reproducibility standards
 - **research-paper-summarizer**: Summarization (extracting content) vs evaluation (assessing quality); use peer-review for critical assessment
+- **target-validation**: Related — both involve evidence evaluation and quality scoring across multiple dimensions
+- **entity-resolution**: Upstream: resolve gene/drug/disease IDs before database claim verification
+- **tool-lookup.yaml**: Capability key reference for `data_validation.*` claim verification queries
 
 > **Note:** The ScholarEval 8-dimension scoring framework (formerly `scholar-evaluation` skill) is now integrated into this skill as an optional output mode. Select "Scoring Only" or "Review + Scoring" mode after Stage 1 to access quantitative assessment.
 

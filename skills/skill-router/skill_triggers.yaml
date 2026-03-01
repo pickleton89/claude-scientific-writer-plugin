@@ -1,6 +1,6 @@
 # Skill Trigger Registry
-# Version: 1.0.0
-# Purpose: Deterministic keyword-based routing for the 23-skill scientific writing library
+# Version: 1.1.0
+# Purpose: Deterministic keyword-based routing for the 27-skill scientific writing library
 #
 # Structure:
 #   keywords: Common terms that indicate this skill (weighted equally)
@@ -80,6 +80,8 @@ skills:
       - process
       - pipeline
       - architecture
+      - network diagram
+      - interaction network
       - process diagram
       - methods diagram
       - concept map
@@ -87,6 +89,7 @@ skills:
       - biological pathway
       - signaling pathway
       - molecular mechanism
+      - domain architecture
     triggers:
       - "diagram"
       - "schematic"
@@ -98,6 +101,8 @@ skills:
       - "(workflow|process).*diagram"
       - "(biological|signaling|metabolic).*pathway"
       - "experimental.*setup"
+      - "(?:draw|create|make).*(?:interaction|protein).*network"
+      - "(?:draw|create|make).*(?:pathway|domain).*diagram"
     output_formats: [svg, png, pdf]
     negative_keywords:
       - plot
@@ -522,6 +527,9 @@ skills:
       - scholarly evaluation
       - quality score
       - methodology
+      - verify
+      - verify claims
+      - verify manuscript
     triggers:
       - "review.*(manuscript|paper|this|draft)"
       - "peer.*review"
@@ -533,6 +541,7 @@ skills:
       - "give.*feedback"
       - "paper.*quality"
       - "quality.*paper"
+      - "verify.*(?:claim|interaction|finding).*(?:in|from).*(?:this|manuscript|paper)"
     output_formats: [md]
     negative_keywords:
       - literature review
@@ -783,6 +792,127 @@ skills:
     output_formats: [xlsx]
     negative_keywords: []
 
+  # ============================================================
+  # BIOLOGICAL RESEARCH SKILLS
+  # ============================================================
+
+  entity-resolution:
+    description: Disambiguate genes, drugs, diseases, and resolve cross-database identifiers
+    category: biological_research
+    keywords:
+      - resolve
+      - disambiguate
+      - identifier
+      - gene symbol
+      - cross-reference
+      - entity
+      - uniprot
+      - ensembl
+      - chembl id
+      - mesh
+    triggers:
+      - "resolve.*(?:gene|drug|disease|entity|symbol|identifier)"
+      - "disambiguate"
+      - "cross.reference"
+      - "what is.*(?:gene|protein|drug|compound)"
+      - "identify.*(?:gene|target|drug|entity)"
+    output_formats: [md, json]
+    negative_keywords:
+      - plot
+      - chart
+      - slide
+      - poster
+      - write paper
+
+  target-intelligence:
+    description: Comprehensive target/gene dossier with biology, druggability, and safety data
+    category: biological_research
+    keywords:
+      - target
+      - gene
+      - protein
+      - dossier
+      - druggability
+      - target profile
+      - gene profile
+      - kinase
+      - receptor
+      - enzyme
+      - target biology
+      - expression
+      - essentiality
+    triggers:
+      - "(?:tell|know).*about.*(?:gene|target|protein)"
+      - "(?:target|gene|protein).*(?:dossier|profile|report|intelligence)"
+      - "druggability.*(?:of|for|assess)"
+      - "(?:profile|characterize|investigate).*(?:gene|target|protein)"
+      - "target.*(?:biology|validation|assessment)"
+    output_formats: [md]
+    negative_keywords:
+      - drug profile
+      - compound profile
+      - literature review
+      - systematic review
+
+  drug-intelligence:
+    description: Comprehensive drug/compound dossier with pharmacology, safety, and regulatory data
+    category: biological_research
+    keywords:
+      - drug
+      - compound
+      - molecule
+      - drug profile
+      - pharmacology
+      - admet
+      - toxicity
+      - clinical trials
+      - fda
+      - drug safety
+      - mechanism of action
+      - indication
+      - therapeutic
+    triggers:
+      - "(?:tell|know).*about.*(?:drug|compound|molecule|medication)"
+      - "(?:drug|compound).*(?:dossier|profile|report|intelligence)"
+      - "(?:profile|characterize|investigate).*(?:drug|compound|molecule)"
+      - "(?:pharmacology|admet|toxicity).*(?:of|for)"
+      - "drug.*(?:safety|mechanism|interaction)"
+    output_formats: [md]
+    negative_keywords:
+      - target profile
+      - gene profile
+      - literature review
+      - systematic review
+
+  target-validation:
+    description: GO/NO-GO target validation scorecard integrating target and drug intelligence
+    category: biological_research
+    keywords:
+      - validate
+      - validation
+      - scorecard
+      - go no-go
+      - go/no-go
+      - target assessment
+      - druggability score
+      - druggability
+      - drug target
+      - therapeutic target
+      - target selection
+      - score
+      - evaluate
+    triggers:
+      - "validate.*(?:target|gene|protein)"
+      - "(?:target|gene).*validation"
+      - "go.no.go"
+      - "(?:score|assess|evaluate).*(?:target|druggability)"
+      - "(?:drug|therapeutic).*target.*(?:assess|select|score|validate)"
+    output_formats: [md]
+    negative_keywords:
+      - literature review
+      - systematic review
+      - write paper
+
 # ============================================================
 # ROUTING CONFIGURATION
 # ============================================================
@@ -803,6 +933,7 @@ routing_config:
     conversion: markitdown
     document_output: "document-skills:docx"
     brand: oligon-brand
+    biological_research: entity-resolution
 
   # Disambiguation questions by category
   disambiguation:
@@ -835,3 +966,14 @@ routing_config:
       - question: "Is this a systematic/comprehensive review?"
         yes_skill: literature-review
         no_skill: citation-management
+
+    biological_research:
+      - question: "Are you looking to resolve or disambiguate an entity (gene, drug, disease)?"
+        yes_skill: entity-resolution
+        no_followup: "Is this about a specific gene/protein target?"
+      - question: "Is this about a specific gene/protein target?"
+        yes_skill: target-intelligence
+        no_followup: "Is this about a specific drug or compound?"
+      - question: "Is this about a specific drug or compound?"
+        yes_skill: drug-intelligence
+        no_skill: target-validation

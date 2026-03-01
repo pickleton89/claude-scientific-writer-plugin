@@ -1,5 +1,5 @@
 # Canonical Routing Test Cases
-# Version: 1.0.0
+# Version: 1.2.0
 # Purpose: Validate deterministic routing produces expected results
 #
 # Test case structure:
@@ -591,6 +591,193 @@ document_skills_cases:
     expected_skill: "document-skills:xlsx"
     min_confidence: 0.5
     category: document_output
+
+# ============================================================
+# BIOLOGICAL RESEARCH - entity-resolution
+# ============================================================
+
+entity_resolution_cases:
+  - request: "Resolve the gene symbol ACE"
+    expected_skill: entity-resolution
+    min_confidence: 0.5
+    category: biological_research
+
+  - request: "What is BRCA2? Disambiguate this gene"
+    expected_skill: entity-resolution
+    min_confidence: 0.5
+    category: biological_research
+
+  - request: "Cross-reference imatinib identifiers across databases"
+    expected_skill: entity-resolution
+    min_confidence: 0.5
+    category: biological_research
+
+  - request: "Identify the entity for symbol TP53"
+    expected_skill: entity-resolution
+    min_confidence: 0.5
+    category: biological_research
+
+  - request: "Resolve this drug name to ChEMBL and UniProt IDs"
+    expected_skill: entity-resolution
+    min_confidence: 0.5
+    category: biological_research
+
+# ============================================================
+# BIOLOGICAL RESEARCH - target-intelligence
+# ============================================================
+
+target_intelligence_cases:
+  - request: "Tell me about the EGFR protein"
+    expected_skill: target-intelligence
+    min_confidence: 0.5
+    category: biological_research
+
+  - request: "Create a target dossier for BRCA2"
+    expected_skill: target-intelligence
+    min_confidence: 0.5
+    category: biological_research
+
+  - request: "Assess the druggability of KRAS"
+    expected_skill: target-intelligence
+    min_confidence: 0.5
+    category: biological_research
+
+  - request: "Profile the gene TP53 as a drug target"
+    expected_skill: target-intelligence
+    min_confidence: 0.5
+    category: biological_research
+
+  - request: "Investigate target biology for HER2"
+    expected_skill: target-intelligence
+    min_confidence: 0.5
+    category: biological_research
+
+# ============================================================
+# BIOLOGICAL RESEARCH - drug-intelligence
+# ============================================================
+
+drug_intelligence_cases:
+  - request: "Profile imatinib as a drug"
+    expected_skill: drug-intelligence
+    min_confidence: 0.5
+    category: biological_research
+
+  - request: "Create a drug dossier for trastuzumab"
+    expected_skill: drug-intelligence
+    min_confidence: 0.5
+    category: biological_research
+
+  - request: "Tell me about the drug pembrolizumab"
+    expected_skill: drug-intelligence
+    min_confidence: 0.5
+    category: biological_research
+
+  - request: "What is the pharmacology of aspirin?"
+    expected_skill: drug-intelligence
+    min_confidence: 0.5
+    category: biological_research
+
+  - request: "Investigate drug safety for metformin"
+    expected_skill: drug-intelligence
+    min_confidence: 0.5
+    category: biological_research
+
+# ============================================================
+# BIOLOGICAL RESEARCH - target-validation
+# ============================================================
+
+target_validation_cases:
+  - request: "Validate BRCA2 as a drug target"
+    expected_skill: target-validation
+    min_confidence: 0.5
+    category: biological_research
+
+  - request: "Create a GO/NO-GO scorecard for this target"
+    expected_skill: target-validation
+    min_confidence: 0.5
+    category: biological_research
+
+  - request: "Assess target validation for EGFR in lung cancer"
+    expected_skill: target-validation
+    min_confidence: 0.5
+    category: biological_research
+
+  - request: "Score the druggability of this therapeutic target"
+    expected_skill: target-validation
+    min_confidence: 0.5
+    category: biological_research
+
+  - request: "Evaluate this drug target for selection"
+    expected_skill: target-validation
+    min_confidence: 0.5
+    category: biological_research
+
+# ============================================================
+# DOCUMENT CREATION - hypothesis-generation
+# ============================================================
+
+hypothesis_generation_cases:
+  - request: "Generate a hypothesis about the role of p53 in cancer"
+    expected_skill: hypothesis-generation
+    min_confidence: 0.5
+    category: document
+
+  - request: "Formulate testable hypotheses for this experiment"
+    expected_skill: hypothesis-generation
+    min_confidence: 0.5
+    category: document
+
+  - request: "What are good research questions for this topic?"
+    expected_skill: hypothesis-generation
+    min_confidence: 0.5
+    category: document
+
+  - request: "Help me develop a null and alternative hypothesis"
+    expected_skill: hypothesis-generation
+    min_confidence: 0.5
+    category: document
+
+# ============================================================
+# DATA-ENRICHED OUTPUT (routes to output skill, not bio skill)
+# Phase 5: Confirms data-enriched requests route to output skills
+# ============================================================
+
+data_enriched_cases:
+  - request: "Plot EGFR expression across tissues"
+    expected_skill: plotting-libraries
+    min_confidence: 0.5
+    category: visual
+    notes: "Expression visualization routes to plotting-libraries, not target-intelligence"
+
+  - request: "Create a heatmap of BRCA1 tissue expression"
+    expected_skill: plotting-libraries
+    min_confidence: 0.5
+    category: visual
+    notes: "Heatmap keyword routes to plotting-libraries"
+
+  - request: "Draw a protein interaction network for TP53"
+    expected_skill: scientific-schematics
+    min_confidence: 0.5
+    category: visual
+    notes: "Network diagram routes to scientific-schematics, not target-intelligence"
+
+  - request: "Create a pathway diagram showing Reactome data for MAPK"
+    expected_skill: scientific-schematics
+    min_confidence: 0.5
+    category: visual
+    notes: "Pathway diagram routes to scientific-schematics"
+
+  - request: "Verify the protein interactions claimed in this manuscript"
+    expected_skill: peer-review
+    min_confidence: 0.5
+    category: document
+    notes: "Manuscript verification routes to peer-review with database claim check"
+
+  - request: "Plot gnomAD constraint scores for this gene"
+    expected_skill: plotting-libraries
+    min_confidence: 0.5
+    category: visual
+    notes: "Constraint score visualization routes to plotting-libraries"
 
 # ============================================================
 # AMBIGUOUS CASES (should require clarification)

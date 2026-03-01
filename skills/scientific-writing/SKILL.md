@@ -1,6 +1,6 @@
 ---
 name: scientific-writing
-version: 2.4.0
+version: 2.5.0
 description: "Guides scientific manuscript writing using IMRAD structure, citations (APA/AMA/Vancouver), and reporting guidelines (CONSORT/STROBE/PRISMA). Use when writing research papers, journal submissions, abstracts, or scientific documents requiring structured prose with proper citations."
 allowed-tools: Read, Write, Edit, Bash
 quantification-reference: "../QUANTIFICATION_THRESHOLDS.md"
@@ -275,6 +275,42 @@ Adapt language, terminology, and conventions to match the target scientific disc
 
 For detailed discipline-specific guides covering Biomedical, Molecular Biology, Chemistry, Ecology, Physics, Neuroscience, and Social Sciences, see `references/field_terminology.md`.
 
+### 9b. Database Version Tracking in Methods
+
+**When citing biological databases in Methods sections**, include version information to ensure reproducibility. Reviewers increasingly require this for computational and bioinformatics manuscripts.
+
+**Citation template:**
+```
+[Database Name] (version [X.Y], accessed [YYYY-MM-DD]) was queried using
+[query parameters] to obtain [data type].
+```
+
+**Required elements per database citation:**
+
+| Element | Description | Example |
+|---------|-------------|---------|
+| Database name | Official name | "Reactome" |
+| Version/release | Specific release | "v88" or "Release 2024-03" |
+| Access date | When data was retrieved | "accessed 2025-12-15" |
+| Query parameters | What was searched | "BRCA2 (ENSG00000139618)" |
+
+**Example Methods paragraph:**
+> Gene-disease associations were retrieved from Open Targets Platform (release 24.09, accessed 2025-11-20) using Ensembl gene identifiers. Protein interactions were obtained from STRING v12.0 (accessed 2025-11-20) with a combined score threshold ≥ 400. Pathway analysis used Reactome (v88, accessed 2025-11-20) via UniProt-to-pathway mapping.
+
+**Commonly cited databases with version format:**
+
+| Database | Version Source | Capability Key (`tool-lookup.yaml`) |
+|----------|---------------|-------------------------------------|
+| Reactome | Release number (e.g., v88) | `database_versions.reactome_version` |
+| GTEx | Release + GENCODE version | `database_versions.gtex_metadata` |
+| Ensembl | Release number (e.g., 112) | `database_versions.ensembl_version` |
+| gnomAD | Version (e.g., v4.1) | Record at query time |
+| STRING | Version (e.g., v12.0) | Record at query time |
+| UniProt | Release (e.g., 2024_05) | Record at query time |
+| ChEMBL | Release (e.g., ChEMBL 34) | Record at query time |
+
+**When version tools are unavailable**, record the version displayed on the database website at the time of access.
+
 ### 10. Common Pitfalls to Avoid
 
 **Top rejection reasons**: Poor statistics, over-interpretation, irreproducible methods, inadequate samples, poor writing, weak literature review, unclear figures, missing reporting guidelines.
@@ -352,6 +388,9 @@ Run three tests before submission:
 | `plotting-libraries` | Data visualizations for Results section |
 | `scientific-schematics` | Methodology diagrams, CONSORT/PRISMA flowcharts |
 | `generate-image` | Photorealistic figures and cover images |
+| `target-intelligence` | Structured target dossiers (biology, druggability, safety) for biomedical manuscripts |
+| `drug-intelligence` | Structured drug dossiers (pharmacology, ADMET, clinical) for biomedical manuscripts |
+| `target-validation` | GO/NO-GO scorecards and validation data for target assessment manuscripts |
 
 ### Feeds (Output To)
 
@@ -372,6 +411,7 @@ Run three tests before submission:
 |-------|-------------|
 | `reproducible-research` | Data Availability statements, environment documentation, FAIR compliance |
 | `code-documentation` | Documenting analysis code referenced in Methods sections |
+| `tool-lookup.yaml` | Capability key reference for `database_versions.*` queries in Methods sections |
 
 ### Workflow Guidance
 

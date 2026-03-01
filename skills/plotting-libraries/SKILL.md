@@ -1,6 +1,6 @@
 ---
 name: plotting-libraries
-version: 1.4.0
+version: 1.5.0
 description: "Data visualization for scientific research using Python (matplotlib, seaborn) or R (ggplot2, Bioconductor)"
 when_to_use: "Creating plots, charts, figures, visualizations, heatmaps, volcano plots, survival curves, genome tracks, PCA/UMAP, correlation matrices, forest plots, or any scientific figure for publication"
 extends: visual-design
@@ -238,6 +238,86 @@ For complete implementation patterns, see **[{baseDir}/references/statistical_vi
 **Key packages:** `statannotations` (Python), `ggpubr` (R) for significance annotations.
 </statistical_visualization>
 
+<biological_data_visualization>
+## Biological Data Visualization from ToolUniverse
+
+**When plotting biological data for a specific gene, protein, or drug**, query real data from ToolUniverse via capability keys in `tool-lookup.yaml`, then render with matplotlib/seaborn. ToolUniverse provides DATA only — all rendering is local.
+
+### Recipe 1: Expression Heatmap (GTEx → seaborn)
+
+**Capability key:** `visualization_data.expression_heatmap`
+
+```python
+# After querying gtex_get_median_gene_expression for your gene:
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+
+# gtex_data = result from ToolUniverse query (tissue → TPM mapping)
+df = pd.DataFrame(gtex_data).set_index('tissue')
+fig, ax = plt.subplots(figsize=(4, 10))
+sns.heatmap(df, cmap='YlOrRd', annot=True, fmt='.1f', ax=ax,
+            cbar_kws={'label': 'TPM'})
+ax.set_title(f'{gene_symbol} Expression Across Tissues (GTEx)')
+plt.savefig('expression_heatmap.pdf', bbox_inches='tight', dpi=300)
+```
+
+### Recipe 2: PPI Network (STRING → networkx + matplotlib)
+
+**Capability key:** `visualization_data.ppi_network`
+
+```python
+# After querying string_interactions for your protein:
+import matplotlib.pyplot as plt
+import networkx as nx
+
+G = nx.Graph()
+for edge in string_data:
+    G.add_edge(edge['preferredName_A'], edge['preferredName_B'],
+               weight=edge['score'] / 1000)
+
+pos = nx.spring_layout(G, seed=42)
+widths = [G[u][v]['weight'] * 3 for u, v in G.edges()]
+nx.draw(G, pos, with_labels=True, width=widths,
+        node_color='#2DB2E8', node_size=800, font_size=8)
+plt.title(f'{gene_symbol} Protein Interaction Network (STRING)')
+plt.savefig('ppi_network.pdf', bbox_inches='tight', dpi=300)
+```
+
+### Recipe 3: Variant Frequency / Constraint (gnomAD → bar chart)
+
+**Capability key:** `visualization_data.variant_frequency`
+
+```python
+# After querying gnomad_get_gene_constraints for your gene:
+import matplotlib.pyplot as plt
+
+metrics = ['pLI', 'LOEUF', 'mis_z']
+values = [constraints['pLI'], constraints['oe_lof_upper'], constraints['mis_z']]
+colors = ['#D55E00' if v > 0.9 else '#999999' for v in values]
+
+fig, ax = plt.subplots(figsize=(6, 4))
+ax.bar(metrics, values, color=colors)
+ax.set_ylabel('Score')
+ax.set_title(f'{gene_symbol} Genetic Constraint (gnomAD)')
+plt.savefig('constraint_scores.pdf', bbox_inches='tight', dpi=300)
+```
+
+### Routing Table
+
+| User Request | Recipe | Prerequisite |
+|--------------|--------|-------------|
+| "Plot expression of X across tissues" | Expression heatmap | `visualization_data.expression_heatmap` |
+| "Create interaction network for X" | PPI network | `visualization_data.ppi_network` |
+| "Show constraint scores for X" | Constraint bar chart | `visualization_data.variant_frequency` |
+| "Enrichment dot plot for gene list" | Enrichment plot | `enrichment.go_pathway_enrichment` |
+
+**Dossier-first principle:** If an upstream target-intelligence dossier exists, extract expression/PPI/constraint data from it rather than re-querying ToolUniverse.
+
+**Guard:** Only activate for requests involving specific biomedical entities. Standard data visualization requests (CSV plots, statistical charts) use the normal workflow.
+
+</biological_data_visualization>
+
 <common_patterns>
 **Combined Python workflow (publications):**
 ```python
@@ -461,6 +541,10 @@ See `oligon-brand` skill for complete brand implementation patterns.
 - **[scientific-writing](../scientific-writing/SKILL.md)**: Figure legends and methods descriptions
 - **[reproducible-research](../reproducible-research/SKILL.md)**: Environment management for reproducible figures
 - **[code-documentation](../code-documentation/SKILL.md)**: Docstring patterns for plotting functions—see `visualization_documentation` section for templates
+- **[literature-review](../literature-review/SKILL.md)**: Forest plots and meta-analysis visualizations — plotting-libraries creates the figures for literature-review outputs
+- **[entity-resolution](../entity-resolution/SKILL.md)**: Upstream: resolve gene/drug IDs before querying biological data for visualization
+- **[target-intelligence](../target-intelligence/SKILL.md)**: Dossier source: extract expression, PPI, constraint data for biological plots
+- **tool-lookup.yaml**: Capability key reference for `visualization_data.*` and `enrichment.*` queries
 </cross_references>
 
 <error_handling>

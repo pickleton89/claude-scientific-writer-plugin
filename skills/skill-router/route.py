@@ -278,6 +278,7 @@ class SkillRouter:
             "research": {"find", "search", "papers", "literature", "review", "cite"},
             "analysis": {"analyze", "statistics", "test", "data", "code"},
             "conversion": {"convert", "export", "transform"},
+            "biological_research": {"target", "drug", "gene", "protein", "compound", "druggability", "validation", "dossier", "profile"},
         }
 
         best_category = "document"  # Default

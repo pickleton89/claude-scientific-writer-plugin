@@ -1,6 +1,6 @@
 ---
 name: statistical-analysis
-version: 1.2.0
+version: 1.3.0
 description: "Statistical methods for scientific data analysis. Test selection decision trees, code generation (Python scipy/statsmodels, R), multiple testing correction, and result interpretation."
 when_to_use: |
   Use when: selecting statistical tests, generating Python/R code for hypothesis testing,
@@ -245,6 +245,46 @@ When assumptions are violated, fall back to robust alternatives:
 - Non-independence → Mixed models or GEE
 </error_handling>
 
+<population_context>
+## Population Context from Biological Databases
+
+**When statistical analysis involves genetic variants, gene expression, or population-level biological data**, query ToolUniverse databases to provide interpretive context. This transforms raw statistical results into biologically meaningful conclusions.
+
+**Activation gate:** Only for analyses involving specific genes, variants, or expression data. Standard statistical analyses (group comparisons, regressions on non-biological data) use the normal workflow.
+
+### gnomAD for Variant Frequency Context
+
+**Capability key:** `visualization_data.variant_frequency`
+
+| Context | Database Query | Interpretation Aid |
+|---------|---------------|-------------------|
+| Allele frequency | `gnomad_variant` | Classify variant rarity: common (≥1%), low-frequency (0.1-1%), rare (<0.1%), ultra-rare (<0.01%) |
+| Gene constraint | `gnomad_get_gene_constraints` | pLI ≥ 0.9 = haploinsufficient; LOEUF < 0.35 = highly constrained |
+| Population stratification | `gnomad_variant` (per-population AF) | Check if frequency differs across populations to flag stratification bias |
+
+### GTEx for Expression Baseline Context
+
+**Capability key:** `visualization_data.expression_heatmap`
+
+| Context | Database Query | Interpretation Aid |
+|---------|---------------|-------------------|
+| Fold-change interpretation | `gtex_get_median_gene_expression` | Compare observed fold-change against tissue baseline TPM |
+| Expression specificity | GTEx median per tissue | Flag if claimed ubiquitous gene shows tissue-restricted expression |
+| Statistical power context | GTEx sample sizes per tissue | Note GTEx sample sizes when comparing to study sample sizes |
+
+### Routing Table
+
+| Analysis Type | Database | Contextualization |
+|---------------|----------|-------------------|
+| Variant association study | gnomAD | Population frequency, constraint scores |
+| Differential expression | GTEx | Tissue baseline TPM, expected expression range |
+| GWAS hit interpretation | gnomAD + GTEx | Variant frequency + tissue expression of nearest gene |
+| Pharmacogenomics | gnomAD | Population-specific allele frequencies for dosing guidance |
+
+**Dossier-first principle:** If an upstream target-intelligence dossier exists, extract expression and constraint data from it rather than re-querying ToolUniverse.
+
+</population_context>
+
 <reporting_guidelines>
 ## How to Report Statistical Results
 
@@ -348,4 +388,7 @@ Use **plotting-libraries** skill for creating figures. Match visualization to st
 - **scientific-writing**: Reporting statistical methods and results in manuscripts
 - **reproducible-research**: Documenting analysis parameters for reproducibility
 - **paper-search**: Finding appropriate statistical methods in literature
+- **literature-review**: Meta-analysis calculations and evidence synthesis — statistical-analysis provides the quantitative methods for literature-review
+- **[entity-resolution](../entity-resolution/SKILL.md)**: Upstream: resolve gene/variant IDs before querying population context databases
+- **tool-lookup.yaml**: Capability key reference for `visualization_data.variant_frequency` and `visualization_data.expression_heatmap`
 </cross_references>

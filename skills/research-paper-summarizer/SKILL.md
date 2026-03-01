@@ -1,6 +1,6 @@
 ---
 name: research-paper-summarizer
-version: 1.1.0
+version: 1.2.0
 description: "Analyze and summarize research papers (PDF, DOI, PubMed, or text) into structured markdown, HTML reports, branded PDFs, or SVG infographics. Extracts statistics, figures, critical analysis, and key findings from scientific publications with full quantitative preservation."
 when_to_use: "When user uploads/provides a research paper (PDF, text, abstract, DOI, PubMed ID, or URL) and wants paper analysis, summarization, figure extraction, infographic creation, or visual output generation"
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion, Task]
@@ -532,6 +532,41 @@ Secondary comparison → Medium Gray (#666666)
 
 ---
 
+<entity_enrichment>
+
+## Database Context for Biomedical Papers
+
+**When the paper focuses on a specific gene, drug, or disease**, append a "Database Context" callout to the markdown summary. This grounds the summary in current database knowledge beyond what the paper itself reports.
+
+**Activation gate:** Only for biomedical papers where the primary subject is a named gene/protein, drug/compound, or disease with database entries.
+
+### Callout Format
+
+```markdown
+> **Database Context** (auto-generated from biological databases)
+> - **Target Development Level:** [Pharos TDL — Tclin/Tchem/Tbio/Tdark]
+> - **Known Drug Count:** [ChEMBL approved + clinical candidates]
+> - **Disease Associations:** [Top 3 OT associations with scores]
+> - **Top Expression Tissues:** [Top 3 GTEx tissues by TPM]
+```
+
+### Data Sources
+
+| Field | Capability Key (`tool-lookup.yaml`) | Notes |
+|-------|-------------------------------------|-------|
+| Target TDL | `target_biology.druggability_class` | Pharos_get_target |
+| Drug count | `drug_data.bioactivity` | ChEMBL approved count |
+| Disease associations | `data_validation.claim_check_disease` | OT GraphQL top 3 |
+| Top tissues | `visualization_data.expression_heatmap` | GTEx top 3 by median TPM |
+
+**Dossier-first principle:** If an upstream target-intelligence or drug-intelligence dossier exists, extract all callout fields from it — never re-query databases for data already in a dossier.
+
+**Placement:** Append the callout after the Executive Summary section and before Key Findings.
+
+</entity_enrichment>
+
+---
+
 <article_types>
 
 ## Article Type Details
@@ -689,10 +724,12 @@ Before delivering any summary, verify compliance with these rules:
 | `paper-search` | **Finding papers** — use paper-search to find papers across databases before summarizing |
 | `peer-review` | **Evaluation vs summary** — peer-review assesses quality; this skill extracts content |
 | `markdown-to-pdf` | **Alternative PDF** — for template-based documents; this skill has specialized figure extraction |
-| `scientific-critical-thinking` | **Analysis framework** — provides structure for the critical analysis sections |
 | `plotting-libraries` | **Figure creation** — if creating new figures from extracted data |
 | `visual-design` | **Design principles** — for infographic composition guidance |
 | `markitdown` | **PDF conversion** — convert paper PDFs to markdown before summarizing (optional) |
+| `entity-resolution` | **Upstream** — resolve gene/drug/disease IDs for Database Context callout |
+| `target-intelligence` | **Dossier source** — extract TDL, expression, associations for callout |
+| `drug-intelligence` | **Dossier source** — extract drug count, clinical status for callout |
 
 **Skill Selection:** See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 
@@ -700,7 +737,7 @@ Before delivering any summary, verify compliance with these rules:
 1. Receive paper PDF from user
 2. `research-paper-summarizer` → generate markdown summary
 3. (Optional) `oligon-brand` colors applied → visual output
-4. (Optional) `scientific-critical-thinking` → deeper analysis
+4. (Optional) `peer-review` → deeper critical analysis
 
 </cross_references>
 

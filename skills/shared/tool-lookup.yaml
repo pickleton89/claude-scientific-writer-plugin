@@ -1,5 +1,5 @@
 # tool-lookup.yaml — Capability-to-Tool Mapping
-# Version: 1.1.0
+# Version: 1.3.0
 #
 # Skills reference capability KEYS (e.g., "disambiguation.gene_to_ensembl"),
 # not raw tool names. This lookup resolves capabilities to tools with
@@ -114,6 +114,12 @@ target_biology:
       - tool: PubChem_search_assays_by_target_gene
         notes: "Returns HTS assay summaries for gene target"
     fallback: []
+  disease_complement:
+    description: "Complementary disease associations from Comparative Toxicogenomics Database"
+    tooluniverse:
+      - tool: CTD_get_gene_diseases
+        notes: "Param is 'input_terms' (not 'gene'); returns gene-disease associations with inference scores"
+    fallback: []
 
 expression:
   tissue:
@@ -132,6 +138,12 @@ expression:
     fallback: []
 
 interactions:
+  go_annotations:
+    description: "Gene Ontology annotations for biological process, molecular function, cellular component"
+    tooluniverse:
+      - tool: GO_get_annotations_for_gene
+        notes: "Param is 'gene_id' (accepts gene symbol); returns GO terms with evidence codes"
+    fallback: []
   ppi:
     description: "Protein-protein interactions"
     tooluniverse:
@@ -287,11 +299,28 @@ literature:
       - tool: europe_pmc_fulltext
       - tool: semantic_scholar_pdf
     fallback: []
+  full_text_snippets:
+    description: "Full-text snippet extraction for targeted verification"
+    tooluniverse:
+      - tool: EuropePMC_get_fulltext_snippets
+        notes: "Param is 'pmcid' (not PMID) + 'terms'; returns bounded text snippets from OA articles"
+      - tool: SemanticScholar_get_pdf_snippets
+        notes: "Param is 'open_access_pdf_url' + 'terms'; extracts snippets from OA PDFs"
+    fallback:
+      - tool: get_full_text_article  # PubMed MCP — full article if snippets unavailable
+  recommendations:
+    description: "AI-powered related paper recommendations"
+    tooluniverse:
+      - tool: SemanticScholar_get_recommendations
+        notes: "Param is 'paper_id' (40-char hex Semantic Scholar ID); returns related papers"
+    fallback: []
   citations:
     description: "Citation network traversal"
     primary:
       - tool: find_related_articles  # PubMed MCP
     tooluniverse:
+      - tool: EuropePMC_get_citations
+        notes: "Forward citations from Europe PMC; param is article ID"
       - tool: openalex_citations
       - tool: semantic_scholar_citations
     fallback: []
@@ -309,4 +338,167 @@ prediction:
     # Same tool as drug_data.admet; listed here for ML-prediction-focused queries
     tooluniverse:
       - tool: admet_ai_predict
+    fallback: []
+
+# ─── VISUALIZATION DATA FEEDS ──────────────────────────────────────────────
+# Data sources for plotting-libraries and scientific-schematics.
+# Pattern: ToolUniverse fetches data → existing skill renders it.
+# No server-side visualization rendering in ToolUniverse.
+
+visualization_data:
+  expression_heatmap:
+    description: "Tissue expression data for heatmap/barplot visualization"
+    tooluniverse:
+      - tool: gtex_get_median_gene_expression
+        notes: "Requires gencode_id + operation='median'; returns TPM per tissue"
+      - tool: hpa_get_rna_expression_by_source
+        notes: "Requires gene_name + source_type + source_name (ALL three mandatory)"
+    fallback: []
+  ppi_network:
+    description: "Protein interaction data for network graph visualization"
+    tooluniverse:
+      - tool: string_interactions
+        notes: "protein_ids must be array; species=9606; returns confidence-scored edges"
+      - tool: intact_search
+        notes: "Returns binary interactions with MI scores"
+    fallback: []
+  variant_frequency:
+    description: "Population variant frequency and constraint data for bar/lollipop plots"
+    tooluniverse:
+      - tool: gnomad_variant
+        notes: "Allele frequencies across populations"
+      - tool: gnomad_get_gene_constraints
+        notes: "pLI, LOEUF, missense Z — uses gene_symbol"
+    fallback: []
+  enrichment_results:
+    description: "Pathway/GO enrichment results for dot plots and bar charts"
+    tooluniverse:
+      - tool: gProfiler_enrichment
+        notes: "Most comprehensive: GO, KEGG, Reactome, WikiPathways in one call"
+      - tool: STRING_get_enrichment
+        notes: "STRING functional enrichment for protein sets"
+      - tool: enrichr
+        notes: "Gene set enrichment via Enrichr libraries"
+    fallback: []
+  network_data:
+    description: "Signaling and tissue-specific network data for graph visualization"
+    tooluniverse:
+      - tool: NDEx_get_network
+        notes: "Retrieve curated networks by UUID from NDEx repository"
+      - tool: OmniPath_get_interactions
+        notes: "Signaling interactions with directionality and references"
+      - tool: HumanBase_get_tissue_network
+        notes: "Tissue-specific PPI from Bayesian integration"
+    fallback: []
+
+# ─── DATA VALIDATION ───────────────────────────────────────────────────────
+# Claim verification tools for peer-review.
+# Pattern: identify verifiable claims → query database → report verdict.
+
+data_validation:
+  claim_check_interaction:
+    description: "Verify protein interaction claims against databases"
+    tooluniverse:
+      - tool: string_interactions
+        notes: "Check combined_score; ≥700 = high confidence, ≥400 = medium"
+    fallback: []
+  claim_check_expression:
+    description: "Verify tissue/cell expression claims"
+    tooluniverse:
+      - tool: gtex_get_median_gene_expression
+        notes: "Cross-check claimed expression patterns with GTEx TPM"
+      - tool: hpa_tissue
+        notes: "Cross-check with Human Protein Atlas immunohistochemistry"
+    fallback: []
+  claim_check_disease:
+    description: "Verify gene-disease association claims"
+    primary:
+      - tool: query_open_targets_graphql
+        notes: "Overall association score; evidence by data type"
+    tooluniverse:
+      - tool: CTD_get_gene_diseases
+        notes: "Complementary gene-disease associations with inference scores"
+    fallback: []
+  claim_check_variant:
+    description: "Verify variant frequency claims"
+    tooluniverse:
+      - tool: gnomad_variant
+        notes: "Population allele frequencies; check against claimed rarity"
+    fallback: []
+  accession_validation:
+    description: "Verify data accession numbers are valid and accessible"
+    tooluniverse:
+      - tool: geo_get_dataset_info
+        notes: "Validate GEO accession (GSE/GDS); returns dataset metadata"
+      - tool: arrayexpress_get_experiment
+        notes: "Validate ArrayExpress accession (E-MTAB-*)"
+      - tool: NCBI_SRA_get_run_info
+        notes: "Validate SRA accession (SRR/SRP); returns run metadata"
+    fallback: []
+
+# ─── ENRICHMENT ANALYSIS ──────────────────────────────────────────────────
+# Pathway and GO enrichment — strongest ToolUniverse category discovered.
+
+enrichment:
+  go_pathway_enrichment:
+    description: "Comprehensive GO/pathway enrichment (GO, KEGG, Reactome, WikiPathways)"
+    tooluniverse:
+      - tool: gProfiler_enrichment
+        notes: "Pass gene list; returns enriched terms with p-values across all ontologies"
+    fallback: []
+  string_enrichment:
+    description: "STRING functional enrichment for protein sets"
+    tooluniverse:
+      - tool: STRING_functional_enrichment
+        notes: "Pass protein identifiers; returns GO, KEGG, Pfam enrichment"
+    fallback: []
+  gene_set_db:
+    description: "Gene set database queries (MSigDB hallmarks, curated sets)"
+    tooluniverse:
+      - tool: MSigDB_get_geneset
+        notes: "Retrieve specific gene set by name"
+      - tool: MSigDB_get_hallmark_geneset
+        notes: "Retrieve hallmark gene sets (50 canonical pathways)"
+    fallback: []
+
+# ─── MOLECULAR IMAGES ─────────────────────────────────────────────────────
+# Molecular structure images — unexpected ToolUniverse discovery.
+
+molecular_images:
+  compound_2d_image:
+    description: "2D chemical structure images for compound visualization"
+    tooluniverse:
+      - tool: PubChem_get_compound_2D_image_by_CID
+        notes: "Returns PNG image of 2D structure by PubChem CID"
+      - tool: ChEMBL_get_molecule_image
+        notes: "Returns SVG image of molecule by ChEMBL ID"
+    fallback: []
+  interaction_diagram:
+    description: "Protein-ligand interaction diagrams (publication-quality)"
+    tooluniverse:
+      - tool: ProteinsPlus_generate_interaction_diagram
+        notes: "Generates 2D interaction diagram from PDB structure"
+    fallback: []
+
+# ─── DATABASE VERSIONS ─────────────────────────────────────────────────────
+# Version tracking for scientific-writing Methods sections.
+
+database_versions:
+  reactome_version:
+    description: "Reactome database version for Methods citation"
+    tooluniverse:
+      - tool: Reactome_get_database_version
+        notes: "Returns current Reactome release version"
+    fallback: []
+  gtex_metadata:
+    description: "GTEx dataset metadata (GENCODE version, genome build)"
+    tooluniverse:
+      - tool: GTEx_get_dataset_info
+        notes: "Returns GTEx release info including GENCODE annotation version"
+    fallback: []
+  ensembl_version:
+    description: "Ensembl release version and ID history"
+    tooluniverse:
+      - tool: EnsemblArchive_get_id_history
+        notes: "Returns Ensembl releases where an ID appears; useful for version tracking"
     fallback: []

@@ -1,6 +1,6 @@
 ---
 name: hypothesis-generation
-version: 2.2.0
+version: 2.3.0
 description: "Generate testable hypotheses with quantified quality criteria. Formulate from observations, design experiments, explore competing explanations, develop predictions, propose mechanisms, for scientific inquiry across domains."
 when_to_use: "Use when developing hypotheses from observations, designing experiments to test scientific questions, exploring competing explanations, formulating testable predictions, or planning mechanistic studies across scientific domains."
 allowed-tools: [Read, Write, Edit, Bash]
@@ -152,6 +152,23 @@ Search existing scientific literature to ground hypotheses in current evidence. 
 - Look for contradictory findings or unresolved debates (note ≥2 alternative viewpoints)
 - Consult `references/literature_search_strategies.md` for detailed search techniques
 
+#### Biological Entity Context
+
+**When hypotheses concern genes, proteins, drugs, or diseases**, augment the literature search with structured database queries before proceeding to synthesis. This grounds hypotheses in verified biological data rather than text alone.
+
+| Data Type | Capability Key (`tool-lookup.yaml`) | Purpose |
+|-----------|-------------------------------------|---------|
+| GO annotations | `interactions.go_annotations` | Biological process, molecular function, cellular component |
+| PPI data | `interactions.ppi` | Known interaction partners and confidence scores |
+| Pathway membership | `interactions.pathways` | Reactome/KEGG pathway context |
+| Tissue expression | `expression.tissue` | Where the gene is expressed (GTEx, HPA) |
+| Genetic constraints | `genetic_variation.population` | pLI/LOEUF scores, population variant frequency |
+| Enrichment | `enrichment.go_pathway_enrichment` | Pathway over-representation in gene sets |
+
+**Dossier-first principle:** If an upstream entity-resolution or target-intelligence dossier exists, extract data from it rather than re-querying databases.
+
+**Guard:** Only activate for requests involving specific biomedical entities (gene symbols, drug names, disease terms). Skip for purely theoretical or non-biomedical hypotheses.
+
 ### 3. Synthesize Existing Evidence
 
 **Progress Milestones:**
@@ -167,6 +184,16 @@ Analyze and integrate findings from literature search:
 - Note conflicting evidence or alternative viewpoints
 - Recognize gaps, limitations, or unanswered questions
 - Identify analogies from related systems or domains
+
+#### Ground Synthesis in Database Evidence
+
+When biological entity data was collected in Stage 2, integrate it into the synthesis:
+
+- **GO evidence codes** — weight mechanistic claims by evidence quality (EXP/IDA > IEA/ISS)
+- **STRING confidence** — only assert interactions with combined_score ≥ 400; note score in synthesis
+- **Expression constraints** — flag hypotheses that assume expression in tissues where GTEx shows < 1 TPM
+- **Pathway context** — use Reactome/KEGG membership to connect disparate findings into coherent mechanisms
+- **Contradiction detection** — flag cases where literature claims conflict with database records (e.g., claimed interaction has STRING score < 150)
 
 ### 4. Generate Competing Hypotheses
 
@@ -189,6 +216,15 @@ Develop 3-5 distinct hypotheses that could explain the phenomenon. Each hypothes
 - Explore different scales of explanation
 - Question assumptions in existing explanations
 - Combine mechanisms in novel ways
+
+#### Use Database Data to Ground Mechanisms
+
+When biological entity data is available, use it to sharpen hypothesis generation:
+
+- **Expression-constrained hypotheses** — propose mechanisms only in tissues/cell types where key genes are expressed (GTEx TPM ≥ 1)
+- **Interaction-informed mechanisms** — build causal chains from verified PPI edges (STRING ≥ 400); note unverified steps
+- **Conservation-informed druggability** — for drug-target hypotheses, check genetic constraint (pLI, LOEUF) and Pharos TDL to assess tractability
+- **Pathway-based competing hypotheses** — use pathway membership to generate alternative mechanistic routes through the same biological process
 
 ### 5. Evaluate Hypothesis Quality
 
@@ -502,3 +538,19 @@ When preparing hypothesis-driven research for publication, consult these related
 - Pre-registration of hypotheses and analysis plans
 - Project structure for hypothesis-driven research
 - Data management for experimental validation
+
+**entity-resolution**: Upstream disambiguation
+- Resolve biomedical entity identifiers before generating hypotheses
+- Provides cross-referenced gene/drug/disease IDs
+
+**target-intelligence** / **drug-intelligence**: Biomedical data feeds
+- Structured target and drug dossiers inform hypothesis generation
+- Evidence-graded data on biology, pharmacology, and clinical landscape
+
+**literature-review**: Primary literature input
+- Systematic literature search and synthesis for hypothesis context
+- Collision-aware search and T1-T4 evidence grading
+
+**tool-lookup.yaml**: Capability key reference
+- Maps capability names (e.g., `interactions.ppi`) to ToolUniverse tool names
+- Used by Stages 2-4 for biological entity context queries
