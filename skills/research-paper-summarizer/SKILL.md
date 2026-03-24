@@ -1,7 +1,7 @@
 ---
 name: research-paper-summarizer
 version: 1.2.0
-description: "Analyze and summarize research papers (PDF, DOI, PubMed, or text) into structured markdown, HTML reports, branded PDFs, or SVG infographics. Extracts statistics, figures, critical analysis, and key findings from scientific publications with full quantitative preservation."
+description: "Analyze and summarize individual research papers (PDF, DOI, PubMed ID, or text) into structured academic summaries with preserved statistics, extracted figures, and critical analysis. Use when a user provides a specific paper and wants its content extracted. Do NOT use for executive/stakeholder summaries — use executive-summary."
 when_to_use: "When user uploads/provides a research paper (PDF, text, abstract, DOI, PubMed ID, or URL) and wants paper analysis, summarization, figure extraction, infographic creation, or visual output generation"
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion, Task]
 brand-reference: "../oligon-brand/"

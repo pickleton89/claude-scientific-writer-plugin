@@ -2,8 +2,8 @@
 name: scientific-slides
 version: 2.3.0
 extends: visual-design
-description: "Build slide decks and presentations for research talks."
-when_to_use: "Use for conference presentations, seminar talks, thesis defense slides, grant pitches, journal club presentations, or any scientific talk requiring PDF, PowerPoint, or LaTeX Beamer output."
+description: "Build structured research presentations — content organization and scientific storytelling for conference talks, seminars, defenses, and lab meetings. Use when creating a new research presentation. Do NOT use for editing existing PPTX files or raw file manipulation — use document-skills:pptx."
+when_to_use: "Conference presentations, seminar talks, thesis defense slides, grant pitches, journal club presentations, or any scientific talk requiring PDF, PowerPoint, or LaTeX Beamer output."
 allowed-tools: [Read, Write, Edit, Bash]
 ---
 

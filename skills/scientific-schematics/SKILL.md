@@ -2,7 +2,7 @@
 name: scientific-schematics
 version: 2.5.0
 extends: visual-design
-description: "Create publication-quality scientific diagrams using a tiered approach: free Mermaid rendering for simple diagrams, AI generation for complex publication-quality figures. Specialized in neural networks, flowcharts, biological pathways, and system architectures."
+description: "Create structured scientific diagrams with explicit layout control — flowcharts, biological pathways, network diagrams, mechanism illustrations, and system architectures. Uses Mermaid for simple diagrams and AI for complex ones. Use when the user specifies diagram type, components, or relationships. Do NOT use when the user provides prose text and wants an AI-generated figure — use paperbanana."
 allowed-tools: [Read, Write, Edit, Bash]
 shared-thresholds: "../QUANTIFICATION_THRESHOLDS.md"
 ---

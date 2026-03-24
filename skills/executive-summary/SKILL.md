@@ -1,7 +1,7 @@
 ---
 name: executive-summary
 version: 2.0.1
-description: "Generates concise, action-oriented executive summaries for decision-makers from reports, proposals, or project plans. Use when creating summaries for stakeholders, board presentations, grant applications, or any document requiring a persuasive standalone overview with optional visual summary."
+description: "Create action-oriented executive summaries for decision-makers using the Pyramid Principle. For stakeholder reports, board presentations, grant summaries, and leadership briefings where the audience is non-technical or executive-level. Do NOT use for detailed academic paper analysis or extraction — use research-paper-summarizer."
 allowed-tools: Read, Write, Edit, Bash
 when_to_use: |
   - Creating a summary for busy decision-makers who won't read the full document

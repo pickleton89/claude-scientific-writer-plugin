@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed — Skill Routing Conflict Audit
+- **skills/skill-router/skill_triggers.yaml**: v1.2.0 — resolved 6 routing conflicts with bidirectional negative keywords
+  - paper-2-web / paperbanana: disambiguated "graphical abstract" by input type (existing paper vs prose)
+  - research-posters / paper-2-web: disambiguated poster creation (from scratch vs auto-generated from paper)
+  - scientific-slides / document-skills:pptx: disambiguated by intent (research talk vs file manipulation)
+  - executive-summary / research-paper-summarizer: disambiguated by audience (executive vs academic)
+  - paperbanana / scientific-schematics: disambiguated by input (prose vs structured nodes/relationships)
+  - peer-review: narrowed overly broad keywords (removed bare "review", "evaluate", "score", "assess"); added negatives for adjacent skills
+  - generate-image / paperbanana: expanded negatives to prevent AI-image misfires on academic figures
+  - markdown-to-pdf / document-skills:pdf: added cross-negatives for PDF manipulation terms
+- **9 SKILL.md files updated**: Rewrote description frontmatter with explicit include/exclude routing guidance
+  - paper-2-web, paperbanana, research-posters, scientific-slides, executive-summary, research-paper-summarizer, scientific-schematics, peer-review, generate-image
+
+### Added — README and Plugin Metadata Update
+- **README.md**: Complete rewrite reflecting bio-intelligence pipeline, ToolUniverse integration, and 30-skill architecture
+- **plugin.json**: Updated description to reflect current capabilities
+- **.env.template**: API key template for ToolUniverse services
+
 ### Added — Phase 5 Complete: Broader Ecosystem Benefits
 - **skills/shared/tool-lookup.yaml**: v1.3.0 — 5 new capability sections
   - `visualization_data`: expression heatmap, PPI network, variant frequency, enrichment results, network data

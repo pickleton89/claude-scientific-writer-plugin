@@ -1,8 +1,8 @@
 ---
 name: paper-2-web
 version: 2.1.0
-description: "Transform academic papers into promotional formats: interactive websites (Paper2Web), presentation videos (Paper2Video), and conference posters (Paper2Poster)"
-when_to_use: "Creating conference materials (posters, videos, companion websites), promoting published papers or preprints, generating video abstracts, creating interactive research homepages, batch processing papers for dissemination"
+description: "Convert a finished academic paper (PDF or LaTeX) into promotional formats: interactive websites (Paper2Web), presentation videos (Paper2Video), and auto-generated posters (Paper2Poster). Use when the user has a completed paper and wants to disseminate it. Do NOT use for creating standalone figures or graphical abstracts from scratch — use paperbanana. Do NOT use for designing posters from scratch — use research-posters."
+when_to_use: "Converting finished papers to web, video, or poster formats; promoting published papers or preprints; generating video abstracts; creating interactive research homepages; batch processing papers for dissemination"
 allowed-tools: [Read, Write, Edit, Bash]
 ---
 

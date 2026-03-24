@@ -2,8 +2,8 @@
 name: research-posters
 version: 1.0.0
 extends: visual-design
-description: "Create professional research posters in LaTeX or PowerPoint format with structured layouts, brand-compliant styling, and print-ready export."
-when_to_use: "Conference posters, academic poster sessions, thesis defense posters, research symposia"
+description: "Design research posters from scratch in LaTeX or PowerPoint with custom layout, brand-compliant styling, and print-ready export. Use when the user wants to create a poster manually. Do NOT use when auto-generating a poster from an existing paper PDF — use paper-2-web (Paper2Poster)."
+when_to_use: "Conference posters, academic poster sessions, thesis defense posters, research symposia — designed from scratch, not converted from an existing paper"
 allowed-tools: [Read, Write, Edit, Bash, Glob]
 ---
 

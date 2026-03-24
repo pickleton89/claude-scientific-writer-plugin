@@ -2,7 +2,7 @@
 name: generate-image
 version: 2.3.0
 extends: visual-design
-description: "Generate and edit images using Gemini 3 Pro via OpenRouter. For photos, illustrations, artwork, and visual assets. Use scientific-schematics for technical diagrams."
+description: "Generate and edit images using Gemini 3 Pro via OpenRouter. For photorealistic images, artistic illustrations, and creative visual assets. Do NOT use for publication-quality academic figures from text — use paperbanana. Do NOT use for technical diagrams — use scientific-schematics."
 allowed-tools: [Read, Write, Edit, Bash]
 quantification-reference: "../QUANTIFICATION_THRESHOLDS.md"
 ---

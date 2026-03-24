@@ -2,7 +2,7 @@
 name: paperbanana
 version: 1.0.0
 extends: visual-design
-description: "Generate publication-quality academic figures from text descriptions using PaperBanana's multi-agent pipeline. Specialized in graphical abstracts, visual summaries, methodology overviews, and explanation diagrams."
+description: "Generate publication-quality academic figures from unstructured text/prose using PaperBanana's multi-agent AI pipeline. Specialized in graphical abstracts, visual summaries, and methodology overviews. Use when the user provides text and wants a polished figure without specifying exact layout or nodes. Do NOT use when user specifies diagram type, nodes, or relationships — use scientific-schematics."
 allowed-tools: [Read, Write, Edit, Bash]
 shared-thresholds: "../QUANTIFICATION_THRESHOLDS.md"
 ---

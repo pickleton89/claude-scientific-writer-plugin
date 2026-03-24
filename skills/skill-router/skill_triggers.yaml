@@ -1,5 +1,5 @@
 # Skill Trigger Registry
-# Version: 1.1.0
+# Version: 1.2.0
 # Purpose: Deterministic keyword-based routing for the 27-skill scientific writing library
 #
 # Structure:
@@ -68,7 +68,7 @@ skills:
       - figure from method
 
   scientific-schematics:
-    description: Diagrams, flowcharts, pathways, mechanism illustrations
+    description: Structured scientific diagrams with explicit components — flowcharts, pathways, networks, mechanism illustrations. User specifies diagram type, nodes, or relationships
     category: visual
     keywords:
       - diagram
@@ -90,6 +90,9 @@ skills:
       - signaling pathway
       - molecular mechanism
       - domain architecture
+      - mermaid
+      - nodes
+      - edges
     triggers:
       - "diagram"
       - "schematic"
@@ -103,6 +106,7 @@ skills:
       - "experimental.*setup"
       - "(?:draw|create|make).*(?:interaction|protein).*network"
       - "(?:draw|create|make).*(?:pathway|domain).*diagram"
+      - "mermaid"
     output_formats: [svg, png, pdf]
     negative_keywords:
       - plot
@@ -111,9 +115,14 @@ skills:
       - scatter
       - bar chart
       - heatmap
+      - graphical abstract
+      - visual abstract
+      - visual summary
+      - figure from text
+      - explain visually
 
   generate-image:
-    description: AI-generated imagery, illustrations, photorealistic images
+    description: AI-generated photorealistic images, artistic illustrations, and creative visuals — not structured scientific figures or diagrams
     category: visual
     keywords:
       - image
@@ -129,6 +138,7 @@ skills:
       - creative visual
       - rendering
       - ai generated
+      - gemini image
     triggers:
       - "generate.*image"
       - "create.*illustration"
@@ -144,9 +154,15 @@ skills:
       - schematic
       - histogram
       - scatter
+      - graphical abstract
+      - visual abstract
+      - visual summary
+      - figure from text
+      - figure from paper
+      - methodology overview
 
   paperbanana:
-    description: Generate visual figures from text (graphical abstracts, visual summaries, methodology overviews)
+    description: AI-generated publication figures from prose text (graphical abstracts, visual summaries, methodology overviews) — input is unstructured text, not data or explicit diagram specs
     category: visual
     keywords:
       - paperbanana
@@ -182,6 +198,13 @@ skills:
       - prisma
       - circuit
       - signaling pathway
+      - paper to web
+      - video abstract
+      - interactive site
+      - flowchart
+      - mermaid
+      - nodes
+      - edges
 
   visual-design:
     description: Design guidance, color theory, typography, layout, accessibility
@@ -273,32 +296,38 @@ skills:
       - executive summary
 
   executive-summary:
-    description: Executive summaries using Pyramid Principle, stakeholder reports
+    description: Action-oriented executive summaries for decision-makers (Pyramid Principle) — audience is non-technical/executive, not academic
     category: document
     keywords:
       - executive summary
-      - summary
       - stakeholder
       - board report
       - decision makers
       - pyramid principle
       - action-oriented
-      - key findings
       - recommendations
+      - leadership briefing
+      - stakeholder summary
     triggers:
       - "executive.*summary"
-      - "stakeholder.*report"
+      - "stakeholder.*(?:report|summary)"
       - "board.*presentation"
-      - "summarize.*for.*leadership"
+      - "summarize.*for.*(?:leadership|stakeholders|executives|management)"
       - "decision.*makers"
+      - "briefing"
     output_formats: [md, docx, pdf]
     negative_keywords:
       - literature review
       - systematic review
       - manuscript
+      - summarize paper
+      - paper summary
+      - pdf
+      - doi
+      - pubmed
 
   scientific-slides:
-    description: Presentation slides for conferences, seminars, lab meetings
+    description: Build structured research presentations — content organization and scientific storytelling for talks, not raw PPTX file manipulation
     category: document
     keywords:
       - slides
@@ -306,11 +335,12 @@ skills:
       - talk
       - conference
       - seminar
-      - powerpoint
       - keynote
       - lab meeting
       - thesis defense
       - oral presentation
+      - research talk
+      - beamer
     triggers:
       - "create.*slides"
       - "make.*presentation"
@@ -318,14 +348,19 @@ skills:
       - "prepare.*seminar"
       - "thesis.*defense"
       - "lab.*meeting"
-    output_formats: [pptx]
+      - "research.*(?:talk|presentation)"
+    output_formats: [pptx, pdf, tex]
     negative_keywords:
       - poster
       - paper
       - manuscript
+      - edit pptx
+      - modify pptx
+      - extract slides
+      - existing presentation
 
   research-posters:
-    description: Conference posters in LaTeX or PowerPoint format
+    description: Design research posters from scratch in LaTeX or PowerPoint with custom layout and print-ready export — not auto-generated from a paper PDF
     category: document
     keywords:
       - poster
@@ -337,18 +372,24 @@ skills:
       - beamerposter
       - tikzposter
       - baposter
+      - design poster
+      - create poster
     triggers:
-      - "poster"
-      - "create.*poster"
+      - "(?:create|design|make|build).*poster"
       - "conference.*poster"
       - "research.*poster"
       - "poster.*(presentation|session)"
+      - "poster.*(?:latex|powerpoint|pptx)"
     output_formats: [pptx, pdf, tex]
     negative_keywords:
       - slides
       - seminar
       - talk
       - powerpoint presentation
+      - paper to poster
+      - paper2poster
+      - convert paper
+      - auto-generate poster
 
   venue-templates:
     description: Journal-specific formatting, submission requirements
@@ -396,7 +437,7 @@ skills:
     negative_keywords: []
 
   markdown-to-pdf:
-    description: Convert markdown to branded PDF documents
+    description: Convert markdown to branded PDF documents using templates
     category: document
     keywords:
       - markdown to pdf
@@ -411,7 +452,13 @@ skills:
       - "branded.*pdf"
       - "generate.*pdf.*report"
     output_formats: [pdf]
-    negative_keywords: []
+    negative_keywords:
+      - merge pdf
+      - split pdf
+      - pdf form
+      - fill form
+      - manipulate pdf
+      - extract pdf
 
   # ============================================================
   # RESEARCH WORKFLOW SKILLS
@@ -504,43 +551,35 @@ skills:
     negative_keywords: []
 
   peer-review:
-    description: Manuscript review, paper evaluation, critical analysis, quality scoring
+    description: Peer review of scientific manuscripts and grants — evaluates methodology, statistics, reproducibility, ethics, and reporting standards as a reviewer/referee
     category: research
     keywords:
-      - review
-      - evaluate
-      - critique
-      - feedback
-      - revision
-      - assess
-      - reviewer
-      - score
-      - quality
       - peer review
       - review manuscript
+      - review paper
       - evaluate paper
+      - critique
+      - reviewer
       - reviewer comments
-      - critical analysis
+      - referee report
+      - manuscript review
+      - grant review
       - paper quality
-      - score paper
       - assess methodology
       - scholarly evaluation
-      - quality score
-      - methodology
-      - verify
-      - verify claims
-      - verify manuscript
+      - reporting guidelines
+      - consort
+      - strobe
+      - arrive
     triggers:
-      - "review.*(manuscript|paper|this|draft)"
+      - "review.*(manuscript|paper|draft)"
       - "peer.*review"
-      - "evaluate.*(paper|this|study)"
-      - "critique.*(study|paper|this)"
-      - "score.*(paper|this|quality)"
-      - "assess.*(quality|methodology)"
-      - "critical.*analysis"
-      - "give.*feedback"
-      - "paper.*quality"
-      - "quality.*paper"
+      - "evaluate.*(paper|study|manuscript)"
+      - "critique.*(study|paper|manuscript)"
+      - "assess.*(quality|methodology).*(?:of|in|for)"
+      - "give.*feedback.*(?:on|for).*(?:paper|manuscript|draft)"
+      - "referee.*report"
+      - "reviewer.*comments"
       - "verify.*(?:claim|interaction|finding).*(?:in|from).*(?:this|manuscript|paper)"
     output_formats: [md]
     negative_keywords:
@@ -548,9 +587,15 @@ skills:
       - systematic review
       - find papers
       - search papers
+      - summarize paper
+      - paper summary
+      - target validation
+      - druggability
+      - drug target
+      - executive summary
 
   research-paper-summarizer:
-    description: Comprehensive single-paper summarization with multiple output formats
+    description: Structured academic summarization of a single research paper (PDF, DOI, PubMed) with quantitative preservation — not executive/stakeholder summaries
     category: research
     keywords:
       - summarize paper
@@ -558,20 +603,26 @@ skills:
       - summarize article
       - article summary
       - research summary
-      - key findings
       - tldr
       - digest
+      - summarize this
+      - analyze paper
     triggers:
-      - "summarize.*paper"
-      - "summary.*article"
-      - "summarize.*study"
-      - "paper.*summary"
+      - "summarize.*(?:paper|article|study|this)"
+      - "(?:paper|article).*summary"
       - "digest.*research"
+      - "analyze.*(?:paper|article|study)"
+      - "what.*(?:does|did).*(?:paper|study|article).*(?:say|find|show)"
     output_formats: [md, html, pdf, svg]
     negative_keywords:
       - literature review
       - systematic review
       - multiple papers
+      - executive summary
+      - stakeholder
+      - board
+      - leadership
+      - decision makers
 
   # ============================================================
   # ANALYSIS & CODE SKILLS
@@ -690,7 +741,7 @@ skills:
     negative_keywords: []
 
   paper-2-web:
-    description: Convert papers to web formats, video abstracts, interactive sites
+    description: Convert a finished paper (PDF/LaTeX) into promotional web formats, video abstracts, or auto-generated posters
     category: conversion
     keywords:
       - paper to web
@@ -698,16 +749,27 @@ skills:
       - interactive site
       - research website
       - paper website
-      - visual abstract
-      - graphical abstract
+      - paper2web
+      - paper2video
+      - paper2poster
+      - convert paper
+      - promote paper
+      - disseminate paper
     triggers:
       - "paper.*to.*web"
       - "video.*abstract"
       - "interactive.*site"
       - "research.*website"
-      - "graphical.*abstract"
-    output_formats: [html, mp4]
-    negative_keywords: []
+      - "convert.*paper.*(?:web|video|poster)"
+      - "paper2(?:web|video|poster)"
+    output_formats: [html, mp4, pdf]
+    negative_keywords:
+      - graphical abstract
+      - visual abstract
+      - visual summary
+      - figure from text
+      - create poster from scratch
+      - design poster
 
   # ============================================================
   # DOCUMENT OUTPUT SUB-SKILLS (document-skills:*)
@@ -756,21 +818,30 @@ skills:
       - convert to pdf
 
   "document-skills:pptx":
-    description: PowerPoint creation and editing
+    description: Programmatic PPTX file manipulation — edit existing decks, extract slides, modify layouts. Not for creating new research presentations from scratch
     category: document_output
     keywords:
-      - powerpoint
       - pptx
       - edit presentation
-      - create pptx
-      - slide deck
+      - edit pptx
+      - modify pptx
+      - extract slides
+      - update slides
+      - existing presentation
     triggers:
-      - "powerpoint"
-      - "create.*pptx"
-      - "edit.*presentation"
+      - "edit.*(?:presentation|pptx|slides)"
+      - "modify.*(?:presentation|pptx|slides)"
+      - "update.*(?:presentation|pptx)"
+      - "extract.*slides"
       - "\\.pptx"
     output_formats: [pptx]
-    negative_keywords: []
+    negative_keywords:
+      - conference talk
+      - seminar
+      - thesis defense
+      - lab meeting
+      - research talk
+      - research presentation
 
   "document-skills:xlsx":
     description: Excel spreadsheet creation and manipulation
