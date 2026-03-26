@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Deep Research Skill (Phase 1: Foundation)
+- **skills/deep-research/SKILL.md**: v1.0.0 — New native multi-mode research pipeline
+  - 7 agents (bibliography, verification, synthesis, advocate, mentor, ethics, compiler)
+  - 8 modes (full, quick, lit-review, systematic-review, hypothesis, fact-check, socratic, review)
+  - 6 mandatory user checkpoints (one per pipeline phase)
+  - Devil's advocate at 3 checkpoints (scoping, analysis, composition)
+  - Consolidates paper-search + literature-review + hypothesis-generation (30 → 28 skills)
+  - Pipeline architecture inspired by academic-research-skills (Cheng-I Wu)
+- **skills/deep-research/agents/bibliography.md**: MCP-wired search agent
+  - PubMed, bioRxiv, Consensus MCP as primary tools; ToolUniverse fallbacks
+  - Collision-aware search construction from entity-resolution
+  - DOI-based deduplication, search saturation criterion (<5% new)
+  - Circuit breakers for MCP tool failures
+- **skills/deep-research/references/biomedical_research.md**: Biomedical research reference
+  - 3-tier MCP tool mapping (primary → ToolUniverse → Zotero)
+  - Evidence grading bridge (Level I-VII ↔ T1-T4)
+  - Dossier-first protocol for upstream target/drug intelligence integration
+  - Collision filter protocol and currency rules by field
+
 ### Changed — Skill Routing Conflict Audit
 - **skills/skill-router/skill_triggers.yaml**: v1.2.0 — resolved 6 routing conflicts with bidirectional negative keywords
   - paper-2-web / paperbanana: disambiguated "graphical abstract" by input type (existing paper vs prose)
