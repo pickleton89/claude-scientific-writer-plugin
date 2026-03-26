@@ -6,6 +6,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Deep Research Skill (Phase 3: Advanced Modes + Remaining Agents)
+- **skills/deep-research/agents/advocate.md**: Devil's advocate checkpoint agent
+  - 3 mandatory checkpoints mapped to pipeline checkpoints 1/3/5
+  - 10 logical fallacy detections adapted for biomedical research
+  - 4 stress tests (remove strongest source, flip RQ, different context, "so what?")
+  - Severity classification: Critical (blocks) / Major / Minor / Observation
+  - Strongest counter-argument requirement (200-300 words at Checkpoint 3)
+  - Biomedical-specific: T1-T4 skew detection, PICO validation, collision risk checks
+- **skills/deep-research/agents/mentor.md**: Socratic 5-layer dialogue agent
+  - 5 layers: Problem Framing → Methodology → Evidence Design → Self-Examination → Significance
+  - SCR protocol (State-Challenge-Reflect) as invisible overlay with commitment gates
+  - Biomedical probes per layer (nomenclature, model systems, translational gaps)
+  - ToolUniverse data challenges at Layer 3 (STRING, GTEx, Open Targets)
+  - Question taxonomy: [Q:CLARIFY], [Q:PROBE], [Q:STRUCTURE], [Q:CHALLENGE]
+  - INSIGHT extraction with productive pace tracking (1 per 2-3 turns)
+  - Convergence detection via B1-B5 biomedical signals
+- **skills/deep-research/agents/ethics.md**: Ethics review agent
+  - 7 review dimensions (AI disclosure, attribution, dual-use, fair representation, data ethics, COI, human subjects)
+  - CLEARED / CONDITIONAL / BLOCKED verdicts
+  - Dual-use screening with biomedical red flags (gain-of-function, biosecurity)
+  - 50% reference integrity spot-check against verification agent table
+- **skills/deep-research/references/convergence_signals.md**: B1-B5 biomedical convergence signals
+  - B1 Target Clarity, B2 Mechanism Specificity, B3 Falsifiability Defined, B4 Scope Stability, B5 Self-Calibration
+  - Convergence rules: 3+ signals = CONVERGED, all 5 = FULLY CONVERGED
+- **skills/deep-research/references/failure_paths.md**: 12 failure scenarios with recovery
+  - F1-F5: Scoping and analysis failures (RQ non-convergence, insufficient literature, methodology mismatch, advocate CRITICAL, ethics BLOCKED)
+  - F6-F8: Tool infrastructure failures (MCP cascade fallbacks, ToolUniverse session expiry, consecutive failures)
+  - F9-F12: Content quality failures (contradictory evidence deadlock, search saturation, low hypothesis scores, revision exhaustion)
+
+### Changed
+- Reorganized legacy ToolUniverse docs from `docs/tooluniverse-*` to `docs/tooluniverse/`
+
 ### Added — Deep Research Skill (Phase 2: Core Agents)
 - **skills/deep-research/agents/verification.md**: Source grading agent
   - Evidence hierarchy (Level I-VII) mapped to T1-T4 claim tiers

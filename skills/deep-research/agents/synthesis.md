@@ -186,7 +186,7 @@ contradiction requiring further investigation.
 Instead of thematic synthesis, generate 3-5 competing hypotheses:
 
 1. Each hypothesis must be **mechanistically distinct** (different causal chains)
-2. Ground each in database evidence (STRING, GTEx, GO if biomedical)
+2. Ground each in evidence from verified sources and upstream dossier data (STRING scores, GTEx expression, GO annotations if biomedical dossier available)
 3. Score on 10-point quality rubric (see `references/hypothesis_quality_criteria.md` — migrated in Phase 4):
    - Testability (0-2)
    - Falsifiability (0-2)
