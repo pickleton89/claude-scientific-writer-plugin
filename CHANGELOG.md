@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed — Documentation Audit (Post Deep-Research Integration)
+- **README.md**: Removed 3 archived skills (paper-search, literature-review, hypothesis-generation) from skill tables; added deep-research; corrected skill counts (30→26 unique / 29 routing targets); updated usage examples to reference deep-research modes
+- **commands/scientific-writer-init.md**: Replaced archived skill references with deep-research; corrected skill counts (17→26, 19→26); updated tips and user guidance
+- **CHANGELOG.md**: Clarified skill count arithmetic (28→26 unique / 31→29 routing targets)
+
 ### Added — Deep Research Skill (Phase 5: Hardening)
 - **Circuit breakers enhanced** in bibliography and verification agents
   - Structured fallback tables with detection patterns, fallback tools, and max retries
@@ -35,7 +40,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fixed `research.*on` trigger over-breadth with negative lookahead for poster/talk/presentation
 - Fixed xlsx `formula`/`formulate` collision via negative keywords
 - Added missing keywords: `lookup`, `exclusion criteria`, `alternative hypothesis`, `google scholar`, `hypotheses`
-- Skill count: 30 → 28 (removed 3, added 1)
+- Skill count: 28 → 26 unique skills / 31 → 29 routing targets (removed 3 legacy, added 1 deep-research)
 
 ### Added — Deep Research Skill (Phase 3: Advanced Modes + Remaining Agents)
 - **skills/deep-research/agents/advocate.md**: Devil's advocate checkpoint agent

@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A comprehensive Claude Code plugin with 30 specialized skills for end-to-end scientific research workflows — from biomedical target intelligence and literature analysis to publication-ready documents, presentations, and figures.
+A comprehensive Claude Code plugin with 26 specialized skills for end-to-end scientific research workflows — from biomedical target intelligence and literature analysis to publication-ready documents, presentations, and figures.
 
 ## Background
 
@@ -14,7 +14,7 @@ Built on [K-Dense-AI/claude-scientific-writer](https://github.com/K-Dense-AI/cla
 - **ToolUniverse integration**: 2,400+ scientific tools across 600+ databases with a data-feed pattern
 - **Deterministic skill routing**: Keyword + regex engine with 136 canonical test cases at 100% pass rate
 - **Evidence grading**: Every claim graded T1 (FDA label) through T4 (text-mined annotations)
-- **Multi-database paper search**: PubMed, bioRxiv, Semantic Scholar, Google Scholar
+- **Multi-mode deep research**: Literature review, systematic review, hypothesis generation, fact-checking (8 modes, 7 agents)
 - **Tiered image generation**: Free Mermaid diagrams for simple workflows, AI generation (Gemini 3 Pro) for complex schematics
 - **Publication-quality outputs**: Figures, slides, and posters meeting journal submission standards
 - **Brand integration**: Consistent Oligon visual identity across all generated materials
@@ -67,7 +67,7 @@ claude --plugin-dir /path/to/claude-scientific-writer-plugin
 | `generate-image` | AI image generation via Gemini 3 Pro (OpenRouter) |
 | `paperbanana` | Text-to-visual figures, graphical abstracts |
 
-### Document Creation (8 skills)
+### Document Creation (7 skills)
 | Skill | Description |
 |-------|-------------|
 | `scientific-writing` | Research papers (IMRaD), methodology, results in LaTeX/BibTeX |
@@ -75,15 +75,13 @@ claude --plugin-dir /path/to/claude-scientific-writer-plugin
 | `scientific-slides` | Research presentations |
 | `research-posters` | Academic posters (LaTeX or PowerPoint) |
 | `venue-templates` | Journal-specific formatting (Nature, Cell, NeurIPS, etc.) |
-| `hypothesis-generation` | Research hypothesis development with bio entity context |
 | `markdown-to-pdf` | Branded PDF generation |
 | `document-skills` | Adapter routing to anthropic-agent-skills for DOCX, PDF, PPTX, XLSX |
 
-### Research Workflow (5 skills)
+### Research Workflow (4 skills)
 | Skill | Description |
 |-------|-------------|
-| `paper-search` | Multi-database academic paper search |
-| `literature-review` | Systematic reviews with PRISMA workflow, collision-aware search, T1-T4 grading |
+| `deep-research` | Multi-mode research pipeline — literature review, systematic review, hypothesis generation, fact-checking (8 modes, 7 agents) |
 | `citation-management` | BibTeX citations and bibliography management |
 | `peer-review` | Manuscript review with database claim verification |
 | `research-paper-summarizer` | Multi-format summaries with entity enrichment |
@@ -114,7 +112,7 @@ claude --plugin-dir /path/to/claude-scientific-writer-plugin
 | `drug-intelligence` | 10-section drug dossier (chemistry, ADMET, safety, PGx, regulatory) |
 | `target-validation` | Quantitative 0-100 GO/NO-GO scoring with T1-T4 evidence grading |
 
-> **Skill count**: 30 per the [SKILL_ROUTER.md](skills/SKILL_ROUTER.md) canonical count (28 listed above, plus `document-skills` expands to 4 sub-skills internally). 7 of these skills are additionally enhanced with ToolUniverse data feeds: hypothesis-generation, scientific-schematics, plotting-libraries, peer-review, research-paper-summarizer, scientific-writing, and statistical-analysis.
+> **Skill count**: 26 unique skills (29 routing targets with `document-skills` expanding to 4 sub-skills). 6 skills are enhanced with ToolUniverse data feeds: scientific-schematics, plotting-libraries, peer-review, research-paper-summarizer, scientific-writing, and statistical-analysis.
 
 ## Bio-Intelligence Pipeline
 
@@ -178,7 +176,7 @@ For the full integration architecture, see [`docs/TOOLUNIVERSE_INTEGRATION_DESIG
 
 The skill router uses deterministic keyword + regex matching to select skills without LLM overhead for clear-cut tasks.
 
-- **136 canonical test cases** across 27 registered skills with 100% pass rate
+- **146 canonical test cases** across 29 routing targets with 135 passing (11 pre-existing edge cases)
 - **10 decision trees and 8 multi-skill workflows** covering single-skill, multi-skill, and bio-pipeline routing
 - **Confidence scoring**: 0.7+ routes directly, 0.3-0.69 routes with clarification, <0.3 triggers disambiguation
 - **Bio routing**: Biological research queries route through a disambiguation tree (entity-resolution → target-intelligence / drug-intelligence → target-validation)
@@ -210,7 +208,7 @@ Skills are automatically invoked based on your request. The routing system selec
 → Uses: scientific-writing
 
 "Search for papers on CRISPR delivery mechanisms"
-→ Uses: paper-search
+→ Uses: deep-research (quick mode)
 
 "Create a poster for my conference presentation on single-cell proteomics"
 → Uses: research-posters + visual-design + oligon-brand
@@ -252,7 +250,7 @@ Skills are automatically invoked based on your request. The routing system selec
 → Uses: plotting-libraries + GTEx data via ToolUniverse
 
 "Generate hypotheses for targeting CDK4 in melanoma"
-→ Uses: hypothesis-generation + target biology context via ToolUniverse
+→ Uses: deep-research (hypothesis mode) + target biology context via ToolUniverse
 ```
 
 ## Commands
