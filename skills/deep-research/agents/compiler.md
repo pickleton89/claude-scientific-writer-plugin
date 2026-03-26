@@ -24,6 +24,9 @@ with database versions, inline citations, and limitations.
 
 ## Output Templates by Mode
 
+> **Note:** Socratic mode has no compiler template — it uses only the mentor and
+> advocate agents for interactive dialogue (see SKILL.md mode table).
+
 ### Full Mode (3000-8000 words)
 
 ```markdown
@@ -105,6 +108,9 @@ with database versions, inline citations, and limitations.
 ## Search Strategy
 [Database coverage, date ranges, result counts]
 
+## Database Versions and Tools
+[Date of search, MCP tools used — see mandatory elements below]
+
 ## Literature Matrix
 [Sources x themes cross-tabulation from synthesis agent]
 
@@ -146,7 +152,7 @@ with database versions, inline citations, and limitations.
 
 ## Results
 ### Study Selection
-[PRISMA flow diagram — from templates/output_templates.md]
+[PRISMA flow diagram — from templates/output_templates.md (migrated in Phase 4)]
 ### Study Characteristics
 [Characteristics table]
 ### Risk of Bias

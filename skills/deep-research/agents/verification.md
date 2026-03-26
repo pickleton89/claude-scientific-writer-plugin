@@ -121,10 +121,20 @@ Apply these flags as warranted:
 |------|-----------|--------|
 | `[SINGLE-SOURCE]` | Claim supported by only 1 study | Note in limitations; synthesis agent seeks corroboration |
 | `[PREPRINT]` | Source from bioRxiv/medRxiv (not peer-reviewed) | Downgrade one tier; monitor for publication |
-| `[RETRACTED]` | Source has been retracted | **Exclude from evidence base entirely** |
+| `[RETRACTED]` | Source has been retracted (see detection method below) | **Exclude from evidence base entirely** |
 | `[CONFLICT]` | Contradictory evidence exists for this claim | Present both sides in synthesis |
 | `[PREDATORY_RISK]` | Predatory journal indicators detected | Cap claims at T4 |
 | `[OUTDATED]` | Source older than field-specific currency threshold | Note; prefer newer evidence if available |
+
+### Retraction Detection
+
+Check for retractions during DOI verification (Step 3):
+
+1. When PubMed MCP `get_article_metadata` returns results, look for:
+   - Publication type containing "Retracted Publication" or "Retraction of Publication"
+   - Title prefixed with "[Retracted]" or "RETRACTED:"
+2. If the source is NOT in PubMed, search PubMed for `"retraction of" AND [author last name] AND [key title words]`
+3. If retraction detected: mark `[RETRACTED]`, exclude from evidence base, document the retraction notice DOI if available
 
 Currency thresholds (from `references/biomedical_research.md`):
 - Biomedical: >5 years = potentially outdated (unless seminal)

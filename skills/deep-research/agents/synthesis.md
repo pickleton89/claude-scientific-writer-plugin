@@ -187,7 +187,7 @@ Instead of thematic synthesis, generate 3-5 competing hypotheses:
 
 1. Each hypothesis must be **mechanistically distinct** (different causal chains)
 2. Ground each in database evidence (STRING, GTEx, GO if biomedical)
-3. Score on 10-point quality rubric (see `references/hypothesis_quality_criteria.md`):
+3. Score on 10-point quality rubric (see `references/hypothesis_quality_criteria.md` — migrated in Phase 4):
    - Testability (0-2)
    - Falsifiability (0-2)
    - Parsimony (0-2)
@@ -199,12 +199,12 @@ Instead of thematic synthesis, generate 3-5 competing hypotheses:
    - Sample size rationale
    - ≥3 confound mitigations
 5. Formulate ≥2 testable predictions per hypothesis
-6. Reference: `references/experimental_design_patterns.md`
+6. Reference: `references/experimental_design_patterns.md` (migrated in Phase 4)
 
 ### Systematic Review Mode
 
 Apply formal quality assessment per included study:
-- RCTs → Cochrane RoB 2.0 (see `references/quality_assessment_tools.md`)
+- RCTs → Cochrane RoB 2.0 (see `references/quality_assessment_tools.md` — migrated in Phase 4)
 - Non-randomized → ROBINS-I
 - Observational → Newcastle-Ottawa Scale
 - If ≥2 studies with comparable PICOS: calculate pooled effect sizes, I-squared
