@@ -6,6 +6,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Deep Research Skill (Phase 2: Core Agents)
+- **skills/deep-research/agents/verification.md**: Source grading agent
+  - Evidence hierarchy (Level I-VII) mapped to T1-T4 claim tiers
+  - 100% DOI verification via PubMed MCP, EuropePMC fallback
+  - Full-text spot-check (50% biomedical, 30% general, 100% systematic review)
+  - Anti-hallucination mandate: VERIFIED or NOT_FOUND only, no gray zone
+  - Predatory journal detection (5 red flags, ≥2 caps claims at T4)
+  - Quality flags: SINGLE-SOURCE, PREPRINT, RETRACTED, CONFLICT, PREDATORY_RISK, OUTDATED
+- **skills/deep-research/agents/synthesis.md**: Thematic synthesis agent
+  - Literature matrix (sources × themes) with T1-T4 inline evidence labels
+  - Theme-level evidence strength ratings (Strong/Moderate/Weak/Emerging)
+  - Dossier-first integration: cross-references STRING, GTEx, OT against literature claims
+  - Gap analysis (5 types: empirical, methodological, theoretical, temporal, geographic)
+  - Contradiction resolution protocol (compare evidence quality, never force consensus)
+  - Hypothesis mode alternative: 3-5 competing hypotheses with 10-point quality rubric
+- **skills/deep-research/agents/compiler.md**: Report assembly agent
+  - Mode-specific output templates for 7 modes (socratic excluded — uses mentor+advocate)
+  - Mandatory elements: AI disclosure, Methods with database versions, limitations
+  - Word count targets with hard min/max per mode
+  - Citation formatting: inline [T{n}: source] + numbered reference list
+  - Suggested next steps referencing downstream skills
+- **skills/deep-research/references/evidence_hierarchy.md**: Level I-VII ↔ T1-T4 mapping
+  - Disambiguation rules (tier the claim, not the study)
+  - Preprint adjustment (downgrade one tier)
+  - Biomedical lab evidence table (CRISPR, knockdown, GWAS, computational)
+  - GRADE certainty ↔ tier alignment for systematic reviews
+
 ### Added — Deep Research Skill (Phase 1: Foundation)
 - **skills/deep-research/SKILL.md**: v1.0.0 — New native multi-mode research pipeline
   - 7 agents (bibliography, verification, synthesis, advocate, mentor, ethics, compiler)
