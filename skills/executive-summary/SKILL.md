@@ -374,7 +374,7 @@ Avoid these errors that reduce executive summary effectiveness:
 | Skill | Relationship |
 |-------|-------------|
 | `scientific-writing` | Source manuscripts and reports to summarize |
-| `literature-review` | Synthesized background for context |
+| `deep-research` | Synthesized background for context |
 | `statistical-analysis` | Key statistical findings to highlight |
 
 ### Feeds (Output To)

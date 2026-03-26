@@ -875,7 +875,7 @@ Vertical top-to-bottom layout.
 | `scientific-slides` | Schematics integrates into slide presentations |
 | `research-posters` | Schematics provides figures for posters |
 | `scientific-writing` | Schematics provides methodology diagrams for papers |
-| `literature-review` | Provides PRISMA flow diagrams — schematics generates the diagram layout |
+| `deep-research` | Provides PRISMA flow diagrams — schematics generates the diagram layout |
 | `entity-resolution` | Upstream: resolve gene/drug/disease IDs before data-fed diagram queries |
 | `target-intelligence` | Dossier source: extract PPI, pathway, domain data for diagrams |
 | `tool-lookup.yaml` | Capability key reference for data-fed diagram queries |

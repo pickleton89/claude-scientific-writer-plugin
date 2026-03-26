@@ -1,6 +1,6 @@
 # Skill Trigger Registry
-# Version: 1.2.0
-# Purpose: Deterministic keyword-based routing for the 27-skill scientific writing library
+# Version: 1.3.0
+# Purpose: Deterministic keyword-based routing for the 25-skill scientific writing library
 #
 # Structure:
 #   keywords: Common terms that indicate this skill (weighted equally)
@@ -416,26 +416,6 @@ skills:
     output_formats: [tex, docx]
     negative_keywords: []
 
-  hypothesis-generation:
-    description: Formulating testable hypotheses from literature and data
-    category: document
-    keywords:
-      - hypothesis
-      - hypotheses
-      - testable
-      - prediction
-      - research question
-      - formulate
-      - null hypothesis
-      - alternative hypothesis
-    triggers:
-      - "generate.*hypothesis"
-      - "formulate.*hypothesis"
-      - "testable.*prediction"
-      - "research.*question"
-    output_formats: [md]
-    negative_keywords: []
-
   markdown-to-pdf:
     description: Convert markdown to branded PDF documents using templates
     category: document
@@ -464,65 +444,86 @@ skills:
   # RESEARCH WORKFLOW SKILLS
   # ============================================================
 
-  paper-search:
-    description: Multi-database academic paper search (PubMed, bioRxiv, Semantic Scholar)
-    category: research
-    keywords:
-      - search
-      - find
-      - papers
-      - articles
-      - publications
-      - pubmed
-      - biorxiv
-      - medrxiv
-      - semantic scholar
-      - google scholar
-      - literature search
-      - paper search
-      - find papers
-      - search papers
-      - find articles
-      - academic search
-      - look up
-      - lookup
-    triggers:
-      - "find.*papers"
-      - "search.*(papers|pubmed|articles|for)"
-      - "look.*up.*(papers|articles)"
-      - "find.*articles"
-      - "literature.*search"
-      - "(pubmed|biorxiv|medrxiv|semantic.scholar)"
-    output_formats: [json, bib]
-    negative_keywords:
-      - systematic review
-      - comprehensive review
-      - write
-      - draft
-
-  literature-review:
-    description: Systematic literature reviews, PRISMA methodology
+  deep-research:
+    description: "Multi-mode research: literature review, hypothesis generation, systematic review, fact-check, guided research"
     category: research
     keywords:
       - literature review
       - systematic review
       - prisma
       - meta-analysis
+      - find papers
+      - search pubmed
+      - search biorxiv
+      - hypothesis
+      - hypotheses
+      - testable prediction
+      - research question
+      - fact-check
+      - deep research
+      - guide my research
+      - evidence synthesis
+      - scoping review
       - comprehensive review
+      - find articles
+      - search papers
+      - papers
+      - publications
+      - pubmed
+      - biorxiv
+      - medrxiv
+      - semantic scholar
+      - literature search
+      - paper search
+      - academic search
+      - look up
+      - formulate hypothesis
+      - null hypothesis
+      - alternative hypothesis
+      - narrative review
       - screening
       - inclusion criteria
       - exclusion criteria
-      - narrative review
+      - lookup
+      - google scholar
     triggers:
       - "literature.*review"
       - "systematic.*review"
+      - "hypothesis"
+      - "deep.*research"
+      - "fact.?check"
+      - "guide.*research"
+      - "research.*(?:report|on\\s+(?!poster|talk|presentation))"
       - "prisma"
+      - "meta.?analysis"
+      - "find.*papers"
+      - "search.*(papers|pubmed|articles)"
+      - "look.*up.*(papers|articles)"
+      - "find.*articles"
+      - "literature.*search"
+      - "(pubmed|biorxiv|medrxiv|semantic.scholar)"
       - "comprehensive.*review"
       - "review.*literature"
-    output_formats: [md, docx]
+      - "generate.*hypothes[ie]s?"
+      - "formulate.*hypothes[ie]s?"
+      - "testable.*(?:prediction|hypothes)"
+      - "research.*question"
+      - "evidence.*synthesis"
+      - "synthesize.*evidence"
+      - "scoping.*review"
+      - "what.*(?:does|do).*literature.*say"
+    output_formats: [md, docx, json, bib]
     negative_keywords:
-      - quick search
-      - find papers
+      - summarize this paper
+      - summarize this PDF
+      - review this manuscript
+      - write a paper
+      - target dossier
+      - drug dossier
+      - validation scorecard
+      - peer review
+      - referee report
+      - reviewer comments
 
   citation-management:
     description: BibTeX formatting, citation styles, reference management
@@ -861,7 +862,10 @@ skills:
       - "\\.xlsx"
       - "pivot.*table"
     output_formats: [xlsx]
-    negative_keywords: []
+    negative_keywords:
+      - hypothesis
+      - formulate
+      - testable
 
   # ============================================================
   # BIOLOGICAL RESEARCH SKILLS
@@ -999,7 +1003,7 @@ routing_config:
   category_defaults:
     visual: visual-design
     document: scientific-writing
-    research: paper-search
+    research: deep-research
     analysis: statistical-analysis
     conversion: markitdown
     document_output: "document-skills:docx"
@@ -1031,12 +1035,12 @@ routing_config:
         no_skill: executive-summary
 
     research:
-      - question: "Do you need a quick search (1-50 papers)?"
-        yes_skill: paper-search
-        no_followup: "Is this a systematic/comprehensive review?"
-      - question: "Is this a systematic/comprehensive review?"
-        yes_skill: literature-review
-        no_skill: citation-management
+      - question: "Do you need research, literature review, or hypothesis generation?"
+        yes_skill: deep-research
+        no_followup: "Is this about managing citations/references?"
+      - question: "Is this about managing citations/references?"
+        yes_skill: citation-management
+        no_skill: deep-research
 
     biological_research:
       - question: "Are you looking to resolve or disambiguate an entity (gene, drug, disease)?"

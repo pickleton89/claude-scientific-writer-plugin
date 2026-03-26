@@ -2,7 +2,7 @@
 
 > Shared reference for evidence classification across research skills.
 > Version: 1.0.0
-> Used by: literature-review, target-intelligence, drug-intelligence, target-validation
+> Used by: deep-research, target-intelligence, drug-intelligence, target-validation
 
 ---
 

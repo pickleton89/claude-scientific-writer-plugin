@@ -1,5 +1,5 @@
 # Canonical Routing Test Cases
-# Version: 1.2.0
+# Version: 1.3.0
 # Purpose: Validate deterministic routing produces expected results
 #
 # Test case structure:
@@ -301,64 +301,143 @@ research_posters_cases:
     category: document
 
 # ============================================================
-# RESEARCH WORKFLOW - paper-search
+# RESEARCH WORKFLOW - deep-research (consolidates paper-search, literature-review, hypothesis-generation)
 # ============================================================
 
-paper_search_cases:
+deep_research_cases:
+  # Former paper-search cases (→ deep-research quick mode)
   - request: "Find papers on CRISPR gene editing"
-    expected_skill: paper-search
+    expected_skill: deep-research
     min_confidence: 0.5
     category: research
 
   - request: "Search PubMed for cancer immunotherapy"
-    expected_skill: paper-search
+    expected_skill: deep-research
     min_confidence: 0.5
     category: research
 
   - request: "Find articles about machine learning in biology"
-    expected_skill: paper-search
+    expected_skill: deep-research
     min_confidence: 0.5
     category: research
 
   - request: "Search for papers on protein folding"
-    expected_skill: paper-search
+    expected_skill: deep-research
     min_confidence: 0.5
     category: research
 
   - request: "Look up recent publications on mRNA vaccines"
-    expected_skill: paper-search
+    expected_skill: deep-research
     min_confidence: 0.5
     category: research
 
   - request: "Find preprints on bioRxiv about organoids"
-    expected_skill: paper-search
+    expected_skill: deep-research
     min_confidence: 0.5
     category: research
 
-# ============================================================
-# RESEARCH WORKFLOW - literature-review
-# ============================================================
-
-literature_review_cases:
+  # Former literature-review cases (→ deep-research lit-review/systematic-review mode)
   - request: "Conduct a systematic literature review"
-    expected_skill: literature-review
+    expected_skill: deep-research
     min_confidence: 0.6
     category: research
 
   - request: "I need a comprehensive review of the field"
-    expected_skill: literature-review
+    expected_skill: deep-research
     min_confidence: 0.5
     category: research
 
   - request: "Do a PRISMA-style systematic review"
-    expected_skill: literature-review
+    expected_skill: deep-research
     min_confidence: 0.5
     category: research
 
   - request: "Write a literature review on this topic"
-    expected_skill: literature-review
+    expected_skill: deep-research
     min_confidence: 0.5
     category: research
+
+  # Former hypothesis-generation cases (→ deep-research hypothesis mode)
+  - request: "Generate a hypothesis about the role of p53 in cancer"
+    expected_skill: deep-research
+    min_confidence: 0.5
+    category: research
+
+  - request: "Formulate testable hypotheses for this experiment"
+    expected_skill: deep-research
+    min_confidence: 0.5
+    category: research
+
+  - request: "What are good research questions for this topic?"
+    expected_skill: deep-research
+    min_confidence: 0.5
+    category: research
+
+  - request: "Help me develop a null and alternative hypothesis"
+    expected_skill: deep-research
+    min_confidence: 0.5
+    category: research
+
+  # New deep-research test cases (modes: fact-check, socratic, full, review)
+  - request: "Fact-check this claim about ivermectin and COVID"
+    expected_skill: deep-research
+    min_confidence: 0.5
+    category: research
+    notes: "fact-check mode"
+
+  - request: "Guide my research on CRISPR delivery mechanisms"
+    expected_skill: deep-research
+    min_confidence: 0.5
+    category: research
+    notes: "socratic mode"
+
+  - request: "Do a deep research report on GLP-1 agonists in Alzheimer's"
+    expected_skill: deep-research
+    min_confidence: 0.5
+    category: research
+    notes: "full mode"
+
+  - request: "Synthesize the evidence on ketamine for treatment-resistant depression"
+    expected_skill: deep-research
+    min_confidence: 0.1
+    category: research
+    notes: "evidence synthesis triggers deep-research via trigger match"
+
+  - request: "Do a scoping review of AI in drug discovery"
+    expected_skill: deep-research
+    min_confidence: 0.5
+    category: research
+    notes: "scoping review mode"
+
+  - request: "What does the literature say about BRCA2 and ovarian cancer?"
+    expected_skill: deep-research
+    min_confidence: 0.1
+    category: research
+    notes: "literature search trigger - weak signal via single trigger"
+
+  - request: "Run a systematic review of CAR-T therapy for DLBCL"
+    expected_skill: deep-research
+    min_confidence: 0.5
+    category: research
+    notes: "systematic-review mode"
+
+  - request: "Search Semantic Scholar for recent transformer architectures"
+    expected_skill: deep-research
+    min_confidence: 0.5
+    category: research
+    notes: "database-specific search trigger"
+
+  - request: "Help me formulate a research question about microbiome and IBD"
+    expected_skill: deep-research
+    min_confidence: 0.5
+    category: research
+    notes: "research question formulation"
+
+  - request: "Conduct a meta-analysis of statin trials in elderly patients"
+    expected_skill: deep-research
+    min_confidence: 0.5
+    category: research
+    notes: "meta-analysis trigger"
 
 # ============================================================
 # RESEARCH WORKFLOW - citation-management
@@ -713,31 +792,6 @@ target_validation_cases:
     category: biological_research
 
 # ============================================================
-# DOCUMENT CREATION - hypothesis-generation
-# ============================================================
-
-hypothesis_generation_cases:
-  - request: "Generate a hypothesis about the role of p53 in cancer"
-    expected_skill: hypothesis-generation
-    min_confidence: 0.5
-    category: document
-
-  - request: "Formulate testable hypotheses for this experiment"
-    expected_skill: hypothesis-generation
-    min_confidence: 0.5
-    category: document
-
-  - request: "What are good research questions for this topic?"
-    expected_skill: hypothesis-generation
-    min_confidence: 0.5
-    category: document
-
-  - request: "Help me develop a null and alternative hypothesis"
-    expected_skill: hypothesis-generation
-    min_confidence: 0.5
-    category: document
-
-# ============================================================
 # DATA-ENRICHED OUTPUT (routes to output skill, not bio skill)
 # Phase 5: Confirms data-enriched requests route to output skills
 # ============================================================
@@ -822,16 +876,16 @@ negative_cases:
     notes: "Diagram keyword routes to schematics"
 
   - request: "Quick search for 5 papers on CRISPR"
-    expected_skill: paper-search
-    not_expected: literature-review
+    expected_skill: deep-research
+    not_expected: peer-review
     min_confidence: 0.5
-    notes: "Quick/few papers goes to paper-search"
+    notes: "Quick/few papers goes to deep-research (quick mode)"
 
   - request: "Comprehensive systematic review of the field"
-    expected_skill: literature-review
-    not_expected: paper-search
+    expected_skill: deep-research
+    not_expected: peer-review
     min_confidence: 0.5
-    notes: "Systematic/comprehensive goes to literature-review"
+    notes: "Systematic/comprehensive goes to deep-research (systematic-review mode)"
 
   - request: "Create a CONSORT flowchart"
     expected_skill: scientific-schematics

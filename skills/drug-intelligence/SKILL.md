@@ -22,7 +22,7 @@ Use this skill when:
 
 Do NOT use this skill when:
 - Query is about a gene/protein target (not a compound) -> use `target-intelligence`
-- Query is literature-only with no database lookups -> use `literature-review`
+- Query is literature-only with no database lookups -> use `deep-research`
 - Entity has not been resolved yet -> run `entity-resolution` first
 - User wants comparative drug-target analysis -> use `target-validation`
 </when_to_use>
@@ -425,7 +425,7 @@ Parsed section tools require setid, not drug name.
 
 **Out of Scope** (delegate to other skills):
 - Entity disambiguation -> `entity-resolution`
-- Literature deep-dive and RWE -> `literature-review`
+- Literature deep-dive and RWE -> `deep-research`
 - Comparative drug analysis and scorecards -> `target-validation`
 - Target profiling for identified targets -> `target-intelligence`
 </scope>
@@ -438,7 +438,7 @@ Parsed section tools require setid, not drug name.
 - **entity-resolution** (prerequisite): Provides resolved identity table with ChEMBL, PubChem, SMILES
 - **target-intelligence** (related): Profile targets identified in Section 3
 - **target-validation** (downstream): Comparative drug-target analysis using this dossier
-- **literature-review** (parallel): Deep literature analysis and RWE beyond this skill's scope
+- **deep-research** (parallel): Deep literature analysis and RWE beyond this skill's scope
 - **tool-lookup.yaml**: Capability-to-tool mapping for all database queries
 - **known_param_corrections.md**: Parameter quirks that cause silent failures
 </cross_references>

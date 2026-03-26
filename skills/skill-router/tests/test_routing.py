@@ -162,8 +162,7 @@ def run_all_tests(verbose: bool = True) -> tuple[int, int, dict[str, list[TestRe
         "executive_summary_cases",
         "scientific_slides_cases",
         "research_posters_cases",
-        "paper_search_cases",
-        "literature_review_cases",
+        "deep_research_cases",
         "citation_management_cases",
         "peer_review_cases",
         "statistical_analysis_cases",
@@ -176,7 +175,6 @@ def run_all_tests(verbose: bool = True) -> tuple[int, int, dict[str, list[TestRe
         "target_intelligence_cases",
         "drug_intelligence_cases",
         "target_validation_cases",
-        "hypothesis_generation_cases",
         "data_enriched_cases",
     ]
 
@@ -336,26 +334,17 @@ def test_scientific_writing_routing():
             f"Request '{case['request']}' routed to {result.primary_skill}"
 
 
-def test_paper_search_routing():
-    """Test routing for paper search requests."""
+def test_deep_research_routing():
+    """Test routing for deep-research requests (paper search, lit review, hypothesis, etc.)."""
     test_cases = load_test_cases()
     router = SkillRouter()
 
-    for case in test_cases.get("paper_search_cases", []):
+    for case in test_cases.get("deep_research_cases", []):
         result = router.route(case["request"])
         assert result.primary_skill == case["expected_skill"], \
             f"Request '{case['request']}' routed to {result.primary_skill}"
-
-
-def test_literature_review_routing():
-    """Test routing for systematic review requests."""
-    test_cases = load_test_cases()
-    router = SkillRouter()
-
-    for case in test_cases.get("literature_review_cases", []):
-        result = router.route(case["request"])
-        assert result.primary_skill == case["expected_skill"], \
-            f"Request '{case['request']}' routed to {result.primary_skill}"
+        assert result.confidence >= case.get("min_confidence", 0.5), \
+            f"Confidence {result.confidence} below threshold"
 
 
 def test_statistical_analysis_routing():
@@ -414,19 +403,6 @@ def test_target_validation_routing():
     router = SkillRouter()
 
     for case in test_cases.get("target_validation_cases", []):
-        result = router.route(case["request"])
-        assert result.primary_skill == case["expected_skill"], \
-            f"Request '{case['request']}' routed to {result.primary_skill}"
-        assert result.confidence >= case.get("min_confidence", 0.5), \
-            f"Confidence {result.confidence} below threshold"
-
-
-def test_hypothesis_generation_routing():
-    """Test routing for hypothesis generation requests."""
-    test_cases = load_test_cases()
-    router = SkillRouter()
-
-    for case in test_cases.get("hypothesis_generation_cases", []):
         result = router.route(case["request"])
         assert result.primary_skill == case["expected_skill"], \
             f"Request '{case['request']}' routed to {result.primary_skill}"

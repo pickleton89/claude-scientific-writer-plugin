@@ -10,7 +10,7 @@ allowed-tools: [Read, Write, Edit, Bash, WebSearch, WebFetch]
 <overview>
 Systematic citation management throughout the research and writing workflow. Extract accurate metadata from multiple sources (CrossRef, PubMed, arXiv), validate citation information, and generate properly formatted BibTeX entries. Critical for maintaining citation accuracy and ensuring reproducible research.
 
-> **For paper discovery:** Use the `paper-search` skill to find papers across multiple databases (PubMed, bioRxiv, Semantic Scholar, Google Scholar). This skill focuses on managing citations after papers have been identified.
+> **For paper discovery:** Use the `deep-research` skill to find papers across multiple databases (PubMed, bioRxiv, Semantic Scholar, Google Scholar). This skill focuses on managing citations after papers have been identified.
 </overview>
 
 <setup>
@@ -30,7 +30,7 @@ pip install requests
 | `validate_citations.py` | Validate BibTeX file | `python {baseDir}/scripts/validate_citations.py references.bib` |
 | `format_bibtex.py` | Clean and format BibTeX | `python {baseDir}/scripts/format_bibtex.py input.bib -o output.bib` |
 
-> **Note:** For paper searching, use the `paper-search` skill which provides unified search across PubMed, bioRxiv, Semantic Scholar, and Google Scholar.
+> **Note:** For paper searching, use the `deep-research` skill which provides unified search across PubMed, bioRxiv, Semantic Scholar, and Google Scholar.
 
 </setup>
 
@@ -50,9 +50,9 @@ Use this skill when:
 
 | Task | Recommended Skill |
 |------|-------------------|
-| Finding papers across databases | `paper-search` |
-| Systematic literature review methodology | `literature-review` |
-| Thematic synthesis of findings | `literature-review` |
+| Finding papers across databases | `deep-research` |
+| Systematic literature review methodology | `deep-research` |
+| Thematic synthesis of findings | `deep-research` |
 | Journal-specific manuscript formatting | `venue-templates` |
 | Statistical result selection for citation | `statistical-analysis` |
 
@@ -77,7 +77,7 @@ For detailed decision trees on citation style selection, metadata source routing
 <workflow>
 ## Workflow
 
-> **Prerequisite:** Use `paper-search` to find papers before managing citations. This skill assumes papers have already been identified.
+> **Prerequisite:** Use `deep-research` to find papers before managing citations. This skill assumes papers have already been identified.
 
 ### Stage 1: Metadata Extraction
 
@@ -290,9 +290,9 @@ Fix any errors before generating the next entry. This prevents error accumulatio
 - Preprint to published version updating
 
 **Out of Scope** (use specialized resources):
-- Finding papers across databases → use `paper-search`
-- Systematic literature review methodology → use `literature-review`
-- Thematic synthesis of findings → use `literature-review`
+- Finding papers across databases → use `deep-research`
+- Systematic literature review methodology → use `deep-research`
+- Thematic synthesis of findings → use `deep-research`
 - Journal-specific manuscript formatting → use `venue-templates`
 - Reference manager software (Zotero, Mendeley, EndNote) tutorials → external resources
 - Citation network analysis → specialized bibliometric tools
@@ -305,10 +305,10 @@ Fix any errors before generating the next entry. This prevents error accumulatio
 ### 1. Skipping Paper Search
 
 **Anti-pattern:**
-Manually typing citation metadata or searching databases without using `paper-search`.
+Manually typing citation metadata or searching databases without using `deep-research`.
 
 **Solution:**
-Use `paper-search` to find papers systematically across multiple databases (PubMed, bioRxiv, Semantic Scholar). Export results in BibTeX format for direct import into your bibliography.
+Use `deep-research` to find papers systematically across multiple databases (PubMed, bioRxiv, Semantic Scholar). Export results in BibTeX format for direct import into your bibliography.
 
 ---
 
@@ -431,8 +431,7 @@ For complete templates with examples, see:
 
 | Skill | Relationship |
 |-------|-------------|
-| `paper-search` | Use for finding papers across databases (PubMed, bioRxiv, Semantic Scholar, Google Scholar); citation-management handles metadata extraction and validation |
-| `literature-review` | Use for systematic search methodology; citation-management handles technical citation extraction |
+| `deep-research` | Use for finding papers across databases (PubMed, bioRxiv, Semantic Scholar, Google Scholar) and systematic search methodology; citation-management handles metadata extraction and validation |
 | `venue-templates` | Use for journal-specific formatting after citations are validated |
 | `scientific-writing` | Integrates validated bibliography into manuscript |
 
@@ -440,10 +439,10 @@ For complete templates with examples, see:
 See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 
 **Combined Workflow:**
-1. `paper-search` → find papers across multiple databases
+1. `deep-research` → find papers across multiple databases
 2. `citation-management` → extract metadata and generate BibTeX
 3. `citation-management` → validate all citations
-4. `literature-review` → synthesize findings thematically (if systematic review)
+4. `deep-research` → synthesize findings thematically (if systematic review)
 5. `venue-templates` → format for target journal
 
 </cross_references>
@@ -459,7 +458,7 @@ See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 | `{baseDir}/references/citation_validation.md` | Validation criteria and quality checks |
 | `{baseDir}/references/bibtex_formatting.md` | BibTeX entry types and formatting rules |
 
-> **Search Documentation:** For database search guides (PubMed, Google Scholar, bioRxiv, Semantic Scholar), see the `paper-search` skill.
+> **Search Documentation:** For database search guides (PubMed, Google Scholar, bioRxiv, Semantic Scholar), see the `deep-research` skill.
 
 ### External Resources
 

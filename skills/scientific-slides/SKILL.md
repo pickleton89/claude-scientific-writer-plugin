@@ -182,7 +182,7 @@ Choose output format
 
 **Steps:**
 1. Determine talk type using decision tree above
-2. Use `paper-search` skill to find 8-15 relevant papers for citations
+2. Use `deep-research` skill to find 8-15 relevant papers for citations
 3. Identify 1-3 core messages (max 3 for short talks)
 4. Select key figures/results (3-6 for 15-min talk)
 5. Create detailed slide-by-slide plan:
@@ -488,7 +488,7 @@ Choose output format
 - Unclear positioning relative to prior work
 
 **Solution:**
-- Use `paper-search` to find 8-15 papers before creating slides
+- Use `deep-research` to find 8-15 papers before creating slides
 - Cite 3-5 papers in introduction establishing context
 - Cite 3-5 papers in discussion for comparison
 - Include citations directly in slide generation prompts
@@ -576,7 +576,7 @@ See `{baseDir}/references/output_templates.md` for complete templates:
 
 | Skill | Relationship |
 |-------|-------------|
-| `paper-search` | Use BEFORE creating slides to gather 8-15 citations |
+| `deep-research` | Use BEFORE creating slides to gather 8-15 citations |
 | `citation-management` | Use to format citations in proper style |
 | `scientific-schematics` | Use for complex technical diagrams |
 | `plotting-libraries` | Use for data visualizations to include in slides |

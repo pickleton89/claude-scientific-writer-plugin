@@ -22,7 +22,7 @@ Use this skill when:
 
 Do NOT use this skill when:
 - Query is purely about a drug/compound (not a target) -> use `drug-intelligence`
-- Query is literature-only with no database lookups -> use `literature-review`
+- Query is literature-only with no database lookups -> use `deep-research`
 - Entity has not been resolved yet -> run `entity-resolution` first
 - User wants comparative target-drug analysis -> use `target-validation`
 </when_to_use>
@@ -403,7 +403,7 @@ GTEx often requires versioned Ensembl IDs.
 
 **Out of Scope** (delegate to other skills):
 - Entity disambiguation -> `entity-resolution`
-- Literature deep-dive and publication analysis -> `literature-review`
+- Literature deep-dive and publication analysis -> `deep-research`
 - Target validation scoring and comparative analysis -> `target-validation`
 - Drug profiling for compounds found -> `drug-intelligence`
 </scope>
@@ -416,7 +416,7 @@ GTEx often requires versioned Ensembl IDs.
 - **entity-resolution** (prerequisite): Provides resolved identity table with canonical IDs
 - **drug-intelligence** (downstream): Profile drugs identified in Section 9
 - **target-validation** (downstream): Comparative target-drug analysis using this dossier
-- **literature-review** (parallel): Deep literature analysis beyond Section 12 publication counts
+- **deep-research** (parallel): Deep literature analysis beyond Section 12 publication counts
 - **tool-lookup.yaml**: Capability-to-tool mapping for all database queries
 - **known_param_corrections.md**: Parameter quirks that cause silent failures
 </cross_references>

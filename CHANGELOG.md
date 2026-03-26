@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Deep Research Skill (Phase 4: Migration & Integration)
+- **Absorbed 3 legacy skills** into `deep-research` (8-mode pipeline): `paper-search`, `literature-review`, `hypothesis-generation`
+- **Migrated 21 files** (references, templates, scripts, search backends) into `deep-research/`
+- **Archived 3 skill directories** to `skills/_archived/` preserving full history
+- **24 new routing test cases** for deep-research (all passing), consolidated from 14 migrated + 10 new
+- **skill_triggers.yaml v1.3.0**: single `deep-research` entry replaces 3, with 30+ keywords and 22 triggers
+- **SKILL_ROUTER.md v2.2.0**: updated 8 decision trees, 6 quick-ref tables, 3 workflows, relationship diagram
+
+### Changed — Cross-Reference Updates (Phase 4)
+- Updated 20+ cross-references across 19 files (15 SKILL.md + 4 secondary reference files)
+- Updated `QUANTIFICATION_THRESHOLDS.md`, `evidence_grading.md`, `powerpoint_design_guide.md`, `writing_process.md`
+- Fixed PRISMA trigger case-sensitivity bug (uppercase never matched in lowercase-normalized router)
+- Fixed `research.*on` trigger over-breadth with negative lookahead for poster/talk/presentation
+- Fixed xlsx `formula`/`formulate` collision via negative keywords
+- Added missing keywords: `lookup`, `exclusion criteria`, `alternative hypothesis`, `google scholar`, `hypotheses`
+- Skill count: 30 → 28 (removed 3, added 1)
+
 ### Added — Deep Research Skill (Phase 3: Advanced Modes + Remaining Agents)
 - **skills/deep-research/agents/advocate.md**: Devil's advocate checkpoint agent
   - 3 mandatory checkpoints mapped to pipeline checkpoints 1/3/5

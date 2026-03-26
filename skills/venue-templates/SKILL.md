@@ -318,7 +318,7 @@ This skill works seamlessly with other scientific skills:
 - Combine for complete manuscript preparation
 
 ### Literature Review
-- Use **literature-review** skill for systematic literature search and synthesis
+- Use **deep-research** skill for systematic literature search and synthesis
 - Apply appropriate citation style from venue requirements
 - Format references according to template specifications
 

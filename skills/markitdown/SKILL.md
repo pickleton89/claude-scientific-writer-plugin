@@ -468,10 +468,9 @@ method: {{basic|ocr|llm-enhanced|azure-docintel}}
 
 | Skill | Relationship |
 |-------|-------------|
-| `literature-review` | Use markitdown to convert PDFs before literature analysis |
+| `deep-research` | Use markitdown to convert PDFs before literature analysis |
 | `paper-2-web` | Converts in opposite direction (paper → web formats) |
 | `scientific-writing` | Use converted Markdown as source material |
-| `paper-search` | Convert found papers for processing |
 
 **Skill Selection:**
 See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.

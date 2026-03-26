@@ -6,7 +6,7 @@ This guide provides comprehensive instructions for creating professional scienti
 
 **CRITICAL**: Avoid dry, text-heavy presentations. Scientific slides should be:
 - **Visually engaging**: High-quality images, figures, diagrams on EVERY slide
-- **Research-backed**: Citations from `paper-search` for credibility (8-15 papers minimum)
+- **Research-backed**: Citations from `deep-research` for credibility (8-15 papers minimum)
 - **Modern design**: Contemporary color palettes, not default themes
 - **Minimal text**: 3-4 bullets with 4-6 words each, visuals do the talking
 - **Professional polish**: Consistent but varied layouts, generous white space
@@ -517,7 +517,7 @@ python scripts/replace.py working.pptx replacements.json output.pptx
 
 ### Do's (Make Presentations Engaging)
 
-- ✅ Use `paper-search` to find 8-15 papers for citations
+- ✅ Use `deep-research` to find 8-15 papers for citations
 - ✅ Add HIGH-QUALITY visuals to EVERY slide (figures, images, diagrams, icons)
 - ✅ Choose MODERN color palette reflecting your topic (not defaults)
 - ✅ Keep text MINIMAL (3-4 bullets, 4-6 words each)
@@ -534,7 +534,7 @@ python scripts/replace.py working.pptx replacements.json output.pptx
 - ❌ Don't create text-only slides (add visuals to EVERY slide)
 - ❌ Don't use default themes unchanged (customize for your topic)
 - ❌ Don't have all bullet-point slides (vary layouts)
-- ❌ Don't skip `paper-search` (presentations need citations too)
+- ❌ Don't skip `deep-research` (presentations need citations too)
 - ❌ Don't cram too much text on one slide
 - ❌ Don't use tiny fonts (<24pt for body)
 - ❌ Don't rely solely on color

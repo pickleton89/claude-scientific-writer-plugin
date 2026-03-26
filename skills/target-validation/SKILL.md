@@ -26,7 +26,7 @@ Use this skill when:
 Do NOT use this skill when:
 - Need target biology overview only -> use `target-intelligence`
 - Need drug compound profiling only -> use `drug-intelligence`
-- Need literature-only analysis -> use `literature-review`
+- Need literature-only analysis -> use `deep-research`
 - Entity has not been resolved yet -> run `entity-resolution` first
 - No upstream dossiers exist -> run intel skills first
 </when_to_use>
@@ -41,7 +41,7 @@ This skill **consumes** upstream dossiers. It does NOT re-query data already gat
 | Identity table | `entity-resolution` | **Yes** | Ensembl ID, UniProt, ChEMBL, collision filters |
 | Target dossier | `target-intelligence` | **Yes** | Structure, function, expression, variants, disease, druggability |
 | Drug dossier(s) | `drug-intelligence` | Preferred | Chemistry, ADMET, safety, clinical, regulatory |
-| Literature evidence | `literature-review` | Optional | Systematic evidence with T1-T4 grading |
+| Literature evidence | `deep-research` | Optional | Systematic evidence with T1-T4 grading |
 | Disease context | User input | Optional | Focuses scoring on specific indication |
 | Modality | User input | Optional | Default: all modalities assessed |
 
@@ -254,7 +254,7 @@ When user provides modality preference or when assessing all modalities:
 1. Extract from target dossier Section 7 (Interactions & Pathways):
    - Functional studies (CRISPR, siRNA) -> Functional sub-score
    - Disease model data -> Disease Models sub-score
-2. Extract from literature evidence (if `literature-review` was run):
+2. Extract from literature evidence (if `deep-research` was run):
    - T1/T2 evidence counts for functional validation
 3. Score validation evidence
 
@@ -475,7 +475,7 @@ When user provides modality preference or when assessing all modalities:
 - entity-resolution: {date}
 - target-intelligence: {date}, {N} sections
 - drug-intelligence: {date}, {N} sections (or "Not available")
-- literature-review: {date} (or "Not available")
+- deep-research: {date} (or "Not available")
 ```
 
 </report_template>
@@ -488,7 +488,7 @@ When user provides modality preference or when assessing all modalities:
 | `entity-resolution` | **Prerequisite** — provides resolved IDs and collision filters |
 | `target-intelligence` | **Required upstream** — provides target dossier (12 sections) |
 | `drug-intelligence` | **Preferred upstream** — provides drug dossier (10 sections) |
-| `literature-review` | **Optional upstream** — provides systematic evidence with T1-T4 grading |
+| `deep-research` | **Optional upstream** — provides systematic evidence with T1-T4 grading |
 | `scientific-writing` | **Downstream** — write up validation findings for publication |
 | `executive-summary` | **Downstream** — condense scorecard for stakeholder communication |
 

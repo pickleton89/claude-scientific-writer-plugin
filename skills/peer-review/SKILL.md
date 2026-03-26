@@ -1,7 +1,7 @@
 ---
 name: peer-review
 version: 2.3.0
-description: "Peer review of scientific manuscripts and grant proposals. Evaluates methodology, statistics, reproducibility, ethics, figure integrity, and compliance with reporting standards (CONSORT, STROBE, PRISMA, ARRIVE). Use when critically evaluating a manuscript or grant as a reviewer. Do NOT use for summarizing papers (use research-paper-summarizer), literature reviews (use literature-review), or validating drug targets (use target-validation)."
+description: "Peer review of scientific manuscripts and grant proposals. Evaluates methodology, statistics, reproducibility, ethics, figure integrity, and compliance with reporting standards (CONSORT, STROBE, PRISMA, ARRIVE). Use when critically evaluating a manuscript or grant as a reviewer. Do NOT use for summarizing papers (use research-paper-summarizer), literature reviews (use deep-research), or validating drug targets (use target-validation)."
 when_to_use: "For journal manuscript review, grant proposal evaluation, methodology assessment, statistical analysis review, presentation feedback, or compliance checking against reporting guidelines (CONSORT, STROBE, PRISMA, ARRIVE)."
 allowed-tools: [Read, Write, Edit, Bash]
 ---

@@ -387,8 +387,7 @@ Use **plotting-libraries** skill for creating figures. Match visualization to st
 - **plotting-libraries**: Visualizing statistical results—see `<visualization_guidance>` above for test-specific plot recommendations
 - **scientific-writing**: Reporting statistical methods and results in manuscripts
 - **reproducible-research**: Documenting analysis parameters for reproducibility
-- **paper-search**: Finding appropriate statistical methods in literature
-- **literature-review**: Meta-analysis calculations and evidence synthesis — statistical-analysis provides the quantitative methods for literature-review
+- **deep-research**: Finding appropriate statistical methods in literature; meta-analysis calculations and evidence synthesis — statistical-analysis provides the quantitative methods for deep-research
 - **[entity-resolution](../entity-resolution/SKILL.md)**: Upstream: resolve gene/variant IDs before querying population context databases
 - **tool-lookup.yaml**: Capability key reference for `visualization_data.variant_frequency` and `visualization_data.expression_heatmap`
 </cross_references>

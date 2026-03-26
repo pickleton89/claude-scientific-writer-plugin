@@ -2,13 +2,13 @@
 name: skill-router
 description: Decision trees for selecting the correct skill when multiple options apply. Consult when task scope is ambiguous or spans multiple scientific writing domains.
 when_to_use: When a user request could be handled by 2+ skills, when unclear which skill is primary vs. supporting, or when planning multi-skill workflows.
-version: 2.1.0
+version: 2.2.0
 ---
 
 # Skill Router
 
 > Decision trees and routing logic for selecting the right skill(s) for scientific writing tasks
-> Version: 2.1.0 | Updated: 2026-03-01
+> Version: 2.2.0 | Updated: 2026-03-26
 
 ---
 
@@ -164,10 +164,10 @@ User wants to create a document
 │  │         │  └─ YES → venue-templates (for style requirements)
 │  │         │
 │  │         ├─ Need to review existing literature?
-│  │         │  └─ YES → literature-review (systematic approach)
+│  │         │  └─ YES → deep-research (lit-review or systematic-review mode)
 │  │         │
 │  │         ├─ Need to generate hypotheses?
-│  │         │  └─ YES → hypothesis-generation
+│  │         │  └─ YES → deep-research (hypothesis mode)
 │  │         │
 │  │         └─ Need statistical analysis guidance?
 │  │            └─ YES → statistical-analysis
@@ -203,7 +203,7 @@ User wants to create a document
 │                   │
 │                   └─ NO → Is it a LITERATURE REVIEW?
 │                            │
-│                            ├─ YES → literature-review
+│                            ├─ YES → deep-research (lit-review mode)
 │                            │
 │                            └─ NO → See "Other Documents" below
 ```
@@ -228,10 +228,10 @@ The `research-posters` skill handles format selection internally. Use the follow
 
 | Document Type | Primary Skill | Notes |
 |---------------|---------------|-------|
-| Literature review paper | literature-review → scientific-writing | Systematic then write |
+| Literature review paper | deep-research (lit-review) → scientific-writing | Systematic then write |
 | Methods paper | scientific-writing + reproducible-research | Emphasize reproducibility |
 | Data paper | scientific-writing + code-documentation | Focus on data description |
-| Review article | literature-review → scientific-writing | Narrative synthesis |
+| Review article | deep-research (lit-review) → scientific-writing | Narrative synthesis |
 | Grant proposal | scientific-writing | Adapt for proposal format |
 | Executive summary | executive-summary | Pyramid Principle, action-oriented |
 | Board/stakeholder summary | executive-summary + visual-design | Include visual summary |
@@ -244,23 +244,30 @@ The `research-posters` skill handles format selection internally. Use the follow
 ```
 User needs research/information support
 │
-├─ Need to FIND papers?
+├─ Need to FIND or REVIEW literature?
 │  │
-│  ├─ Quick search (1-20 papers)?
-│  │  └─ YES → paper-search
-│  │            │
-│  │            ├─ Biomedical topic? → --source pubmed
-│  │            ├─ Need preprints? → --source biorxiv
-│  │            ├─ Cross-domain? → --source semantic
-│  │            └─ Broad coverage? → --source all
-│  │
-│  └─ Systematic literature search (50+ papers)?
-│     └─ YES → literature-review
-│              │
-│              ├─ Mode selection: Factoid (≤1 page) / Mini-review (1-3 pages) / Full (PRISMA)
-│              ├─ Uses paper-search for Stage 2 (collision-aware if entity-resolution available)
-│              ├─ T1-T4 evidence grading + full-text verification
-│              └─ Then → citation-management (for references)
+│  └─ YES → deep-research
+│            │
+│            ├─ Quick search (1-20 papers)?
+│            │  └─ quick mode → Brief report (500-1500 words)
+│            │
+│            ├─ Systematic literature search (50+ papers)?
+│            │  └─ lit-review or systematic-review mode
+│            │     ├─ T1-T4 evidence grading + full-text verification
+│            │     ├─ PRISMA 2020 compliance (systematic-review mode)
+│            │     └─ Then → citation-management (for references)
+│            │
+│            ├─ Fact-check a specific claim?
+│            │  └─ fact-check mode → Verification report
+│            │
+│            ├─ Generate hypotheses?
+│            │  └─ hypothesis mode → 3-5 competing hypotheses with quality rubric
+│            │
+│            ├─ Guided research inquiry?
+│            │  └─ socratic mode → 5-layer convergence dialogue
+│            │
+│            └─ Full research report?
+│               └─ full mode → Complete report (3000-8000 words)
 │
 ├─ Need to MANAGE citations?
 │  │
@@ -296,10 +303,14 @@ User needs research/information support
 
 | Task | Primary Skill | When to Use |
 |------|---------------|-------------|
-| "Find papers on X" | paper-search | Quick to medium search, 1-50 papers |
-| "Search PubMed for..." | paper-search | `--source pubmed` |
-| "Find preprints on..." | paper-search | `--source biorxiv` or `--source medrxiv` |
-| "Comprehensive literature review" | literature-review | Systematic, 50+ papers (uses paper-search internally) |
+| "Find papers on X" | deep-research (quick) | Quick to medium search, 1-50 papers |
+| "Search PubMed for..." | deep-research (quick) | PubMed MCP primary |
+| "Find preprints on..." | deep-research (quick) | bioRxiv MCP primary |
+| "Comprehensive literature review" | deep-research (lit-review) | Systematic, 50+ papers with thematic synthesis |
+| "Systematic review with PRISMA" | deep-research (systematic-review) | PRISMA 2020 compliant review |
+| "Generate hypotheses for..." | deep-research (hypothesis) | 3-5 competing hypotheses with experimental designs |
+| "Fact-check this claim" | deep-research (fact-check) | Claim verification report |
+| "Guide my research on..." | deep-research (socratic) | 5-layer convergence dialogue |
 | "Format my references" | citation-management | BibTeX/citation styling |
 | "Is this paper reliable?" | peer-review | Full Review or Review + Scoring mode |
 | "Score this paper's quality" | peer-review | Scoring Only mode (8-dimension assessment) |
@@ -379,12 +390,12 @@ User wants to summarize or analyze a research paper
 │
 ├─ Is it a COLLECTION of papers for systematic review?
 │  │
-│  └─ YES → literature-review
+│  └─ YES → deep-research (lit-review or systematic-review mode)
 │            └─ Then optionally → research-paper-summarizer (for each key paper)
 │
 ├─ Is it searching for papers to summarize?
 │  │
-│  └─ YES → paper-search (then research-paper-summarizer for each)
+│  └─ YES → deep-research (quick mode, then research-paper-summarizer for each)
 │
 └─ Is it evaluating paper QUALITY (not summarizing)?
    │
@@ -396,8 +407,8 @@ User wants to summarize or analyze a research paper
 | Task | Primary Skill | Output |
 |------|---------------|--------|
 | Deep analysis of single paper | research-paper-summarizer | Markdown + optional visual |
-| Find papers on topic | paper-search | JSON/BibTeX results |
-| Systematic review of many papers | literature-review | Review document |
+| Find papers on topic | deep-research (quick) | Graded bibliography |
+| Systematic review of many papers | deep-research (systematic-review) | PRISMA review document |
 | Evaluate paper methodology | peer-review | Evaluation report |
 | Summarize paper for presentation | research-paper-summarizer → scientific-slides | Slides |
 
@@ -672,10 +683,10 @@ User has content ready for final document format
 | Task Category | Primary Skill | Common Combinations |
 |---------------|---------------|---------------------|
 | **Writing** | | |
-| Write research paper | scientific-writing | + venue-templates, literature-review |
-| Write literature review | literature-review | + scientific-writing, citation-management |
+| Write research paper | scientific-writing | + venue-templates, deep-research |
+| Write literature review | deep-research (lit-review) | + scientific-writing, citation-management |
 | Write executive summary | executive-summary | + visual-design, markdown-to-pdf |
-| Generate hypotheses | hypothesis-generation | + literature-review, statistical-analysis |
+| Generate hypotheses | deep-research (hypothesis) | + statistical-analysis |
 | **Presentations** | | |
 | Create slides | scientific-slides | + visual-design, plotting-libraries |
 | Create research poster | research-posters | + visual-design, scientific-schematics, plotting-libraries |
@@ -690,13 +701,13 @@ User has content ready for final document format
 | Get brand color hex codes | oligon-brand | — |
 | Style matplotlib for brand | oligon-brand | + plotting-libraries |
 | **Research** | | |
-| Find papers | paper-search | + citation-management |
-| Systematic review | literature-review | + paper-search, citation-management |
+| Find papers | deep-research (quick) | + citation-management |
+| Systematic review | deep-research (systematic-review) | + citation-management |
 | Manage citations | citation-management | — |
 | **Paper Analysis** | | |
 | Summarize single paper | research-paper-summarizer | + oligon-brand (for visual outputs) |
-| Find papers to analyze | paper-search | + research-paper-summarizer |
-| Systematic literature review | literature-review | + paper-search, citation-management |
+| Find papers to analyze | deep-research (quick) | + research-paper-summarizer |
+| Systematic literature review | deep-research (systematic-review) | + citation-management |
 | **Evaluation** | | |
 | Review manuscript | peer-review | Full Review mode (includes critical analysis) |
 | Score paper quality | peer-review | Scoring Only mode (8-dimension ScholarEval) |
@@ -732,11 +743,11 @@ User has content ready for final document format
 ### Workflow 1: Complete Research Paper
 
 ```
-1. literature-review      → Systematic search & screening
-2. citation-management    → Organize references
-3. hypothesis-generation  → Formulate testable hypotheses
-4. statistical-analysis   → Plan analysis approach
-5. scientific-writing     → Draft manuscript
+1. deep-research (lit-review) → Systematic search & screening
+2. citation-management        → Organize references
+3. deep-research (hypothesis) → Formulate testable hypotheses
+4. statistical-analysis       → Plan analysis approach
+5. scientific-writing         → Draft manuscript
 6. venue-templates        → Format for target journal
 7. plotting-libraries     → Create data figures
 8. scientific-schematics  → Create method diagrams
@@ -758,11 +769,11 @@ User has content ready for final document format
 ### Workflow 3: Literature Review Paper
 
 ```
-1. paper-search           → Initial scoping search
-2. literature-review      → Systematic search & PRISMA (uses paper-search)
-3. citation-management    → Organize all references
-4. scientific-writing     → Write review narrative
-5. venue-templates        → Format for target journal
+1. deep-research (quick)              → Initial scoping search
+2. deep-research (systematic-review)  → Systematic search & PRISMA
+3. citation-management                → Organize all references
+4. scientific-writing                 → Write review narrative
+5. venue-templates                    → Format for target journal
 ```
 
 ### Workflow 4: Reproducible Analysis Pipeline
@@ -802,7 +813,7 @@ User has content ready for final document format
 2. target-intelligence    → Build 12-section target dossier (6 stages)
 3. drug-intelligence      → Build 10-section drug dossier (6 stages)
 4. target-validation      → Score 0-100 across 5 dimensions, assign T1-T4 tier
-5. literature-review      → Deep-dive on specific evidence gaps (optional)
+5. deep-research (lit-review) → Deep-dive on specific evidence gaps (optional)
 6. scientific-writing     → Draft target assessment manuscript (optional)
 ```
 
@@ -819,7 +830,7 @@ User has content ready for final document format
    - research-paper-summarizer → Entity enrichment callout for biomedical summaries
    - scientific-writing    → Database version tracking in Methods sections
    - statistical-analysis  → Population context for variant/expression analyses
-   - hypothesis-generation → Database-grounded hypothesis development
+   - deep-research (hypothesis) → Database-grounded hypothesis development
 ```
 
 **Key principle:** Dossier-first — output skills extract data from upstream dossiers when available, avoiding redundant ToolUniverse queries. Data-enriched requests route to the OUTPUT skill (not to bio research skills), since the output skill controls rendering.
@@ -837,14 +848,15 @@ User has content ready for final document format
            ┌───────────────────┼────────────────────┼───────────────────┐
            │                   │                    │                   │
            ▼                   ▼                    ▼                   ▼
-    ┌─────────────┐    ┌─────────────┐    ┌──────────────┐    ┌─────────────┐
-    │ literature- │    │ hypothesis- │    │ scientific-  │    │  research-  │
-    │   review    │    │ generation  │    │    slides    │    │   posters   │
-    └──────┬──────┘    └──────┬──────┘    └──────┬───────┘    └──────┬──────┘
-           │                  │                   │                   │
-           ▼                  │                   │                   │
-    ┌─────────────┐           │                   │                   │
-    │  citation-  │◄──────────┘                   │                   │
+    ┌─────────────┐                        ┌──────────────┐    ┌─────────────┐
+    │    deep-    │                        │ scientific-  │    │  research-  │
+    │  research   │                        │    slides    │    │   posters   │
+    │ (8 modes)   │                        └──────┬───────┘    └──────┬──────┘
+    └──────┬──────┘                               │                   │
+           │                                      │                   │
+           ▼                                      │                   │
+    ┌─────────────┐                               │                   │
+    │  citation-  │                               │                   │
     │ management  │                               │                   │
     └─────────────┘                               ▼                   ▼
                                            ┌─────────────────────────────────┐
@@ -860,8 +872,8 @@ User has content ready for final document format
            ▼
     ┌─────────────────────────────────────────────────────────────────┐
     │                     SUPPORTING SKILLS                           │
-    │  paper-search     │  statistical-analysis  │  reproducible-     │
-    │  peer-review                               │  research          │
+    │  peer-review      │  statistical-analysis  │  reproducible-     │
+    │                                            │  research          │
     │                                            │  code-documentation│
     └─────────────────────────────────────────────────────────────────┘
            │
@@ -901,16 +913,16 @@ User has content ready for final document format
 1. Review a manuscript for peer review? → peer-review (Full Review mode)
 2. Quick quality score for a paper? → peer-review (Scoring Only mode)
 3. Analyze logical arguments? → peer-review (Critical Analysis Framework)
-4. Review literature systematically? → literature-review
+4. Review literature systematically? → deep-research (lit-review mode)
 
 ### "I need to write something"
 
 **Clarifying questions:**
 1. Research paper/manuscript? → scientific-writing
-2. Literature review? → literature-review + scientific-writing
+2. Literature review? → deep-research (lit-review) + scientific-writing
 3. Presentation? → scientific-slides
 4. Poster? → research-posters (handles format selection)
-5. Hypothesis document? → hypothesis-generation
+5. Hypothesis document? → deep-research (hypothesis mode)
 
 ---
 
@@ -931,7 +943,7 @@ If clarification isn't possible, use these defaults:
 |---------------------|---------------|-----------|
 | Text-heavy, unstructured | `scientific-writing` | General manuscript guidance |
 | Visual but unclear type | `visual-design` | Design philosophy applies broadly |
-| Research/information need | `paper-search` | Quick scoping before deeper work |
+| Research/information need | `deep-research` | Quick scoping before deeper work |
 | Analysis/statistics | `statistical-analysis` | Covers most quantitative needs |
 | Unknown document format | `venue-templates` | Has format specifications |
 
@@ -959,7 +971,7 @@ Each skill's `<cross_references>` section should include:
 
 ---
 
-*This router provides deterministic skill selection for the 30-skill scientific writing library (22 top-level + 4 document-skills sub-skills + 4 biological research skills). All 27 deterministic skills are registered in `skill_triggers.yaml` v1.1.0 with 136 canonical test cases (Phase 5: +6 data-enriched routing tests). 7 existing skills now consume ToolUniverse data feeds via `tool-lookup.yaml` v1.3.0. For threshold values and quality criteria, see `QUANTIFICATION_THRESHOLDS.md`.*
+*This router provides deterministic skill selection for the 28-skill scientific writing library (20 top-level + 4 document-skills sub-skills + 4 biological research skills). All 25 deterministic skills are registered in `skill_triggers.yaml` v1.3.0. `deep-research` consolidates paper-search, literature-review, and hypothesis-generation into a single 8-mode skill. 7 existing skills consume ToolUniverse data feeds via `tool-lookup.yaml` v1.3.0. For threshold values and quality criteria, see `QUANTIFICATION_THRESHOLDS.md`.*
 
 ---
 
@@ -973,7 +985,7 @@ The skill router includes programmatic validation tools for deterministic routin
 skills/skill-router/
 ├── __init__.py           # Package exports
 ├── route.py              # Deterministic routing module
-├── skill_triggers.yaml   # Keyword registry for all 27 skills
+├── skill_triggers.yaml   # Keyword registry for all 25 skills
 └── tests/
     ├── __init__.py
     ├── canonical_routes.yaml  # 136 canonical test cases
@@ -1024,6 +1036,7 @@ See `skill-router/DETERMINISM_AUDIT.md` for implementation details.
 ---
 
 > **Consolidation Notes:**
-> - `research-lookup` has been replaced by `paper-search`. Use `paper-search` for multi-database academic paper search (PubMed, bioRxiv, Semantic Scholar, Google Scholar).
+> - `paper-search`, `literature-review`, and `hypothesis-generation` have been consolidated into `deep-research` (8-mode skill with 7 agents, 6 checkpoints). Use `deep-research` with the appropriate mode: quick, lit-review, systematic-review, hypothesis, fact-check, socratic, review, or full. *(Archived to `skills/_archived/`)*
+> - `research-lookup` has been replaced by `deep-research`. *(Originally replaced by paper-search)*
 > - `scholar-evaluation` has been merged into `peer-review` as an optional scoring mode. Use `peer-review` with "Scoring Only" or "Review + Scoring" mode for 8-dimension quantitative assessment. *(Archived to `docs/archive/scholar-evaluation/`)*
 > - `latex-posters` and `pptx-posters` have been consolidated into `research-posters`. The unified skill handles format selection (LaTeX or PowerPoint) internally. *(Archived to `docs/archive/`)*

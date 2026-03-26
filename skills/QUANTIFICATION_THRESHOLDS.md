@@ -28,7 +28,7 @@ This document provides measurable thresholds referenced by multiple skills. Usin
 
 ## §1 Literature Coverage
 
-**Referenced by:** `literature-review`, `hypothesis-generation`, `scientific-writing`
+**Referenced by:** `deep-research`, `scientific-writing`
 
 ### Coverage by Document Type
 
@@ -105,7 +105,7 @@ A literature search is **comprehensive** when ALL criteria are met:
 
 ## §3 Replication & Sample Size
 
-**Referenced by:** `peer-review`, `hypothesis-generation`, `statistical-analysis`
+**Referenced by:** `peer-review`, `deep-research`, `statistical-analysis`
 
 ### Minimum Replication by Experiment Type
 
@@ -198,7 +198,7 @@ A literature search is **comprehensive** when ALL criteria are met:
 
 ## §6 Time-Based Thresholds
 
-**Referenced by:** `literature-review`, `paper-search`
+**Referenced by:** `deep-research`
 
 ### Literature Recency Definitions
 

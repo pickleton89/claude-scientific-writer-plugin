@@ -541,7 +541,7 @@ See `oligon-brand` skill for complete brand implementation patterns.
 - **[scientific-writing](../scientific-writing/SKILL.md)**: Figure legends and methods descriptions
 - **[reproducible-research](../reproducible-research/SKILL.md)**: Environment management for reproducible figures
 - **[code-documentation](../code-documentation/SKILL.md)**: Docstring patterns for plotting functions—see `visualization_documentation` section for templates
-- **[literature-review](../literature-review/SKILL.md)**: Forest plots and meta-analysis visualizations — plotting-libraries creates the figures for literature-review outputs
+- **[deep-research](../deep-research/SKILL.md)**: Forest plots and meta-analysis visualizations — plotting-libraries creates the figures for deep-research outputs
 - **[entity-resolution](../entity-resolution/SKILL.md)**: Upstream: resolve gene/drug IDs before querying biological data for visualization
 - **[target-intelligence](../target-intelligence/SKILL.md)**: Dossier source: extract expression, PPI, constraint data for biological plots
 - **tool-lookup.yaml**: Capability key reference for `visualization_data.*` and `enrichment.*` queries

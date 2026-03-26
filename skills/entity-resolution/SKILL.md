@@ -8,7 +8,7 @@ allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
 # Entity Resolution
 
 <overview>
-Resolve ambiguous biological entity names (genes, proteins, drugs, diseases) to canonical database identifiers before research queries begin. Outputs a verified identity table with all cross-referenced IDs, synonyms, and collision warnings. This is a prerequisite utility invoked by target-intelligence, drug-intelligence, literature-review, and target-validation.
+Resolve ambiguous biological entity names (genes, proteins, drugs, diseases) to canonical database identifiers before research queries begin. Outputs a verified identity table with all cross-referenced IDs, synonyms, and collision warnings. This is a prerequisite utility invoked by target-intelligence, drug-intelligence, deep-research, and target-validation.
 </overview>
 
 <when_to_use>
@@ -22,7 +22,7 @@ Use this skill when:
 
 Do NOT use this skill when:
 - User already provides canonical IDs (e.g., ENSG00000146648, CHEMBL25) — verify format and pass through
-- Query is purely literature-based with no database lookups needed → use `paper-search`
+- Query is purely literature-based with no database lookups needed → use `deep-research`
 - Entity is a pathway, cell type, or other non-resolvable concept — handle inline
 </when_to_use>
 
@@ -182,7 +182,7 @@ Input entity received
 **Exit Criteria:**
 - [ ] Identity table complete with all available IDs
 - [ ] Collision status and filter (if any) documented
-- [ ] Output consumable by downstream skill (target-intelligence, drug-intelligence, literature-review, target-validation)
+- [ ] Output consumable by downstream skill (target-intelligence, drug-intelligence, deep-research, target-validation)
 
 </workflow>
 
@@ -220,7 +220,7 @@ Input entity received
 - Pathway resolution (e.g., "MAPK signaling") → handle inline in `target-intelligence`
 - Cell type resolution → handle inline in requesting skill
 - Organism-specific disambiguation beyond human → not supported
-- Full literature search → use `literature-review` after resolution
+- Full literature search → use `deep-research` after resolution
 
 </scope>
 
@@ -328,7 +328,7 @@ Reference `tool-lookup.yaml` capabilities (e.g., `disambiguation.gene_to_ensembl
 |-------|-------------|
 | `target-intelligence` | Provides verified gene/protein IDs and collision filters for target profiling |
 | `drug-intelligence` | Provides verified drug/compound IDs for compound profiling |
-| `literature-review` | Provides collision-aware search filters for literature queries |
+| `deep-research` | Provides collision-aware search filters for literature queries |
 | `target-validation` | Provides canonical IDs for multi-source evidence integration |
 
 ### Uses (Input From)
@@ -341,7 +341,7 @@ Reference `tool-lookup.yaml` capabilities (e.g., `disambiguation.gene_to_ensembl
 
 | Skill | Relationship |
 |-------|-------------|
-| `paper-search` | Both handle query construction; entity-resolution provides disambiguation that paper-search can use |
+| `deep-research` | Both handle query construction; entity-resolution provides disambiguation that deep-research can use |
 
 </cross_references>
 
