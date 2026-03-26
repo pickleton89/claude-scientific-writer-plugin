@@ -131,43 +131,19 @@ with database versions, inline citations, and limitations.
 
 ### Systematic Review Mode (PRISMA 2020)
 
+> Follow PRISMA 2020 structure from `references/prisma_checklist.md`.
+> Use PRISMA flow diagram from `templates/output_templates.md`.
+
 ```markdown
 # Systematic Review: [PICO Question]
 
 ## Abstract
-[Structured abstract: Background, Objectives, Methods, Results, Conclusions]
+[Structured: Background, Objectives, Methods, Results, Conclusions]
 
-## Introduction
-[Rationale, objectives, registration]
-
-## Methods
-### Eligibility Criteria
-### Information Sources
-### Search Strategy
-### Selection Process
-### Data Collection Process
-### Risk of Bias Assessment
-### Effect Measures
-### Synthesis Methods
-
-## Results
-### Study Selection
-[PRISMA flow diagram — from templates/output_templates.md (migrated in Phase 4)]
-### Study Characteristics
-[Characteristics table]
-### Risk of Bias
-[RoB summary table per study]
-### Results of Individual Studies
-### Results of Syntheses
-[Forest plot data if meta-analysis performed]
-### Reporting Biases
-### Certainty of Evidence
-[GRADE summary of findings table]
-
-## Discussion
-### Interpretation
-### Limitations
-### Implications
+## Introduction — Methods — Results — Discussion
+[Full PRISMA 2020 sections per references/prisma_checklist.md]
+[Methods: eligibility, sources, search, selection, data collection, RoB, synthesis]
+[Results: study selection (PRISMA flow), characteristics, RoB, syntheses, GRADE]
 
 ## AI Disclosure
 [Mandatory transparency statement]
@@ -331,19 +307,15 @@ numbered reference list:
 
 ## Suggested Next Steps
 
-End every output with 2-3 downstream skill suggestions:
+End every output with 2-3 downstream skill suggestions selected by relevance to the mode and content:
 
-```markdown
-## Suggested Next Steps
-
-- **Formal manuscript:** Use `scientific-writing` to draft a publication-ready paper from this research
-- **Visual figures:** Use `plotting-libraries` or `scientific-schematics` to create publication figures
-- **Citation export:** Use `citation-management` to export the bibliography to Zotero/BibTeX
-- **Statistical analysis:** Use `statistical-analysis` for meta-analysis or power calculations
-- **Peer feedback:** Use `peer-review` for structured manuscript evaluation
-```
-
-Select suggestions based on mode and content.
+| If output involves | Suggest |
+|-------------------|---------|
+| Research findings ready for publication | `scientific-writing` |
+| Data needing visualization | `plotting-libraries` or `scientific-schematics` |
+| Bibliography for export | `citation-management` |
+| Statistical claims or meta-analysis | `statistical-analysis` |
+| Draft manuscript needing feedback | `peer-review` |
 
 ## Interaction with Other Agents
 

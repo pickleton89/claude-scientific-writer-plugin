@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Deep Research Skill (Phase 5: Hardening)
+- **Circuit breakers enhanced** in bibliography and verification agents
+  - Structured fallback tables with detection patterns, fallback tools, and max retries
+  - Degraded-mode warnings when ≥2 databases unreachable (bibliography) or DOI verification <80% (verification)
+  - Gap documentation format for search logs when tools fail
+  - New `[RETRACTION_UNCHECKED]` and `[VERIFICATION_PENDING]` flags for tool outage scenarios
+  - Title+author fallback when DOI lookup fails both PubMed and EuropePMC
+- **Context budget optimized**: peak 783 lines (under 800 target)
+  - Compiler agent trimmed 354→326 lines (systematic review template references prisma_checklist.md, next steps table)
+- **Mode table corrected**: lit-review and fact-check modes now include compiler agent
+  - lit-review: mandatory elements (AI disclosure, database versions) now guaranteed
+  - fact-check: verdict report formatting via compiler template (was verification-only)
+- **Fresh-eyes review passed** across all 12 core skill files
+
 ### Added — Deep Research Skill (Phase 4: Migration & Integration)
 - **Absorbed 3 legacy skills** into `deep-research` (8-mode pipeline): `paper-search`, `literature-review`, `hypothesis-generation`
 - **Migrated 21 files** (references, templates, scripts, search backends) into `deep-research/`

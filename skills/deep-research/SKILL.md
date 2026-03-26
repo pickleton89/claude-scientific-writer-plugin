@@ -83,10 +83,10 @@ User Input
 |------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | **full** | x | x | x | x | | x | x |
 | **quick** | x | x | | | | | x |
-| **lit-review** | x | x | x | | | | |
+| **lit-review** | x | x | x | | | | x |
 | **systematic-review** | x | x | x | x | | x | x |
 | **hypothesis** | x | x | x | x | | x | x |
-| **fact-check** | | x | | | | | |
+| **fact-check** | | x | | | | | x |
 | **socratic** | | | | x | x | | |
 | **review** | | | | x | | x | x |
 
@@ -277,7 +277,7 @@ Some modes skip phases:
 
 | Mode | Phases Used | Notes |
 |------|------------|-------|
-| **fact-check** | 2 only (verification) | Single-phase: verify claims against sources |
+| **fact-check** | 2→4 (verification + compilation) | Verify claims against sources, format verdict report |
 | **socratic** | 1 only (scoping via mentor) | Multi-turn dialogue; see `agents/mentor.md` for 5-layer convergence |
 | **quick** | 1→2→4→6 | Skip analysis and review for speed |
 | **review** | 5→6 only | Review provided text, no search |

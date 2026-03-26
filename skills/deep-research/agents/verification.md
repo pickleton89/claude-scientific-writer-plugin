@@ -182,6 +182,16 @@ Produce a summary table for the synthesis agent:
 
 ## Circuit Breakers
 
-- If PubMed MCP `get_article_metadata` fails → try ToolUniverse `EuropePMC_search_articles` with DOI
-- If full-text tools fail → fall back to abstract-level verification via `get_article_metadata`
-- If >5 consecutive MCP failures → document tool outage, proceed with available verifications, note gap
+| Failure | Detection | Fallback | Max Retries |
+|---------|-----------|----------|-------------|
+| PubMed MCP `get_article_metadata` | Error or timeout | ToolUniverse `EuropePMC_search_articles` with DOI | 1 |
+| DOI lookup fails both tools | NOT_FOUND from both PubMed and EuropePMC | Search by title+author via PubMed `search_articles` | 1 |
+| Full-text snippet tools fail | Error from EuropePMC/SemanticScholar snippets | Abstract-level verification via `get_article_metadata` | 1 |
+| Retraction check fails | PubMed metadata unavailable | Flag `[RETRACTION_UNCHECKED]`, note in limitations | 0 |
+| >5 consecutive MCP failures | 5+ sequential tool errors | HALT verification, document outage, proceed to synthesis | 0 |
+
+**Degraded-mode rule:** If DOI verification drops below 80% (due to tool failures, not missing DOIs), add:
+```
+⚠️ DEGRADED VERIFICATION: Only [X]% of DOIs verified due to tool outage.
+Unverified sources marked [VERIFICATION_PENDING]. Re-verify when services are restored.
+```

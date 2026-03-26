@@ -40,10 +40,24 @@ search strategy.
 
 ### Circuit Breakers
 
-- If PubMed MCP returns error or empty → fall back to ToolUniverse `EuropePMC_search_articles`
-- If ToolUniverse session expired → retry once, then document gap and continue with available sources
-- If Consensus MCP rate-limited → wait 30 seconds, retry once
-- If all search tools fail for a database → document failure, proceed with remaining databases
+| Failure | Detection | Fallback | Max Retries |
+|---------|-----------|----------|-------------|
+| PubMed MCP error/empty | Error response or 0 results for known-good query | ToolUniverse `EuropePMC_search_articles` | 1 |
+| bioRxiv MCP error | Error response or timeout | ToolUniverse `EuropePMC_search_articles` with `src=ppr` | 1 |
+| Consensus MCP rate-limit | 429 or "rate limit" in response | Wait 30s, retry once | 1 |
+| ToolUniverse session expired | "session" or "auth" error from `execute_tool` | Retry `execute_tool` once | 1 |
+| All tools fail for a database | Fallback also fails | Document gap, proceed with remaining databases | 0 |
+
+**Degraded-mode rule:** If ≥2 databases are unreachable, add to output:
+```
+⚠️ DEGRADED SEARCH: [database names] unavailable during this search.
+Results may be incomplete. Re-run when services are restored.
+```
+
+**Gap documentation:** For each failed database, record in the search log:
+```
+| [Database] | [date] | TOOL_FAILURE: [error summary] | — | 0 | 0 |
+```
 
 ## Search Strategy Construction
 
