@@ -971,7 +971,7 @@ Each skill's `<cross_references>` section should include:
 
 ---
 
-*This router provides deterministic skill selection for the 28-skill scientific writing library (20 top-level + 4 document-skills sub-skills + 4 biological research skills). All 25 deterministic skills are registered in `skill_triggers.yaml` v1.3.0. `deep-research` consolidates paper-search, literature-review, and hypothesis-generation into a single 8-mode skill. 7 existing skills consume ToolUniverse data feeds via `tool-lookup.yaml` v1.3.0. For threshold values and quality criteria, see `QUANTIFICATION_THRESHOLDS.md`.*
+*This router provides deterministic skill selection for the 29-skill scientific writing library (21 top-level + 4 document-skills sub-skills + 4 biological research skills). All 29 skills are registered in `skill_triggers.yaml` v1.3.0. `deep-research` consolidates paper-search, literature-review, and hypothesis-generation into a single 8-mode skill. 7 existing skills consume ToolUniverse data feeds via `tool-lookup.yaml` v1.3.0. For threshold values and quality criteria, see `QUANTIFICATION_THRESHOLDS.md`.*
 
 ---
 
@@ -985,7 +985,7 @@ The skill router includes programmatic validation tools for deterministic routin
 skills/skill-router/
 ├── __init__.py           # Package exports
 ├── route.py              # Deterministic routing module
-├── skill_triggers.yaml   # Keyword registry for all 25 skills
+├── skill_triggers.yaml   # Keyword registry for all 29 skills
 └── tests/
     ├── __init__.py
     ├── canonical_routes.yaml  # 136 canonical test cases

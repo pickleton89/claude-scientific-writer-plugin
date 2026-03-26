@@ -1,6 +1,6 @@
 # Skill Trigger Registry
 # Version: 1.3.0
-# Purpose: Deterministic keyword-based routing for the 25-skill scientific writing library
+# Purpose: Deterministic keyword-based routing for the 29-skill scientific writing library
 #
 # Structure:
 #   keywords: Common terms that indicate this skill (weighted equally)
