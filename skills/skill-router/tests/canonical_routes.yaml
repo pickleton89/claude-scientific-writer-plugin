@@ -1,5 +1,5 @@
 # Canonical Routing Test Cases
-# Version: 1.3.0
+# Version: 1.4.0
 # Purpose: Validate deterministic routing produces expected results
 #
 # Test case structure:
@@ -898,3 +898,104 @@ negative_cases:
     not_expected: paperbanana
     min_confidence: 0.5
     notes: "Data visualization goes to plotting-libraries, not paperbanana"
+
+# ============================================================
+# RESEARCH WORKFLOW - research-paper-summarizer
+# ============================================================
+
+research_paper_summarizer_cases:
+  - request: "Summarize this article on CRISPR"
+    expected_skill: research-paper-summarizer
+    min_confidence: 0.5
+    category: research
+
+  - request: "Create a paper summary with key findings"
+    expected_skill: research-paper-summarizer
+    min_confidence: 0.5
+    category: research
+
+  - request: "Summarize this study on protein folding"
+    expected_skill: research-paper-summarizer
+    min_confidence: 0.5
+    category: research
+
+# ============================================================
+# CONVERSION - paper-2-web
+# ============================================================
+
+paper_2_web_cases:
+  - request: "Convert this paper to a web page"
+    expected_skill: paper-2-web
+    min_confidence: 0.3
+    category: conversion
+    notes: "Trigger-only match (paper.*to.*web)"
+
+  - request: "Make a video abstract"
+    expected_skill: paper-2-web
+    min_confidence: 0.5
+    category: conversion
+
+  - request: "Convert my paper to an interactive site"
+    expected_skill: paper-2-web
+    min_confidence: 0.5
+    category: conversion
+
+# ============================================================
+# DOCUMENT CREATION - venue-templates
+# ============================================================
+
+venue_templates_cases:
+  - request: "Format my paper for Nature submission"
+    expected_skill: venue-templates
+    min_confidence: 0.5
+    category: document
+
+  - request: "What are the author guidelines for PLOS ONE?"
+    expected_skill: venue-templates
+    min_confidence: 0.5
+    category: document
+
+  - request: "Get the IEEE conference template"
+    expected_skill: venue-templates
+    min_confidence: 0.5
+    category: document
+
+# ============================================================
+# VISUAL CREATION - visual-design
+# ============================================================
+
+visual_design_cases:
+  - request: "Help me choose a color palette for my figures"
+    expected_skill: visual-design
+    min_confidence: 0.5
+    category: visual
+
+  - request: "Check my figure for WCAG accessibility compliance"
+    expected_skill: visual-design
+    min_confidence: 0.5
+    category: visual
+
+  - request: "What are the design principles for scientific figures?"
+    expected_skill: visual-design
+    min_confidence: 0.5
+    category: visual
+
+# ============================================================
+# DOCUMENT CREATION - markdown-to-pdf
+# ============================================================
+
+markdown_to_pdf_cases:
+  - request: "Convert this markdown to a branded PDF"
+    expected_skill: markdown-to-pdf
+    min_confidence: 0.5
+    category: document
+
+  - request: "Generate a PDF report from my markdown"
+    expected_skill: markdown-to-pdf
+    min_confidence: 0.5
+    category: document
+
+  - request: "Convert md to pdf with branded template"
+    expected_skill: markdown-to-pdf
+    min_confidence: 0.5
+    category: document

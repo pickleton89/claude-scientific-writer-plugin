@@ -127,10 +127,11 @@ class SkillRouter:
         """Calculate confidence score for a skill.
 
         Scoring logic:
-        - 1 keyword match = 0.3 base
-        - 2 keyword matches = 0.5 base
-        - 3+ keyword matches = 0.6 base
-        - Each trigger match adds 0.2 (capped at 0.4)
+        - 1 keyword match = 0.35 base
+        - 2 keyword matches = 0.55 base
+        - 3+ keyword matches = 0.65 base
+        - Each trigger match adds trigger_boost (default 0.2, configurable)
+        - Trigger boost capped at max_trigger_boost (default 0.4, configurable)
         - Total capped at 1.0
 
         Returns:
@@ -177,9 +178,10 @@ class SkillRouter:
                 continue  # Skip invalid patterns
 
         # Trigger boost - each trigger match is a strong signal
-        # Note: Uses hardcoded 0.2 per trigger, capped at 0.4 total
-        # These values were tuned to achieve 100% test pass rate
-        trigger_score = min(len(matched_triggers) * 0.2, 0.4)
+        trigger_score = min(
+            len(matched_triggers) * self.trigger_boost,
+            self.max_trigger_boost,
+        )
 
         # Combined score
         total_score = min(keyword_score + trigger_score, 1.0)
@@ -232,8 +234,17 @@ class SkillRouter:
                 rationale=f"No keyword matches; defaulting to {category} category"
             )
 
-        # Sort by score
-        sorted_skills = sorted(scores.items(), key=lambda x: x[1][0], reverse=True)
+        # Sort by score, then keyword count, trigger count, and explicit priority
+        sorted_skills = sorted(
+            scores.items(),
+            key=lambda x: (
+                x[1][0],                                      # total score
+                len(x[1][1]),                                  # keyword match count
+                len(x[1][2]),                                  # trigger match count
+                self.skills[x[0]].get("priority", 0),         # explicit priority
+            ),
+            reverse=True,
+        )
         top_skill, (top_score, top_kw, top_tr) = sorted_skills[0]
 
         # Determine supporting skills (second-highest if close in score)
@@ -279,6 +290,8 @@ class SkillRouter:
             "analysis": {"analyze", "statistics", "test", "data", "code"},
             "conversion": {"convert", "export", "transform"},
             "biological_research": {"target", "drug", "gene", "protein", "compound", "druggability", "validation", "dossier", "profile"},
+            "brand": {"brand", "oligon", "corporate", "identity", "logo"},
+            "document_output": {"docx", "pptx", "xlsx", "word", "excel", "powerpoint", "spreadsheet"},
         }
 
         best_category = "document"  # Default

@@ -2,13 +2,13 @@
 name: skill-router
 description: Decision trees for selecting the correct skill when multiple options apply. Consult when task scope is ambiguous or spans multiple scientific writing domains.
 when_to_use: When a user request could be handled by 2+ skills, when unclear which skill is primary vs. supporting, or when planning multi-skill workflows.
-version: 2.2.0
+version: 2.3.0
 ---
 
 # Skill Router
 
 > Decision trees and routing logic for selecting the right skill(s) for scientific writing tasks
-> Version: 2.2.0 | Updated: 2026-03-26
+> Version: 2.3.0 | Updated: 2026-03-26
 
 ---
 
@@ -945,7 +945,10 @@ If clarification isn't possible, use these defaults:
 | Visual but unclear type | `visual-design` | Design philosophy applies broadly |
 | Research/information need | `deep-research` | Quick scoping before deeper work |
 | Analysis/statistics | `statistical-analysis` | Covers most quantitative needs |
-| Unknown document format | `venue-templates` | Has format specifications |
+| Conversion task | `markitdown` | Most common conversion target |
+| Biological research | `entity-resolution` | Resolve identifiers first |
+| Brand/corporate | `oligon-brand` | Apply brand standards |
+| Document output format | `document-skills:docx` | Most common output format |
 
 ### Step 3: Escalate if Needed
 If task genuinely doesn't fit existing skills:
@@ -971,7 +974,7 @@ Each skill's `<cross_references>` section should include:
 
 ---
 
-*This router provides deterministic skill selection for the 29-skill scientific writing library (21 top-level + 4 document-skills sub-skills + 4 biological research skills). All 29 skills are registered in `skill_triggers.yaml` v1.3.0. `deep-research` consolidates paper-search, literature-review, and hypothesis-generation into a single 8-mode skill. 7 existing skills consume ToolUniverse data feeds via `tool-lookup.yaml` v1.3.0. For threshold values and quality criteria, see `QUANTIFICATION_THRESHOLDS.md`.*
+*This router provides deterministic skill selection for the 29-skill scientific writing library (21 top-level + 4 document-skills sub-skills + 4 biological research skills). All 29 skills are registered in `skill_triggers.yaml` v1.4.0 with 161 canonical test cases. `deep-research` consolidates paper-search, literature-review, and hypothesis-generation into a single 8-mode skill. 7 existing skills consume ToolUniverse data feeds via `tool-lookup.yaml` v1.3.0. For threshold values and quality criteria, see `QUANTIFICATION_THRESHOLDS.md`.*
 
 ---
 
@@ -985,10 +988,10 @@ The skill router includes programmatic validation tools for deterministic routin
 skills/skill-router/
 ├── __init__.py           # Package exports
 ├── route.py              # Deterministic routing module
-├── skill_triggers.yaml   # Keyword registry for all 29 skills
+├── skill_triggers.yaml   # Keyword registry for all 29 skills (v1.4.0)
 └── tests/
     ├── __init__.py
-    ├── canonical_routes.yaml  # 136 canonical test cases
+    ├── canonical_routes.yaml  # 161 canonical test cases (v1.4.0)
     └── test_routing.py        # Validation script
 ```
 
@@ -1032,6 +1035,31 @@ print(result.to_dict())          # Dictionary for JSON
 | < 0.5 | Low confidence - requires disambiguation |
 
 See `skill-router/DETERMINISM_AUDIT.md` for implementation details.
+
+### Scoring Algorithm
+
+| Keyword Matches | Base Score |
+|-----------------|------------|
+| 0               | 0.0        |
+| 1               | 0.35       |
+| 2               | 0.55       |
+| 3               | 0.65       |
+| 4+              | 0.65 + 0.05 per additional (capped at 0.80) |
+
+Trigger boost: +0.2 per regex match (configurable via `trigger_boost` in YAML)
+Max trigger boost: 0.4 (configurable via `max_trigger_boost` in YAML)
+Total score: capped at 1.0
+
+### Tie-Breaking Order
+
+When multiple skills score identically, the router uses a 4-level tiebreaker:
+
+1. **Total score** (higher wins)
+2. **Keyword match count** (more matches = more specific to that skill)
+3. **Trigger match count** (more regex matches = stronger signal)
+4. **Explicit priority** (`priority` field in `skill_triggers.yaml`, default 0)
+
+If all four are equal, YAML insertion order is the final tiebreaker (stable sort).
 
 ---
 

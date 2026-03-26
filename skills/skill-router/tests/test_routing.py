@@ -176,6 +176,11 @@ def run_all_tests(verbose: bool = True) -> tuple[int, int, dict[str, list[TestRe
         "drug_intelligence_cases",
         "target_validation_cases",
         "data_enriched_cases",
+        "research_paper_summarizer_cases",
+        "paper_2_web_cases",
+        "venue_templates_cases",
+        "visual_design_cases",
+        "markdown_to_pdf_cases",
     ]
 
     for category in standard_categories:
@@ -419,6 +424,71 @@ def test_data_enriched_routing():
         result = router.route(case["request"])
         assert result.primary_skill == case["expected_skill"], \
             f"Request '{case['request']}' routed to {result.primary_skill}, expected {case['expected_skill']}"
+        assert result.confidence >= case.get("min_confidence", 0.5), \
+            f"Confidence {result.confidence} below threshold"
+
+
+def test_research_paper_summarizer_routing():
+    """Test routing for paper summarization requests."""
+    test_cases = load_test_cases()
+    router = SkillRouter()
+
+    for case in test_cases.get("research_paper_summarizer_cases", []):
+        result = router.route(case["request"])
+        assert result.primary_skill == case["expected_skill"], \
+            f"Request '{case['request']}' routed to {result.primary_skill}"
+        assert result.confidence >= case.get("min_confidence", 0.5), \
+            f"Confidence {result.confidence} below threshold"
+
+
+def test_paper_2_web_routing():
+    """Test routing for paper-to-web conversion requests."""
+    test_cases = load_test_cases()
+    router = SkillRouter()
+
+    for case in test_cases.get("paper_2_web_cases", []):
+        result = router.route(case["request"])
+        assert result.primary_skill == case["expected_skill"], \
+            f"Request '{case['request']}' routed to {result.primary_skill}"
+        assert result.confidence >= case.get("min_confidence", 0.5), \
+            f"Confidence {result.confidence} below threshold"
+
+
+def test_venue_templates_routing():
+    """Test routing for journal formatting requests."""
+    test_cases = load_test_cases()
+    router = SkillRouter()
+
+    for case in test_cases.get("venue_templates_cases", []):
+        result = router.route(case["request"])
+        assert result.primary_skill == case["expected_skill"], \
+            f"Request '{case['request']}' routed to {result.primary_skill}"
+        assert result.confidence >= case.get("min_confidence", 0.5), \
+            f"Confidence {result.confidence} below threshold"
+
+
+def test_visual_design_routing():
+    """Test routing for design guidance requests."""
+    test_cases = load_test_cases()
+    router = SkillRouter()
+
+    for case in test_cases.get("visual_design_cases", []):
+        result = router.route(case["request"])
+        assert result.primary_skill == case["expected_skill"], \
+            f"Request '{case['request']}' routed to {result.primary_skill}"
+        assert result.confidence >= case.get("min_confidence", 0.5), \
+            f"Confidence {result.confidence} below threshold"
+
+
+def test_markdown_to_pdf_routing():
+    """Test routing for markdown-to-PDF conversion requests."""
+    test_cases = load_test_cases()
+    router = SkillRouter()
+
+    for case in test_cases.get("markdown_to_pdf_cases", []):
+        result = router.route(case["request"])
+        assert result.primary_skill == case["expected_skill"], \
+            f"Request '{case['request']}' routed to {result.primary_skill}"
         assert result.confidence >= case.get("min_confidence", 0.5), \
             f"Confidence {result.confidence} below threshold"
 

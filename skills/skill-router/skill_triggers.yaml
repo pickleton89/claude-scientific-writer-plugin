@@ -1,13 +1,14 @@
 # Skill Trigger Registry
-# Version: 1.3.0
+# Version: 1.4.0
 # Purpose: Deterministic keyword-based routing for the 29-skill scientific writing library
 #
 # Structure:
 #   keywords: Common terms that indicate this skill (weighted equally)
-#   triggers: Regex patterns for stronger matches (boost confidence by 0.3)
+#   triggers: Regex patterns for stronger matches (boost confidence by 0.2 each, configurable)
 #   category: Primary task category for fallback routing
 #   output_formats: File formats this skill can produce
 #   negative_keywords: Terms that indicate this skill should NOT be used
+#   priority: (optional) Explicit tiebreaker when skills score equally (higher wins, default 0)
 
 skills:
   # ============================================================
@@ -164,6 +165,7 @@ skills:
   paperbanana:
     description: AI-generated publication figures from prose text (graphical abstracts, visual summaries, methodology overviews) — input is unstructured text, not data or explicit diagram specs
     category: visual
+    priority: 5  # Wins ties against schematics for prose-to-visual
     keywords:
       - paperbanana
       - graphical abstract
@@ -294,10 +296,14 @@ skills:
       - presentation
       - poster
       - executive summary
+      - graphical abstract
+      - visual abstract
+      - visual summary
 
   executive-summary:
     description: Action-oriented executive summaries for decision-makers (Pyramid Principle) — audience is non-technical/executive, not academic
     category: document
+    priority: 10  # Wins ties against visual skills for "executive summary" requests
     keywords:
       - executive summary
       - stakeholder
@@ -308,6 +314,7 @@ skills:
       - recommendations
       - leadership briefing
       - stakeholder summary
+      - board
     triggers:
       - "executive.*summary"
       - "stakeholder.*(?:report|summary)"
@@ -315,6 +322,7 @@ skills:
       - "summarize.*for.*(?:leadership|stakeholders|executives|management)"
       - "decision.*makers"
       - "briefing"
+      - "summary.*(?:board|stakeholder|leadership|director)"
     output_formats: [md, docx, pdf]
     negative_keywords:
       - literature review
@@ -341,9 +349,10 @@ skills:
       - oral presentation
       - research talk
       - beamer
+      - powerpoint
     triggers:
       - "create.*slides"
-      - "make.*presentation"
+      - "(?:create|make|build).*presentation"
       - "conference.*talk"
       - "prepare.*seminar"
       - "thesis.*defense"
@@ -380,15 +389,14 @@ skills:
       - "research.*poster"
       - "poster.*(presentation|session)"
       - "poster.*(?:latex|powerpoint|pptx)"
+      - "(?:paper|convert).*(?:to|into).*poster"
     output_formats: [pptx, pdf, tex]
     negative_keywords:
       - slides
       - seminar
       - talk
       - powerpoint presentation
-      - paper to poster
       - paper2poster
-      - convert paper
       - auto-generate poster
 
   venue-templates:
@@ -572,6 +580,13 @@ skills:
       - consort
       - strobe
       - arrive
+      - review
+      - evaluate
+      - assess
+      - feedback
+      - quality
+      - critical analysis
+      - verify
     triggers:
       - "review.*(manuscript|paper|draft)"
       - "peer.*review"
@@ -582,6 +597,10 @@ skills:
       - "referee.*report"
       - "reviewer.*comments"
       - "verify.*(?:claim|interaction|finding).*(?:in|from).*(?:this|manuscript|paper)"
+      - "score.*(paper|manuscript|quality|study)"
+      - "critical.*analysis"
+      - "(?:paper|manuscript).*quality"
+      - "feedback.*(?:on|for)"
     output_formats: [md]
     negative_keywords:
       - literature review
@@ -594,6 +613,9 @@ skills:
       - druggability
       - drug target
       - executive summary
+      - comprehensive review
+      - scoping review
+      - narrative review
 
   research-paper-summarizer:
     description: Structured academic summarization of a single research paper (PDF, DOI, PubMed) with quantitative preservation — not executive/stakeholder summaries
@@ -829,10 +851,9 @@ skills:
       - extract slides
       - update slides
       - existing presentation
+      - powerpoint
     triggers:
-      - "edit.*(?:presentation|pptx|slides)"
-      - "modify.*(?:presentation|pptx|slides)"
-      - "update.*(?:presentation|pptx)"
+      - "(?:edit|modify|update).*(?:presentation|pptx|slides|powerpoint)"
       - "extract.*slides"
       - "\\.pptx"
     output_formats: [pptx]
@@ -1052,3 +1073,28 @@ routing_config:
       - question: "Is this about a specific drug or compound?"
         yes_skill: drug-intelligence
         no_skill: target-validation
+
+    brand:
+      - question: "Are you applying Oligon brand standards?"
+        yes_skill: oligon-brand
+        no_skill: visual-design
+
+    analysis:
+      - question: "Do you need statistical test guidance or power analysis?"
+        yes_skill: statistical-analysis
+        no_followup: "Is this about reproducibility or environment setup?"
+      - question: "Is this about reproducibility or environment setup?"
+        yes_skill: reproducible-research
+        no_skill: code-documentation
+
+    conversion:
+      - question: "Are you converting a file to Markdown?"
+        yes_skill: markitdown
+        no_skill: paper-2-web
+
+    document_output:
+      - question: "Do you need a Word document (.docx)?"
+        yes_skill: "document-skills:docx"
+        no_followup: "Do you need PDF, PowerPoint, or Excel?"
+      - question: "Do you need PDF, PowerPoint, or Excel?"
+        yes_skill: "document-skills:pdf"

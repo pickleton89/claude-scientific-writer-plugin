@@ -256,7 +256,7 @@ KEYWORD_USE_CASE_MAP: dict[str, UseCase] = {
 
     # Video abstract
     "video abstract": UseCase.VIDEO_ABSTRACT,
-    "graphical abstract": UseCase.VIDEO_ABSTRACT,
+    "graphical abstract": UseCase.JOURNAL_PUBLICATION,
 
     # Educational
     "course": UseCase.COURSE_MATERIAL,

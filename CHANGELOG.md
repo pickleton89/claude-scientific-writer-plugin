@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed — Routing Logic Remediation (161/161 tests, up from 135/146)
+- **Peer-review routing**: Added 7 atomic evaluation-intent keywords (`review`, `evaluate`, `assess`, `feedback`, `quality`, `critical analysis`, `verify`) with 4 new triggers and 3 protective negative keywords — fixes 7 misroutes where peer-review lost to scientific-writing
+- **Tie-breaking**: Replaced implicit YAML-order tiebreaker with 4-level deterministic sort (score → keyword count → trigger count → explicit priority) — fixes "visual executive summary diagram" three-way tie
+- **Scoring engine**: `trigger_boost`/`max_trigger_boost` now read from YAML config instead of hardcoded; docstring updated to match actual values (0.35/0.55/0.65)
+- **Category detection**: Added `brand` and `document_output` indicator tokens to `_detect_category()` with disambiguation questions for 4 previously uncovered categories
+- **Individual fixes**: `board` keyword for executive-summary; `powerpoint` keyword for scientific-slides and document-skills:pptx; `graphical abstract`/`visual abstract`/`visual summary` added to scientific-writing negatives
+- **Test coverage**: 15 new canonical test cases for 5 previously untested skills (research-paper-summarizer, paper-2-web, venue-templates, visual-design, markdown-to-pdf)
+- **paper-2-web**: Changed `graphical abstract` mapping from `VIDEO_ABSTRACT` to `JOURNAL_PUBLICATION` in component router
+- **Documentation**: SKILL_ROUTER.md v2.3.0 with scoring algorithm reference, tie-breaking docs, corrected fallback table and test count; skill_triggers.yaml v1.4.0
+
 ### Fixed — Documentation Audit (Post Deep-Research Integration)
 - **README.md**: Removed 3 archived skills (paper-search, literature-review, hypothesis-generation) from skill tables; added deep-research; corrected skill counts (30→26 unique / 29 routing targets); updated usage examples to reference deep-research modes
 - **commands/scientific-writer-init.md**: Replaced archived skill references with deep-research; corrected skill counts (17→26, 19→26); updated tips and user guidance
