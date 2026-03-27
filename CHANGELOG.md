@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Deep-Research Deterministic Audit Phase 4: Test Infrastructure
+- **tests/ directory**: Created `skills/deep-research/tests/` with 14 files (619 tests, all passing in 0.27s)
+- **8 ported tests** from archived hypothesis-generation and literature-review skills: test_score_hypothesis, test_validate_hypothesis, test_check_distinctiveness, test_prisma_validator, test_quality_scorer, test_screening_tracker, test_search_validator, test_exit_criteria — import paths already compatible, lint-cleaned (removed unused DESIGN_TO_TOOL import)
+- **5 new test files** for Phase 2 deterministic scripts:
+  - `test_mode_selector.py`: keyword matching, priority ordering (systematic-review beats review mode), review mode with/without text, vague/exploratory inputs, JSON interface, all-modes validation
+  - `test_tier_assigner.py`: all 4 lookup paths (claim_type, lab_evidence, study_design, grade_certainty), preprint adjustment across all paths, batch assignment, fallback to T3
+  - `test_evidence_strength.py`: all 4 rating levels (Strong/Moderate/Emerging/Weak), boundary conditions, contradiction gating, batch rating, documented spec relaxation (T1 counts for Moderate)
+  - `test_output_validator.py`: word counting (code block/references exclusion), citation counting, fuzzy section detection, socratic trivial-pass, AI disclosure content checks, database version warnings
+  - `test_thresholds.py`: constant consistency — every mode in ALL_MODES has entries in all 8 mode-keyed dicts, word count ordering invariants, hypothesis score arithmetic, currency threshold ordering
+
 ### Changed — Deep-Research Deterministic Audit Phase 3: Markdown Fixes
 - **advocate.md**: Replaced perverse mandatory-issue rule ("must find at least 1 issue") with honest reporting guidance — justified passes now preferred over fabricated minor issues
 - **hypothesis_quality_criteria.md**: Added 10-point quality rubric table (5 criteria × 0-2 scale) aligned with `score_hypothesis.py` thresholds; Parsimony row includes concrete step-count guidance (≤3/4-5/>5 causal steps)
