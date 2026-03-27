@@ -35,6 +35,8 @@ The 3-tier preference system from `tool-lookup.yaml`:
 | Preprint search | bioRxiv MCP | `search_preprints` | Biology + medical preprints |
 | Preprint details | bioRxiv MCP | `get_preprint` | DOI-based retrieval |
 | Cross-domain search | Consensus MCP | `search` | AI-synthesized evidence across papers |
+| Citation context | Scite MCP | `search_literature` | Smart Citations: supporting/contrasting/mentioning classification |
+| Citation tallies | Scite MCP | `search_literature` | Per-paper reception breakdown + Scite Index (USI) + editorial notices |
 | Target-disease | Open Targets MCP | `query_open_targets_graphql` | Disease associations, druggability |
 | Entity search | Open Targets MCP | `search_entities` | Target/disease/drug lookup |
 
@@ -134,12 +136,41 @@ or drug-intelligence), the synthesis agent MUST:
 - Rate limit: batch at most 3 search calls at a time
 - Must include sign-up/upgrade message from tool result verbatim at end of response
 
+### Scite MCP
+- Single tool: `search_literature` (mcp__scite__search_literature) — behavior changes by parameters
+- **Tallies:** Call with `dois: [DOI]`, no `term` — returns citation counts + Scite Index + editorial notices
+- **Citation context:** Call with `dois: [DOI]` + `term` — returns citing paper snippets matching the term
+- **Full-text search:** Call with `term` only — searches across ~50M indexed full-text articles
+- Scite Index (USI) = supporting / (supporting + contrasting); range 0.0-1.0
+- `editorialNotices` field flags retractions, corrections, expressions of concern
+- 25+ filters: author, journal, topic, affiliation, date range, publication type, citation count ranges
+- Accuracy caveat: classification biased toward "mentioning" per independent evaluation
+- Requires Premium subscription; MCP launched Feb 2026
+
 ### ToolUniverse
 - Runs in compact mode: 5 meta-tools (`grep_tools`, `execute_tool`, `find_tools`, `get_tool_info`, `list_tools`)
 - Discover tools: `grep_tools` with keyword → get tool name → `execute_tool`
 - Known parameter corrections documented in `shared/references/known_param_corrections.md`
 - FAERS: parameter is `medicinalproduct` (not drug_name)
 - ADMET-AI: SMILES must be list `["SMILES"]` not bare string
+
+## Post-Search Enrichment
+
+After the bibliography is assembled, optionally enrich with reception data:
+
+| Tool | When to Apply | What It Adds |
+|------|--------------|--------------|
+| Scite tallies (`search_literature` with `dois`, no `term`) | FULL, LIT-REVIEW, SYSTEMATIC-REVIEW, HYPOTHESIS modes | Supporting/contrasting/mentioning counts per paper + Scite Index |
+| Scite citation context (`search_literature` with `dois` + `term`) | When a paper has high contrasting count | Snippets from contradicting papers for claim assessment |
+
+Skip for QUICK and FACT-CHECK modes (speed priority).
+
+**Accuracy caveat:** Scite classification accuracy is contested (independent evaluation found bias
+toward "mentioning"). Report reception data as "per Scite classification."
+
+**No fallback:** If Scite is unavailable, reception data is simply omitted. No other tool provides
+citation sentiment classification. This is acceptable because reception assessment is an enrichment
+layer, not a core requirement.
 
 ## Currency Rules by Field
 

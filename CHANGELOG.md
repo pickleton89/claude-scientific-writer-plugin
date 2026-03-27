@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Scite MCP Integration (Citation Sentiment & Evidence Reception)
+- **tool-lookup.yaml v1.4.0**: Added `literature.citation_context` and `literature.citation_tallies` capability keys; Scite as 3rd primary search tool under `literature.search`
+- **Verification agent**: New Step 3b (Citation Reception Check) — queries Scite tallies for T1/T2 claims, flags `[CONTESTED]` (contrasting evidence undermines claim), `[HIGHLY_CONTESTED]` (Scite Index < 0.3), `[NO_CITATION_DATA]`; Reception column in Verified Source Table; Scite `editorialNotices` added to retraction detection
+- **Bibliography agent**: New Step 4b (Evidence Reception Assessment) — post-search enrichment via Scite tallies on top 20 papers; Reception field in annotated bibliography output; Consensus DOI dedup workaround and filter optimization (P7)
+- **Peer-review skill**: Reference Reception Check — flags key cited references with Scite Index < 0.5 or editorial notices as Minor/Major comments
+- **Research-paper-summarizer**: Citation Reception line in Database Context callout with explicit citingPublications vs Smart Citation field mapping
+- **Reference docs**: Scite added to biomedical_research.md (Tier 1 table, search notes, Post-Search Enrichment section) and failure_paths.md (F6 cascade — no fallback, graceful degradation)
+- **Circuit breakers**: Scite MCP error/timeout entries in bibliography and verification agents (Max Retries: 0, skip and document gap)
+- **Design**: Additive-only, graceful degradation — all Scite features are optional enrichments; accuracy caveats documented in all files referencing Scite classification
+
 ### Fixed — Routing Logic Remediation (161/161 tests, up from 135/146)
 - **Peer-review routing**: Added 7 atomic evaluation-intent keywords (`review`, `evaluate`, `assess`, `feedback`, `quality`, `critical analysis`, `verify`) with 4 new triggers and 3 protective negative keywords — fixes 7 misroutes where peer-review lost to scientific-writing
 - **Tie-breaking**: Replaced implicit YAML-order tiebreaker with 4-level deterministic sort (score → keyword count → trigger count → explicit priority) — fixes "visual executive summary diagram" three-way tie

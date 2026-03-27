@@ -68,6 +68,31 @@ For every source in the bibliography:
 it exists with matching metadata. Never accept a reference based solely on the
 bibliography agent's output or AI knowledge.
 
+### Step 3b: Citation Reception Check (Scite)
+
+For each VERIFIED source with T1 or T2 claims, assess evidence reception:
+
+```
+1. Query Scite MCP `search_literature` with `dois: [DOI]` (no `term`) to fetch tallies
+2. If tally data returned:
+   a. Record: supporting, contrasting, mentioning counts + Scite Index (USI)
+   b. If contrasting > 0:
+      - Query Scite again with `dois: [DOI]` + `term` matching the specific claim
+      - Read contrasting citation snippets
+      - If contrasting evidence undermines the cited claim: add [CONTESTED] flag
+      - If contrasting citations address different aspects: no flag change
+   c. If Scite Index < 0.3 (more contradicted than supported):
+      - Flag [HIGHLY_CONTESTED]
+      - Recommend synthesis agent present counter-evidence
+3. Check editorialNotices in tally response for retractions, corrections, expressions of concern
+4. If Scite unavailable: skip, document gap — no equivalent fallback exists
+```
+
+**Modes:** Apply for FULL, LIT-REVIEW, SYSTEMATIC-REVIEW, HYPOTHESIS. Skip for QUICK, FACT-CHECK.
+
+**Accuracy caveat:** Scite classification accuracy is contested (independent evaluation found
+bias toward "mentioning"). Always report as "per Scite classification" so users can assess independently.
+
 ### Step 4: Full-Text Spot-Check
 
 Verify that key claims actually appear in the cited source's text.
@@ -85,6 +110,11 @@ Verify that key claims actually appear in the cited source's text.
 | `SemanticScholar_get_pdf_snippets` | ToolUniverse | PDF-based snippet extraction | `pdf_url` |
 | `get_full_text_article` | PubMed MCP | Full open-access articles | `article_id` (PMC only) |
 | `get_article_metadata` | PubMed MCP | Abstract-level verification | `article_id` |
+| `search_literature` | Scite MCP | How *other papers* describe this paper's findings (citation context) | `dois` + `term` |
+
+**Note:** Scite citation snippets complement (not replace) EuropePMC/SemanticScholar snippets.
+EuropePMC/SemanticScholar extract from the paper itself; Scite shows how citing papers describe
+the findings — useful for assessing whether claims have been replicated.
 
 **Verification procedure:**
 1. Identify the specific claim to verify (e.g., "Drug X reduced tumor volume by 40%")
@@ -125,6 +155,9 @@ Apply these flags as warranted:
 | `[CONFLICT]` | Contradictory evidence exists for this claim | Present both sides in synthesis |
 | `[PREDATORY_RISK]` | Predatory journal indicators detected | Cap claims at T4 |
 | `[OUTDATED]` | Source older than field-specific currency threshold | Note; prefer newer evidence if available |
+| `[CONTESTED]` | Scite tallies show contrasting citations that address this claim (per Scite classification) | Present counter-evidence in synthesis |
+| `[HIGHLY_CONTESTED]` | Scite Index < 0.3 — more contradicted than supported (per Scite classification) | Major caveat; synthesis agent must address counter-evidence |
+| `[NO_CITATION_DATA]` | Scite tallies show 0 supporting + 0 contrasting (no sentiment data available) | No reception signal; do not interpret as positive or negative |
 
 ### Retraction Detection
 
@@ -134,7 +167,8 @@ Check for retractions during DOI verification (Step 3):
    - Publication type containing "Retracted Publication" or "Retraction of Publication"
    - Title prefixed with "[Retracted]" or "RETRACTED:"
 2. If the source is NOT in PubMed, search PubMed for `"retraction of" AND [author last name] AND [key title words]`
-3. If retraction detected: mark `[RETRACTED]`, exclude from evidence base, document the retraction notice DOI if available
+3. Check Scite tallies `editorialNotices` field (from Step 3b) for retractions, corrections, expressions of concern
+4. If retraction detected (any source): mark `[RETRACTED]`, exclude from evidence base, document the retraction notice DOI if available
 
 Currency thresholds (from `references/biomedical_research.md`):
 - Biomedical: >5 years = potentially outdated (unless seminal)
@@ -149,14 +183,15 @@ Produce a summary table for the synthesis agent:
 ```markdown
 ## Verified Source Table
 
-| # | Source | DOI | Verified | Level | Tier | Flags | Spot-Check |
-|---|--------|-----|----------|-------|------|-------|------------|
-| 1 | Smith et al. 2024 | 10.1038/... | VERIFIED | II | T1 | — | CLAIM_VERIFIED |
-| 2 | Jones et al. 2023 | 10.1016/... | VERIFIED | IV | T2 | [SINGLE-SOURCE] | Not checked |
-| 3 | Lee et al. 2025 | 10.1101/... | VERIFIED | II* | T2* | [PREPRINT] | CLAIM_VERIFIED |
-| 4 | Unknown 2022 | 10.xxxx/... | NOT_FOUND | — | — | — | — |
+| # | Source | DOI | Verified | Level | Tier | Flags | Spot-Check | Reception |
+|---|--------|-----|----------|-------|------|-------|------------|-----------|
+| 1 | Smith et al. 2024 | 10.1038/... | VERIFIED | II | T1 | — | CLAIM_VERIFIED | USI 0.82 (14S/3C/45M) |
+| 2 | Jones et al. 2023 | 10.1016/... | VERIFIED | IV | T2 | [CONTESTED] | Not checked | USI 0.40 (4S/6C/20M) |
+| 3 | Lee et al. 2025 | 10.1101/... | VERIFIED | II* | T2* | [PREPRINT] | CLAIM_VERIFIED | No data |
+| 4 | Unknown 2022 | 10.xxxx/... | NOT_FOUND | — | — | — | — | — |
 
 *Preprint: Level II design, but claims capped at T2 per preprint adjustment
+**Reception format:** USI [Scite Index] (S=supporting / C=contrasting / M=mentioning) — per Scite classification
 
 ### Summary
 - Total sources: 25
@@ -175,7 +210,7 @@ Produce a summary table for the synthesis agent:
 
 ## Interaction with Other Agents
 
-- **Receives from:** Bibliography agent (annotated bibliography with DOIs, study types, relevance)
+- **Receives from:** Bibliography agent (annotated bibliography with DOIs, study types, relevance, and Scite reception data from Step 4b when available — reuse rather than re-fetch)
 - **Passes to:** Synthesis agent (verified source table with levels, tiers, flags, spot-check results)
 - **Does NOT:** Search for papers (bibliography agent's job), synthesize findings (synthesis agent's job)
 - **Blocks on:** If >20% of sources are NOT_FOUND, halt and request bibliography agent to re-search
@@ -188,6 +223,7 @@ Produce a summary table for the synthesis agent:
 | DOI lookup fails both tools | NOT_FOUND from both PubMed and EuropePMC | Search by title+author via PubMed `search_articles` | 1 |
 | Full-text snippet tools fail | Error from EuropePMC/SemanticScholar snippets | Abstract-level verification via `get_article_metadata` | 1 |
 | Retraction check fails | PubMed metadata unavailable | Flag `[RETRACTION_UNCHECKED]`, note in limitations | 0 |
+| Scite MCP error/timeout | Error response or timeout from `search_literature` | Skip reception check; document gap — no equivalent fallback | 0 |
 | >5 consecutive MCP failures | 5+ sequential tool errors | HALT verification, document outage, proceed to synthesis | 0 |
 
 **Degraded-mode rule:** If DOI verification drops below 80% (due to tool failures, not missing DOIs), add:

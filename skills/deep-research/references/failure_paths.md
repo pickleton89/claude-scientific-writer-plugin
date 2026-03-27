@@ -116,6 +116,8 @@ answer the research question.
 | PubMed MCP `get_full_text_article` | ToolUniverse `EuropePMC_get_fulltext_snippets` | ToolUniverse `SemanticScholar_get_pdf_snippets` | Abstract-only verification |
 | bioRxiv MCP `search_preprints` | ToolUniverse `EuropePMC_search_articles` (source:PPR) | Document gap | — |
 | Consensus MCP `search` | ToolUniverse `SemanticScholar_search_papers` | PubMed MCP `search_articles` | Document gap |
+| Scite MCP `search_literature` | No equivalent — Scite's citation context is unique | — | Skip reception assessment |
+| Scite MCP tallies (DOI lookup) | No equivalent — no other tool provides citation sentiment | — | Omit reception data |
 
 **Protocol:**
 1. Retry the primary tool once (transient errors are common)

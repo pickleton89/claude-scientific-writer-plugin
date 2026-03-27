@@ -1,5 +1,5 @@
 # tool-lookup.yaml — Capability-to-Tool Mapping
-# Version: 1.3.0
+# Version: 1.4.0
 #
 # Skills reference capability KEYS (e.g., "disambiguation.gene_to_ensembl"),
 # not raw tool names. This lookup resolves capabilities to tools with
@@ -285,6 +285,8 @@ literature:
         notes: "Structured search with field tags, MeSH, date filters"
       - tool: search  # Consensus MCP (mcp__claude_ai_Consensus__search)
         notes: "Semantic search over 200M+ papers"
+      - tool: search_literature  # Scite MCP (mcp__scite__search_literature)
+        notes: "Full-text search over ~50M articles; use for claim-specific queries and citation context"
     tooluniverse:
       - tool: europe_pmc_search
         notes: "Includes full-text snippet extraction via extract_terms_from_fulltext"
@@ -324,6 +326,30 @@ literature:
       - tool: openalex_citations
       - tool: semantic_scholar_citations
     fallback: []
+
+  citation_context:
+    description: "Citation context with sentiment classification (supporting/contrasting/mentioning)"
+    primary:
+      - tool: search_literature  # Scite MCP (mcp__scite__search_literature)
+        notes: >
+          Returns citing papers classified as supporting/contrasting/mentioning with ~3-sentence
+          snippets. Use with `dois` + `term` to search within citing papers for specific claims.
+          Accuracy caveat: independent evaluation found bias toward 'mentioning' — always note
+          'per Scite classification' when reporting sentiment.
+    tooluniverse: []
+    fallback:
+      - tool: find_related_articles  # PubMed MCP — no sentiment, but finds citing papers
+
+  citation_tallies:
+    description: "Per-paper citation breakdown by sentiment type (supporting/contrasting/mentioning)"
+    primary:
+      - tool: search_literature  # Scite MCP (mcp__scite__search_literature)
+        notes: >
+          Call with `dois` (no `term`) to fetch tallies. Returns: total, supporting, contrasting,
+          mentioning, citingPublications counts + Scite Index (USI = supporting/(supporting+contrasting)).
+          Also returns editorialNotices for retractions, corrections, expressions of concern.
+    tooluniverse: []
+    fallback: []  # No equivalent exists elsewhere — gracefully omit if unavailable
 
 # ─── ML PREDICTIONS ──────────────────────────────────────────────────────────
 

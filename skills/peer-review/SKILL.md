@@ -254,11 +254,26 @@ Conduct a thorough evaluation of each manuscript section, documenting specific c
 | Disease association | `data_validation.claim_check_disease` | OT score > 0 = Supported |
 | Variant frequency | `data_validation.claim_check_variant` | gnomAD AF matches claimed rarity = Supported |
 | Data accession | `data_validation.accession_validation` | Accession resolves with metadata = Valid |
+| Citation reception | `literature.citation_tallies` | Scite Index ≥ 0.5 for key refs = Supported |
 
 3. **Report verdict per claim:** Supported / Unsupported / Unverifiable (no database coverage)
 4. **Integrate into Major/Minor comments** — unsupported claims flagged as Major; unverifiable noted as Minor
 
 **Dossier-first:** If a target-intelligence or drug-intelligence dossier exists for the paper's subject, extract verification data from it rather than re-querying.
+
+#### Reference Reception Check
+
+For the manuscript's key cited references (top 5-10 most important to the argument):
+
+1. Query Scite MCP `search_literature` with `dois: [DOI]` for each reference DOI
+2. Flag any reference where:
+   - Scite Index < 0.5 → "This cited reference has been contested in subsequent literature (per Scite classification)"
+   - `editorialNotices` present → "This cited reference has editorial notices (correction/retraction)"
+3. Report as Minor or Major comment depending on how central the reference is to the manuscript's argument
+
+This check answers: "Are the authors citing papers whose findings have held up?"
+
+**If Scite unavailable:** Skip this check. No equivalent fallback exists for citation sentiment.
 
 #### References
 - **Completeness:** Are key relevant papers cited?

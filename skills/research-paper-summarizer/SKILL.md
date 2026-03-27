@@ -558,6 +558,22 @@ Secondary comparison → Medium Gray (#666666)
 | Drug count | `drug_data.bioactivity` | ChEMBL approved count |
 | Disease associations | `data_validation.claim_check_disease` | OT GraphQL top 3 |
 | Top tissues | `visualization_data.expression_heatmap` | GTEx top 3 by median TPM |
+| Citation reception | `literature.citation_tallies` | Scite MCP — supporting/contrasting/mentioning + Scite Index |
+
+### Citation Reception (optional enrichment)
+
+If the paper has a DOI and Scite MCP is available, add reception data to the callout:
+
+```markdown
+> - **Citation Reception:** X citing publications — Y supporting, Z contrasting, W mentioning Smart Citations (Scite Index: A.AA).
+>   [If contrasting > 0: "Notable contrasting citations include: [brief snippet from top contrasting citation]"]
+```
+
+**Field mapping:** `X` = `citingPublications` (unique citing papers); `Y/Z/W` = `supporting/contrasting/mentioning`
+(Smart Citation statements — a paper can cite multiple times, so Y+Z+W may differ from X).
+
+This is a single MCP call (`search_literature` with `dois: [DOI]`, no `term`) that adds rich context
+about how the paper has been received by the field. If Scite unavailable, omit this line — no fallback needed.
 
 **Dossier-first principle:** If an upstream target-intelligence or drug-intelligence dossier exists, extract all callout fields from it — never re-query databases for data already in a dossier.
 
