@@ -439,6 +439,18 @@ deep_research_cases:
     category: research
     notes: "meta-analysis trigger"
 
+  - request: "Has this finding been supported or contradicted in the literature?"
+    expected_skill: deep-research
+    min_confidence: 0.5
+    category: research
+    notes: "Scite fact-check mode — claim verification via citation sentiment"
+
+  - request: "What is the evidence reception for statin therapy in elderly patients?"
+    expected_skill: deep-research
+    min_confidence: 0.3
+    category: research
+    notes: "Evidence reception keyword routes to deep-research for broad questions"
+
 # ============================================================
 # RESEARCH WORKFLOW - citation-management
 # ============================================================
@@ -499,6 +511,30 @@ peer_review_cases:
     expected_skill: peer-review
     min_confidence: 0.5
     category: research
+
+  - request: "Check citation sentiment for this manuscript's references"
+    expected_skill: peer-review
+    min_confidence: 0.5
+    category: research
+    notes: "Scite citation sentiment routing"
+
+  - request: "Evaluate citation reception for these key references"
+    expected_skill: peer-review
+    min_confidence: 0.5
+    category: research
+    notes: "Scite citation reception routing"
+
+  - request: "Check the Scite Index for the references in this paper"
+    expected_skill: peer-review
+    min_confidence: 0.5
+    category: research
+    notes: "Direct Scite Index query"
+
+  - request: "Are there contested findings among the cited references?"
+    expected_skill: peer-review
+    min_confidence: 0.3
+    category: research
+    notes: "Contested findings flag from Scite tallies"
 
 # ============================================================
 # ANALYSIS - statistical-analysis
@@ -898,6 +934,18 @@ negative_cases:
     not_expected: paperbanana
     min_confidence: 0.5
     notes: "Data visualization goes to plotting-libraries, not paperbanana"
+
+  - request: "Check citation sentiment for this manuscript"
+    expected_skill: peer-review
+    not_expected: citation-management
+    min_confidence: 0.3
+    notes: "Citation sentiment goes to peer-review, NOT citation-management"
+
+  - request: "Are there contrasting citations for these findings?"
+    expected_skill: peer-review
+    not_expected: citation-management
+    min_confidence: 0.2
+    notes: "Contrasting citations goes to peer-review, NOT citation-management (trigger-only match, low conf is expected)"
 
 # ============================================================
 # RESEARCH WORKFLOW - research-paper-summarizer

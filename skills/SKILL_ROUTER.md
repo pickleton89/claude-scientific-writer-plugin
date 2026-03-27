@@ -287,8 +287,13 @@ User needs research/information support
 │            ├─ Need quick quality score (8 dimensions)?
 │            │  └─ Scoring Only mode
 │            │
-│            └─ Need both scoring + detailed review?
-│               └─ Review + Scoring mode
+│            ├─ Need both scoring + detailed review?
+│            │  └─ Review + Scoring mode
+│            │
+│            └─ Need citation reception check for references?
+│               └─ Reference Reception Check (Scite MCP)
+│                  ├─ Scite Index < 0.5 → flag as contested
+│                  └─ editorialNotices → flag retractions/corrections
 │
 └─ Need to ANALYZE arguments or evidence?
    │
@@ -315,6 +320,9 @@ User needs research/information support
 | "Is this paper reliable?" | peer-review | Full Review or Review + Scoring mode |
 | "Score this paper's quality" | peer-review | Scoring Only mode (8-dimension assessment) |
 | "Analyze this argument" | peer-review | Logic/evidence analysis (Critical Analysis Framework) |
+| "Check citation sentiment for references" | peer-review | Reference Reception Check (Scite MCP) |
+| "Has this finding been supported or contradicted?" | deep-research (fact-check) | Claim verification via Scite citation context |
+| "How has this work been received?" | deep-research | Evidence reception assessment via Scite tallies |
 
 ---
 
@@ -974,7 +982,7 @@ Each skill's `<cross_references>` section should include:
 
 ---
 
-*This router provides deterministic skill selection for the 29-skill scientific writing library (21 top-level + 4 document-skills sub-skills + 4 biological research skills). All 29 skills are registered in `skill_triggers.yaml` v1.4.0 with 161 canonical test cases. `deep-research` consolidates paper-search, literature-review, and hypothesis-generation into a single 8-mode skill. 7 existing skills consume ToolUniverse data feeds via `tool-lookup.yaml` v1.3.0. For threshold values and quality criteria, see `QUANTIFICATION_THRESHOLDS.md`.*
+*This router provides deterministic skill selection for the 29-skill scientific writing library (21 top-level + 4 document-skills sub-skills + 4 biological research skills). All 29 skills are registered in `skill_triggers.yaml` v1.5.0 with 169 canonical test cases. `deep-research` consolidates paper-search, literature-review, and hypothesis-generation into a single 8-mode skill. 7 existing skills consume ToolUniverse data feeds via `tool-lookup.yaml` v1.4.0. Scite MCP provides citation sentiment analysis for peer-review (Reference Reception Check) and deep-research (evidence reception assessment). For threshold values and quality criteria, see `QUANTIFICATION_THRESHOLDS.md`.*
 
 ---
 
@@ -988,10 +996,10 @@ The skill router includes programmatic validation tools for deterministic routin
 skills/skill-router/
 ├── __init__.py           # Package exports
 ├── route.py              # Deterministic routing module
-├── skill_triggers.yaml   # Keyword registry for all 29 skills (v1.4.0)
+├── skill_triggers.yaml   # Keyword registry for all 29 skills (v1.5.0)
 └── tests/
     ├── __init__.py
-    ├── canonical_routes.yaml  # 161 canonical test cases (v1.4.0)
+    ├── canonical_routes.yaml  # 169 canonical test cases (v1.5.0)
     └── test_routing.py        # Validation script
 ```
 

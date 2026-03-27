@@ -1,5 +1,5 @@
 # Skill Trigger Registry
-# Version: 1.4.0
+# Version: 1.5.0
 # Purpose: Deterministic keyword-based routing for the 29-skill scientific writing library
 #
 # Structure:
@@ -494,6 +494,8 @@ skills:
       - exclusion criteria
       - lookup
       - google scholar
+      - evidence reception
+      - supported or contradicted
     triggers:
       - "literature.*review"
       - "systematic.*review"
@@ -520,6 +522,8 @@ skills:
       - "synthesize.*evidence"
       - "scoping.*review"
       - "what.*(?:does|do).*literature.*say"
+      - "(?:has|been).*(?:supported|contradicted)"
+      - "how.*(?:has|was).*(?:finding|work|paper).*received"
     output_formats: [md, docx, json, bib]
     negative_keywords:
       - summarize this paper
@@ -557,7 +561,14 @@ skills:
       - "citation.*style"
       - "(apa|mla|chicago|vancouver).*format"
     output_formats: [bib, json]
-    negative_keywords: []
+    negative_keywords:
+      - citation sentiment
+      - citation reception
+      - citation context
+      - contested
+      - scite
+      - supporting citations
+      - contrasting citations
 
   peer-review:
     description: Peer review of scientific manuscripts and grants — evaluates methodology, statistics, reproducibility, ethics, and reporting standards as a reviewer/referee
@@ -587,6 +598,11 @@ skills:
       - quality
       - critical analysis
       - verify
+      - citation sentiment
+      - citation reception
+      - reference reception
+      - contested findings
+      - scite index
     triggers:
       - "review.*(manuscript|paper|draft)"
       - "peer.*review"
@@ -601,6 +617,10 @@ skills:
       - "critical.*analysis"
       - "(?:paper|manuscript).*quality"
       - "feedback.*(?:on|for)"
+      - "citation.*(?:sentiment|reception|context)"
+      - "(?:supporting|contrasting).*citation"
+      - "scite.*index"
+      - "reference.*reception"
     output_formats: [md]
     negative_keywords:
       - literature review

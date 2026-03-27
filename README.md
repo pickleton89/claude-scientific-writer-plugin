@@ -6,7 +6,7 @@ A comprehensive Claude Code plugin with 26 specialized skills for end-to-end sci
 
 ## Background
 
-Built on [K-Dense-AI/claude-scientific-writer](https://github.com/K-Dense-AI/claude-scientific-writer), this project has diverged significantly to focus on biomedical research intelligence. Key additions include a 4-skill bio-intelligence pipeline, integration with 2,400+ scientific database tools via ToolUniverse, a deterministic skill routing engine with 136 test cases, and formal T1-T4 evidence grading across all research outputs.
+Built on [K-Dense-AI/claude-scientific-writer](https://github.com/K-Dense-AI/claude-scientific-writer), this project has diverged significantly to focus on biomedical research intelligence. Key additions include a 4-skill bio-intelligence pipeline, integration with 2,400+ scientific database tools via ToolUniverse, a deterministic skill routing engine with 169 test cases, and formal T1-T4 evidence grading across all research outputs.
 
 ## Features
 
@@ -18,7 +18,7 @@ Built on [K-Dense-AI/claude-scientific-writer](https://github.com/K-Dense-AI/cla
 - **Tiered image generation**: Free Mermaid diagrams for simple workflows, AI generation (Gemini 3 Pro) for complex schematics
 - **Publication-quality outputs**: Figures, slides, and posters meeting journal submission standards
 - **Brand integration**: Consistent Oligon visual identity across all generated materials
-- **MCP server ecosystem**: Open Targets, PubMed, Consensus, Zotero, and ToolUniverse
+- **MCP server ecosystem**: Open Targets, PubMed, Consensus, Scite, Zotero, and ToolUniverse
 
 ## Prerequisites
 
@@ -36,6 +36,7 @@ For full functionality, configure these MCP servers. The core scientific writing
 | Open Targets | Target-disease associations, genetic evidence | Bio-intelligence pipeline |
 | PubMed | Biomedical literature search, full-text retrieval | Literature review, paper search |
 | Consensus | Semantic search across 200M+ papers | Research workflows |
+| Scite | Citation sentiment analysis (supporting/contrasting/mentioning) | Evidence reception, peer review, claim verification |
 | ToolUniverse | 2,400+ scientific database tools | Bio-intelligence, data-enriched outputs |
 | Zotero | Personal reference library management | Citation management |
 

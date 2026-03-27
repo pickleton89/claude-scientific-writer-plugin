@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed — Routing & Documentation Audit (Post Scite Integration)
+- **skill_triggers.yaml v1.5.0**: Added Scite-related keywords/triggers to peer-review (citation sentiment, citation reception, scite index) and deep-research (evidence reception, supported or contradicted); added 7 negative keywords to citation-management to prevent false routing on "citation sentiment" queries
+- **canonical_routes.yaml**: 8 new test cases (4 peer-review, 2 deep-research, 2 negative disambiguation) — 169/169 passing (100%)
+- **SKILL_ROUTER.md**: Updated decision tree with Reference Reception Check branch under peer-review; 3 new routing table entries for Scite queries; version references updated to v1.5.0
+- **README.md**: Added Scite to MCP ecosystem list and server prerequisites table; updated test count (136→169)
+
 ### Added — Scite MCP Integration (Citation Sentiment & Evidence Reception)
 - **tool-lookup.yaml v1.4.0**: Added `literature.citation_context` and `literature.citation_tallies` capability keys; Scite as 3rd primary search tool under `literature.search`
 - **Verification agent**: New Step 3b (Citation Reception Check) — queries Scite tallies for T1/T2 claims, flags `[CONTESTED]` (contrasting evidence undermines claim), `[HIGHLY_CONTESTED]` (Scite Index < 0.3), `[NO_CITATION_DATA]`; Reception column in Verified Source Table; Scite `editorialNotices` added to retraction detection
