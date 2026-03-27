@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Deep-Research Deterministic Audit Phase 1: Foundation
+- **thresholds.py**: New constants-only module consolidating all quantitative thresholds from 7 source files (bibliography.md, compiler.md, SKILL.md, biomedical_research.md, convergence_signals.md, synthesis.md, score_hypothesis.py) into a single importable module with `typing.Final` annotations
+  - 20+ constant groups: `ALL_MODES`, `TIER_ORDER`, `MIN_SOURCES`, `MIN_DATABASES`, `SEARCH_SATURATION`, `RECENT_THRESHOLD`, `PEER_REVIEWED_MIN`, `WORD_COUNTS`, `SPOT_CHECK_RATES` (nested by mode × topic type), `CURRENCY_THRESHOLDS`, convergence signals, evidence strength, hypothesis scoring, `MANDATORY_SECTIONS_ALL/BY_MODE`, `CITATION_PATTERN`
+  - All 8 per-mode dicts have consistent key coverage (including socratic zero-entries)
+- **database_strategies.md archived**: Moved to `references/_legacy/` — referenced obsolete tools (`gget`, `bioservices`, `search_databases.py`) incompatible with MCP architecture; useful content (PICO, Boolean operators) already covered in bibliography.md
+
 ### Fixed — Routing & Documentation Audit (Post Scite Integration)
 - **skill_triggers.yaml v1.5.0**: Added Scite-related keywords/triggers to peer-review (citation sentiment, citation reception, scite index) and deep-research (evidence reception, supported or contradicted); added 7 negative keywords to citation-management to prevent false routing on "citation sentiment" queries
 - **canonical_routes.yaml**: 8 new test cases (4 peer-review, 2 deep-research, 2 negative disambiguation) — 169/169 passing (100%)
