@@ -219,3 +219,12 @@ From `QUANTIFICATION_THRESHOLDS.md` §1:
 - **Receives from:** Phase 1 scoping (RQ, inclusion/exclusion criteria, entity-resolution filters)
 - **Passes to:** Verification agent (annotated bibliography for grading)
 - **Does NOT:** Grade sources (verification agent's job), synthesize findings (synthesis agent's job)
+
+## Deterministic Utilities
+
+The following scripts support this agent's decisions with deterministic logic:
+
+| Script | Constants/Functions Used | Purpose |
+|--------|------------------------|---------|
+| `scripts/thresholds.py` | `MIN_SOURCES`, `MIN_DATABASES`, `SEARCH_SATURATION` | Enforce minimum source counts, database coverage, and saturation thresholds per mode |
+| `scripts/mode_selector.py` | `select_mode()` | Determine pipeline mode from user input before search strategy selection |

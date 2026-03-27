@@ -231,3 +231,12 @@ Produce a summary table for the synthesis agent:
 ⚠️ DEGRADED VERIFICATION: Only [X]% of DOIs verified due to tool outage.
 Unverified sources marked [VERIFICATION_PENDING]. Re-verify when services are restored.
 ```
+
+## Deterministic Utilities
+
+The following scripts support this agent's decisions with deterministic logic:
+
+| Script | Constants/Functions Used | Purpose |
+|--------|------------------------|---------|
+| `scripts/thresholds.py` | `SPOT_CHECK_RATES`, `TIER_ORDER` | Enforce spot-check percentages per topic type and canonical tier ordering |
+| `scripts/tier_assigner.py` | `assign_tiers()` | Deterministic T1-T4 assignment from claim type, study design, GRADE certainty, or lab evidence type |

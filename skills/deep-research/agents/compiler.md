@@ -324,3 +324,12 @@ End every output with 2-3 downstream skill suggestions selected by relevance to 
 - **Receives from:** Verification agent (verified source table, spot-check results)
 - **Does NOT:** Synthesize or analyze data (synthesis agent's job), verify sources (verification agent's job)
 - **Invoked during:** Phase 4 (composition) and Phase 6 (revision)
+
+## Deterministic Utilities
+
+The following scripts support this agent's decisions with deterministic logic:
+
+| Script | Constants/Functions Used | Purpose |
+|--------|------------------------|---------|
+| `scripts/thresholds.py` | `WORD_COUNTS` | Enforce mode-specific word count targets (hard min/max) |
+| `scripts/output_validator.py` | `validate_output()` | Post-processing validation: word count, mandatory sections, citation format, AI disclosure content |

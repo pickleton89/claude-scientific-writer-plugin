@@ -65,6 +65,9 @@ User Input
 └─ Default → FULL
 ```
 
+**Deterministic default:** Use `scripts/mode_selector.py` for keyword-based mode
+selection. The LLM may override for ambiguous or context-dependent cases.
+
 ## Agent Team
 
 | Agent | File | Role |

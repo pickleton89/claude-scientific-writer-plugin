@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed — Deep-Research Deterministic Audit Phase 3: Markdown Fixes
+- **advocate.md**: Replaced perverse mandatory-issue rule ("must find at least 1 issue") with honest reporting guidance — justified passes now preferred over fabricated minor issues
+- **hypothesis_quality_criteria.md**: Added 10-point quality rubric table (5 criteria × 0-2 scale) aligned with `score_hypothesis.py` thresholds; Parsimony row includes concrete step-count guidance (≤3/4-5/>5 causal steps)
+- **4 agent files** (bibliography, verification, synthesis, compiler): Added `## Deterministic Utilities` sections linking each agent to its relevant scripts and thresholds constants
+- **SKILL.md**: Added `mode_selector.py` reference after mode selection decision tree
+- **synthesis.md**: Fixed evidence strength table ordering (Emerging before Weak) to match `evidence_strength.py` priority; added contradiction gating to Emerging criteria
+
+### Added — Deep-Research Deterministic Audit Phase 2: Deterministic Scripts
+- **mode_selector.py**: Priority-ordered keyword matching encoding SKILL.md decision tree (lines 39-66) — 7 mode keyword groups, vague/exploratory indicators for socratic fallback, review mode gated on `has_provided_text`; returns `ModeSelection(mode, confidence, matched_keywords, notes)` with high/medium/low confidence; accepts inline JSON or file path
+- **tier_assigner.py**: 4-path evidence tier assignment from evidence_hierarchy.md — `CLAIM_TYPE_TO_TIER` (35 entries), `LAB_EVIDENCE_TO_TIER` (16 entries), `DESIGN_PATTERNS` → `LEVEL_TO_TIER` (7 levels via regex), `GRADE_TO_TIER` (4 certainty levels); preprint adjustment caps tier one level lower (T1→T2, T4 floor); fallback to T3 with note
+- **evidence_strength.py**: Theme-level evidence strength rating (Strong/Moderate/Emerging/Weak) encoding synthesis.md §Theme-Level Evidence Strength; imports `STRONG_MIN_SOURCES`/`MODERATE_MIN_SOURCES` from thresholds.py; Emerging gated on no unresolved contradictions
+- **output_validator.py**: Post-processing validation of compiler output markdown — word count (excludes code blocks + References), mandatory section detection via fuzzy token-overlap matching with plural normalization, `[T1-4: source]` citation counting, uncited assertion heuristic (advisory), AI disclosure content verification, Methods/Database Versions check; socratic mode returns valid trivially
+
 ### Added — Deep-Research Deterministic Audit Phase 1: Foundation
 - **thresholds.py**: New constants-only module consolidating all quantitative thresholds from 7 source files (bibliography.md, compiler.md, SKILL.md, biomedical_research.md, convergence_signals.md, synthesis.md, score_hypothesis.py) into a single importable module with `typing.Final` annotations
   - 20+ constant groups: `ALL_MODES`, `TIER_ORDER`, `MIN_SOURCES`, `MIN_DATABASES`, `SEARCH_SATURATION`, `RECENT_THRESHOLD`, `PEER_REVIEWED_MIN`, `WORD_COUNTS`, `SPOT_CHECK_RATES` (nested by mode × topic type), `CURRENCY_THRESHOLDS`, convergence signals, evidence strength, hypothesis scoring, `MANDATORY_SECTIONS_ALL/BY_MODE`, `CITATION_PATTERN`

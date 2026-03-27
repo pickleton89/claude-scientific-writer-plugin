@@ -123,7 +123,7 @@ Ask:
 | **Observation** | Interesting point — not a flaw but worth noting | No action required |
 
 **Calibration rules:**
-- Must find at least 1 issue per checkpoint (even if Minor) — a clean bill means you weren't looking hard enough
+- Report findings honestly. If thorough review reveals no issues, document what was examined and provide an "all clear" assessment. A justified pass is preferable to a fabricated minor issue.
 - Critical severity requires a specific, actionable fix recommendation
 - Do NOT inflate Minor to Major to appear thorough — severity accuracy matters
 - Acknowledge strengths explicitly — adversarial doesn't mean negative

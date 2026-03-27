@@ -95,8 +95,8 @@ question. If you cannot articulate significance, the theme should be merged or c
 |--------|----------|
 | **Strong** | ≥3 sources with ≥1 T1 or ≥2 T2, consistent direction, no unresolved contradictions |
 | **Moderate** | ≥2 sources with ≥1 T2, mostly consistent, minor contradictions explained |
+| **Emerging** | 1-2 recent sources (≤1 year), no unresolved contradictions, insufficient replication but promising |
 | **Weak** | <2 sources, or T3/T4 only, or significant unresolved contradictions |
-| **Emerging** | 1-2 recent sources (≤1 year), insufficient replication but promising |
 
 ### Step 4: Dossier Integration (Biomedical Topics Only)
 
@@ -227,3 +227,12 @@ Pass to the compiler agent:
 - **Passes to:** Compiler agent (structured synthesis, gaps, contradictions)
 - **Receives from (optional):** Upstream dossier (target-intelligence or drug-intelligence)
 - **Does NOT:** Verify references (verification agent's job), search for papers (bibliography agent's job), assemble the final report (compiler agent's job)
+
+## Deterministic Utilities
+
+The following scripts support this agent's decisions with deterministic logic:
+
+| Script | Constants/Functions Used | Purpose |
+|--------|------------------------|---------|
+| `scripts/thresholds.py` | `STRONG_MIN_SOURCES`, `MODERATE_MIN_SOURCES` | Enforce minimum source counts for theme-level evidence strength ratings |
+| `scripts/evidence_strength.py` | `rate_themes()` | Deterministic Strong/Moderate/Emerging/Weak rating from source count, tier distribution, contradiction status |

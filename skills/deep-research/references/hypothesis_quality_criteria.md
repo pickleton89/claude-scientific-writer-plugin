@@ -6,6 +6,22 @@ Use these criteria to assess the quality and rigor of generated hypotheses. A ro
 
 **Note on Report Structure:** When generating hypothesis reports, provide a brief quality assessment summary in the main text (comparative table with ratings), and include detailed evaluation with strengths, weaknesses, and comprehensive analysis in **Appendix C: Quality Assessment**.
 
+## 10-Point Quality Rubric
+
+Each hypothesis is scored on 5 criteria (0-2 each, 10 points maximum):
+
+| Criterion | 0 — Absent/Weak | 1 — Partial | 2 — Strong/Specific |
+|-----------|-----------------|-------------|---------------------|
+| **Testability** | No predictions or unmeasurable outcomes | Testable but vague predictions | Clear experimental approach with quantifiable outcomes |
+| **Falsifiability** | No observation could disprove | Vague falsification criteria | Specific falsifying observations defined |
+| **Parsimony** | Unnecessarily complex (>5 causal steps or >5 assumptions) | Moderate complexity (4-5 steps) | Simplest fit to evidence (≤3 causal steps, ≤3 assumptions) |
+| **Explanatory Power** | Explains little of observed data | Partial explanation, major observations unexplained | Accounts for multiple independent observations and contradictions |
+| **Distinctiveness** | Indistinguishable from competing hypotheses | Partially overlapping predictions | Unique, testable predictions that differentiate from alternatives |
+
+**Scoring notes:**
+- Scope (§5) and Consistency (§6) are evaluated qualitatively during synthesis but not scored numerically.
+- The `scripts/score_hypothesis.py` automates Testability, Falsifiability, and Parsimony; Explanatory Power and Distinctiveness are flagged for LLM review.
+
 ## Core Criteria
 
 ### 1. Testability
