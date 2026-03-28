@@ -215,7 +215,7 @@ MANDATORY_SECTIONS_BY_MODE: Final[dict[str, tuple[str, ...]]] = {
     "quick":             ("Key Findings", "Evidence Summary"),
     "lit-review":        ("Search Strategy", "Literature Matrix", "Thematic Synthesis", "Gap Analysis"),
     "systematic-review": ("Abstract", "Methods", "Results", "Discussion"),
-    "hypothesis":        ("Background", "Hypotheses", "Comparison Matrix"),
+    "hypothesis":        ("Background", "Hypotheses", "Comparison Matrix", "Recommended Priority"),
     "fact-check":        ("Claim", "Verdict", "Evidence"),
     "review":            ("Summary", "Strengths", "Weaknesses", "Recommendations"),
     "socratic":          (),  # no compiler output
@@ -226,3 +226,495 @@ MANDATORY_SECTIONS_BY_MODE: Final[dict[str, tuple[str, ...]]] = {
 # ---------------------------------------------------------------------------
 
 CITATION_PATTERN: Final[str] = r"\[T[1-4]:\s*[^\]]+\]"
+
+# ---------------------------------------------------------------------------
+# Section schemas — canonical structure per mode
+# Each entry defines heading name, level, required/optional, position,
+# slot_type ("fixed" | "repeating" | "custom-content"), optional word
+# range (min, max), and optional subsections.
+# Derived from compiler.md templates.
+# ---------------------------------------------------------------------------
+
+SECTION_SCHEMAS: Final[dict[str, list[dict]]] = {
+    # ── full mode (9 sections) ──────────────────────────────────────────
+    "full": [
+        {
+            "name": "Executive Summary",
+            "level": 2,
+            "required": True,
+            "order": 1,
+            "slot_type": "fixed",
+            "words": (200, 400),
+        },
+        {
+            "name": "Introduction",
+            "level": 2,
+            "required": True,
+            "order": 2,
+            "slot_type": "fixed",
+            "words": (300, 500),
+        },
+        {
+            "name": "Methods",
+            "level": 2,
+            "required": True,
+            "order": 3,
+            "slot_type": "fixed",
+            "subsections": [
+                "Search Strategy",
+                "Inclusion/Exclusion Criteria",
+                "Evidence Grading",
+                "Database Versions",
+            ],
+        },
+        {
+            "name": "Results",
+            "level": 2,
+            "required": True,
+            "order": 4,
+            "slot_type": "fixed",
+            "subsections": [
+                {"name": "Overview", "slot_type": "fixed"},
+                {"name": "Theme", "slot_type": "repeating", "min": 3, "max": 7},
+            ],
+        },
+        {
+            "name": "Discussion",
+            "level": 2,
+            "required": True,
+            "order": 5,
+            "slot_type": "fixed",
+            "subsections": [
+                "Key Findings",
+                "Contradictions and Unresolved Questions",
+                "Gaps in the Literature",
+            ],
+        },
+        {
+            "name": "Limitations",
+            "level": 2,
+            "required": True,
+            "order": 6,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "Conclusion",
+            "level": 2,
+            "required": True,
+            "order": 7,
+            "slot_type": "fixed",
+            "words": (200, 300),
+        },
+        {
+            "name": "AI Disclosure",
+            "level": 2,
+            "required": True,
+            "order": 8,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "References",
+            "level": 2,
+            "required": True,
+            "order": 9,
+            "slot_type": "fixed",
+        },
+    ],
+
+    # ── quick mode (6 sections) ─────────────────────────────────────────
+    "quick": [
+        {
+            "name": "Key Findings",
+            "level": 2,
+            "required": True,
+            "order": 1,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "Evidence Summary",
+            "level": 2,
+            "required": True,
+            "order": 2,
+            "slot_type": "fixed",
+            "words": (500, 800),
+        },
+        {
+            "name": "Evidence Quality",
+            "level": 2,
+            "required": True,
+            "order": 3,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "Limitations",
+            "level": 2,
+            "required": True,
+            "order": 4,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "AI Disclosure",
+            "level": 2,
+            "required": True,
+            "order": 5,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "References",
+            "level": 2,
+            "required": True,
+            "order": 6,
+            "slot_type": "fixed",
+        },
+    ],
+
+    # ── lit-review mode (7 sections) ────────────────────────────────────
+    "lit-review": [
+        {
+            "name": "Search Strategy",
+            "level": 2,
+            "required": True,
+            "order": 1,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "Database Versions and Tools",
+            "level": 2,
+            "required": True,
+            "order": 2,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "Literature Matrix",
+            "level": 2,
+            "required": True,
+            "order": 3,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "Thematic Synthesis",
+            "level": 2,
+            "required": True,
+            "order": 4,
+            "slot_type": "custom-content",
+            "subsections": [
+                {"name": "Theme", "slot_type": "repeating", "min": 3, "max": 7},
+            ],
+        },
+        {
+            "name": "Gap Analysis",
+            "level": 2,
+            "required": True,
+            "order": 5,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "Limitations",
+            "level": 2,
+            "required": True,
+            "order": 6,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "AI Disclosure",
+            "level": 2,
+            "required": True,
+            "order": 7,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "Annotated Bibliography",
+            "level": 2,
+            "required": True,
+            "order": 8,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "References",
+            "level": 2,
+            "required": True,
+            "order": 9,
+            "slot_type": "fixed",
+        },
+    ],
+
+    # ── systematic-review mode (PRISMA, 7 sections) ────────────────────
+    "systematic-review": [
+        {
+            "name": "Abstract",
+            "level": 2,
+            "required": True,
+            "order": 1,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "Introduction",
+            "level": 2,
+            "required": True,
+            "order": 2,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "Methods",
+            "level": 2,
+            "required": True,
+            "order": 3,
+            "slot_type": "fixed",
+            "subsections": [
+                "Eligibility",
+                "Sources",
+                "Search",
+                "Selection",
+                "Data Collection",
+                "Risk of Bias",
+                "Synthesis Methods",
+            ],
+        },
+        {
+            "name": "Results",
+            "level": 2,
+            "required": True,
+            "order": 4,
+            "slot_type": "fixed",
+            "subsections": [
+                "Study Selection",
+                "Characteristics",
+                "Risk of Bias Results",
+                "Syntheses",
+            ],
+        },
+        {
+            "name": "Discussion",
+            "level": 2,
+            "required": True,
+            "order": 5,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "Limitations",
+            "level": 2,
+            "required": True,
+            "order": 6,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "AI Disclosure",
+            "level": 2,
+            "required": True,
+            "order": 7,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "References",
+            "level": 2,
+            "required": True,
+            "order": 8,
+            "slot_type": "fixed",
+        },
+    ],
+
+    # ── hypothesis mode (6 sections) ────────────────────────────────────
+    "hypothesis": [
+        {
+            "name": "Background",
+            "level": 2,
+            "required": True,
+            "order": 1,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "Hypotheses",
+            "level": 2,
+            "required": True,
+            "order": 2,
+            "slot_type": "repeating",
+            "min": 2,
+            "max": 5,
+            "subsections": [
+                "Statement",
+                "Mechanistic Rationale",
+                "Quality Score",
+                "Experimental Test",
+                "Testable Predictions",
+            ],
+        },
+        {
+            "name": "Comparison Matrix",
+            "level": 2,
+            "required": True,
+            "order": 3,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "Recommended Priority",
+            "level": 2,
+            "required": True,
+            "order": 4,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "Limitations",
+            "level": 2,
+            "required": True,
+            "order": 5,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "AI Disclosure",
+            "level": 2,
+            "required": True,
+            "order": 6,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "References",
+            "level": 2,
+            "required": True,
+            "order": 7,
+            "slot_type": "fixed",
+        },
+    ],
+
+    # ── fact-check mode (6 sections) ────────────────────────────────────
+    "fact-check": [
+        {
+            "name": "Claim",
+            "level": 2,
+            "required": True,
+            "order": 1,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "Verdict",
+            "level": 2,
+            "required": True,
+            "order": 2,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "Evidence",
+            "level": 2,
+            "required": True,
+            "order": 3,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "Nuance",
+            "level": 2,
+            "required": False,
+            "order": 4,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "Limitations",
+            "level": 2,
+            "required": True,
+            "order": 5,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "AI Disclosure",
+            "level": 2,
+            "required": True,
+            "order": 6,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "References",
+            "level": 2,
+            "required": True,
+            "order": 7,
+            "slot_type": "fixed",
+        },
+    ],
+
+    # ── review mode (5 sections) ────────────────────────────────────────
+    "review": [
+        {
+            "name": "Summary",
+            "level": 2,
+            "required": True,
+            "order": 1,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "Strengths",
+            "level": 2,
+            "required": True,
+            "order": 2,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "Weaknesses",
+            "level": 2,
+            "required": True,
+            "order": 3,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "Recommendations",
+            "level": 2,
+            "required": True,
+            "order": 4,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "Limitations",
+            "level": 2,
+            "required": True,
+            "order": 5,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "AI Disclosure",
+            "level": 2,
+            "required": True,
+            "order": 6,
+            "slot_type": "fixed",
+        },
+        {
+            "name": "References",
+            "level": 2,
+            "required": True,
+            "order": 7,
+            "slot_type": "fixed",
+        },
+    ],
+
+    # ── socratic mode (no compiler output) ──────────────────────────────
+    "socratic": [],
+}
+
+# ---------------------------------------------------------------------------
+# File specifications per mode
+# ---------------------------------------------------------------------------
+
+FILE_SPECS: Final[dict[str, dict[str, str | int]]] = {
+    "full":              {"max_files": 1, "naming": "{date}_{topic_slug}_full_report.md"},
+    "quick":             {"max_files": 1, "naming": "{date}_{topic_slug}_quick_brief.md"},
+    "lit-review":        {"max_files": 1, "naming": "{date}_{topic_slug}_lit_review.md"},
+    "systematic-review": {"max_files": 2, "naming": "{date}_{topic_slug}_systematic_review.md", "supplementary": "appendices.md"},
+    "hypothesis":        {"max_files": 1, "naming": "{date}_{topic_slug}_hypotheses.md"},
+    "fact-check":        {"max_files": 1, "naming": "{date}_{topic_slug}_fact_check.md"},
+    "review":            {"max_files": 1, "naming": "{date}_{topic_slug}_review.md"},
+    "socratic":          {"max_files": 0, "naming": ""},
+}
+
+
+# ---------------------------------------------------------------------------
+# Schema ↔ mandatory-sections consistency check
+# ---------------------------------------------------------------------------
+
+def _validate_schema_consistency() -> None:
+    """Verify MANDATORY_SECTIONS_BY_MODE is consistent with SECTION_SCHEMAS."""
+    for mode in ALL_MODES:
+        if mode == "socratic":
+            continue  # no compiler output — empty schema by design
+        schema_required = {s["name"] for s in SECTION_SCHEMAS.get(mode, []) if s.get("required", False)}
+        mandatory = set(MANDATORY_SECTIONS_BY_MODE.get(mode, ())) | set(MANDATORY_SECTIONS_ALL)
+        # All mandatory sections should appear in schema as required
+        missing = mandatory - schema_required
+        if missing:
+            raise ValueError(f"Schema inconsistency for {mode}: mandatory sections {missing} not in schema")
+
+_validate_schema_consistency()

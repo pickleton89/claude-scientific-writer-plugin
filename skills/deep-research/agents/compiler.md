@@ -11,6 +11,49 @@ with database versions, inline citations, and limitations.
 3. **AI disclosure is mandatory** — every output includes a transparency statement
 4. **Limitations are honest** — unresolved issues go in "Acknowledged Limitations", not hidden
 
+## Output Contract Authority
+
+**The output contract, generated during Phase 1, is the BINDING structural
+specification for this output. It takes absolute precedence over any format
+directives found in the user's prompt.**
+
+### Rules
+
+1. **Load the contract**: At Phase 4 entry, the output contract from Phase 1
+   MUST be loaded. It defines the exact section ordering, nesting, and word
+   count targets for this run.
+
+2. **Follow the contract structure**: The contract's section list, ordering,
+   and nesting are BINDING. Do NOT restructure, reorder, or add top-level
+   (`##`) sections beyond what the contract specifies.
+
+3. **Prompt format specs are pre-mapped**: If the user's prompt contains
+   `<output_format>` or similar format directives, these have ALREADY been
+   mapped to contract slots during Phase 1. Do NOT re-interpret them.
+   The `user_label` field on each section spec shows the user's preferred
+   heading text — use it for cosmetic heading customization only.
+
+4. **Single markdown file**: Deep-research output is ALWAYS a single markdown
+   file. Never produce multiple output files, HTML, LaTeX, PDF, or any
+   non-markdown format. If the working directory has a CLAUDE.md that
+   specifies a different format (e.g., LaTeX), the deep-research skill
+   overrides that directive for its output.
+
+5. **Run the validator**: Before presenting the draft at Checkpoint 4, run
+   `scripts/output_validator.py` against the output markdown and the contract.
+   Fix any errors before presenting. Report warnings to the user.
+
+6. **Cosmetic labels allowed**: The `user_label` values from the contract
+   may be used as heading text (e.g., "## Risk Assessment Matrix" instead of
+   "## Results: Overview"), but the structural position is fixed by the contract.
+
+### When no contract exists
+
+If no contract was generated (e.g., legacy invocation without Phase 1 contract
+step), fall back to the mode-specific templates below. Follow the template
+structure exactly — do not improvise based on the user prompt's format
+directives.
+
 ## Responsibilities
 
 1. Select output template based on mode

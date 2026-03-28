@@ -39,6 +39,8 @@ from thresholds import (
     MANDATORY_SECTIONS_ALL,
     MANDATORY_SECTIONS_BY_MODE,
     CITATION_PATTERN,
+    SECTION_SCHEMAS,
+    FILE_SPECS,
 )
 
 
@@ -375,6 +377,75 @@ class TestSourceDatabaseConsistency:
         for mode in ALL_MODES:
             assert MIN_SOURCES[mode] >= 0
             assert MIN_DATABASES[mode] >= 0
+
+
+# =============================================================================
+# Section Schema Tests
+# =============================================================================
+
+
+class TestSectionSchemas:
+    def test_section_schemas_all_modes(self):
+        """Every mode in ALL_MODES has a SECTION_SCHEMAS entry."""
+        for mode in ALL_MODES:
+            assert mode in SECTION_SCHEMAS, f"SECTION_SCHEMAS missing {mode}"
+
+    def test_section_schemas_consistency(self):
+        """Every section in MANDATORY_SECTIONS_BY_MODE appears in SECTION_SCHEMAS as required."""
+        for mode in ALL_MODES:
+            if mode == "socratic":
+                continue
+            schema_required = {
+                s["name"] for s in SECTION_SCHEMAS.get(mode, []) if s.get("required", False)
+            }
+            mandatory = set(MANDATORY_SECTIONS_BY_MODE.get(mode, ())) | set(MANDATORY_SECTIONS_ALL)
+            missing = mandatory - schema_required
+            assert not missing, (
+                f"Mode '{mode}': mandatory sections {missing} not in SECTION_SCHEMAS as required"
+            )
+
+    def test_section_schemas_order_unique(self):
+        """No two sections in same mode share order index."""
+        for mode in ALL_MODES:
+            schema = SECTION_SCHEMAS.get(mode, [])
+            orders = [s.get("order", i) for i, s in enumerate(schema)]
+            assert len(orders) == len(set(orders)), (
+                f"Mode '{mode}' has duplicate order indexes: {orders}"
+            )
+
+
+# =============================================================================
+# File Specs Tests
+# =============================================================================
+
+
+class TestFileSpecs:
+    def test_file_specs_all_modes(self):
+        """Every mode in ALL_MODES has a FILE_SPECS entry."""
+        for mode in ALL_MODES:
+            assert mode in FILE_SPECS, f"FILE_SPECS missing {mode}"
+
+    def test_file_specs_max_files_positive(self):
+        """max_files >= 0 for all modes."""
+        for mode in ALL_MODES:
+            spec = FILE_SPECS[mode]
+            max_files = spec.get("max_files", 0)
+            assert max_files >= 0, (
+                f"Mode '{mode}' has negative max_files: {max_files}"
+            )
+
+    def test_file_specs_socratic_zero_files(self):
+        """Socratic mode has max_files=0."""
+        assert FILE_SPECS["socratic"]["max_files"] == 0
+
+    def test_file_specs_have_naming(self):
+        """Non-socratic modes have a naming pattern."""
+        for mode in ALL_MODES:
+            if mode == "socratic":
+                continue
+            spec = FILE_SPECS[mode]
+            assert "naming" in spec, f"Mode '{mode}' FILE_SPECS missing 'naming'"
+            assert len(spec["naming"]) > 0, f"Mode '{mode}' has empty naming pattern"
 
 
 if __name__ == "__main__":

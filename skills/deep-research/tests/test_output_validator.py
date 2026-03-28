@@ -15,12 +15,14 @@ from output_validator import (
     count_uncited_assertions,
     validate_output,
     validate_from_json,
+    validate_against_contract,
     _find_section,
     _normalize_section_tokens,
     _extract_headings,
     _strip_code_blocks,
     _strip_references_section,
 )
+from output_contract import build_contract, contract_to_json
 from thresholds import (
     WORD_COUNTS,
     MANDATORY_SECTIONS_ALL,
@@ -474,6 +476,171 @@ class TestEdgeCases:
         assert vr.errors == []
         assert vr.warnings == []
         assert vr.citation_count == 0
+
+
+# =============================================================================
+# Contract-Based Validation Tests
+# =============================================================================
+
+
+def _make_contract_compliant_md(mode: str = "full", word_target: int = 0) -> tuple[str, dict]:
+    """Build a contract and matching compliant markdown.
+
+    Returns (markdown, contract_json).
+    """
+    contract = build_contract(mode=mode, user_prompt="test", topic="test")
+    contract_json = contract_to_json(contract)
+
+    if word_target == 0:
+        limits = WORD_COUNTS.get(mode, WORD_COUNTS["full"])
+        word_target = limits["target_min"]
+
+    sections = contract_json.get("sections", [])
+    content_section_count = sum(
+        1 for s in sections
+        if s["canonical_name"] not in ("References", "AI Disclosure", "Methods")
+    )
+    content_section_count = max(content_section_count, 1)
+    words_per_section = max(word_target // content_section_count, 30)
+
+    lines: list[str] = []
+
+    for spec in sections:
+        name = spec["canonical_name"]
+        lines.append(f"## {name}\n")
+
+        if name == "AI Disclosure":
+            lines.append(
+                "Search date: 2026-03-28. Databases queried: PubMed, Consensus. "
+                "Sources verified: 85% spot-checked via full-text retrieval.\n"
+            )
+        elif name == "Methods":
+            lines.append(
+                "Database version: PubMed accessed on 2026-03-28, API version 2.0. "
+                "We searched PubMed and Consensus for relevant studies.\n"
+            )
+            for sub in spec.get("subsection_specs", []):
+                sub_name = sub.get("canonical_name", "Subsection")
+                lines.append(f"### {sub_name}\n")
+                lines.append(
+                    "Detailed methods for this subsection covering analytical procedures. " * 3 + "\n"
+                )
+        elif name == "References":
+            lines.append("1. Smith et al. (2024). Title. *Journal*, 1-10.\n")
+        else:
+            subsections = spec.get("subsection_specs", [])
+
+            body_sentence = (
+                "This section presents key findings on the research topic "
+                "[T1: Smith et al. 2024]. Further evidence supports the conclusion "
+                "[T2: Jones 2023]. Additional analysis confirms the overall pattern "
+                "and strengthens confidence in the results [T3: Brown 2025]. "
+            )
+            repeats = max(words_per_section // 30, 1)
+            lines.append(body_sentence * repeats + "\n")
+
+            # One ### heading per subsection spec entry (stays within validator bounds)
+            for sub in subsections:
+                sub_name = sub.get("canonical_name", "Subsection")
+                lines.append(f"### {sub_name}\n")
+                lines.append(
+                    "Analysis of this subtopic reveals key patterns "
+                    "[T1: Adams 2024]. " * max(repeats // 2, 1) + "\n"
+                )
+
+    # Compute current word count and pad if needed
+    current_md = "\n".join(lines)
+    current_words = count_words(current_md)
+
+    if current_words < word_target:
+        padding_needed = word_target - current_words + 50
+        padding_sentence = "The research demonstrates important findings in this domain. "
+        repeat_count = (padding_needed // 8) + 1
+        # Insert padding before References
+        ref_marker = "\n## References\n"
+        if ref_marker in current_md:
+            parts = current_md.split(ref_marker, 1)
+            padded = parts[0] + "\n" + padding_sentence * repeat_count + "\n" + ref_marker + parts[1]
+            return padded, contract_json
+        lines.append(f"\n{padding_sentence * repeat_count}\n")
+
+    return "\n".join(lines), contract_json
+
+
+class TestContractValidation:
+    def test_contract_validation_valid_output(self):
+        """Compliant markdown passes contract validation."""
+        md, contract_json = _make_contract_compliant_md("full")
+        result = validate_against_contract(markdown=md, contract=contract_json, file_count=1)
+        assert result.valid is True, f"Errors: {result.errors}"
+
+    def test_contract_validation_extra_section(self):
+        """Extra ## heading triggers warning."""
+        md, contract_json = _make_contract_compliant_md("full")
+        # Inject an extra section not in the contract
+        md += "\n## Bonus Zebra Section\nExtra content here.\n"
+        result = validate_against_contract(markdown=md, contract=contract_json, file_count=1)
+        assert any("Extra section" in w or "not in contract" in w for w in result.warnings), (
+            f"Expected extra-section warning. Got warnings: {result.warnings}"
+        )
+
+    def test_contract_validation_missing_section(self):
+        """Missing required section triggers error."""
+        contract = build_contract(mode="full", user_prompt="test", topic="test")
+        contract_json = contract_to_json(contract)
+
+        # Build markdown missing "Executive Summary"
+        lines = []
+        for spec in contract_json["sections"]:
+            name = spec["canonical_name"]
+            if name == "Executive Summary":
+                continue  # Skip it
+            lines.append(f"## {name}\n")
+            if name == "AI Disclosure":
+                lines.append(
+                    "Search date: 2026-03-28. Databases queried: PubMed. "
+                    "Sources verified: 80%.\n"
+                )
+            elif name == "Methods":
+                lines.append("Database version: PubMed accessed on 2026-03-28.\n")
+            elif name == "References":
+                lines.append("1. Smith (2024). Title. *Journal*.\n")
+            else:
+                lines.append("Content. " * 50 + "[T1: Smith 2024] " * 3 + "\n")
+        lines.append("word " * 3000 + "\n")
+
+        md = "\n".join(lines)
+        result = validate_against_contract(markdown=md, contract=contract_json, file_count=1)
+        assert any("Executive Summary" in e for e in result.errors), (
+            f"Expected missing-section error for Executive Summary. Got: {result.errors}"
+        )
+
+    def test_contract_validation_latex_detected(self):
+        """LaTeX content triggers error."""
+        md, contract_json = _make_contract_compliant_md("full")
+        md += r"\begin{document}" + "\n"
+        result = validate_against_contract(markdown=md, contract=contract_json, file_count=1)
+        assert any("LaTeX" in e or "Non-markdown" in e for e in result.errors), (
+            f"Expected LaTeX error. Got: {result.errors}"
+        )
+
+    def test_contract_validation_file_count_exceeded(self):
+        """file_count > max_files triggers error."""
+        md, contract_json = _make_contract_compliant_md("full")
+        # Full mode max_files is 1
+        result = validate_against_contract(markdown=md, contract=contract_json, file_count=5)
+        assert any("File count" in e for e in result.errors), (
+            f"Expected file-count error. Got: {result.errors}"
+        )
+
+    def test_backward_compatibility(self):
+        """Existing validate_output still works unchanged."""
+        md = _make_markdown("full")
+        result = validate_output({"mode": "full", "markdown": md})
+        assert isinstance(result, ValidationResult)
+        assert result.valid is True
+        assert result.word_count > 0
+        assert result.citation_count > 0
 
 
 if __name__ == "__main__":

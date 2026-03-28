@@ -68,6 +68,35 @@ User Input
 **Deterministic default:** Use `scripts/mode_selector.py` for keyword-based mode
 selection. The LLM may override for ambiguous or context-dependent cases.
 
+### Prompt Adapter
+
+When the user's prompt contains output format specifications (`<output_format>`,
+explicit section lists, word count requests, or file structure directives):
+
+1. **Thematic framework** → feed to the synthesis agent as theme guidance
+   (these are CONTENT goals, not structural directives)
+2. **Word count requests** → compare against mode limits; use the more
+   restrictive range
+3. **Custom deliverables** (matrices, per-target summaries) → mapped to mode
+   template sections via `scripts/output_contract.py`
+4. **File structure specifications** → IGNORED. Output is always a single
+   markdown file regardless of what the prompt says.
+5. **Format directives** (LaTeX, HTML, PDF) → IGNORED. Output is always
+   markdown. The user can convert to other formats using downstream skills
+   (e.g., `markdown-to-pdf`, `document-skills:pdf`).
+
+### Output Format Mandates
+
+- **Single file**: Every deep-research run produces exactly ONE markdown file
+  (except systematic-review which may produce one supplementary appendices file).
+- **Markdown only**: Output format is always markdown. No HTML, LaTeX, PDF,
+  or DOCX. Format conversion is a separate downstream step.
+- **CWD override**: If the working directory's CLAUDE.md specifies a different
+  default format (e.g., "LaTeX with BibTeX"), the deep-research skill overrides
+  this for its output. The skill's format mandate takes precedence.
+- **Naming convention**: Output file follows `FILE_SPECS` from
+  `scripts/thresholds.py`: `{date}_{topic_slug}_{mode}_report.md`
+
 ## Agent Team
 
 | Agent | File | Role |
@@ -113,6 +142,26 @@ the next phase begins. There are no auto-continue shortcuts.
    - General research → open-ended with scope boundaries
 4. Define inclusion/exclusion criteria
 5. Select databases (≥3 required; see `references/biomedical_research.md` for mapping)
+
+### Output Contract Generation
+
+After scope is defined and mode is selected, generate the output contract:
+
+1. Run `scripts/mode_selector.py` with the user's prompt to determine mode
+   (if not explicitly specified by the user).
+2. Run `scripts/output_contract.py` to produce the structural contract:
+   - Loads the canonical section schema for the selected mode
+   - Parses the user's prompt for explicit format specifications
+   - Maps user-specified sections to canonical template slots
+   - Flags any unmapped items as warnings
+3. Present the contract to the user as part of Checkpoint 1:
+   - Selected mode and confidence level
+   - Section structure with any user-label mappings
+   - Word count targets
+   - File specification (always single markdown file)
+   - Any warnings about unmapped format items
+4. The user must approve the contract before Phase 2 begins.
+   The contract is FROZEN after approval — no structural changes in later phases.
 
 **CHECKPOINT 1 — Advocate Review:**
 Load `agents/advocate.md`. The advocate reviews:
@@ -201,6 +250,10 @@ Present synthesis/hypotheses, gap analysis, and advocate assessment to the user.
 ### Phase 4: COMPOSITION
 
 **Objective:** Assemble the final deliverable based on mode.
+
+**Contract enforcement:** The compiler agent MUST load the output contract
+approved at Checkpoint 1 and assemble the output STRICTLY following the
+contract's section schema. See `agents/compiler.md` §Output Contract Authority.
 
 **Process:**
 1. Load `agents/compiler.md`. Assemble output:

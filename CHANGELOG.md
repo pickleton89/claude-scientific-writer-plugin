@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Deep-Research Output Determinism Audit & Contract System
+- **JSONL Session Audit** (`scripts/audit_session.py`): Parses Claude Code JSONL transcripts to extract tool calls, file writes, MCP usage, checkpoint signals, and skill invocations — batch comparison across sessions with structured markdown reporting
+- **Audit Report** (`docs/deep-research-audit-report.md`): Root cause analysis of 3 deep-research runs showing none invoked mode_selector.py, output_validator.py, or checkpoints; outputs ranged from 42K-word multi-file markdown to 14-page LaTeX PDF
+- **Output Contract System** (`scripts/output_contract.py`): Machine-readable structural contract generated at Phase 1 that freezes section ordering, nesting, and word count targets; maps user `<output_format>` directives to canonical template slots via fuzzy matching (70% threshold) with 35+ known format mappings
+- **Section Schemas** (`scripts/thresholds.py`): `SECTION_SCHEMAS` constant defining ordered section definitions for all 8 modes (slot types: fixed, repeating, custom-content) with subsection specs and per-section word targets; `FILE_SPECS` constant enforcing single-file output per mode
+- **Contract Validation** (`scripts/output_validator.py`): `validate_against_contract()` function checking section ordering, extra section rejection, subsection count bounds, per-section word counts, file count limits, and LaTeX content detection
+- **Prompt Guidelines** (`references/prompt_guidelines.md`): Engineering guide for writing prompts that work with the template system — mode selection guide, prompt template, and rewritten examples of 3 research prompts
+- **58 new tests** (677 total, all passing): `test_output_contract.py` (31 tests), `test_integration_contract.py` (11 tests), extended `test_thresholds.py` (+8), extended `test_output_validator.py` (+8)
+
+### Changed — Deep-Research Output Determinism Audit & Contract System
+- **compiler.md**: Added "Output Contract Authority" section establishing contract precedence over user prompt format directives; single-file markdown mandate; mandatory validator execution before Checkpoint 4
+- **SKILL.md**: Added Output Contract Generation step to Phase 1, contract enforcement to Phase 4, Prompt Adapter guidance (5 rules for handling user format specs), and Output Format Mandates (single-file, markdown-only, CWD override)
+- **thresholds.py**: Added `Recommended Priority` to hypothesis mode mandatory sections; consistency validation function `_validate_schema_consistency()` runs at import time
+
 ### Added — Deep-Research Deterministic Audit Phase 4: Test Infrastructure
 - **tests/ directory**: Created `skills/deep-research/tests/` with 14 files (619 tests, all passing in 0.27s)
 - **8 ported tests** from archived hypothesis-generation and literature-review skills: test_score_hypothesis, test_validate_hypothesis, test_check_distinctiveness, test_prisma_validator, test_quality_scorer, test_screening_tracker, test_search_validator, test_exit_criteria — import paths already compatible, lint-cleaned (removed unused DESIGN_TO_TOOL import)
