@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Research Ideation Integration into Deep-Research
+- **RQ Evaluation Scoring** (`references/rq_evaluation.md`): Significance/Novelty/Feasibility rubric (each 1-5) presented at Checkpoint 1 alongside advocate assessment — informational only, does not gate progression
+- **5W1H Dimensional Guide** (`agents/mentor.md`): Internal questioning framework ensuring Layer 1 Socratic dialogue covers all key dimensions (What/Why/Who/When/Where/How) without presenting as a checklist to the user
+- **Expanded Gap Taxonomy** (`agents/synthesis.md`): Added Application and Interdisciplinary gap types (7 total); priority scoring system (Relevance + Unaddressedness + Tractability, range 3-15) with High/Moderate/Low thresholds and T1-T4 evidence tiebreaker
+- **Gap Verification Protocol** (`agents/synthesis.md`): High-priority gaps (score >= 12) flagged for verification at Checkpoint 3 via advocate/user-directed preprint spot-check; respects forward-only pipeline (no reverse agent handoff)
+- **Reference Documentation** (`docs/research-ideation-skill/`): 9 reference files from academic-research-skills covering 5W1H framework, gap analysis, method selection, literature search strategies, research planning, and Zotero integration
+
 ### Added — Deep-Research Output Determinism Audit & Contract System
 - **JSONL Session Audit** (`scripts/audit_session.py`): Parses Claude Code JSONL transcripts to extract tool calls, file writes, MCP usage, checkpoint signals, and skill invocations — batch comparison across sessions with structured markdown reporting
 - **Audit Report** (`docs/deep-research-audit-report.md`): Root cause analysis of 3 deep-research runs showing none invoked mode_selector.py, output_validator.py, or checkpoints; outputs ranged from 42K-word multi-file markdown to 14-page LaTeX PDF

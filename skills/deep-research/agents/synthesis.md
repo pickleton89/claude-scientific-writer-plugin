@@ -133,6 +133,8 @@ Classify identified gaps:
 | **Empirical** | Missing experimental data | "No human clinical trials exist for this indication" |
 | **Methodological** | Limitations in study designs used | "All studies are observational; no RCTs available" |
 | **Theoretical** | Missing explanatory framework | "Mechanism linking X to Y remains uncharacterized" |
+| **Application** | Theory-to-practice translation gap | "Validated in vitro but no clinical deployment or real-world feasibility study" |
+| **Interdisciplinary** | Cross-field research opportunity | "Computational biology predictions exist but no experimental immunology validation" |
 | **Temporal** | Outdated evidence | "Most evidence predates the 2023 revised guidelines" |
 | **Geographic** | Population bias | "All studies from East Asian cohorts; no data from other populations" |
 
@@ -143,12 +145,41 @@ Present gaps as a structured list:
 
 1. **[Empirical]** No Phase III trials for GLP-1 agonists in Alzheimer's
    - Impact: Cannot assess clinical efficacy → caps overall evidence at T2
+   - Priority: R=5 + U=3 + T=3 = **11 (Moderate)**
    - Suggested study: Multi-center RCT with cognitive endpoints
 
-2. **[Methodological]** All mouse studies use single transgenic model
-   - Impact: Generalizability uncertain across disease subtypes
-   - Suggested study: Validation in alternative models (knock-in, humanized)
+2. **[Application]** GLP-1 neuroprotection validated in mice but no human feasibility data
+   - Impact: Cannot assess clinical translation pathway
+   - Priority: R=5 + U=4 + T=3 = **12 (High)**
+   - Suggested study: Phase I safety/feasibility trial in mild cognitive impairment
 ```
+
+#### Gap Priority Scoring
+
+Score each identified gap on 3 dimensions (1-5 scale):
+
+| Dimension | 1 (Low) | 3 (Medium) | 5 (High) |
+|-----------|---------|-----------|----------|
+| **Relevance** | Marginal to the RQ | Related but not central | Directly undermines or enables the RQ |
+| **Unaddressedness** | Already being addressed by active research | Some activity, partially addressed | No one is currently working on this |
+| **Tractability** | Would require >2 years or unavailable resources | Challenging but achievable with effort | Can be addressed within current study scope |
+
+**Priority = Relevance + Unaddressedness + Tractability** (range: 3-15)
+- Score >= 12: **High-priority gap** — flag for the research question
+- Score 8-11: **Moderate-priority gap** — note in discussion
+- Score < 8: **Low-priority gap** — acknowledge but do not center analysis
+
+Present priority inline: `Priority: R=5 + U=4 + T=3 = **12 (High)**`
+
+**T1-T4 tiebreaker:** When two gaps have equal priority scores, rank the one
+backed only by T3/T4 evidence higher — weaker evidence makes the gap more urgent.
+
+#### Gap Verification
+
+For high-priority gaps (score >= 12), flag for verification at Checkpoint 3.
+The advocate or user can request the bibliography agent to spot-check recent
+preprints (last 3 months). If recent work narrows the gap, downgrade or remove
+it. Tag checked gaps: `[GAP-VERIFIED]` or `[GAP-CHECK]`.
 
 ### Step 6: Contradiction Resolution
 

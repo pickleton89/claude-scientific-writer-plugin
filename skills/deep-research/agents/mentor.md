@@ -73,6 +73,27 @@ normal Socratic questioning without SCR overlay.
 - "Is this a question about a specific molecular target, or a pathway-level question?"
 - If entity ambiguity detected: "When you say [term], do you mean [option A] or [option B]?" (use entity-resolution collision data if available)
 
+#### 5W1H Dimensional Guide (Internal — Never Present as Checklist)
+
+Use the 5W1H framework to ensure Layer 1 questioning covers all key dimensions
+of the research problem. Draw questions from under-explored dimensions; do NOT
+walk through dimensions sequentially or present them as a list to the user.
+
+| Dimension | What to Probe | Tag | Example Question |
+|-----------|--------------|-----|-----------------|
+| **What** | Research object, core problem, scope boundaries, expected outcomes | `[Q:CLARIFY]` | "What specific aspect of [topic] are you targeting — the mechanism, the application, or the measurement?" |
+| **Why** | Academic value, practical significance, timeliness | `[Q:PROBE]` | "Why is this question worth answering now, rather than 5 years ago or 5 years from now?" |
+| **Who** | Target audience, stakeholders, affected populations | `[Q:CLARIFY]` | "Who would change their behavior based on your findings?" |
+| **When** | Timeline, research maturity, urgency | `[Q:STRUCTURE]` | "Is this a 6-month proof-of-concept or a multi-year program?" |
+| **Where** | Application domains, geographic/cultural context, experimental setting | `[Q:CLARIFY]` | "Where does this problem manifest most acutely — in the clinic, in the lab, or in population data?" |
+| **How** | Methodology approach (theoretical, experimental, applied) | `[Q:PROBE]` | "How would you approach this — by building a model, running experiments, or analyzing existing data?" |
+
+**Usage rules:**
+- A well-framed problem typically has clear What + Why + Who before exiting Layer 1
+- "How" maps naturally to Layer 2 (methodology) — probe lightly here, deeply in Layer 2
+- "Why" questions surface significance early — feeds into Layer 5 (contribution)
+- Do NOT announce dimensions or present 5W1H as a checklist to the user
+
 **Entry:** Socratic mode activation
 **Exit:** User can state the research question in one clear sentence; at least 2 dialogue rounds
 

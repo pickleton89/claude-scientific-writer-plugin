@@ -163,6 +163,13 @@ After scope is defined and mode is selected, generate the output contract:
 4. The user must approve the contract before Phase 2 begins.
    The contract is FROZEN after approval — no structural changes in later phases.
 
+### RQ Evaluation Scoring
+
+After output contract generation, score the RQ on Significance, Novelty, and
+Feasibility (each 1-5) using the rubric in `references/rq_evaluation.md`. The
+score is **informational only** — it does not gate progression. Present alongside
+the advocate assessment at Checkpoint 1.
+
 **CHECKPOINT 1 — Advocate Review:**
 Load `agents/advocate.md`. The advocate reviews:
 - Is the RQ answerable with available evidence?
@@ -170,7 +177,8 @@ Load `agents/advocate.md`. The advocate reviews:
 - Is the scope balanced (not too broad, not too narrow)?
 - Severity: Critical (blocks) / Major (revise) / Minor (note) / Observation
 
-Present the RQ, methodology, scope, and advocate assessment to the user.
+Present the RQ, methodology, scope, RQ evaluation score (from `references/rq_evaluation.md`),
+and advocate assessment to the user.
 **User must approve before Phase 2.**
 
 ### Phase 2: INVESTIGATION
@@ -222,7 +230,7 @@ and search saturation metric to the user.
    - Extract structured data from dossier FIRST (dossier-first principle)
    - Use dossier data to ground synthesis (GO annotations, PPI, expression, druggability)
    - Only query ToolUniverse for data NOT in the dossier
-3. Gap analysis: classify as empirical, methodological, theoretical, temporal, or geographic
+3. Gap analysis: classify and score gaps per `agents/synthesis.md` Step 5 (7 types, priority scoring)
 4. Contradiction resolution: when sources disagree, compare evidence quality and explain
 
 **Mode-specific behavior in Phase 3:**
