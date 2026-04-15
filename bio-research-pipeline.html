@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biological Research Pipeline — SKILL_ROUTER v2.3.0</title>
+<style>
+  :root {
+    --slate-900: #0f172a;
+    --slate-700: #334155;
+    --slate-500: #64748b;
+    --slate-300: #cbd5e1;
+    --slate-100: #f1f5f9;
+    --blue-600: #2563eb;
+    --blue-100: #dbeafe;
+    --emerald-600: #059669;
+    --emerald-100: #d1fae5;
+    --amber-600: #d97706;
+    --amber-100: #fef3c7;
+    --violet-600: #7c3aed;
+    --violet-100: #ede9fe;
+    --rose-600: #e11d48;
+    --rose-100: #ffe4e6;
+    --cyan-600: #0891b2;
+    --cyan-100: #cffafe;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: #f8fafc;
+    color: var(--slate-900);
+    padding: 2rem;
+    line-height: 1.5;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+
+  .subtitle {
+    color: var(--slate-500);
+    font-size: 0.875rem;
+    margin-bottom: 2rem;
+  }
+
+  .pipeline-container {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  /* --- Decision Tree Section --- */
+  .decision-tree {
+    background: white;
+    border: 1px solid var(--slate-300);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .decision-tree h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--slate-700);
+  }
+
+  /* --- SVG Pipeline Diagram --- */
+  .diagram-wrap {
+    overflow-x: auto;
+    margin-bottom: 2rem;
+  }
+
+  svg text {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  }
+
+  /* --- Workflow Section --- */
+  .workflow {
+    background: white;
+    border: 1px solid var(--slate-300);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .workflow h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--slate-700);
+  }
+
+  .workflow p {
+    color: var(--slate-700);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  .step-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .step-num {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: white;
+  }
+
+  .step-body {
+    flex: 1;
+  }
+
+  .step-skill {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .step-desc {
+    font-size: 0.82rem;
+    color: var(--slate-500);
+  }
+
+  .step-optional {
+    font-size: 0.75rem;
+    color: var(--amber-600);
+    font-style: italic;
+  }
+
+  /* --- Quick Selection Table --- */
+  .quick-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+  }
+
+  .quick-table th {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    background: var(--slate-100);
+    color: var(--slate-700);
+    font-weight: 600;
+    border-bottom: 2px solid var(--slate-300);
+  }
+
+  .quick-table td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--slate-100);
+    color: var(--slate-700);
+  }
+
+  .skill-tag {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .tag-entity   { background: var(--blue-100);    color: var(--blue-600); }
+  .tag-target   { background: var(--emerald-100);  color: var(--emerald-600); }
+  .tag-drug     { background: var(--violet-100);   color: var(--violet-600); }
+  .tag-validate { background: var(--amber-100);    color: var(--amber-600); }
+  .tag-research { background: var(--cyan-100);     color: var(--cyan-600); }
+  .tag-writing  { background: var(--rose-100);     color: var(--rose-600); }
+
+  .principle-box {
+    background: var(--amber-100);
+    border-left: 4px solid var(--amber-600);
+    padding: 0.75rem 1rem;
+    border-radius: 0 8px 8px 0;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: var(--slate-700);
+  }
+
+  .principle-box strong {
+    color: var(--amber-600);
+  }
+
+  .arrow-connector {
+    text-align: center;
+    color: var(--slate-500);
+    font-size: 1.25rem;
+    margin: -0.25rem 0;
+  }
+</style>
+</head>
+<body>
+<div class="pipeline-container">
+
+  <h1>Biological Research Pipeline</h1>
+  <p class="subtitle">SKILL_ROUTER.md v2.3.0 — Decision tree, validation workflow, and data-enriched output routing</p>
+
+  <!-- ============ DECISION TREE DIAGRAM ============ -->
+  <div class="decision-tree">
+    <h2>Decision Tree: Biological &amp; Drug Research</h2>
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 880 480" width="100%" xmlns="http://www.w3.org/2000/svg">
+        <!-- Background -->
+        <rect width="880" height="480" fill="white" rx="8"/>
+
+        <!-- Arrowhead def -->
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#94a3b8"/>
+          </marker>
+        </defs>
+
+        <!-- Root question -->
+        <rect x="240" y="10" width="400" height="34" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+        <text x="440" y="32" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">User needs biological / drug research data</text>
+
+        <!-- Horizontal rail from root -->
+        <line x1="440" y1="44" x2="440" y2="60" stroke="#94a3b8" stroke-width="1.5"/>
+        <line x1="110" y1="60" x2="770" y2="60" stroke="#94a3b8" stroke-width="1.5"/>
+
+        <!-- Drop lines to each branch -->
+        <line x1="110" y1="60" x2="110" y2="82" stroke="#94a3b8" stroke-width="1.5"/>
+        <line x1="330" y1="60" x2="330" y2="82" stroke="#94a3b8" stroke-width="1.5"/>
+        <line x1="550" y1="60" x2="550" y2="82" stroke="#94a3b8" stroke-width="1.5"/>
+        <line x1="770" y1="60" x2="770" y2="82" stroke="#94a3b8" stroke-width="1.5"/>
+
+        <!-- ===== BRANCH 1: Gene/Protein/Target (center=110) ===== -->
+        <rect x="10" y="82" width="200" height="30" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+        <text x="110" y="102" text-anchor="middle" font-size="11" font-weight="600" fill="#2563eb">GENE / PROTEIN / TARGET</text>
+
+        <line x1="110" y1="112" x2="110" y2="132" stroke="#94a3b8" stroke-width="1.2"/>
+        <rect x="35" y="132" width="150" height="24" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+        <text x="110" y="148" text-anchor="middle" font-size="10" fill="#334155">IDs resolved?</text>
+
+        <!-- No branch -->
+        <line x1="65" y1="156" x2="65" y2="176" stroke="#94a3b8" stroke-width="1.2"/>
+        <text x="52" y="170" font-size="9" fill="#64748b">No</text>
+        <rect x="10" y="176" width="110" height="22" rx="5" fill="#dbeafe" stroke="#2563eb"/>
+        <text x="65" y="191" text-anchor="middle" font-size="9.5" font-weight="600" fill="#2563eb">entity-resolution</text>
+
+        <!-- Yes branch + dashed merge -->
+        <line x1="155" y1="156" x2="155" y2="176" stroke="#94a3b8" stroke-width="1.2"/>
+        <text x="161" y="170" font-size="9" fill="#64748b">Yes</text>
+        <line x1="120" y1="187" x2="155" y2="187" stroke="#2563eb" stroke-width="1" stroke-dasharray="3,2"/>
+
+        <!-- Merge down to intelligence -->
+        <line x1="110" y1="198" x2="110" y2="198" stroke="#94a3b8" stroke-width="1"/>
+        <line x1="155" y1="176" x2="155" y2="214" stroke="#94a3b8" stroke-width="1.2"/>
+        <line x1="65" y1="198" x2="65" y2="214" stroke="#94a3b8" stroke-width="1.2"/>
+        <line x1="65" y1="214" x2="155" y2="214" stroke="#94a3b8" stroke-width="1"/>
+        <line x1="110" y1="214" x2="110" y2="224" stroke="#94a3b8" stroke-width="1.2"/>
+
+        <rect x="15" y="224" width="190" height="24" rx="6" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/>
+        <text x="110" y="240" text-anchor="middle" font-size="10" font-weight="600" fill="#059669">target-intelligence (6-stage)</text>
+
+        <line x1="110" y1="248" x2="110" y2="264" stroke="#94a3b8" stroke-width="1"/>
+        <text x="110" y="276" text-anchor="middle" font-size="9" fill="#64748b">12-section target dossier</text>
+
+        <line x1="110" y1="282" x2="110" y2="298" stroke="#94a3b8" stroke-width="1"/>
+        <rect x="15" y="298" width="190" height="22" rx="5" fill="#fef3c7" stroke="#d97706"/>
+        <text x="110" y="313" text-anchor="middle" font-size="9.5" font-weight="600" fill="#d97706">→ target-validation (0–100)</text>
+
+        <line x1="110" y1="320" x2="110" y2="334" stroke="#94a3b8" stroke-width="1"/>
+        <rect x="10" y="334" width="200" height="22" rx="5" fill="#ede9fe" stroke="#7c3aed"/>
+        <text x="110" y="349" text-anchor="middle" font-size="9.5" font-weight="600" fill="#7c3aed">→ drug-intelligence (if drugs found)</text>
+
+        <!-- ===== BRANCH 2: Drug/Compound (center=330) ===== -->
+        <rect x="230" y="82" width="200" height="30" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+        <text x="330" y="102" text-anchor="middle" font-size="11" font-weight="600" fill="#7c3aed">DRUG / COMPOUND</text>
+
+        <line x1="330" y1="112" x2="330" y2="132" stroke="#94a3b8" stroke-width="1.2"/>
+        <rect x="255" y="132" width="150" height="24" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+        <text x="330" y="148" text-anchor="middle" font-size="10" fill="#334155">IDs resolved?</text>
+
+        <line x1="285" y1="156" x2="285" y2="176" stroke="#94a3b8" stroke-width="1.2"/>
+        <text x="272" y="170" font-size="9" fill="#64748b">No</text>
+        <rect x="230" y="176" width="110" height="22" rx="5" fill="#dbeafe" stroke="#2563eb"/>
+        <text x="285" y="191" text-anchor="middle" font-size="9.5" font-weight="600" fill="#2563eb">entity-resolution</text>
+
+        <line x1="375" y1="156" x2="375" y2="176" stroke="#94a3b8" stroke-width="1.2"/>
+        <text x="381" y="170" font-size="9" fill="#64748b">Yes</text>
+        <line x1="340" y1="187" x2="375" y2="187" stroke="#7c3aed" stroke-width="1" stroke-dasharray="3,2"/>
+
+        <line x1="375" y1="176" x2="375" y2="214" stroke="#94a3b8" stroke-width="1.2"/>
+        <line x1="285" y1="198" x2="285" y2="214" stroke="#94a3b8" stroke-width="1.2"/>
+        <line x1="285" y1="214" x2="375" y2="214" stroke="#94a3b8" stroke-width="1"/>
+        <line x1="330" y1="214" x2="330" y2="224" stroke="#94a3b8" stroke-width="1.2"/>
+
+        <rect x="235" y="224" width="190" height="24" rx="6" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+        <text x="330" y="240" text-anchor="middle" font-size="10" font-weight="600" fill="#7c3aed">drug-intelligence (6-stage)</text>
+
+        <line x1="330" y1="248" x2="330" y2="264" stroke="#94a3b8" stroke-width="1"/>
+        <text x="330" y="276" text-anchor="middle" font-size="9" fill="#64748b">10-section drug dossier</text>
+
+        <line x1="330" y1="282" x2="330" y2="298" stroke="#94a3b8" stroke-width="1"/>
+        <rect x="230" y="298" width="200" height="22" rx="5" fill="#d1fae5" stroke="#059669"/>
+        <text x="330" y="313" text-anchor="middle" font-size="9.5" font-weight="600" fill="#059669">→ target-intelligence (if targets found)</text>
+
+        <line x1="330" y1="320" x2="330" y2="334" stroke="#94a3b8" stroke-width="1"/>
+        <rect x="235" y="334" width="190" height="22" rx="5" fill="#fef3c7" stroke="#d97706"/>
+        <text x="330" y="349" text-anchor="middle" font-size="9.5" font-weight="600" fill="#d97706">→ target-validation (comparative)</text>
+
+        <!-- ===== BRANCH 3: Both (center=550) ===== -->
+        <rect x="460" y="82" width="180" height="30" rx="8" fill="#cffafe" stroke="#0891b2" stroke-width="1.5"/>
+        <text x="550" y="102" text-anchor="middle" font-size="11" font-weight="600" fill="#0891b2">BOTH target AND drug</text>
+
+        <line x1="550" y1="112" x2="550" y2="134" stroke="#94a3b8" stroke-width="1.2"/>
+        <rect x="475" y="134" width="150" height="22" rx="5" fill="#dbeafe" stroke="#2563eb"/>
+        <text x="550" y="149" text-anchor="middle" font-size="9.5" font-weight="600" fill="#2563eb">entity-resolution (both)</text>
+
+        <line x1="550" y1="156" x2="550" y2="176" stroke="#94a3b8" stroke-width="1.2"/>
+        <rect x="465" y="176" width="170" height="22" rx="5" fill="#d1fae5" stroke="#059669"/>
+        <text x="550" y="191" text-anchor="middle" font-size="9.5" font-weight="600" fill="#059669">target-intelligence</text>
+
+        <line x1="550" y1="198" x2="550" y2="208" stroke="#94a3b8" stroke-width="1"/>
+        <text x="558" y="207" font-size="8" fill="#64748b">+</text>
+
+        <line x1="550" y1="212" x2="550" y2="220" stroke="#94a3b8" stroke-width="1"/>
+        <rect x="465" y="220" width="170" height="22" rx="5" fill="#ede9fe" stroke="#7c3aed"/>
+        <text x="550" y="235" text-anchor="middle" font-size="9.5" font-weight="600" fill="#7c3aed">drug-intelligence</text>
+
+        <line x1="550" y1="242" x2="550" y2="262" stroke="#94a3b8" stroke-width="1.2"/>
+        <rect x="460" y="262" width="180" height="24" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+        <text x="550" y="278" text-anchor="middle" font-size="10" font-weight="600" fill="#d97706">target-validation (0–100)</text>
+
+        <!-- ===== BRANCH 4: Disease (center=770) ===== -->
+        <rect x="685" y="82" width="170" height="30" rx="8" fill="#ffe4e6" stroke="#e11d48" stroke-width="1.5"/>
+        <text x="770" y="97" text-anchor="middle" font-size="11" font-weight="600" fill="#e11d48">DISEASE</text>
+        <text x="770" y="108" text-anchor="middle" font-size="9" fill="#e11d48">(target landscape)</text>
+
+        <line x1="770" y1="112" x2="770" y2="134" stroke="#94a3b8" stroke-width="1.2"/>
+        <rect x="705" y="134" width="130" height="22" rx="5" fill="#dbeafe" stroke="#2563eb"/>
+        <text x="770" y="149" text-anchor="middle" font-size="9.5" font-weight="600" fill="#2563eb">entity-resolution</text>
+
+        <line x1="770" y1="156" x2="770" y2="176" stroke="#94a3b8" stroke-width="1.2"/>
+        <rect x="690" y="176" width="160" height="22" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/>
+        <text x="770" y="191" text-anchor="middle" font-size="9.5" fill="#334155">Open Targets associations</text>
+
+        <line x1="770" y1="198" x2="770" y2="218" stroke="#94a3b8" stroke-width="1.2"/>
+        <rect x="690" y="218" width="160" height="22" rx="5" fill="#d1fae5" stroke="#059669"/>
+        <text x="770" y="233" text-anchor="middle" font-size="9.5" font-weight="600" fill="#059669">target-intelligence (each)</text>
+
+        <!-- ===== LEGEND ===== -->
+        <rect x="15" y="390" width="850" height="80" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+        <text x="35" y="412" font-size="11" font-weight="600" fill="#334155">Legend</text>
+
+        <rect x="35" y="422" width="12" height="12" rx="3" fill="#dbeafe" stroke="#2563eb"/>
+        <text x="52" y="433" font-size="9.5" fill="#334155">entity-resolution</text>
+
+        <rect x="170" y="422" width="12" height="12" rx="3" fill="#d1fae5" stroke="#059669"/>
+        <text x="187" y="433" font-size="9.5" fill="#334155">target-intelligence</text>
+
+        <rect x="325" y="422" width="12" height="12" rx="3" fill="#ede9fe" stroke="#7c3aed"/>
+        <text x="342" y="433" font-size="9.5" fill="#334155">drug-intelligence</text>
+
+        <rect x="470" y="422" width="12" height="12" rx="3" fill="#fef3c7" stroke="#d97706"/>
+        <text x="487" y="433" font-size="9.5" fill="#334155">target-validation</text>
+
+        <rect x="610" y="422" width="12" height="12" rx="3" fill="#ffe4e6" stroke="#e11d48"/>
+        <text x="627" y="433" font-size="9.5" fill="#334155">disease branch</text>
+
+        <rect x="735" y="422" width="12" height="12" rx="3" fill="#f1f5f9" stroke="#cbd5e1"/>
+        <text x="752" y="433" font-size="9.5" fill="#334155">decision node</text>
+
+        <text x="35" y="456" font-size="9.5" fill="#64748b">Dashed lines indicate entity-resolution feeds resolved IDs into downstream intelligence skills. Every path begins with ID resolution.</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ============ VALIDATION WORKFLOW ============ -->
+  <div class="workflow">
+    <h2>Workflow 7: Target Validation Pipeline</h2>
+    <p>The canonical six-step pipeline from decision tree entry to optional manuscript output.</p>
+
+    <div class="step-row">
+      <div class="step-num" style="background: #2563eb;">1</div>
+      <div class="step-body">
+        <div class="step-skill"><span class="skill-tag tag-entity">entity-resolution</span></div>
+        <div class="step-desc">Resolve gene / drug / disease identifiers — UniProt, Ensembl, ChEMBL, etc.</div>
+      </div>
+    </div>
+
+    <div class="arrow-connector">↓</div>
+
+    <div class="step-row">
+      <div class="step-num" style="background: #059669;">2</div>
+      <div class="step-body">
+        <div class="step-skill"><span class="skill-tag tag-target">target-intelligence</span></div>
+        <div class="step-desc">Build 12-section target dossier across 6 stages — expression, PPI, pathways, druggability, structure, variants.</div>
+      </div>
+    </div>
+
+    <div class="arrow-connector">↓</div>
+
+    <div class="step-row">
+      <div class="step-num" style="background: #7c3aed;">3</div>
+      <div class="step-body">
+        <div class="step-skill"><span class="skill-tag tag-drug">drug-intelligence</span></div>
+        <div class="step-desc">Build 10-section drug dossier across 6 stages — pharmacology, ADMET, clinical trials, indications.</div>
+      </div>
+    </div>
+
+    <div class="arrow-connector">↓</div>
+
+    <div class="step-row">
+      <div class="step-num" style="background: #d97706;">4</div>
+      <div class="step-body">
+        <div class="step-skill"><span class="skill-tag tag-validate">target-validation</span></div>
+        <div class="step-desc">Score 0–100 across 5 dimensions, assign T1–T4 evidence tier, produce GO / NO-GO recommendation.</div>
+      </div>
+    </div>
+
+    <div class="arrow-connector">↓</div>
+
+    <div class="step-row">
+      <div class="step-num" style="background: #0891b2;">5</div>
+      <div class="step-body">
+        <div class="step-skill"><span class="skill-tag tag-research">deep-research</span> <span class="step-optional">(optional)</span></div>
+        <div class="step-desc">Deep-dive lit-review mode on specific evidence gaps identified in validation.</div>
+      </div>
+    </div>
+
+    <div class="arrow-connector">↓</div>
+
+    <div class="step-row">
+      <div class="step-num" style="background: #e11d48;">6</div>
+      <div class="step-body">
+        <div class="step-skill"><span class="skill-tag tag-writing">scientific-writing</span> <span class="step-optional">(optional)</span></div>
+        <div class="step-desc">Draft target assessment manuscript from dossier and validation data.</div>
+      </div>
+    </div>
+
+    <div class="principle-box">
+      <strong>Dossier-first principle:</strong> Downstream output skills (plotting-libraries, scientific-schematics, peer-review, etc.) extract data from upstream dossiers when available, avoiding redundant ToolUniverse queries. Data-enriched requests route to the OUTPUT skill, not back to bio research skills, since the output skill controls rendering.
+    </div>
+  </div>
+
+  <!-- ============ DATA-ENRICHED OUTPUT ============ -->
+  <div class="workflow">
+    <h2>Workflow 8: Data-Enriched Research Output</h2>
+    <p>When a downstream output skill needs biological data, the pipeline resolves entities and builds dossiers first, then hands off to whichever output skill the user actually needs.</p>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 920 280" width="920" height="280" xmlns="http://www.w3.org/2000/svg">
+        <rect width="920" height="280" fill="white" rx="8"/>
+
+        <!-- Stage 1: entity-resolution -->
+        <rect x="20" y="30" width="160" height="50" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+        <text x="100" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#2563eb">1. entity-resolution</text>
+        <text x="100" y="68" text-anchor="middle" font-size="9" fill="#64748b">Resolve IDs (if needed)</text>
+
+        <!-- Arrow -->
+        <line x1="180" y1="55" x2="210" y2="55" stroke="#cbd5e1" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+        <!-- Stage 2: Intelligence (OR) -->
+        <rect x="210" y="15" width="180" height="38" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/>
+        <text x="300" y="38" text-anchor="middle" font-size="11" font-weight="700" fill="#059669">2a. target-intelligence</text>
+
+        <text x="300" y="64" text-anchor="middle" font-size="10" font-weight="600" fill="#64748b">OR</text>
+
+        <rect x="210" y="72" width="180" height="38" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+        <text x="300" y="95" text-anchor="middle" font-size="11" font-weight="700" fill="#7c3aed">2b. drug-intelligence</text>
+
+        <!-- Arrow -->
+        <line x1="390" y1="55" x2="430" y2="55" stroke="#cbd5e1" stroke-width="1.5"/>
+        <line x1="390" y1="91" x2="420" y2="91" stroke="#cbd5e1" stroke-width="1.5"/>
+        <line x1="420" y1="55" x2="420" y2="91" stroke="#cbd5e1" stroke-width="1.5"/>
+        <line x1="420" y1="73" x2="450" y2="73" stroke="#cbd5e1" stroke-width="1.5"/>
+
+        <!-- Stage 3: Output skill fan-out -->
+        <rect x="450" y="10" width="450" height="260" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-dasharray="6,3"/>
+        <text x="675" y="30" text-anchor="middle" font-size="11" font-weight="700" fill="#334155">3. OUTPUT SKILL (routes to user's actual need)</text>
+
+        <rect x="470" y="44" width="200" height="26" rx="6" fill="white" stroke="#cbd5e1"/>
+        <text x="570" y="61" text-anchor="middle" font-size="10" fill="#334155">plotting-libraries — bio data viz</text>
+
+        <rect x="470" y="78" width="200" height="26" rx="6" fill="white" stroke="#cbd5e1"/>
+        <text x="570" y="95" text-anchor="middle" font-size="10" fill="#334155">scientific-schematics — pathway/PPI</text>
+
+        <rect x="470" y="112" width="200" height="26" rx="6" fill="white" stroke="#cbd5e1"/>
+        <text x="570" y="129" text-anchor="middle" font-size="10" fill="#334155">peer-review — claim verification</text>
+
+        <rect x="470" y="146" width="200" height="26" rx="6" fill="white" stroke="#cbd5e1"/>
+        <text x="570" y="163" text-anchor="middle" font-size="10" fill="#334155">research-paper-summarizer — enrichment</text>
+
+        <rect x="690" y="44" width="200" height="26" rx="6" fill="white" stroke="#cbd5e1"/>
+        <text x="790" y="61" text-anchor="middle" font-size="10" fill="#334155">scientific-writing — Methods DB tracking</text>
+
+        <rect x="690" y="78" width="200" height="26" rx="6" fill="white" stroke="#cbd5e1"/>
+        <text x="790" y="95" text-anchor="middle" font-size="10" fill="#334155">statistical-analysis — population context</text>
+
+        <rect x="690" y="112" width="200" height="26" rx="6" fill="white" stroke="#cbd5e1"/>
+        <text x="790" y="129" text-anchor="middle" font-size="10" fill="#334155">deep-research — hypothesis development</text>
+
+        <!-- Key principle callout -->
+        <rect x="470" y="192" width="420" height="60" rx="8" fill="#fef3c7" stroke="#d97706"/>
+        <text x="680" y="212" text-anchor="middle" font-size="10" font-weight="600" fill="#d97706">Key principle: dossier data flows downstream</text>
+        <text x="680" y="228" text-anchor="middle" font-size="9.5" fill="#64748b">Output skills extract from cached dossiers — no redundant</text>
+        <text x="680" y="242" text-anchor="middle" font-size="9.5" fill="#64748b">ToolUniverse queries. Route to the OUTPUT skill, not back upstream.</text>
+
+        <!-- Arrowhead def -->
+        <defs>
+          <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#cbd5e1"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ============ QUICK SELECTION TABLE ============ -->
+  <div class="workflow">
+    <h2>Quick Selection Reference</h2>
+    <table class="quick-table">
+      <thead>
+        <tr>
+          <th>User Request</th>
+          <th>Primary Skill</th>
+          <th>Prerequisite</th>
+          <th>Downstream</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>"Tell me about EGFR"</td>
+          <td><span class="skill-tag tag-target">target-intelligence</span></td>
+          <td><span class="skill-tag tag-entity">entity-resolution</span></td>
+          <td><span class="skill-tag tag-drug">drug-intelligence</span></td>
+        </tr>
+        <tr>
+          <td>"Profile imatinib"</td>
+          <td><span class="skill-tag tag-drug">drug-intelligence</span></td>
+          <td><span class="skill-tag tag-entity">entity-resolution</span></td>
+          <td><span class="skill-tag tag-target">target-intelligence</span></td>
+        </tr>
+        <tr>
+          <td>"BRCA2 druggability"</td>
+          <td><span class="skill-tag tag-target">target-intelligence</span></td>
+          <td><span class="skill-tag tag-entity">entity-resolution</span></td>
+          <td><span class="skill-tag tag-validate">target-validation</span></td>
+        </tr>
+        <tr>
+          <td>"Compare drugs for target"</td>
+          <td><span class="skill-tag tag-validate">target-validation</span></td>
+          <td><span class="skill-tag tag-entity">entity-resolution</span> + both intel skills</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>"What targets for Alzheimer's?"</td>
+          <td><span class="skill-tag tag-target">target-intelligence</span> (multi)</td>
+          <td><span class="skill-tag tag-entity">entity-resolution</span></td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+</body>
+</html>

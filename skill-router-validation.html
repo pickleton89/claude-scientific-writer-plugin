@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skill Router — Programmatic Validation System</title>
+<style>
+  :root {
+    --slate-900: #0f172a;
+    --slate-700: #334155;
+    --slate-500: #64748b;
+    --slate-300: #cbd5e1;
+    --slate-200: #e2e8f0;
+    --slate-100: #f1f5f9;
+    --slate-50: #f8fafc;
+    --blue-700: #1d4ed8;
+    --blue-600: #2563eb;
+    --blue-100: #dbeafe;
+    --emerald-700: #047857;
+    --emerald-600: #059669;
+    --emerald-100: #d1fae5;
+    --amber-700: #b45309;
+    --amber-600: #d97706;
+    --amber-100: #fef3c7;
+    --violet-700: #6d28d9;
+    --violet-600: #7c3aed;
+    --violet-100: #ede9fe;
+    --rose-600: #e11d48;
+    --rose-100: #ffe4e6;
+    --cyan-600: #0891b2;
+    --cyan-100: #cffafe;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--slate-50);
+    color: var(--slate-900);
+    padding: 2rem;
+    line-height: 1.5;
+  }
+
+  .page { max-width: 940px; margin: 0 auto; }
+
+  h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.2rem; }
+  .subtitle { color: var(--slate-500); font-size: 0.85rem; margin-bottom: 2rem; }
+
+  .section {
+    background: white;
+    border: 1px solid var(--slate-200);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .section h2 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--slate-700);
+    margin-bottom: 1rem;
+  }
+
+  .section h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--slate-500);
+    margin: 1rem 0 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  svg text {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  }
+
+  .mono {
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 0.82rem;
+    background: var(--slate-100);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    color: var(--slate-700);
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>Skill Router — Programmatic Validation System</h1>
+<p class="subtitle">Three-layer architecture: YAML registry → scoring engine → 169-case test suite &nbsp;|&nbsp; v1.5.0</p>
+
+<!-- ============ LAYER ARCHITECTURE ============ -->
+<div class="section">
+  <h2>System Architecture</h2>
+  <svg viewBox="0 0 880 420" width="100%" xmlns="http://www.w3.org/2000/svg">
+    <rect width="880" height="420" fill="white" rx="8"/>
+
+    <!-- Layer 1: YAML Registry -->
+    <rect x="20" y="15" width="840" height="105" rx="10" fill="#dbeafe" fill-opacity="0.35" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="40" y="38" font-size="13" font-weight="700" fill="#1d4ed8">Layer 1: skill_triggers.yaml</text>
+    <text x="260" y="38" font-size="10" fill="#64748b">— 29 skills × 5 fields each</text>
+
+    <!-- Skill boxes -->
+    <rect x="40" y="50" width="130" height="56" rx="6" fill="white" stroke="#2563eb" stroke-width="1"/>
+    <text x="50" y="66" font-size="9" font-weight="600" fill="#1d4ed8">plotting-libraries</text>
+    <text x="50" y="80" font-size="8" fill="#64748b">keywords: plot, chart, heatmap…</text>
+    <text x="50" y="91" font-size="8" fill="#64748b">triggers: (bar|line)\s*(chart|plot)</text>
+    <text x="50" y="102" font-size="8" fill="#e11d48">negative: diagram, schematic…</text>
+
+    <rect x="185" y="50" width="130" height="56" rx="6" fill="white" stroke="#059669" stroke-width="1"/>
+    <text x="195" y="66" font-size="9" font-weight="600" fill="#047857">target-intelligence</text>
+    <text x="195" y="80" font-size="8" fill="#64748b">keywords: target, dossier, PPI…</text>
+    <text x="195" y="91" font-size="8" fill="#64748b">triggers: profile.*target</text>
+    <text x="195" y="102" font-size="8" fill="#64748b">category: biological_research</text>
+
+    <rect x="330" y="50" width="130" height="56" rx="6" fill="white" stroke="#7c3aed" stroke-width="1"/>
+    <text x="340" y="66" font-size="9" font-weight="600" fill="#6d28d9">drug-intelligence</text>
+    <text x="340" y="80" font-size="8" fill="#64748b">keywords: drug, compound, IC50…</text>
+    <text x="340" y="91" font-size="8" fill="#64748b">triggers: profile.*drug</text>
+    <text x="340" y="102" font-size="8" fill="#64748b">category: biological_research</text>
+
+    <rect x="475" y="50" width="130" height="56" rx="6" fill="white" stroke="#d97706" stroke-width="1"/>
+    <text x="485" y="66" font-size="9" font-weight="600" fill="#b45309">peer-review</text>
+    <text x="485" y="80" font-size="8" fill="#64748b">keywords: review, critique, bias…</text>
+    <text x="485" y="91" font-size="8" fill="#64748b">triggers: review.*manuscript</text>
+    <text x="485" y="102" font-size="8" fill="#64748b">priority: 1</text>
+
+    <rect x="620" y="50" width="110" height="56" rx="6" fill="white" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4,3"/>
+    <text x="645" y="74" text-anchor="middle" font-size="10" fill="#64748b">… 25 more</text>
+    <text x="645" y="88" text-anchor="middle" font-size="9" fill="#94a3b8">skills</text>
+
+    <!-- Per-skill field callout -->
+    <rect x="745" y="50" width="105" height="56" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+    <text x="755" y="65" font-size="8" font-weight="600" fill="#334155">Per-skill fields:</text>
+    <text x="755" y="77" font-size="8" fill="#64748b">• keywords []</text>
+    <text x="755" y="87" font-size="8" fill="#64748b">• triggers [] (regex)</text>
+    <text x="755" y="97" font-size="8" fill="#e11d48">• negative_keywords []</text>
+    <text x="755" y="107" font-size="8" fill="#64748b">• category, priority</text>
+
+    <!-- Arrow down -->
+    <line x1="440" y1="120" x2="440" y2="145" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+    <text x="450" y="137" font-size="9" fill="#94a3b8">loads</text>
+
+    <!-- Layer 2: Scoring Engine -->
+    <rect x="20" y="145" width="840" height="140" rx="10" fill="#d1fae5" fill-opacity="0.3" stroke="#059669" stroke-width="1.5"/>
+    <text x="40" y="168" font-size="13" font-weight="700" fill="#047857">Layer 2: route.py — Scoring Engine</text>
+    <text x="310" y="168" font-size="10" fill="#64748b">— SkillRouter class + RoutingDecision dataclass</text>
+
+    <!-- Pipeline stages -->
+    <rect x="40" y="182" width="115" height="50" rx="6" fill="white" stroke="#059669" stroke-width="1"/>
+    <text x="97" y="200" text-anchor="middle" font-size="9" font-weight="600" fill="#047857">1. Tokenize</text>
+    <text x="97" y="214" text-anchor="middle" font-size="8" fill="#64748b">unigrams, bigrams,</text>
+    <text x="97" y="224" text-anchor="middle" font-size="8" fill="#64748b">trigrams</text>
+
+    <line x1="155" y1="207" x2="175" y2="207" stroke="#94a3b8" stroke-width="1" marker-end="url(#arrowGray)"/>
+
+    <rect x="175" y="182" width="115" height="50" rx="6" fill="white" stroke="#059669" stroke-width="1"/>
+    <text x="232" y="200" text-anchor="middle" font-size="9" font-weight="600" fill="#047857">2. Keyword Match</text>
+    <text x="232" y="214" text-anchor="middle" font-size="8" fill="#64748b">count matches →</text>
+    <text x="232" y="224" text-anchor="middle" font-size="8" fill="#64748b">base score table</text>
+
+    <line x1="290" y1="207" x2="310" y2="207" stroke="#94a3b8" stroke-width="1" marker-end="url(#arrowGray)"/>
+
+    <rect x="310" y="182" width="115" height="50" rx="6" fill="white" stroke="#059669" stroke-width="1"/>
+    <text x="367" y="200" text-anchor="middle" font-size="9" font-weight="600" fill="#047857">3. Trigger Boost</text>
+    <text x="367" y="214" text-anchor="middle" font-size="8" fill="#64748b">regex matches ×0.2</text>
+    <text x="367" y="224" text-anchor="middle" font-size="8" fill="#64748b">capped at +0.4</text>
+
+    <line x1="425" y1="207" x2="445" y2="207" stroke="#94a3b8" stroke-width="1" marker-end="url(#arrowGray)"/>
+
+    <rect x="445" y="182" width="115" height="50" rx="6" fill="white" stroke="#059669" stroke-width="1"/>
+    <text x="502" y="200" text-anchor="middle" font-size="9" font-weight="600" fill="#047857">4. Rank & Tiebreak</text>
+    <text x="502" y="214" text-anchor="middle" font-size="8" fill="#64748b">score → kw count →</text>
+    <text x="502" y="224" text-anchor="middle" font-size="8" fill="#64748b">trigger count → priority</text>
+
+    <line x1="560" y1="207" x2="580" y2="207" stroke="#94a3b8" stroke-width="1" marker-end="url(#arrowGray)"/>
+
+    <rect x="580" y="182" width="130" height="50" rx="6" fill="white" stroke="#059669" stroke-width="1.5"/>
+    <text x="645" y="198" text-anchor="middle" font-size="9" font-weight="700" fill="#047857">RoutingDecision</text>
+    <text x="645" y="212" text-anchor="middle" font-size="8" fill="#64748b">primary_skill, confidence,</text>
+    <text x="645" y="222" text-anchor="middle" font-size="8" fill="#64748b">supporting, clarification</text>
+
+    <!-- Negative keyword short-circuit -->
+    <rect x="40" y="244" width="520" height="28" rx="5" fill="#ffe4e6" fill-opacity="0.5" stroke="#e11d48" stroke-width="1" stroke-dasharray="4,3"/>
+    <text x="50" y="262" font-size="9" fill="#e11d48">⚡ Short-circuit: negative keyword match → score = 0.0 (blocks routing before scoring begins)</text>
+
+    <!-- Output formats -->
+    <rect x="725" y="182" width="125" height="50" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+    <text x="735" y="198" font-size="8" font-weight="600" fill="#334155">Output formats:</text>
+    <text x="735" y="212" font-size="8" fill="#64748b">.to_xml()  → structured XML</text>
+    <text x="735" y="224" font-size="8" fill="#64748b">.to_dict() → JSON-ready</text>
+
+    <!-- Arrow down -->
+    <line x1="440" y1="285" x2="440" y2="310" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+    <text x="450" y="302" font-size="9" fill="#94a3b8">validates</text>
+
+    <!-- Layer 3: Test Suite -->
+    <rect x="20" y="310" width="840" height="100" rx="10" fill="#fef3c7" fill-opacity="0.3" stroke="#d97706" stroke-width="1.5"/>
+    <text x="40" y="333" font-size="13" font-weight="700" fill="#b45309">Layer 3: Test Suite</text>
+    <text x="185" y="333" font-size="10" fill="#64748b">— 169 canonical cases across 29 categories</text>
+
+    <!-- Test file boxes -->
+    <rect x="40" y="346" width="200" height="50" rx="6" fill="white" stroke="#d97706" stroke-width="1"/>
+    <text x="50" y="363" font-size="9" font-weight="600" fill="#b45309">canonical_routes.yaml</text>
+    <text x="50" y="377" font-size="8" fill="#64748b">169 test cases: request → expected_skill</text>
+    <text x="50" y="389" font-size="8" fill="#64748b">+ min_confidence, negative constraints</text>
+
+    <rect x="260" y="346" width="200" height="50" rx="6" fill="white" stroke="#d97706" stroke-width="1"/>
+    <text x="270" y="363" font-size="9" font-weight="600" fill="#b45309">test_routing.py</text>
+    <text x="270" y="377" font-size="8" fill="#64748b">29 pytest functions + standalone runner</text>
+    <text x="270" y="389" font-size="8" fill="#64748b">ambiguous + negative case groups</text>
+
+    <!-- Result badge -->
+    <rect x="490" y="348" width="170" height="46" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/>
+    <text x="575" y="368" text-anchor="middle" font-size="14" font-weight="700" fill="#047857">169 / 169 PASS</text>
+    <text x="575" y="384" text-anchor="middle" font-size="10" fill="#059669">100% pass rate</text>
+
+    <!-- CLI -->
+    <rect x="685" y="346" width="165" height="50" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+    <text x="695" y="362" font-size="8" font-weight="600" fill="#334155">CLI interfaces:</text>
+    <text x="695" y="376" font-size="7.5" font-family="monospace" fill="#64748b">pytest -k "target"</text>
+    <text x="695" y="388" font-size="7.5" font-family="monospace" fill="#64748b">python route.py --interactive</text>
+
+    <!-- Arrowhead def -->
+    <defs>
+      <marker id="arrowGray" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+        <polygon points="0 0, 7 2.5, 0 5" fill="#94a3b8"/>
+      </marker>
+    </defs>
+  </svg>
+</div>
+
+<!-- ============ SCORING ALGORITHM ============ -->
+<div class="section">
+  <h2>Scoring Algorithm Detail</h2>
+  <svg viewBox="0 0 880 320" width="100%" xmlns="http://www.w3.org/2000/svg">
+    <rect width="880" height="320" fill="white" rx="8"/>
+
+    <!-- Left: Base score table -->
+    <text x="30" y="25" font-size="12" font-weight="700" fill="#334155">Keyword Base Score</text>
+
+    <!-- Table header -->
+    <rect x="30" y="35" width="180" height="24" rx="4" fill="#f1f5f9"/>
+    <text x="40" y="51" font-size="9" font-weight="600" fill="#334155">Matches</text>
+    <text x="140" y="51" font-size="9" font-weight="600" fill="#334155">Base Score</text>
+
+    <!-- Rows -->
+    <line x1="30" y1="59" x2="210" y2="59" stroke="#e2e8f0"/>
+    <text x="40" y="75" font-size="10" fill="#64748b">0</text>
+    <text x="140" y="75" font-size="10" font-weight="600" fill="#94a3b8">0.00</text>
+    <line x1="30" y1="82" x2="210" y2="82" stroke="#f1f5f9"/>
+
+    <text x="40" y="98" font-size="10" fill="#64748b">1</text>
+    <text x="140" y="98" font-size="10" font-weight="600" fill="#d97706">0.35</text>
+    <line x1="30" y1="105" x2="210" y2="105" stroke="#f1f5f9"/>
+
+    <text x="40" y="121" font-size="10" fill="#64748b">2</text>
+    <text x="140" y="121" font-size="10" font-weight="600" fill="#d97706">0.55</text>
+    <line x1="30" y1="128" x2="210" y2="128" stroke="#f1f5f9"/>
+
+    <text x="40" y="144" font-size="10" fill="#64748b">3</text>
+    <text x="140" y="144" font-size="10" font-weight="600" fill="#059669">0.65</text>
+    <line x1="30" y1="151" x2="210" y2="151" stroke="#f1f5f9"/>
+
+    <text x="40" y="167" font-size="10" fill="#64748b">4</text>
+    <text x="140" y="167" font-size="10" font-weight="600" fill="#059669">0.70</text>
+    <line x1="30" y1="174" x2="210" y2="174" stroke="#f1f5f9"/>
+
+    <text x="40" y="190" font-size="10" fill="#64748b">5+</text>
+    <text x="140" y="190" font-size="10" font-weight="600" fill="#059669">0.75–0.80</text>
+
+    <!-- Visual bar chart for base scores -->
+    <rect x="30" y="210" width="0" height="12" rx="2" fill="#cbd5e1"/>
+    <rect x="30" y="228" width="63" height="12" rx="2" fill="#fef3c7"/>
+    <rect x="30" y="246" width="99" height="12" rx="2" fill="#fef3c7"/>
+    <rect x="30" y="264" width="117" height="12" rx="2" fill="#d1fae5"/>
+    <rect x="30" y="282" width="126" height="12" rx="2" fill="#d1fae5"/>
+    <rect x="30" y="300" width="144" height="12" rx="2" fill="#d1fae5"/>
+    <text x="35" y="220" font-size="8" fill="#94a3b8">0 matches</text>
+    <text x="98" y="238" font-size="8" fill="#b45309">0.35</text>
+    <text x="134" y="256" font-size="8" fill="#b45309">0.55</text>
+    <text x="152" y="274" font-size="8" fill="#047857">0.65</text>
+    <text x="161" y="292" font-size="8" fill="#047857">0.70</text>
+    <text x="179" y="310" font-size="8" fill="#047857">0.80 cap</text>
+
+    <!-- Center: Composition formula -->
+    <line x1="240" y1="20" x2="240" y2="310" stroke="#e2e8f0" stroke-width="1"/>
+
+    <text x="270" y="25" font-size="12" font-weight="700" fill="#334155">Score Composition</text>
+
+    <!-- Formula visual -->
+    <rect x="270" y="42" width="320" height="80" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+
+    <text x="290" y="66" font-size="11" fill="#334155">total = min(</text>
+    <rect x="370" y="52" width="100" height="20" rx="4" fill="#fef3c7" stroke="#d97706"/>
+    <text x="380" y="67" font-size="10" font-weight="600" fill="#b45309">keyword_score</text>
+    <text x="480" y="66" font-size="11" fill="#334155">+</text>
+    <rect x="495" y="52" width="80" height="20" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="505" y="67" font-size="10" font-weight="600" fill="#1d4ed8">trigger_boost</text>
+
+    <text x="340" y="90" font-size="10" fill="#334155">, 1.0 )</text>
+
+    <text x="290" y="112" font-size="9" fill="#64748b">trigger_boost = min( trigger_matches × 0.2, 0.4 )</text>
+
+    <!-- Confidence bands -->
+    <text x="270" y="145" font-size="11" font-weight="600" fill="#334155">Confidence Thresholds</text>
+
+    <!-- Band: High -->
+    <rect x="270" y="155" width="320" height="30" rx="0" fill="#d1fae5" fill-opacity="0.5"/>
+    <rect x="270" y="155" width="320" height="30" rx="6" fill="none" stroke="#059669" stroke-width="1"/>
+    <text x="280" y="174" font-size="10" font-weight="600" fill="#047857">≥ 0.7  HIGH</text>
+    <text x="380" y="174" font-size="9" fill="#64748b">Route directly — no clarification needed</text>
+
+    <!-- Band: Medium -->
+    <rect x="270" y="190" width="320" height="30" rx="0" fill="#fef3c7" fill-opacity="0.5"/>
+    <rect x="270" y="190" width="320" height="30" rx="6" fill="none" stroke="#d97706" stroke-width="1"/>
+    <text x="280" y="209" font-size="10" font-weight="600" fill="#b45309">0.5–0.7  MEDIUM</text>
+    <text x="400" y="209" font-size="9" fill="#64748b">Route with clarification flag</text>
+
+    <!-- Band: Low -->
+    <rect x="270" y="225" width="320" height="30" rx="0" fill="#ffe4e6" fill-opacity="0.5"/>
+    <rect x="270" y="225" width="320" height="30" rx="6" fill="none" stroke="#e11d48" stroke-width="1"/>
+    <text x="280" y="244" font-size="10" font-weight="600" fill="#e11d48">&lt; 0.5  LOW</text>
+    <text x="370" y="244" font-size="9" fill="#64748b">Requires disambiguation questions</text>
+
+    <!-- Tiebreaker cascade -->
+    <text x="270" y="275" font-size="11" font-weight="600" fill="#334155">4-Level Tiebreaker</text>
+    <rect x="270" y="284" width="70" height="22" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="280" y="299" font-size="9" font-weight="600" fill="#1d4ed8">1. Score</text>
+
+    <text x="345" y="299" font-size="10" fill="#94a3b8">→</text>
+
+    <rect x="358" y="284" width="85" height="22" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="368" y="299" font-size="9" font-weight="600" fill="#1d4ed8">2. KW count</text>
+
+    <text x="448" y="299" font-size="10" fill="#94a3b8">→</text>
+
+    <rect x="461" y="284" width="95" height="22" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="471" y="299" font-size="9" font-weight="600" fill="#1d4ed8">3. Trigger count</text>
+
+    <text x="561" y="299" font-size="10" fill="#94a3b8">→</text>
+
+    <rect x="574" y="284" width="70" height="22" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="584" y="299" font-size="9" font-weight="600" fill="#1d4ed8">4. Priority</text>
+
+    <!-- Right: Worked example -->
+    <line x1="620" y1="20" x2="620" y2="265" stroke="#e2e8f0" stroke-width="1"/>
+
+    <text x="640" y="25" font-size="12" font-weight="700" fill="#334155">Worked Example</text>
+
+    <rect x="640" y="36" width="220" height="22" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/>
+    <text x="650" y="51" font-size="9" font-style="italic" fill="#334155">"Create a bar chart of my results"</text>
+
+    <line x1="750" y1="58" x2="750" y2="72" stroke="#94a3b8" stroke-width="1"/>
+
+    <text x="650" y="86" font-size="9" fill="#64748b">Tokens: create, bar, chart, results,</text>
+    <text x="650" y="98" font-size="9" fill="#64748b">bar chart, chart results, …</text>
+
+    <line x1="750" y1="104" x2="750" y2="116" stroke="#94a3b8" stroke-width="1"/>
+
+    <text x="650" y="130" font-size="9" fill="#334155">plotting-libraries matches:</text>
+    <text x="660" y="144" font-size="9" fill="#64748b">kw: "chart", "bar chart" → 2 → </text>
+    <rect x="814" y="133" width="36" height="16" rx="3" fill="#fef3c7" stroke="#d97706"/>
+    <text x="821" y="145" font-size="9" font-weight="600" fill="#b45309">0.55</text>
+
+    <text x="660" y="162" font-size="9" fill="#64748b">trigger: "chart" matches → 1 × 0.2 → </text>
+    <rect x="834" y="151" width="28" height="16" rx="3" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="838" y="163" font-size="9" font-weight="600" fill="#1d4ed8">0.2</text>
+
+    <line x1="750" y1="170" x2="750" y2="182" stroke="#94a3b8" stroke-width="1"/>
+
+    <rect x="650" y="184" width="200" height="26" rx="6" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/>
+    <text x="660" y="201" font-size="10" font-weight="700" fill="#047857">Total: 0.55 + 0.20 = 0.75</text>
+
+    <text x="650" y="226" font-size="9" fill="#059669">→ plotting-libraries (HIGH conf)</text>
+    <text x="650" y="240" font-size="9" fill="#059669">→ No clarification needed</text>
+    <text x="650" y="254" font-size="9" fill="#64748b">→ negative_kw check: no "diagram" etc. ✓</text>
+  </svg>
+</div>
+
+<!-- ============ TEST SUITE RESULTS ============ -->
+<div class="section">
+  <h2>Test Suite — 169 Canonical Cases by Category</h2>
+  <svg viewBox="0 0 880 400" width="100%" xmlns="http://www.w3.org/2000/svg">
+    <rect width="880" height="400" fill="white" rx="8"/>
+
+    <!-- Column headers -->
+    <text x="20" y="20" font-size="10" font-weight="600" fill="#334155">Category</text>
+    <text x="245" y="20" font-size="10" font-weight="600" fill="#334155">Cases</text>
+    <text x="290" y="20" font-size="10" font-weight="600" fill="#334155">Result</text>
+    <text x="345" y="20" font-size="10" font-weight="600" fill="#334155">Bar</text>
+    <line x1="15" y1="26" x2="440" y2="26" stroke="#e2e8f0"/>
+
+    <!-- Row helper: each row is 12px high, starting at y=38 -->
+    <!-- Visual skills -->
+    <text x="20" y="42" font-size="9" fill="#64748b">plotting-libraries</text>
+    <text x="255" y="42" font-size="9" font-weight="600" fill="#334155">10</text>
+    <rect x="290" y="33" width="36" height="14" rx="3" fill="#d1fae5"/><text x="296" y="43" font-size="8" font-weight="600" fill="#047857">PASS</text>
+    <rect x="345" y="35" width="100" height="8" rx="2" fill="#d1fae5"/>
+
+    <text x="20" y="57" font-size="9" fill="#64748b">scientific-schematics</text>
+    <text x="255" y="57" font-size="9" font-weight="600" fill="#334155">7</text>
+    <rect x="290" y="48" width="36" height="14" rx="3" fill="#d1fae5"/><text x="296" y="58" font-size="8" font-weight="600" fill="#047857">PASS</text>
+    <rect x="345" y="50" width="70" height="8" rx="2" fill="#d1fae5"/>
+
+    <text x="20" y="72" font-size="9" fill="#64748b">paperbanana</text>
+    <text x="255" y="72" font-size="9" font-weight="600" fill="#334155">7</text>
+    <rect x="290" y="63" width="36" height="14" rx="3" fill="#d1fae5"/><text x="296" y="73" font-size="8" font-weight="600" fill="#047857">PASS</text>
+    <rect x="345" y="65" width="70" height="8" rx="2" fill="#d1fae5"/>
+
+    <text x="20" y="87" font-size="9" fill="#64748b">generate-image</text>
+    <text x="255" y="87" font-size="9" font-weight="600" fill="#334155">4</text>
+    <rect x="290" y="78" width="36" height="14" rx="3" fill="#d1fae5"/><text x="296" y="88" font-size="8" font-weight="600" fill="#047857">PASS</text>
+    <rect x="345" y="80" width="40" height="8" rx="2" fill="#d1fae5"/>
+
+    <!-- Document skills -->
+    <line x1="15" y1="95" x2="440" y2="95" stroke="#f1f5f9"/>
+    <text x="20" y="107" font-size="9" fill="#64748b">scientific-writing</text>
+    <text x="255" y="107" font-size="9" font-weight="600" fill="#334155">7</text>
+    <rect x="290" y="98" width="36" height="14" rx="3" fill="#d1fae5"/><text x="296" y="108" font-size="8" font-weight="600" fill="#047857">PASS</text>
+    <rect x="345" y="100" width="70" height="8" rx="2" fill="#d1fae5"/>
+
+    <text x="20" y="122" font-size="9" fill="#64748b">executive-summary</text>
+    <text x="255" y="122" font-size="9" font-weight="600" fill="#334155">4</text>
+    <rect x="290" y="113" width="36" height="14" rx="3" fill="#d1fae5"/><text x="296" y="123" font-size="8" font-weight="600" fill="#047857">PASS</text>
+    <rect x="345" y="115" width="40" height="8" rx="2" fill="#d1fae5"/>
+
+    <text x="20" y="137" font-size="9" fill="#64748b">scientific-slides</text>
+    <text x="255" y="137" font-size="9" font-weight="600" fill="#334155">5</text>
+    <rect x="290" y="128" width="36" height="14" rx="3" fill="#d1fae5"/><text x="296" y="138" font-size="8" font-weight="600" fill="#047857">PASS</text>
+    <rect x="345" y="130" width="50" height="8" rx="2" fill="#d1fae5"/>
+
+    <text x="20" y="152" font-size="9" fill="#64748b">research-posters</text>
+    <text x="255" y="152" font-size="9" font-weight="600" fill="#334155">4</text>
+    <rect x="290" y="143" width="36" height="14" rx="3" fill="#d1fae5"/><text x="296" y="153" font-size="8" font-weight="600" fill="#047857">PASS</text>
+    <rect x="345" y="145" width="40" height="8" rx="2" fill="#d1fae5"/>
+
+    <!-- Research skills -->
+    <line x1="15" y1="160" x2="440" y2="160" stroke="#f1f5f9"/>
+    <text x="20" y="172" font-size="9" fill="#1d4ed8" font-weight="600">deep-research</text>
+    <text x="255" y="172" font-size="9" font-weight="700" fill="#334155">26</text>
+    <rect x="290" y="163" width="36" height="14" rx="3" fill="#d1fae5"/><text x="296" y="173" font-size="8" font-weight="600" fill="#047857">PASS</text>
+    <rect x="345" y="165" width="156" height="8" rx="2" fill="#059669"/>
+
+    <text x="20" y="187" font-size="9" fill="#64748b">citation-management</text>
+    <text x="255" y="187" font-size="9" font-weight="600" fill="#334155">4</text>
+    <rect x="290" y="178" width="36" height="14" rx="3" fill="#d1fae5"/><text x="296" y="188" font-size="8" font-weight="600" fill="#047857">PASS</text>
+    <rect x="345" y="180" width="40" height="8" rx="2" fill="#d1fae5"/>
+
+    <text x="20" y="202" font-size="9" fill="#64748b">peer-review</text>
+    <text x="255" y="202" font-size="9" font-weight="600" fill="#334155">10</text>
+    <rect x="290" y="193" width="36" height="14" rx="3" fill="#d1fae5"/><text x="296" y="203" font-size="8" font-weight="600" fill="#047857">PASS</text>
+    <rect x="345" y="195" width="100" height="8" rx="2" fill="#d1fae5"/>
+
+    <text x="20" y="217" font-size="9" fill="#64748b">research-paper-summarizer</text>
+    <text x="255" y="217" font-size="9" font-weight="600" fill="#334155">3</text>
+    <rect x="290" y="208" width="36" height="14" rx="3" fill="#d1fae5"/><text x="296" y="218" font-size="8" font-weight="600" fill="#047857">PASS</text>
+    <rect x="345" y="210" width="30" height="8" rx="2" fill="#d1fae5"/>
+
+    <!-- Bio research -->
+    <line x1="15" y1="225" x2="440" y2="225" stroke="#f1f5f9"/>
+    <text x="20" y="237" font-size="9" fill="#047857" font-weight="600">entity-resolution</text>
+    <text x="255" y="237" font-size="9" font-weight="600" fill="#334155">5</text>
+    <rect x="290" y="228" width="36" height="14" rx="3" fill="#d1fae5"/><text x="296" y="238" font-size="8" font-weight="600" fill="#047857">PASS</text>
+    <rect x="345" y="230" width="50" height="8" rx="2" fill="#d1fae5"/>
+
+    <text x="20" y="252" font-size="9" fill="#047857" font-weight="600">target-intelligence</text>
+    <text x="255" y="252" font-size="9" font-weight="600" fill="#334155">5</text>
+    <rect x="290" y="243" width="36" height="14" rx="3" fill="#d1fae5"/><text x="296" y="253" font-size="8" font-weight="600" fill="#047857">PASS</text>
+    <rect x="345" y="245" width="50" height="8" rx="2" fill="#d1fae5"/>
+
+    <text x="20" y="267" font-size="9" fill="#047857" font-weight="600">drug-intelligence</text>
+    <text x="255" y="267" font-size="9" font-weight="600" fill="#334155">5</text>
+    <rect x="290" y="258" width="36" height="14" rx="3" fill="#d1fae5"/><text x="296" y="268" font-size="8" font-weight="600" fill="#047857">PASS</text>
+    <rect x="345" y="260" width="50" height="8" rx="2" fill="#d1fae5"/>
+
+    <text x="20" y="282" font-size="9" fill="#047857" font-weight="600">target-validation</text>
+    <text x="255" y="282" font-size="9" font-weight="600" fill="#334155">5</text>
+    <rect x="290" y="273" width="36" height="14" rx="3" fill="#d1fae5"/><text x="296" y="283" font-size="8" font-weight="600" fill="#047857">PASS</text>
+    <rect x="345" y="275" width="50" height="8" rx="2" fill="#d1fae5"/>
+
+    <text x="20" y="297" font-size="9" fill="#047857" font-weight="600">data-enriched</text>
+    <text x="255" y="297" font-size="9" font-weight="600" fill="#334155">6</text>
+    <rect x="290" y="288" width="36" height="14" rx="3" fill="#d1fae5"/><text x="296" y="298" font-size="8" font-weight="600" fill="#047857">PASS</text>
+    <rect x="345" y="290" width="60" height="8" rx="2" fill="#d1fae5"/>
+
+    <!-- Other skills -->
+    <line x1="15" y1="305" x2="440" y2="305" stroke="#f1f5f9"/>
+    <text x="20" y="317" font-size="9" fill="#64748b">statistical, reproducible, code-doc,</text>
+    <text x="20" y="329" font-size="9" fill="#64748b">markitdown, brand, doc-skills, venues,</text>
+    <text x="20" y="341" font-size="9" fill="#64748b">visual-design, md-to-pdf, paper-2-web</text>
+    <text x="255" y="329" font-size="9" font-weight="600" fill="#334155">38</text>
+    <rect x="290" y="320" width="36" height="14" rx="3" fill="#d1fae5"/><text x="296" y="330" font-size="8" font-weight="600" fill="#047857">PASS</text>
+    <rect x="345" y="322" width="126" height="8" rx="2" fill="#d1fae5"/>
+
+    <!-- Special test groups -->
+    <line x1="15" y1="350" x2="440" y2="350" stroke="#e2e8f0"/>
+    <text x="20" y="365" font-size="9" fill="#d97706" font-weight="600">ambiguous cases</text>
+    <text x="255" y="365" font-size="9" font-weight="600" fill="#334155">4</text>
+    <rect x="290" y="356" width="36" height="14" rx="3" fill="#d1fae5"/><text x="296" y="366" font-size="8" font-weight="600" fill="#047857">PASS</text>
+    <rect x="345" y="358" width="40" height="8" rx="2" fill="#fef3c7" stroke="#d97706" stroke-width="0.5"/>
+
+    <text x="20" y="380" font-size="9" fill="#e11d48" font-weight="600">negative cases</text>
+    <text x="255" y="380" font-size="9" font-weight="600" fill="#334155">8</text>
+    <rect x="290" y="371" width="36" height="14" rx="3" fill="#d1fae5"/><text x="296" y="381" font-size="8" font-weight="600" fill="#047857">PASS</text>
+    <rect x="345" y="373" width="80" height="8" rx="2" fill="#ffe4e6" stroke="#e11d48" stroke-width="0.5"/>
+
+    <!-- Right side: Negative keyword mechanism -->
+    <line x1="470" y1="10" x2="470" y2="390" stroke="#e2e8f0" stroke-width="1"/>
+
+    <text x="490" y="25" font-size="12" font-weight="700" fill="#334155">Disambiguation Mechanism</text>
+    <text x="490" y="42" font-size="9" fill="#64748b">Negative keywords create hard boundaries between skills</text>
+    <text x="490" y="55" font-size="9" fill="#64748b">that share vocabulary — encoding the decision tree in scores.</text>
+
+    <!-- Example 1 -->
+    <rect x="490" y="72" width="370" height="90" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="505" y="90" font-size="10" font-weight="600" fill="#334155">Example: "pathway diagram"</text>
+
+    <rect x="505" y="100" width="160" height="22" rx="4" fill="#ffe4e6" stroke="#e11d48"/>
+    <text x="515" y="115" font-size="9" fill="#e11d48">plotting-libraries → 0.0</text>
+    <text x="670" y="115" font-size="8" fill="#64748b">"pathway" is negative kw</text>
+
+    <rect x="505" y="128" width="160" height="22" rx="4" fill="#d1fae5" stroke="#059669"/>
+    <text x="515" y="143" font-size="9" font-weight="600" fill="#047857">scientific-schematics → 0.75</text>
+    <text x="670" y="143" font-size="8" fill="#64748b">"pathway" + "diagram" match</text>
+
+    <!-- Example 2 -->
+    <rect x="490" y="175" width="370" height="90" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="505" y="193" font-size="10" font-weight="600" fill="#334155">Example: "graphical abstract from paper"</text>
+
+    <rect x="505" y="203" width="160" height="22" rx="4" fill="#ffe4e6" stroke="#e11d48"/>
+    <text x="515" y="218" font-size="9" fill="#e11d48">plotting-libraries → 0.0</text>
+    <text x="670" y="218" font-size="8" fill="#64748b">"graphical abstract" is neg kw</text>
+
+    <rect x="505" y="231" width="160" height="22" rx="4" fill="#d1fae5" stroke="#059669"/>
+    <text x="515" y="246" font-size="9" font-weight="600" fill="#047857">paperbanana → 0.80</text>
+    <text x="670" y="246" font-size="8" fill="#64748b">trigger + keywords match</text>
+
+    <!-- Ambiguous case explanation -->
+    <rect x="490" y="280" width="370" height="105" rx="8" fill="#fef3c7" fill-opacity="0.4" stroke="#d97706"/>
+    <text x="505" y="298" font-size="10" font-weight="600" fill="#b45309">Special Test Types</text>
+
+    <text x="505" y="318" font-size="9" font-weight="600" fill="#d97706">Ambiguous cases</text>
+    <text x="505" y="332" font-size="9" fill="#64748b">Verify confidence stays LOW (≤ max_confidence)</text>
+    <text x="505" y="344" font-size="9" fill="#64748b">and requires_clarification flag is set.</text>
+
+    <text x="505" y="364" font-size="9" font-weight="600" fill="#e11d48">Negative cases</text>
+    <text x="505" y="378" font-size="9" fill="#64748b">Verify request does NOT route to a specific wrong skill</text>
+    <text x="505" y="390" font-size="9" fill="#64748b">(not_expected field in test case).</text>
+  </svg>
+</div>
+
+</div>
+</body>
+</html>
