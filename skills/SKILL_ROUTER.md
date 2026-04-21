@@ -603,11 +603,14 @@ User needs to convert or transform content
 │
 └─ Convert PAPER to web/media format?
    │
-   └─ YES → paper-2-web
+   └─ YES → paper-2-web (atomic entry point)
              │
-             ├─ Interactive website
-             ├─ Visual poster summary
-             └─ Video abstract
+             ├─ Interactive website from paper? → paper-2-web:web  (Paper2Web)
+             ├─ Narrated presentation video? → paper-2-web:video (Paper2Video)
+             ├─ Auto-generated poster from paper? → paper-2-web:poster (Paper2Poster)
+             │                                       │
+             │                                       └─ NOTE: for poster from scratch → research-posters
+             └─ Unsure / all three? → paper-2-web (default)
 ```
 
 ---
@@ -736,7 +739,9 @@ User has content ready for final document format
 | Document plotting code | code-documentation | + plotting-libraries |
 | **Conversion** | | |
 | File → Markdown | markitdown | — |
-| Paper → Web/Media | paper-2-web | — |
+| Paper → Website | paper-2-web:web | — |
+| Paper → Video | paper-2-web:video | — |
+| Paper → Poster | paper-2-web:poster | + research-posters for scratch design |
 | **Document Output** | | |
 | Export to Word | document-skills:docx | + venue-templates (for journal styles) |
 | Create branded PDF | markdown-to-pdf | + visual-design |

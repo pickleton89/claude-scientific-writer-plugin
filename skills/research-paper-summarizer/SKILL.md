@@ -418,7 +418,7 @@ Script location: `{baseDir}/scripts/generate_summary_pdf.py`
 
 Read: `{baseDir}/prompts/svg-infographic.md`
 
-See also: `{baseDir}/references/svg-component-library.md` for available components
+See also: `{baseDir}/../visual-design/references/svg-components-catalog.md` for available components
 
 **Source**: The markdown summary file generated in Phase 1
 
@@ -772,7 +772,7 @@ All paths use `{baseDir}` which resolves to this skill's installation directory.
 - `{baseDir}/references/placeholder-guide.md` - Template variable substitution guide
 - `{baseDir}/references/statistics-formatting.md` - Standardized statistics formatting
 - `{baseDir}/references/brand-quick-reference.md` - Quick color codes for visual outputs
-- `{baseDir}/references/svg-component-library.md` - SVG components for infographics
+- `{baseDir}/../visual-design/references/svg-components-catalog.md` - SVG components for infographics (shared with visual-design skill)
 
 ### Article Type Summarizers (Standard Mode)
 - `{baseDir}/prompts/general_researcher_summarizer.md` - General primary research papers

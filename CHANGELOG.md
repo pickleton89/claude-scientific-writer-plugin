@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed — Visual/Presentation Skills Consolidation
+- **SVG component library moved to visual-design** (shared resource): `research-paper-summarizer/references/svg-component-library.md` and four `components/svg-*.jsx` files relocated to `skills/visual-design/references/svg-components-catalog.md` + `svg-components/` so paperbanana, scientific-schematics, and future summarizers can cite the same 9-component catalog (DonutChart, HorizontalBarChart, StatCallout, TimelineNode, ProcessArrow, HierarchicalTree, MoleculeIcon, CellIcon, DNAHelix); summarizer path refs retargeted to `../visual-design/references/...`
+- **`document-skills/SKILL.md`**: Added explicit delegation contract paragraph under Presentation Pipeline — `scientific-slides` owns narrative/citations/figure-planning; `document-skills:pptx` owns python-pptx rendering; disambiguation via negative keywords in router
+- **`oligon-brand/SKILL.md`**: Added "For brand-skill authors" note inside `<cross_references>` pointing to interface spec and validator tooling
+- **`BRAND_SKILL_INTERFACE.md`**: One-line cross-ref to the new `brand-interface/README.md`
+
+### Added — Triadic paper-2-web Routing
+- **`skill_triggers.yaml`**: Three namespaced child entries — `paper-2-web:web` (Paper2Web → interactive site), `paper-2-web:video` (Paper2Video → narrated video), `paper-2-web:poster` (Paper2Poster → auto-generated poster); mirrors `document-skills:<format>` colon-quoted pattern; parent `paper-2-web` kept as fallback for ambiguous utterances
+- **`SKILL_ROUTER.md`**: Conversion decision tree expanded to three-way fanout with cross-reference to `research-posters` for scratch poster design; Quick Reference Matrix split Paper→Web/Video/Poster into three rows
+- **`canonical_routes.yaml`**: 4 new canonical cases (website, video, poster, negative-keyword collision with research-posters); 1 pre-existing case updated from atomic `paper-2-web` to `paper-2-web:web` — **173/173 routing tests passing** (up from 169/169)
+
+### Added — brand-interface README
+- **`skills/brand-interface/README.md`**: New disambiguation doc clarifying that `brand-interface/` is support tooling (schemas, type stubs, 173 tests, validators), not a callable skill paralleling `oligon-brand/`; documents validation commands using `uv run` per project standard
+
 ## [1.1.0] - 2026-04-15
 
 ### Added — Research Ideation Integration into Deep-Research

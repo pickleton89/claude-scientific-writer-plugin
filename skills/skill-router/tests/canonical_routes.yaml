@@ -300,6 +300,12 @@ research_posters_cases:
     min_confidence: 0.5
     category: document
 
+  - request: "Design a new conference poster from scratch"
+    expected_skill: research-posters
+    min_confidence: 0.5
+    category: document
+    notes: "Negative-keyword collision check vs paper-2-web:poster (has 'from scratch' in negatives)"
+
 # ============================================================
 # RESEARCH WORKFLOW - deep-research (consolidates paper-search, literature-review, hypothesis-generation)
 # ============================================================
@@ -984,9 +990,28 @@ paper_2_web_cases:
     category: conversion
 
   - request: "Convert my paper to an interactive site"
-    expected_skill: paper-2-web
+    expected_skill: "paper-2-web:web"
     min_confidence: 0.5
     category: conversion
+    notes: "Now routes to namespaced sub-skill after triadic split"
+
+  - request: "Create an interactive website from this paper"
+    expected_skill: "paper-2-web:web"
+    min_confidence: 0.3
+    category: conversion
+    notes: "Namespaced Paper2Web sub-skill routing"
+
+  - request: "Make a video abstract of my paper"
+    expected_skill: "paper-2-web:video"
+    min_confidence: 0.3
+    category: conversion
+    notes: "Namespaced Paper2Video sub-skill routing"
+
+  - request: "Auto-generate a poster from my preprint"
+    expected_skill: "paper-2-web:poster"
+    min_confidence: 0.3
+    category: conversion
+    notes: "Namespaced Paper2Poster sub-skill routing"
 
 # ============================================================
 # DOCUMENT CREATION - venue-templates

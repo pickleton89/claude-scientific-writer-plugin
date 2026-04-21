@@ -659,6 +659,7 @@ When Oligon brand standards apply:
 | `references/OUTPUT_FORMATS.md` | Format-specific guidance for figures, reports, presentations |
 | `references/publication_specs.md` | Journal-specific requirements and export settings |
 | `references/output_templates.md` | Reusable templates for specifications and checklists |
+| `references/svg-components-catalog.md` + `references/svg-components/` | Reusable SVG component library (9 components: DonutChart, HorizontalBarChart, StatCallout, TimelineNode, ProcessArrow, HierarchicalTree, MoleculeIcon, CellIcon, DNAHelix) for infographics and visual summaries. Used by research-paper-summarizer. |
 
 ### Publication Requirements Quick Reference
 

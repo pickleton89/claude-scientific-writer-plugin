@@ -814,6 +814,74 @@ skills:
       - create poster from scratch
       - design poster
 
+  "paper-2-web:web":
+    description: Convert a finished paper into an interactive research website (Paper2Web pipeline). Delegates to paper-2-web skill.
+    category: conversion
+    keywords:
+      - interactive site
+      - interactive website
+      - research website
+      - paper website
+      - paper2web
+      - homepage from paper
+      - web version of paper
+      - interactive paper site
+    triggers:
+      - "paper.*(?:to|as).*(?:web|website|site)"
+      - "(?:interactive|research).*(?:site|website|homepage)"
+      - "(?:website|site|homepage).*from.*(?:paper|preprint|manuscript)"
+      - "paper2web"
+    output_formats: [html]
+    negative_keywords:
+      - video
+      - mp4
+      - from scratch
+
+  "paper-2-web:video":
+    description: Convert a finished paper into a narrated presentation video (Paper2Video pipeline). Delegates to paper-2-web skill.
+    category: conversion
+    keywords:
+      - video abstract
+      - presentation video
+      - narrated paper
+      - talking head video
+      - paper2video
+      - paper video
+    triggers:
+      - "video.*abstract"
+      - "(?:narrated|presentation).*video"
+      - "(?:video|mp4).*(?:from|of).*(?:paper|preprint|manuscript)"
+      - "paper2video"
+      - "talking.*head.*(?:video|paper)"
+    output_formats: [mp4]
+    negative_keywords:
+      - website
+      - html
+      - from scratch
+
+  "paper-2-web:poster":
+    description: Auto-generate a poster from a finished paper (Paper2Poster pipeline). Delegates to paper-2-web skill. For designing a poster from scratch, use research-posters.
+    category: conversion
+    keywords:
+      - auto poster
+      - poster from paper
+      - poster from preprint
+      - generate poster from paper
+      - paper2poster
+      - automatic poster
+    triggers:
+      - "poster.*from.*(?:paper|preprint|manuscript)"
+      - "(?:auto|generate|automatic).*poster.*(?:paper|preprint|manuscript)"
+      - "(?:auto|automatic).*(?:generate|generated).*poster"
+      - "paper2poster"
+    output_formats: [pdf]
+    negative_keywords:
+      - from scratch
+      - design poster
+      - new poster
+      - conference poster design
+      - poster design
+
   # ============================================================
   # DOCUMENT OUTPUT SUB-SKILLS (document-skills:*)
   # ============================================================

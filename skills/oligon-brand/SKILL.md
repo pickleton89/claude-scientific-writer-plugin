@@ -347,6 +347,8 @@ See individual adapter files for detailed API documentation.
 1. `oligon-brand` → load tokens and set style
 2. `plotting-libraries` → implement figure code
 3. `visual-design` → review for design quality
+
+**For brand-skill authors:** This skill is the reference implementation of the contract in [`../BRAND_SKILL_INTERFACE.md`](../BRAND_SKILL_INTERFACE.md). To create an alternative brand skill, mirror this directory's structure and validate with the tooling in [`../brand-interface/`](../brand-interface/README.md) (JSON Schema, type stubs, WCAG checker, and 173 tests).
 </cross_references>
 
 <references>

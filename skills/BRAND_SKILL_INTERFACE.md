@@ -13,6 +13,8 @@ This document defines the interface that brand skills must implement to integrat
 2. SKILL_ROUTER.md can route to the correct brand skill
 3. Future brands integrate seamlessly
 
+The executable tooling that enforces this contract — JSON Schema, Python type stubs, validators, and 173 tests — lives in [`brand-interface/`](brand-interface/README.md). That directory is support tooling, not a callable skill.
+
 ## Validation Tools
 
 This interface includes automated validation tools to ensure compliance:

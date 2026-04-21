@@ -85,6 +85,8 @@ scientific-writing → venue-templates → document-skills:docx
 scientific-slides → document-skills:pptx
 ```
 
+**Delegation contract:** `scientific-slides` owns narrative structure, citation sourcing, and figure planning. `document-skills:pptx` owns PPTX file generation (python-pptx), editing, and format conversion. Do not reimplement python-pptx work inside `scientific-slides`; do not reimplement slide-narrative logic inside `document-skills:pptx`. Trigger disambiguation lives in `skill-router/skill_triggers.yaml` via negative keywords ("conference talk" blocks the pptx route; "edit pptx" blocks the slides route).
+
 ### Branded Output Pipeline
 
 ```
