@@ -195,7 +195,7 @@ Brand skills should include these sections:
 | `<workflow>` | Steps to load and apply brand |
 | `<success_criteria>` | Visual compliance checklist |
 | `<adapters>` | List of available format adapters |
-| `<cross_references>` | Links to visual-design, plotting-libraries |
+| `<cross_references>` | Links to plotting-libraries, skills/shared/accessibility/ |
 | `<references>` | Links to full specifications |
 
 ---
@@ -214,7 +214,8 @@ New brand skills must be added to the "Brand Application" decision tree:
 │  │  └─ YES → [your-brand-skill]
 │  │
 │  └─ Other/None?
-│     └─ Use visual-design defaults
+│     └─ Use oligon-brand `<design_foundation>` generic-fallback section
+│        (viridis/Okabe-Ito/ColorBrewer; no brand tokens applied)
 ```
 
 And to the "Brand Application: Quick Selection" table:
@@ -300,7 +301,7 @@ python skills/brand-interface/validation/validate_brand.py skills/your-brand -v
 
 ### Integration (manual)
 - [ ] Added to SKILL_ROUTER.md "Brand Application" section
-- [ ] Cross-referenced from visual-design and plotting-libraries
+- [ ] Cross-referenced from plotting-libraries and skills/shared/accessibility/
 - [ ] CHANGELOG.md updated
 
 ---

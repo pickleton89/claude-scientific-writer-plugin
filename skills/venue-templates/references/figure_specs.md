@@ -159,4 +159,4 @@ fig.savefig('figure1.png', dpi=300, bbox_inches='tight')
 
 ---
 
-*See [visual-design SKILL.md](../SKILL.md) for design philosophy and [plotting-libraries](../../plotting-libraries/SKILL.md) for implementation code.*
+*See [oligon-brand `<design_foundation>`](../../oligon-brand/SKILL.md) for cross-format design philosophy and [plotting-libraries](../../plotting-libraries/SKILL.md) for implementation code. WCAG / accessibility validation helpers live in [`skills/shared/accessibility/`](../../shared/accessibility/).*

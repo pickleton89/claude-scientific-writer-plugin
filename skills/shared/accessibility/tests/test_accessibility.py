@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from utils.accessibility import (
+from accessibility import (
     hex_to_rgb,
     rgb_to_hex,
     relative_luminance,

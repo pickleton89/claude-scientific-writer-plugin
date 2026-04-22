@@ -215,7 +215,7 @@ def plot_group_comparison(
     Notes
     -----
     - Uses seaborn boxplot with stripplot overlay
-    - Applies visual-design color palette if configured
+    - Applies oligon-brand color palette if configured
     - For significance annotations, use statannotations package
     """
     # Implementation...

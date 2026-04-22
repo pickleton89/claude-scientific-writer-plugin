@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from utils.palette_selector import (
+from palette_selector import (
     select_palette,
     get_palette_colors,
     list_palettes,

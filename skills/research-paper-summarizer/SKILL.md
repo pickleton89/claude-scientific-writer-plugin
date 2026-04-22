@@ -418,7 +418,7 @@ Script location: `{baseDir}/scripts/generate_summary_pdf.py`
 
 Read: `{baseDir}/prompts/svg-infographic.md`
 
-See also: `{baseDir}/../visual-design/references/svg-components-catalog.md` for available components
+See also: `{baseDir}/../shared/svg-components/catalog.md` for available components
 
 **Source**: The markdown summary file generated in Phase 1
 
@@ -740,7 +740,7 @@ Before delivering any summary, verify compliance with these rules:
 | `peer-review` | **Evaluation vs summary** — peer-review assesses quality; this skill extracts content |
 | `markdown-to-pdf` | **Alternative PDF** — for template-based documents; this skill has specialized figure extraction |
 | `plotting-libraries` | **Figure creation** — if creating new figures from extracted data |
-| `visual-design` | **Design principles** — for infographic composition guidance |
+| `oligon-brand` | **Design principles** — `<design_foundation>` block for infographic composition guidance |
 | `markitdown` | **PDF conversion** — convert paper PDFs to markdown before summarizing (optional) |
 | `entity-resolution` | **Upstream** — resolve gene/drug/disease IDs for Database Context callout |
 | `target-intelligence` | **Dossier source** — extract TDL, expression, associations for callout |
@@ -772,7 +772,7 @@ All paths use `{baseDir}` which resolves to this skill's installation directory.
 - `{baseDir}/references/placeholder-guide.md` - Template variable substitution guide
 - `{baseDir}/references/statistics-formatting.md` - Standardized statistics formatting
 - `{baseDir}/references/brand-quick-reference.md` - Quick color codes for visual outputs
-- `{baseDir}/../visual-design/references/svg-components-catalog.md` - SVG components for infographics (shared with visual-design skill)
+- `{baseDir}/../shared/svg-components/catalog.md` - SVG components for infographics (shared resource across skills)
 
 ### Article Type Summarizers (Standard Mode)
 - `{baseDir}/prompts/general_researcher_summarizer.md` - General primary research papers

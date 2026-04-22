@@ -381,7 +381,7 @@ Avoid these errors that reduce executive summary effectiveness:
 
 | Skill | Relationship |
 |-------|-------------|
-| `visual-design` | Graphical abstract and visual summary creation |
+| `paperbanana` | Graphical abstract and visual summary creation from prose text |
 | `plotting-libraries` | Data visualizations for findings |
 | `markdown-to-pdf` | Branded PDF output with Oligon styling |
 | `scientific-slides` | Presentation-ready summary slides |
@@ -405,7 +405,7 @@ Avoid these errors that reduce executive summary effectiveness:
 - `references/visualization_guidelines.md` - Visual summary best practices
 
 **Related Skills:**
-- `../visual-design/SKILL.md` - Design philosophy for scientific visuals
+- `../oligon-brand/SKILL.md` - Design philosophy (`<design_foundation>`) and brand tokens for scientific visuals
 - `../plotting-libraries/SKILL.md` - Python plotting implementations
 - `../scientific-writing/SKILL.md` - Abstract vs. executive summary distinction
 - `../paperbanana/SKILL.md` - Visual executive summary figures from text

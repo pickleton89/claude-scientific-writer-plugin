@@ -1,7 +1,6 @@
 ---
 name: scientific-schematics
-version: 2.5.0
-extends: visual-design
+version: 2.6.0
 description: "Create structured scientific diagrams with explicit layout control — flowcharts, biological pathways, network diagrams, mechanism illustrations, and system architectures. Uses Mermaid for simple diagrams and AI for complex ones. Use when the user specifies diagram type, components, or relationships. Do NOT use when the user provides prose text and wants an AI-generated figure — use paperbanana."
 allowed-tools: [Read, Write, Edit, Bash]
 shared-thresholds: "../QUANTIFICATION_THRESHOLDS.md"
@@ -9,7 +8,14 @@ shared-thresholds: "../QUANTIFICATION_THRESHOLDS.md"
 
 # Scientific Schematics and Diagrams
 
-> **Design Foundation**: This skill extends [`visual-design`](../visual-design/SKILL.md) for typography, color, composition, and accessibility standards.
+> **Design foundation:** See [`oligon-brand`](../oligon-brand/SKILL.md)'s `<design_foundation>` block for the cross-format decision flow, audience matrix, and universal anti-patterns. Accessibility utilities live in [`skills/shared/accessibility/`](../shared/accessibility/).
+>
+> **Design checklist (schematics):**
+> - Reading direction declared — L→R for processes, center-out for systems
+> - Node sizes uniform unless size encodes importance or magnitude
+> - Arrow convention stated in legend (solid=causal, dashed=hypothesized, double=reversible, open-circle=inhibition)
+> - Edge-crossings minimized; use `classDef` + Gestalt grouping over hard boxes
+> - Colorblind-safe palette; do not rely on color alone for node categories
 
 > **Quantified Thresholds:** This skill references shared thresholds from [`QUANTIFICATION_THRESHOLDS.md`](../QUANTIFICATION_THRESHOLDS.md) §7 (Quality Rubrics) and §8 (Iteration & Stopping Criteria).
 
@@ -34,7 +40,7 @@ Do NOT use this skill when:
 - Generating photorealistic images → use `generate-image`
 - Graphical abstracts or visual summaries from paper text → use `paperbanana`
 - Designing slides or posters → use `scientific-slides`, `research-posters`
-- Need design philosophy guidance → use `visual-design`
+- Need design philosophy guidance → see [`oligon-brand/SKILL.md`](../oligon-brand/SKILL.md)'s `<design_foundation>`
 </when_to_use>
 
 <prerequisites>
@@ -621,7 +627,7 @@ Generate Image → Review Quality → Score >= Threshold?
 - Photorealistic image generation → use `generate-image`
 - Slide design → use `scientific-slides`
 - Poster layout → use `research-posters`
-- Design principles → use `visual-design`
+- Design principles → `oligon-brand`'s `<design_foundation>` section
 - Hand-drawn or sketch-style diagrams → external tools
 
 </scope>
@@ -869,7 +875,8 @@ Vertical top-to-bottom layout.
 | Skill | Relationship |
 |-------|-------------|
 | `plotting-libraries` | Use for data visualizations (plots, charts); schematics for diagrams |
-| `visual-design` | Consult for design principles before creating schematics |
+| `oligon-brand` | Consult `<design_foundation>` for cross-format design principles before creating schematics |
+| `skills/shared/accessibility/` | Validate palette contrast and colorblind-safety for node/edge colors |
 | `generate-image` | Use for photorealistic images; schematics for diagrams |
 | `paperbanana` | Use for text-to-visual (graphical abstracts, visual summaries); schematics for specified diagrams |
 | `scientific-slides` | Schematics integrates into slide presentations |
@@ -884,9 +891,10 @@ Vertical top-to-bottom layout.
 See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 
 **Typical Workflow:**
-1. `visual-design` → establish design direction
+1. `oligon-brand` `<design_foundation>` → establish design direction and palette
 2. `scientific-schematics` → generate diagram
-3. `scientific-writing` or `scientific-slides` → integrate into document
+3. `skills/shared/accessibility/` → validate contrast and CVD-safety
+4. `scientific-writing` or `scientific-slides` → integrate into document
 
 </cross_references>
 

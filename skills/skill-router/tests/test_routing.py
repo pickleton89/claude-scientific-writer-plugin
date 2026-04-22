@@ -179,7 +179,7 @@ def run_all_tests(verbose: bool = True) -> tuple[int, int, dict[str, list[TestRe
         "research_paper_summarizer_cases",
         "paper_2_web_cases",
         "venue_templates_cases",
-        "visual_design_cases",
+        "design_foundation_cases",
         "markdown_to_pdf_cases",
     ]
 
@@ -467,12 +467,17 @@ def test_venue_templates_routing():
             f"Confidence {result.confidence} below threshold"
 
 
-def test_visual_design_routing():
-    """Test routing for design guidance requests."""
+def test_design_foundation_routing():
+    """Test routing for design-foundation and figure-accessibility requests.
+
+    Post visual-design retirement (2026-04-22):
+    - Color palette & WCAG/accessibility -> plotting-libraries
+    - Design principles/philosophy -> oligon-brand (`<design_foundation>`)
+    """
     test_cases = load_test_cases()
     router = SkillRouter()
 
-    for case in test_cases.get("visual_design_cases", []):
+    for case in test_cases.get("design_foundation_cases", []):
         result = router.route(case["request"])
         assert result.primary_skill == case["expected_skill"], \
             f"Request '{case['request']}' routed to {result.primary_skill}"

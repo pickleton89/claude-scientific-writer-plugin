@@ -192,4 +192,4 @@ Address:
 
 - **scientific-slides**: For creating presentations that meet these standards
 - **research-posters**: Similar visual quality criteria for posters
-- **visual-design**: Design principles underlying these criteria
+- **oligon-brand** (`<design_foundation>`): Design principles underlying these criteria

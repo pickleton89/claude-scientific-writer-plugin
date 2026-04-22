@@ -41,7 +41,7 @@ User wants to create a visual
 │  │         │  ├─ Genomics/bio data → Bioconductor (ComplexHeatmap, etc.)
 │  │         │  └─ Interactive → plotly/shiny
 │  │         │
-│  │         └─ Then consult → visual-design (for styling guidance)
+│  │         └─ Then consult → oligon-brand (for `<design_foundation>` + brand styling)
 │  │
 │  └─ NO → Is it a DIAGRAM or SCHEMATIC with specific layout?
 │          │
@@ -77,26 +77,28 @@ User wants to create a visual
 │                            │         ├─ Artistic/creative → Image generation models
 │                            │         └─ Photo-style → Photorealistic models
 │                            │
-│                            └─ NO → visual-design (general guidance)
+│                            └─ NO → oligon-brand (design guidance)
 │                                     │
-│                                     └─ Provides: color theory, typography,
-│                                        layout principles, accessibility
+│                                     └─ `<design_foundation>`: decision flow, audience matrix,
+│                                        universal anti-patterns, + generic-fallback section
+│                                        for non-Oligon output. Accessibility utilities live
+│                                        in skills/shared/accessibility/.
 ```
 
 ### Figure Creation: Quick Selection
 
 | Task | Primary Skill | Supporting Skill |
 |------|---------------|------------------|
-| Bar chart, scatter plot, histogram | plotting-libraries | visual-design |
-| Heatmap, volcano plot, PCA | plotting-libraries | visual-design |
-| Flowchart, pathway diagram | scientific-schematics | visual-design |
+| Bar chart, scatter plot, histogram | plotting-libraries | oligon-brand |
+| Heatmap, volcano plot, PCA | plotting-libraries | oligon-brand |
+| Flowchart, pathway diagram | scientific-schematics | oligon-brand |
 | Molecular mechanism | scientific-schematics | generate-image |
-| Graphical abstract from paper text | paperbanana | visual-design |
+| Graphical abstract from paper text | paperbanana | oligon-brand |
 | Visual executive summary | paperbanana | executive-summary |
-| Methodology overview figure | paperbanana | visual-design |
-| "Explain this visually" | paperbanana | visual-design |
-| Conceptual illustration | generate-image | visual-design |
-| Infographic elements | visual-design | generate-image |
+| Methodology overview figure | paperbanana | oligon-brand |
+| "Explain this visually" | paperbanana | oligon-brand |
+| Conceptual illustration | generate-image | oligon-brand |
+| Infographic elements | paperbanana | research-paper-summarizer |
 
 ---
 
@@ -135,7 +137,8 @@ User needs to apply organizational brand standards
 │  │                  └─ (manual colors) → research-posters
 │  │
 │  └─ Other/None?
-│     └─ Use visual-design defaults (no brand skill needed)
+│     └─ Use oligon-brand `<design_foundation>` generic-fallback defaults
+│        (viridis/Okabe-Ito/ColorBrewer palettes; no brand tokens applied)
 ```
 
 ### Brand Application: Quick Selection
@@ -177,7 +180,7 @@ User wants to create a document
 │          ├─ YES → executive-summary
 │          │         │
 │          │         ├─ From research paper? → Pyramid Principle structure
-│          │         ├─ Need visual summary? → + visual-design, plotting-libraries
+│          │         ├─ Need visual summary? → + paperbanana, plotting-libraries
 │          │         └─ PDF output needed? → + markdown-to-pdf
 │          │
 │          └─ NO → Is it a PRESENTATION?
@@ -234,7 +237,7 @@ The `research-posters` skill handles format selection internally. Use the follow
 | Review article | deep-research (lit-review) → scientific-writing | Narrative synthesis |
 | Grant proposal | scientific-writing | Adapt for proposal format |
 | Executive summary | executive-summary | Pyramid Principle, action-oriented |
-| Board/stakeholder summary | executive-summary + visual-design | Include visual summary |
+| Board/stakeholder summary | executive-summary + paperbanana | Include visual summary |
 | Thesis chapter | scientific-writing + venue-templates | Institution-specific |
 
 ---
@@ -680,7 +683,7 @@ User has content ready for final document format
 | Content Source | Output Format | Primary Skill | Supporting Skill |
 |----------------|---------------|---------------|------------------|
 | Manuscript text | Word (.docx) | document-skills:docx | venue-templates |
-| Markdown content | Branded PDF | markdown-to-pdf | visual-design |
+| Markdown content | Branded PDF | markdown-to-pdf | oligon-brand |
 | Existing PDF | Modified PDF | document-skills:pdf | — |
 | Slide plan | PowerPoint | document-skills:pptx | scientific-slides |
 | Data/analysis | Excel | document-skills:xlsx | — |
@@ -696,17 +699,17 @@ User has content ready for final document format
 | **Writing** | | |
 | Write research paper | scientific-writing | + venue-templates, deep-research |
 | Write literature review | deep-research (lit-review) | + scientific-writing, citation-management |
-| Write executive summary | executive-summary | + visual-design, markdown-to-pdf |
+| Write executive summary | executive-summary | + oligon-brand, markdown-to-pdf |
 | Generate hypotheses | deep-research (hypothesis) | + statistical-analysis |
 | **Presentations** | | |
-| Create slides | scientific-slides | + visual-design, plotting-libraries |
-| Create research poster | research-posters | + visual-design, scientific-schematics, plotting-libraries |
+| Create slides | scientific-slides | + oligon-brand, plotting-libraries |
+| Create research poster | research-posters | + oligon-brand, scientific-schematics, plotting-libraries |
 | **Visuals** | | |
-| Data visualization | plotting-libraries | + visual-design |
-| Schematic/diagram | scientific-schematics | + visual-design |
-| Text-to-visual (graphical abstract, visual summary) | paperbanana | + visual-design |
-| AI-generated image | generate-image | + visual-design |
-| Design guidance | visual-design | (supporting role) |
+| Data visualization | plotting-libraries | + oligon-brand, skills/shared/accessibility |
+| Schematic/diagram | scientific-schematics | + oligon-brand |
+| Text-to-visual (graphical abstract, visual summary) | paperbanana | + oligon-brand |
+| AI-generated image | generate-image | + oligon-brand |
+| Design guidance | oligon-brand `<design_foundation>` | (cross-format decision flow + anti-patterns) |
 | **Brand** | | |
 | Apply Oligon brand colors | oligon-brand | + plotting-libraries, document-skills |
 | Get brand color hex codes | oligon-brand | — |
@@ -744,7 +747,7 @@ User has content ready for final document format
 | Paper → Poster | paper-2-web:poster | + research-posters for scratch design |
 | **Document Output** | | |
 | Export to Word | document-skills:docx | + venue-templates (for journal styles) |
-| Create branded PDF | markdown-to-pdf | + visual-design |
+| Create branded PDF | markdown-to-pdf | + oligon-brand |
 | PDF forms/manipulation | document-skills:pdf | — |
 | Create/edit PowerPoint | document-skills:pptx | + scientific-slides |
 | Create/edit Excel | document-skills:xlsx | — |
@@ -764,8 +767,9 @@ User has content ready for final document format
 6. venue-templates        → Format for target journal
 7. plotting-libraries     → Create data figures
 8. scientific-schematics  → Create method diagrams
-9. visual-design          → Polish all visuals
-10. peer-review           → Self-review before submission
+9. oligon-brand          → Apply brand and design-foundation guidance
+10. skills/shared/accessibility → Validate contrast, CVD, figure specs
+11. peer-review           → Self-review before submission
 11. document-skills:docx  → Export to Word for submission
 ```
 
@@ -776,7 +780,7 @@ User has content ready for final document format
 2. research-posters       → Create poster (LaTeX or PowerPoint format)
 3. plotting-libraries     → Create figures
 4. scientific-schematics  → Create diagrams
-5. visual-design          → Apply design principles
+5. oligon-brand          → Apply `<design_foundation>` principles and brand tokens
 ```
 
 ### Workflow 3: Literature Review Paper
@@ -802,7 +806,7 @@ User has content ready for final document format
 
 ```
 1. scientific-writing     → Draft content in Markdown
-2. visual-design          → Establish design specifications
+2. oligon-brand          → Establish design specifications (`<design_foundation>` + tokens)
 3. plotting-libraries     → Create data figures
 4. markdown-to-pdf        → Apply branded template
    OR
@@ -813,10 +817,10 @@ User has content ready for final document format
 
 ```
 1. markitdown             → Extract PDF/DOCX to Markdown
-2. visual-design          → Load brand specifications
+2. oligon-brand          → Load brand specifications and `<design_foundation>`
 3. scientific-slides      → Plan slide structure
 4. document-skills:pptx   → Build PowerPoint file
-5. visual-design          → Validate accessibility
+5. skills/shared/accessibility → Validate contrast and CVD-safety
 ```
 
 ### Workflow 7: Target Validation Pipeline
@@ -918,7 +922,7 @@ User has content ready for final document format
 2. Is it a diagram/schematic with specific layout? → scientific-schematics
 3. Is it a visual from text (graphical abstract, visual summary)? → paperbanana
 4. Is it an illustration/artistic? → generate-image
-5. Need design guidance only? → visual-design
+5. Need design guidance only? → oligon-brand (see `<design_foundation>`)
 
 ### "I need to review something"
 
@@ -955,7 +959,7 @@ If clarification isn't possible, use these defaults:
 | Task Characteristic | Default Skill | Rationale |
 |---------------------|---------------|-----------|
 | Text-heavy, unstructured | `scientific-writing` | General manuscript guidance |
-| Visual but unclear type | `visual-design` | Design philosophy applies broadly |
+| Visual but unclear type | `oligon-brand` | Design philosophy (`<design_foundation>`) applies broadly |
 | Research/information need | `deep-research` | Quick scoping before deeper work |
 | Analysis/statistics | `statistical-analysis` | Covers most quantitative needs |
 | Conversion task | `markitdown` | Most common conversion target |

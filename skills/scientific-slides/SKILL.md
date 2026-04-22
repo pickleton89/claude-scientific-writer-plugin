@@ -1,7 +1,6 @@
 ---
 name: scientific-slides
-version: 2.3.0
-extends: visual-design
+version: 2.4.0
 description: "Build structured research presentations — content organization and scientific storytelling for conference talks, seminars, defenses, and lab meetings. Use when creating a new research presentation. Do NOT use for editing existing PPTX files or raw file manipulation — use document-skills:pptx."
 when_to_use: "Conference presentations, seminar talks, thesis defense slides, grant pitches, journal club presentations, or any scientific talk requiring PDF, PowerPoint, or LaTeX Beamer output."
 allowed-tools: [Read, Write, Edit, Bash]
@@ -9,7 +8,14 @@ allowed-tools: [Read, Write, Edit, Bash]
 
 # Scientific Slides
 
-> **Design Foundation**: This skill extends [`visual-design`](../visual-design/SKILL.md) for typography, color, composition, and accessibility standards.
+> **Design foundation:** See [`oligon-brand`](../oligon-brand/SKILL.md)'s `<design_foundation>` block for the cross-format decision flow, audience matrix, and universal anti-patterns. Accessibility utilities live in [`skills/shared/accessibility/`](../shared/accessibility/).
+>
+> **Design checklist (slides):**
+> - Body text ≥24 pt; titles ≥36 pt
+> - Text/background contrast ≥4.5:1 (WCAG AA); validate for projector vs lit room
+> - One idea per slide; ≤6 bullets with ≤6 words each
+> - Dark vs light theme chosen per venue (projection distance, ambient light)
+> - Animations reveal narrative only — never used as decoration
 
 <overview>
 Create effective scientific presentations for conferences, seminars, defenses, and professional talks. This skill provides decision frameworks for selecting presentation format, structured workflows for development, and integration with AI slide generation tools. Supports PDF (via Nano Banana Pro), PowerPoint (via PPTX skill), and LaTeX Beamer outputs.

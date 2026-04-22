@@ -43,6 +43,14 @@ skills:
       - plotly
       - data figure
       - statistical plot
+      - color palette
+      - colorblind
+      - colorblind-safe
+      - palette
+      - wcag
+      - accessibility
+      - contrast ratio
+      - figure accessibility
     triggers:
       - "visualize"
       - "plot"
@@ -53,6 +61,10 @@ skills:
       - "(bar|line|scatter|box|violin)\\s*(chart|plot|graph)"
       - "correlation.*matrix"
       - "(pca|umap|tsne).*plot"
+      - "color.*palette"
+      - "(wcag|accessibility).*(check|compliance|figure|plot|chart)"
+      - "figure.*accessibility"
+      - "(contrast|colorblind).*(check|safe|ratio)"
     output_formats: [png, svg, pdf, html]
     negative_keywords:
       - diagram
@@ -208,39 +220,16 @@ skills:
       - nodes
       - edges
 
-  visual-design:
-    description: Design guidance, color theory, typography, layout, accessibility
-    category: visual
-    keywords:
-      - design
-      - color theory
-      - typography
-      - layout
-      - accessibility
-      - color palette
-      - font
-      - visual style
-      - design principles
-      - aesthetic
-      - composition
-      - whitespace
-      - visual hierarchy
-    triggers:
-      - "design.*guidance"
-      - "color.*palette"
-      - "layout.*principle"
-      - "visual.*style"
-      - "accessibility.*check"
-      - "wcag"
-    output_formats: []  # Supporting skill, doesn't produce output directly
-    negative_keywords: []
+  # (visual-design skill retired 2026-04-22; design-philosophy content moved to
+  # oligon-brand/<design_foundation>, utilities to plotting-libraries/scripts/
+  # and skills/shared/accessibility/; routing updated below.)
 
   # ============================================================
   # BRAND SKILLS
   # ============================================================
 
   oligon-brand:
-    description: Oligon organizational brand standards, colors, fonts, templates
+    description: Oligon organizational brand standards, colors, fonts, templates; also hosts cross-format <design_foundation> (decision flow, audience matrix, universal anti-patterns)
     category: brand
     keywords:
       - oligon
@@ -251,12 +240,23 @@ skills:
       - oligon style
       - brand template
       - brand guidelines
+      - design principles
+      - design philosophy
+      - design guidance
+      - design foundation
+      - design for scientific figures
+      - visual design principles
+      - typography principles
+      - layout principles
     triggers:
       - "oligon.*brand"
       - "brand.*colors?"
       - "oligon.*style"
       - "apply.*brand"
       - "corporate.*identity"
+      - "design.*(principle|philosophy|guidance|foundation)"
+      - "(typography|layout).*principle"
+      - "principles.*(for|of).*(figure|visual|design|scientific)"
     output_formats: []  # Applied to other outputs
     negative_keywords: []
 
@@ -1110,7 +1110,7 @@ routing_config:
 
   # Category defaults (fallback when no skill matches clearly)
   category_defaults:
-    visual: visual-design
+    visual: oligon-brand
     document: scientific-writing
     research: deep-research
     analysis: statistical-analysis
@@ -1130,7 +1130,7 @@ routing_config:
         no_followup: "Do you need AI-generated imagery?"
       - question: "Do you need AI-generated imagery?"
         yes_skill: generate-image
-        no_skill: visual-design
+        no_skill: oligon-brand
 
     document:
       - question: "Is this a research paper or manuscript?"
@@ -1165,7 +1165,7 @@ routing_config:
     brand:
       - question: "Are you applying Oligon brand standards?"
         yes_skill: oligon-brand
-        no_skill: visual-design
+        no_skill: oligon-brand  # non-Oligon design queries land on oligon-brand's <design_foundation> generic-fallback section
 
     analysis:
       - question: "Do you need statistical test guidance or power analysis?"

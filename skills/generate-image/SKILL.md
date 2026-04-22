@@ -1,7 +1,6 @@
 ---
 name: generate-image
-version: 2.3.0
-extends: visual-design
+version: 2.4.0
 description: "Generate and edit images using Gemini 3 Pro via OpenRouter. For photorealistic images, artistic illustrations, and creative visual assets. Do NOT use for publication-quality academic figures from text — use paperbanana. Do NOT use for technical diagrams — use scientific-schematics."
 allowed-tools: [Read, Write, Edit, Bash]
 quantification-reference: "../QUANTIFICATION_THRESHOLDS.md"
@@ -9,7 +8,14 @@ quantification-reference: "../QUANTIFICATION_THRESHOLDS.md"
 
 # Generate Image
 
-> **Design Foundation**: This skill extends [`visual-design`](../visual-design/SKILL.md) for typography, color, composition, and accessibility standards.
+> **Design foundation:** See [`oligon-brand`](../oligon-brand/SKILL.md)'s `<design_foundation>` block for the cross-format decision flow, audience matrix, and universal anti-patterns. Accessibility utilities live in [`skills/shared/accessibility/`](../shared/accessibility/).
+>
+> **Design checklist (image generation):**
+> - One central subject and single composition per prompt
+> - Aspect ratio stated explicitly (e.g., 3:2 print, 16:9 slide, 1:1 cover)
+> - Lighting direction and style (photorealistic vs illustrative) specified
+> - If text is part of the image, typography hierarchy declared in prompt
+> - For scientific figures, redirect to `paperbanana` or `scientific-schematics` — this skill is for creative imagery
 
 <overview>
 Generate and edit high-quality images using Google's Gemini 3 Pro model via OpenRouter. Produces photos, illustrations, artwork, and visual assets for scientific documents, presentations, and publications. Supports image generation, editing, and inpainting in a single unified model. For technical diagrams (flowcharts, circuits, pathways), use `scientific-schematics` instead.
@@ -481,7 +487,8 @@ done
 | `plotting-libraries` | Use for data visualizations (charts, plots, graphs) |
 | `scientific-slides` | Combine for visually rich presentations |
 | `research-posters` | Combine for poster visuals and hero images |
-| `visual-design` | Consult for design principles and accessibility |
+| `oligon-brand` | Consult `<design_foundation>` for cross-format design principles; apply brand tokens for branded assets |
+| `skills/shared/accessibility/` | Validate palette contrast and colorblind-safety for any generated imagery containing text or UI |
 
 **Skill Selection:**
 See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.

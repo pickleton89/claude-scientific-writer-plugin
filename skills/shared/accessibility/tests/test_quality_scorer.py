@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from utils.quality_scorer import (
+from quality_scorer import (
     calculate_measurable_score,
     get_subjective_criteria,
     calculate_total_score,

@@ -1,7 +1,6 @@
 ---
 name: paperbanana
-version: 1.0.0
-extends: visual-design
+version: 1.1.0
 description: "Generate publication-quality academic figures from unstructured text/prose using PaperBanana's multi-agent AI pipeline. Specialized in graphical abstracts, visual summaries, and methodology overviews. Use when the user provides text and wants a polished figure without specifying exact layout or nodes. Do NOT use when user specifies diagram type, nodes, or relationships — use scientific-schematics."
 allowed-tools: [Read, Write, Edit, Bash]
 shared-thresholds: "../QUANTIFICATION_THRESHOLDS.md"
@@ -9,7 +8,14 @@ shared-thresholds: "../QUANTIFICATION_THRESHOLDS.md"
 
 # PaperBanana — Text-to-Visual Figure Generation
 
-> **Design Foundation**: This skill extends [`visual-design`](../visual-design/SKILL.md) for typography, color, composition, and accessibility standards.
+> **Design foundation:** See [`oligon-brand`](../oligon-brand/SKILL.md)'s `<design_foundation>` block for the cross-format decision flow, audience matrix, and universal anti-patterns. Accessibility utilities live in [`skills/shared/accessibility/`](../shared/accessibility/).
+>
+> **Design checklist (paperbanana):**
+> - One central scientific message per figure
+> - ≤3 panels for graphical abstracts; ≤5 for methodology overviews
+> - Typography hierarchy: title > panel label > annotation > caption
+> - Colorblind-safe palette; no chartjunk; arrow-driven narrative
+> - Oligon brand applied by default — opt out via `--no-brand` if submitting to a non-Oligon venue
 
 > **Quantified Thresholds:** This skill references shared thresholds from [`QUANTIFICATION_THRESHOLDS.md`](../QUANTIFICATION_THRESHOLDS.md) §2 (Visual Quality), §7 (Quality Rubrics) and §8 (Iteration & Stopping Criteria).
 
@@ -35,7 +41,7 @@ Do NOT use this skill when:
 - User specifies diagram type, nodes, or layout explicitly → use `scientific-schematics`
 - Data visualization (plots, charts, histograms, statistical plots) → use `plotting-libraries`
 - Photorealistic or artistic images → use `generate-image`
-- Design guidance only → use `visual-design`
+- Design guidance only → see [`oligon-brand`](../oligon-brand/SKILL.md)'s `<design_foundation>`
 - Creating CONSORT, PRISMA, circuit, or pathway diagrams from specifications → use `scientific-schematics`
 </when_to_use>
 
@@ -122,7 +128,7 @@ Figure/Visual request
 ├─ Photorealistic or artistic image?
 │  └─ YES → generate-image
 └─ Design guidance only?
-   └─ YES → visual-design
+   └─ YES → oligon-brand `<design_foundation>`
 ```
 
 **Boundary principle:** If the input is *prose/text to be visualized*, use `paperbanana`. If the input is *data to be plotted* or a *specific diagram specification*, use the existing skills.
@@ -349,7 +355,7 @@ The compiled revision prompt can be used as `--caption` input for a focused refi
 - Data visualizations (plots, charts) → use `plotting-libraries`
 - User-specified diagrams (CONSORT, PRISMA, circuits, pathways) → use `scientific-schematics`
 - Photorealistic image generation → use `generate-image`
-- Design principles guidance → use `visual-design`
+- Design principles guidance → `oligon-brand`'s `<design_foundation>` section
 - Statistical plots → use `plotting-libraries`
 
 </scope>
@@ -578,7 +584,8 @@ python {baseDir}/scripts/evaluate_figure.py \
 | `plotting-libraries` | Use for data visualizations; paperbanana for text-to-visual |
 | `scientific-schematics` | Use for specified diagrams; paperbanana for prose-to-figure |
 | `generate-image` | Use for photorealistic images; paperbanana for academic figures |
-| `visual-design` | Consult for design principles before creating figures |
+| `oligon-brand` | Consult `<design_foundation>` for design principles; brand tokens applied by default in Stylist agent |
+| `skills/shared/accessibility/` | Validate contrast and CVD-safety of generated figures |
 | `executive-summary` | Pair with paperbanana for visual executive summaries |
 | `scientific-writing` | Paperbanana provides methodology figures for papers |
 

@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from utils.chart_selector import (
+from chart_selector import (
     recommend_chart_type,
     get_chart_description,
     list_data_types,

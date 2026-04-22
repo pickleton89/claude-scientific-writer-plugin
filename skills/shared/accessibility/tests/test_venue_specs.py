@@ -6,7 +6,7 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from utils.venue_specs import (
+from venue_specs import (
     get_venue_specs,
     normalize_venue_name,
     get_column_width,

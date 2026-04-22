@@ -129,7 +129,7 @@ These changes would reduce the skill from ~402 lines to ~250 lines while preserv
 
 ### Deployment Note
 
-When an agent needs to create a branded figure, pair this skill with `plotting-libraries` (for code patterns) and optionally `visual-design` (for layout review). Avoid loading all three plus `venue-templates` simultaneously — that's 4 skills and will cause diminishing returns. If venue-specific formatting is needed, swap out `visual-design` for `venue-templates`.
+When an agent needs to create a branded figure, pair this skill with `plotting-libraries` (for code patterns) and optionally `skills/shared/accessibility/` (for WCAG / CVD validation). Design-philosophy guidance now lives inside this skill's `<design_foundation>` block — no separate skill load needed. If venue-specific figure-dimension formatting is required, pair with `venue-templates` (figure_specs.md).
 
 
 [FILE] SKILL.md

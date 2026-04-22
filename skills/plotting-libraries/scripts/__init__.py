@@ -46,6 +46,16 @@ try:
         FigureValidation,
         print_validation as print_figure_validation,
     )
+    from .chart_selector import (
+        recommend_chart_type,
+        CHART_RECOMMENDATIONS,
+    )
+    from .palette_selector import (
+        select_palette,
+        CATEGORICAL_PALETTES,
+        SEQUENTIAL_PALETTES,
+        DIVERGING_PALETTES,
+    )
 except ImportError:
     # Fallback for direct script execution
     from plotting_params import (  # noqa: F401
@@ -79,6 +89,16 @@ except ImportError:
         FigureValidation,
         print_validation as print_figure_validation,
     )
+    from chart_selector import (  # noqa: F401
+        recommend_chart_type,
+        CHART_RECOMMENDATIONS,
+    )
+    from palette_selector import (  # noqa: F401
+        select_palette,
+        CATEGORICAL_PALETTES,
+        SEQUENTIAL_PALETTES,
+        DIVERGING_PALETTES,
+    )
 
 __all__ = [
     # plotting_params
@@ -109,4 +129,12 @@ __all__ = [
     "validate_figure_for_journal",
     "FigureValidation",
     "print_figure_validation",
+    # chart_selector
+    "recommend_chart_type",
+    "CHART_RECOMMENDATIONS",
+    # palette_selector
+    "select_palette",
+    "CATEGORICAL_PALETTES",
+    "SEQUENTIAL_PALETTES",
+    "DIVERGING_PALETTES",
 ]

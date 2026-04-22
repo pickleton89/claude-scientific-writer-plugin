@@ -1,7 +1,7 @@
 ---
 name: oligon-brand
-version: 4.0.1
-description: "Oligon scientific brand implementation for figures, presentations, and documents. Provides color palettes, typography standards, and format-specific adapters for matplotlib, ggplot2, ReportLab, python-docx, python-pptx, and HTML/CSS."
+version: 4.1.0
+description: "Oligon scientific brand implementation for figures, presentations, and documents. Provides color palettes, typography standards, format-specific adapters (matplotlib, ggplot2, ReportLab, python-docx, python-pptx, HTML/CSS), and a `<design_foundation>` block with cross-format decision flow, audience matrix, and universal anti-patterns (with generic-fallback for non-Oligon output)."
 allowed-tools: [Read, Glob]
 brand-type: organizational
 tokens-file: tokens/brand-tokens.json
@@ -60,7 +60,7 @@ Use generic/default styling for all visual outputs. Do not apply Oligon brand.
 **Do NOT use this skill when:**
 - Creating standard visual outputs → brand is auto-applied
 - Working on non-Oligon projects → request opt-out
-- Need general design philosophy → use `visual-design`
+- Need general design philosophy → see this skill's `<design_foundation>` block below (includes a generic-fallback paragraph for non-Oligon output)
 - Writing plotting code → use `plotting-libraries` (brand auto-applied)
 - Need journal-specific formatting → use `venue-templates`
 </when_to_use>
@@ -239,6 +239,74 @@ grayscale.save('output_figure_grayscale.png')
 - [ ] Logo excluded from publication figures
 </success_criteria>
 
+<design_foundation>
+## Design Foundation
+
+Universal design principles that apply across every output format. Oligon-specific application lives in the other sections of this skill; this block is the brand-agnostic decision flow a designer should run *before* picking colors and fonts.
+
+> **Generic-fallback use.** For non-Oligon output (unbranded manuscripts, cross-organization collaborations, personal projects), follow these same principles but substitute: **viridis/cividis** for sequential data, **Okabe-Ito** (8-color) for categorical data, **ColorBrewer diverging** (RdBu, PuOr) for diverging data, and validate contrast with the WebAIM Contrast Checker or WCAG 2.1 AA tooling. The rest of this section is venue- and brand-agnostic.
+
+### Decision Flow
+
+```
+Who is the viewer?           → audience matrix (below)
+   ↓
+What story in one sentence?  → single-message test
+   ↓
+Which chart type?            → plotting-libraries/scripts/chart_selector
+   ↓
+Which palette?               → oligon-brand tokens (default)
+                               or plotting-libraries/scripts/palette_selector (generic)
+   ↓
+Accessibility check          → skills/shared/accessibility/ (contrast, CVD, grayscale)
+   ↓
+Venue constraints            → venue-templates/references/figure_specs.md
+```
+
+Each arrow is a gate: do not proceed until the prior step has a concrete answer.
+
+### Audience Matrix
+
+| Audience | Output | Design direction |
+|----------|--------|------------------|
+| Journal reviewers / academic peers | Data-heavy figures | Precise, restrained, minimal decoration; conservative palette; exact venue dimensions; 300 DPI |
+| Journal reviewers / academic peers | Conceptual figures | Clean, professional, publishable; standard typography (Helvetica/Arial) |
+| Conference audience | Poster | Bold, scannable in 3 seconds; ≥24 pt body, ≥48 pt headers; high contrast |
+| Conference audience | Talk slides | Impactful, one idea per slide; minimal text, maximum visual; dark backgrounds acceptable |
+| General public / media | Any | Accessible, engaging, memorable; avoid jargon; visual metaphors; higher visual impact acceptable |
+| Internal team | Any | Functional, clear, quick to produce; standard templates acceptable; information over aesthetics |
+
+### Single-Message Test
+
+For every figure, answer in one sentence: *"What single insight should the viewer take away?"* If you can't answer in one sentence, the figure is doing too many jobs — split into panels or into multiple figures.
+
+### Universal Design Pitfalls
+
+These apply regardless of brand. Oligon-specific pitfalls (e.g., overusing Brand Blue) are in the `<anti_patterns>` block below.
+
+1. **Default Syndrome** — tool defaults (gray backgrounds, thin lines, small fonts, stock colors) without justification. Every choice should answer "why this?"
+2. **Rainbow Colormap for Sequential Data** — rainbow/jet is perceptually uneven and not colorblind-safe. Use viridis/plasma/magma (sequential), cividis (CVD-optimized), or RdBu/PuOr (diverging).
+3. **Color-Only Encoding** — groups distinguished only by color fail for CVD viewers and grayscale printing. Add redundant encoding: shapes, line styles, direct labels, hatching.
+4. **Cramming** — too many panels, data series, or annotations. Limit to one main message per figure; move supporting detail to supplementary panels.
+5. **Inconsistent Styling** — different fonts, colors, or sizing across panels in one document. Define a style guide (hex codes, typography hierarchy) before starting.
+6. **Truncated Axes** — y-axis starting above zero to exaggerate small differences. Start bar charts at zero; indicate breaks explicitly if unavoidable.
+7. **3D for 2D Data** — 3D bar or pie charts distort perception. Use 3D only for genuinely volumetric/spatial data.
+
+### Output-Format Guidance
+
+Absorbed from the former `OUTPUT_FORMATS.md`. For implementation code see the linked skills.
+
+**Figures (matplotlib/seaborn/SVG)** — delegate code to `plotting-libraries`; dimensions from `venue-templates/references/figure_specs.md`. 300 DPI for print, 150 DPI for screen. Prefer PDF/EPS (vector) over TIFF/PNG (raster). Embed fonts in PDF outputs.
+
+**Infographics (SVG)** — one clear message per infographic; visual metaphors that aid (not decorate); prominent data callouts; minimal text. SVG enables infinite scaling, vector-editing, and web embedding. Components in `skills/shared/svg-components/`.
+
+**Report illustrations (ReportLab)** — use the `oligon-brand/adapters/reportlab_adapter.py` building blocks: `MetricCard`, `CalloutBox`, `SectionHeader`, `DataTable`. Consistent margins, brand accents, hierarchical typography, section breaks.
+
+**Presentations (PPTX/Beamer)** — one idea per slide; ≥24 pt body, ≥36 pt titles; high-contrast for projection; simplify journal figures (larger fonts, thicker lines); avoid subtle gradients. Dark vs light per venue.
+
+**Posters** — scannable hierarchy (title in 3 s, key figure in 10 s, details in 60 s); ≤4 colors; generous whitespace; QR code for supplementary resources; view-distance font sizing.
+</design_foundation>
+
 <scope>
 ## Scope
 
@@ -250,10 +318,12 @@ grayscale.save('output_figure_grayscale.png')
 - Preflight verification checklist
 
 **Out of Scope:**
-- Design philosophy and principles → use `visual-design`
 - Writing plotting code → use `plotting-libraries`
-- Journal-specific requirements → use `venue-templates`
+- Journal-specific requirements and figure-dimension specs → use `venue-templates`
+- Accessibility utilities (contrast, CVD simulation, WCAG validation) → `skills/shared/accessibility/`
 - Diagram creation → use `scientific-schematics`
+
+Design philosophy that applies across formats lives in the `<design_foundation>` block above — not a separate skill.
 </scope>
 
 <anti_patterns>
@@ -334,8 +404,9 @@ See individual adapter files for detailed API documentation.
 
 | Skill | Relationship |
 |-------|-------------|
-| `visual-design` | **Design philosophy** — provides universal principles; oligon-brand provides Oligon-specific implementation |
-| `plotting-libraries` | **Code implementation** — use plotting-libraries for matplotlib/ggplot2 code patterns; load oligon-brand first for brand colors |
+| `plotting-libraries` | **Code implementation** — use plotting-libraries for matplotlib/ggplot2 code patterns; load oligon-brand first for brand colors. Hosts `chart_selector` and `palette_selector` utilities. |
+| `skills/shared/accessibility/` | **WCAG validation** — contrast ratios, colorblind-safe checks, figure-spec validation |
+| `venue-templates` | **Figure dimensions & manuscript formatting** — column widths, DPI, preferred formats per journal |
 | `scientific-slides` | **Presentations** — apply oligon-brand colors to slide designs |
 | `research-posters` | **Posters** — apply oligon-brand colors and logo placement |
 | `markdown-to-pdf` | **PDF reports** — uses brand colors for styled output |
@@ -344,9 +415,9 @@ See individual adapter files for detailed API documentation.
 **Skill Selection:** See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 
 **Typical Workflow:**
-1. `oligon-brand` → load tokens and set style
-2. `plotting-libraries` → implement figure code
-3. `visual-design` → review for design quality
+1. `oligon-brand` → consult `<design_foundation>`, then load tokens and set style
+2. `plotting-libraries` → implement figure code (with `chart_selector`/`palette_selector` if needed)
+3. `skills/shared/accessibility/` → validate contrast, CVD-safety, and figure-spec compliance
 
 **For brand-skill authors:** This skill is the reference implementation of the contract in [`../BRAND_SKILL_INTERFACE.md`](../BRAND_SKILL_INTERFACE.md). To create an alternative brand skill, mirror this directory's structure and validate with the tooling in [`../brand-interface/`](../brand-interface/README.md) (JSON Schema, type stubs, WCAG checker, and 173 tests).
 </cross_references>

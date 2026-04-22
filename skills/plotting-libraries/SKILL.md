@@ -1,15 +1,21 @@
 ---
 name: plotting-libraries
-version: 1.5.0
+version: 1.6.0
 description: "Data visualization for scientific research using Python (matplotlib, seaborn) or R (ggplot2, Bioconductor)"
 when_to_use: "Creating plots, charts, figures, visualizations, heatmaps, volcano plots, survival curves, genome tracks, PCA/UMAP, correlation matrices, forest plots, or any scientific figure for publication"
-extends: visual-design
 quantification-reference: "../QUANTIFICATION_THRESHOLDS.md"
 ---
 
 > **Quantified Thresholds:** This skill references shared thresholds from [`QUANTIFICATION_THRESHOLDS.md`](../QUANTIFICATION_THRESHOLDS.md) §2 (Visual Quality), §7.2 (Figure Quality Rubric), and §9 (Figure & Plot Quality).
 
-> **Design Foundation:** This skill extends `visual-design` for design philosophy, typography principles, color theory, and publication specifications. See [visual-design](../visual-design/SKILL.md) for the foundational design layer.
+> **Design foundation:** See [`oligon-brand`](../oligon-brand/SKILL.md)'s `<design_foundation>` block for the cross-format decision flow, audience matrix, and universal anti-patterns. Accessibility utilities live in [`skills/shared/accessibility/`](../shared/accessibility/).
+>
+> **Design checklist (plots):**
+> - Palette is colorblind-safe — use `palette_selector.select_palette()` or Oligon brand tokens
+> - Direct data labels preferred over legends when ≤5 series
+> - Bar-chart y-axis starts at zero; axis breaks explicit if unavoidable
+> - Log vs linear axis choice stated in caption
+> - 300 DPI minimum for print; embed fonts in PDF
 
 <objective>
 Guide effective use of data visualization libraries for creating publication-quality scientific figures. This skill provides decision frameworks for choosing between Python and R libraries, common patterns for bioinformatics visualizations, and links to detailed reference documentation.
@@ -196,6 +202,42 @@ np.random.seed(RANDOM_SEED)  # 42
 | PLOS | 83mm | 173mm | 300 | TIFF |
 | eLife | 88mm | 180mm | 300 | PDF |
 </programmatic_parameters>
+
+<utilities>
+## Chart-Type and Palette Selection Utilities
+
+Deterministic helpers for picking charts and colorblind-safe palettes from data characteristics. Pair with `plotting_params.py` for full figure setup.
+
+### `chart_selector.recommend_chart_type(data_type, n_groups=None)`
+
+Returns recommended and to-avoid chart types by data shape.
+
+```python
+from chart_selector import recommend_chart_type
+
+rec = recommend_chart_type("time_series", n_groups=3)
+# → {"recommended": ["line", "multi_line"], "avoid": ["bar", "stacked_area"], "reason": "..."}
+```
+
+Supported `data_type` values: `comparison`, `time_series`, `distribution`, `relationship`, `part_to_whole`, `flow_network`, `ranking`. Case-insensitive; hyphens and underscores equivalent.
+
+### `palette_selector.select_palette(data_type, n_groups=None, diverging=False, palette_name=None)`
+
+Returns a colorblind-safe palette matched to data characteristics.
+
+```python
+from palette_selector import select_palette
+
+palette = select_palette(data_type="categorical", n_groups=3)
+# → {"name": "okabe_ito", "colors": ["#E69F00", "#56B4E9", "#009E73"], "colorblind_safe": True, ...}
+```
+
+Palette families: `CATEGORICAL_PALETTES` (Okabe-Ito, etc.), `SEQUENTIAL_PALETTES` (Viridis, Cividis), `DIVERGING_PALETTES` (blue-orange, magenta-green), `BINARY_PALETTES`. For Oligon-branded output, prefer `oligon-brand` tokens over generic palettes — this module is for venue-agnostic figures.
+
+### Coordination with `oligon-brand`
+
+The palette utility returns generic colorblind-safe defaults. If your figure will carry Oligon branding, load the brand palette first from `oligon-brand/tokens/brand-tokens.json` and use `palette_selector` only for fallback/supplementary category colors.
+</utilities>
 
 <bioinformatics_plots>
 ## Specialized Bioinformatics Visualizations
@@ -536,7 +578,8 @@ See `oligon-brand` skill for complete brand implementation patterns.
 **Skill Selection:** See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 
 - **[oligon-brand](../oligon-brand/SKILL.md)**: Brand colors and tokens—load before plotting for Oligon-branded figures. See `<styling_integration>` above for usage patterns.
-- **[visual-design](../visual-design/SKILL.md)**: Design principles and publication specifications
+- **[venue-templates](../venue-templates/SKILL.md)**: Figure-dimension specs and publication requirements per journal
+- **[skills/shared/accessibility](../shared/accessibility/)**: WCAG contrast ratios, colorblind-safe checks, figure-spec validation
 - **[statistical-analysis](../statistical-analysis/SKILL.md)**: Statistics underlying visualizations—see `<statistical_visualization>` above for implementation patterns
 - **[scientific-writing](../scientific-writing/SKILL.md)**: Figure legends and methods descriptions
 - **[reproducible-research](../reproducible-research/SKILL.md)**: Environment management for reproducible figures

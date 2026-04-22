@@ -1,8 +1,8 @@
 ---
 name: venue-templates
-description: Access LaTeX templates, formatting requirements, and submission guidelines for scientific journals, conferences, posters, and grants
-version: 2.2.0
-when_to_use: Use when preparing manuscripts for Nature, Science, PLOS, IEEE, ACM journals; NeurIPS, ICML, CVPR, CHI conferences; academic research posters; or NSF, NIH, DOE, DARPA grant proposals. Also use when checking formatting requirements, page limits, or citation styles for any publication venue.
+description: Access LaTeX templates, formatting requirements, submission guidelines, and figure-dimension specs for scientific journals, conferences, posters, and grants
+version: 2.3.0
+when_to_use: Use when preparing manuscripts for Nature, Science, PLOS, IEEE, ACM journals; NeurIPS, ICML, CVPR, CHI conferences; academic research posters; or NSF, NIH, DOE, DARPA grant proposals. Also use when checking formatting requirements, page limits, citation styles, or figure-dimension constraints (column widths, DPI, preferred file formats) for any publication venue.
 allowed-tools: [Read, Write, Edit, Bash]
 ---
 
@@ -11,6 +11,8 @@ allowed-tools: [Read, Write, Edit, Bash]
 ## Overview
 
 Access comprehensive LaTeX templates, formatting requirements, and submission guidelines for major scientific publication venues, academic conferences, research posters, and grant proposals. This skill provides ready-to-use templates and detailed specifications for successful academic submissions across disciplines.
+
+The skill's coverage includes both **manuscript-level formatting** (page limits, citation style, LaTeX packages) and **figure-level dimensional specs** (column widths, aspect ratios, minimum DPI, preferred file formats per venue). For figure-dimension reference data, see [`references/figure_specs.md`](references/figure_specs.md).
 
 Use this skill when preparing manuscripts for journal submission, conference papers, research posters, or grant proposals and need venue-specific formatting requirements and templates.
 
@@ -508,6 +510,7 @@ Concrete examples are available in `assets/examples/`:
 |----------|----------|----------|
 | **Writing Style Guides** | `{baseDir}/references/` | 7 guides covering Nature, Science, Cell Press, medical, ML/CS conferences |
 | **Formatting Requirements** | `{baseDir}/references/` | journals_formatting.md, conferences_formatting.md, posters_guidelines.md, grants_requirements.md |
+| **Figure Dimension Specs** | `{baseDir}/references/figure_specs.md` | Per-venue column widths, max heights, DPI minimums, preferred file formats, panel-label conventions |
 | **Writing Examples** | `{baseDir}/assets/examples/` | Abstract, introduction, and summary examples by venue type |
 | **LaTeX Templates** | `{baseDir}/assets/` | journals/, posters/, grants/ subdirectories |
 | **Helper Scripts** | `{baseDir}/scripts/` | query_template.py, customize_template.py, validate_format.py |

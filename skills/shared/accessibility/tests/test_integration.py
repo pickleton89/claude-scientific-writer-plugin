@@ -1,21 +1,30 @@
-"""Integration tests for visual-design utilities.
+"""Integration tests for figure-QC utilities (formerly skills/visual-design/utils/).
 
-Tests end-to-end workflows combining multiple utilities.
+Tests end-to-end workflows combining utilities from shared/accessibility/,
+plotting-libraries/scripts/, and oligon-brand/scripts/ (which were colocated
+before the 2026-04-22 visual-design deprecation).
 """
 
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Utilities live in three skill homes post-migration:
+#   shared/accessibility/ : venue_specs, accessibility, quality_scorer, validation, schema
+#   plotting-libraries/scripts/ : chart_selector, palette_selector
+#   oligon-brand/scripts/ : template_renderer
+_HERE = Path(__file__).parent
+sys.path.insert(0, str(_HERE.parent))
+sys.path.insert(0, str(_HERE.parent.parent.parent / "plotting-libraries" / "scripts"))
+sys.path.insert(0, str(_HERE.parent.parent.parent / "oligon-brand" / "scripts"))
 
-from utils.venue_specs import get_venue_specs
-from utils.chart_selector import recommend_chart_type
-from utils.palette_selector import select_palette
-from utils.accessibility import validate_accessibility, contrast_ratio
-from utils.quality_scorer import calculate_measurable_score
-from utils.validation import validate_figure_spec
-from utils.template_renderer import render_spec_yaml, render_spec_markdown, render_quick_spec_card
-from utils.schema import validate_request
+from venue_specs import get_venue_specs
+from chart_selector import recommend_chart_type
+from palette_selector import select_palette
+from accessibility import validate_accessibility, contrast_ratio
+from quality_scorer import calculate_measurable_score
+from validation import validate_figure_spec
+from template_renderer import render_spec_yaml, render_spec_markdown, render_quick_spec_card
+from schema import validate_request
 
 
 class TestEndToEndWorkflow:

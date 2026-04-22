@@ -59,14 +59,15 @@ claude --plugin-dir /path/to/claude-scientific-writer-plugin
 
 ## Skills Included
 
-### Visual Creation (5 skills)
+### Visual Creation (4 skills)
 | Skill | Description |
 |-------|-------------|
-| `visual-design` | Publication-quality figure standards, typography, accessibility |
-| `plotting-libraries` | matplotlib, seaborn, ggplot2, Bioconductor patterns |
+| `plotting-libraries` | matplotlib, seaborn, ggplot2, Bioconductor patterns. Hosts `chart_selector` and `palette_selector` utilities. |
 | `scientific-schematics` | Diagrams and illustrations (Mermaid + AI tiered generation) |
 | `generate-image` | AI image generation via Gemini 3 Pro (OpenRouter) |
 | `paperbanana` | Text-to-visual figures, graphical abstracts |
+
+Design-philosophy guidance (decision flow, audience matrix, universal anti-patterns) now lives in [`oligon-brand/SKILL.md`](skills/oligon-brand/SKILL.md)'s `<design_foundation>` section; accessibility / WCAG / CVD utilities live in [`skills/shared/accessibility/`](skills/shared/accessibility/); per-venue figure-dimension specs live in [`venue-templates/references/figure_specs.md`](skills/venue-templates/references/figure_specs.md). The standalone `visual-design` skill was retired in v1.2.0.
 
 ### Document Creation (7 skills)
 | Skill | Description |
@@ -212,7 +213,7 @@ Skills are automatically invoked based on your request. The routing system selec
 → Uses: deep-research (quick mode)
 
 "Create a poster for my conference presentation on single-cell proteomics"
-→ Uses: research-posters + visual-design + oligon-brand
+→ Uses: research-posters + oligon-brand + plotting-libraries
 
 "Review this manuscript draft and check the statistics"
 → Uses: peer-review + statistical-analysis

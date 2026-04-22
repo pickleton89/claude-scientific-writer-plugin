@@ -63,7 +63,7 @@ A literature search is **comprehensive** when ALL criteria are met:
 
 ## §2 Visual Quality
 
-**Referenced by:** `visual-design`, `peer-review`, `generate-image`, `plotting-libraries`, `paperbanana`
+**Referenced by:** `peer-review`, `generate-image`, `plotting-libraries`, `paperbanana`, `oligon-brand`
 
 ### Resolution Standards
 
@@ -300,7 +300,7 @@ Stop iteration when:
 
 ## §9 Figure & Plot Quality
 
-**Referenced by:** `plotting-libraries`, `visual-design`
+**Referenced by:** `plotting-libraries`, `oligon-brand`, `skills/shared/accessibility/`
 
 ### Code Quality Standards
 

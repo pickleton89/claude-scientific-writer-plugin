@@ -605,4 +605,4 @@ ggplot(df, aes(x = x, y = value)) +
 - **[bioconductor_viz.md](bioconductor_viz.md)**: Specialized bioinformatics R packages
 - **[volcano_plots.md](volcano_plots.md)**: Differential expression visualization
 - **[heatmaps.md](heatmaps.md)**: Expression heatmaps
-- **[../visual-design/SKILL.md](../../visual-design/SKILL.md)**: Design principles for publications
+- **[../../oligon-brand/SKILL.md](../../oligon-brand/SKILL.md)**: Design principles (`<design_foundation>` section) and brand tokens

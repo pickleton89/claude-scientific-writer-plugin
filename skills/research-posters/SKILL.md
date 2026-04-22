@@ -1,7 +1,6 @@
 ---
 name: research-posters
-version: 1.0.0
-extends: visual-design
+version: 1.1.0
 description: "Design research posters from scratch in LaTeX or PowerPoint with custom layout, brand-compliant styling, and print-ready export. Use when the user wants to create a poster manually. Do NOT use when auto-generating a poster from an existing paper PDF — use paper-2-web (Paper2Poster)."
 when_to_use: "Conference posters, academic poster sessions, thesis defense posters, research symposia — designed from scratch, not converted from an existing paper"
 allowed-tools: [Read, Write, Edit, Bash, Glob]
@@ -9,7 +8,14 @@ allowed-tools: [Read, Write, Edit, Bash, Glob]
 
 # Research Posters
 
-> **Design Foundation**: This skill extends [`visual-design`](../visual-design/SKILL.md) for typography, color, composition, and accessibility standards.
+> **Design foundation:** See [`oligon-brand`](../oligon-brand/SKILL.md)'s `<design_foundation>` block for the cross-format decision flow, audience matrix, and universal anti-patterns. Accessibility utilities live in [`skills/shared/accessibility/`](../shared/accessibility/).
+>
+> **Design checklist (posters):**
+> - Title readable at 10 ft; key message at 5 ft; details at 2 ft
+> - Whitespace ≥30%; ≤4 primary colors
+> - All raster imagery ≥300 DPI at final print size; vector for line art
+> - Bleed and safe margins respected per venue's print spec
+> - QR code present and verified to resolve; reading flow (F- or Z-pattern) declared
 
 <overview>
 Create publication-quality research posters in either LaTeX (beamerposter, tikzposter, baposter) or PowerPoint format. This skill provides unified workflows for poster design with format-specific implementation paths. Posters are primarily visual media—text-heavy posters fail to communicate effectively.

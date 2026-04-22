@@ -293,7 +293,7 @@ Before finalizing a skill, verify:
 
 When creating a new skill, verify ecosystem integration:
 
-- [ ] **Extends visual-design?** Any visual/presentation skill should extend `visual-design`
+- [ ] **Links to `oligon-brand/<design_foundation>`?** Any visual/presentation skill should link to `oligon-brand`'s `<design_foundation>` block and include a short format-specific Design checklist (see `plotting-libraries`, `scientific-slides`, etc. for examples)
 - [ ] **Input skills identified**: What skills provide data or context to this skill?
 - [ ] **Output skills identified**: What skills consume output from this skill?
 - [ ] **Bidirectional cross-references**: Related skills updated to reference this skill

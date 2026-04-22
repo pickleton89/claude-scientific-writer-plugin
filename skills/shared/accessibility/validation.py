@@ -6,8 +6,12 @@ venue requirements and accessibility standards.
 
 from typing import Dict, Any, List, Optional
 
-from .venue_specs import get_venue_specs
-from .accessibility import validate_accessibility, check_contrast
+try:
+    from .venue_specs import get_venue_specs
+    from .accessibility import validate_accessibility, check_contrast
+except ImportError:
+    from venue_specs import get_venue_specs  # type: ignore[no-redef]
+    from accessibility import validate_accessibility, check_contrast  # type: ignore[no-redef]
 
 
 def validate_figure_spec(

@@ -1,7 +1,7 @@
 {
   "name": "claude-scientific-writer",
-  "description": "30 scientific research skills — biomedical intelligence, literature analysis, publication-ready documents, and ToolUniverse integration with 2400+ database tools",
-  "version": "1.1.0",
+  "description": "29 scientific research skills — biomedical intelligence, literature analysis, publication-ready documents, and ToolUniverse integration with 2400+ database tools",
+  "version": "1.2.0",
   "author": {
     "name": "Jeff Kiefer"
   },

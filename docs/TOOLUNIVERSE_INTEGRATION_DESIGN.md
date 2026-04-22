@@ -67,7 +67,7 @@ intent to the correct skill(s) and compose multi-skill workflows.
 **Visual & Presentation:**
 - `plotting-libraries` — matplotlib, seaborn, plotly, ggplot2
 - `scientific-schematics` — Pathway diagrams, mechanisms
-- `visual-design` — Design principles and publication specs
+- `oligon-brand` (`<design_foundation>`) — Design principles; figure specs in `venue-templates/references/figure_specs.md`
 - `oligon-brand` — Brand tokens and identity
 - `paperbanana` — Text-to-visual figure generation
 - `generate-image` — AI image generation

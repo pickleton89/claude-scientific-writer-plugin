@@ -94,7 +94,7 @@ The markdown summary provides pre-extracted, validated data including:
 
 ## Component Library Reference
 
-For complex infographics, reference the SVG component libraries in `../../visual-design/references/svg-components/`:
+For complex infographics, reference the SVG component libraries in `../../shared/svg-components/`:
 - `svg-components.jsx` - Core components (DonutChart, StatCallout, HorizontalBarChart, etc.)
 - `svg-components-expanded.jsx` - Extended chart components
 - `svg-science-components.jsx` - Science-specific icons (DNA, atoms, molecules)

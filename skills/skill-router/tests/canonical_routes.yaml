@@ -1034,24 +1034,26 @@ venue_templates_cases:
     category: document
 
 # ============================================================
-# VISUAL CREATION - visual-design
+# DESIGN-FOUNDATION / FIGURE-ACCESSIBILITY ROUTING
+# (formerly visual-design; skill retired 2026-04-22. Palette & accessibility
+# checks now owned by plotting-libraries; design-principles by oligon-brand.)
 # ============================================================
 
-visual_design_cases:
+design_foundation_cases:
   - request: "Help me choose a color palette for my figures"
-    expected_skill: visual-design
+    expected_skill: plotting-libraries
     min_confidence: 0.5
     category: visual
 
   - request: "Check my figure for WCAG accessibility compliance"
-    expected_skill: visual-design
+    expected_skill: plotting-libraries
     min_confidence: 0.5
     category: visual
 
   - request: "What are the design principles for scientific figures?"
-    expected_skill: visual-design
+    expected_skill: oligon-brand
     min_confidence: 0.5
-    category: visual
+    category: brand
 
 # ============================================================
 # DOCUMENT CREATION - markdown-to-pdf
