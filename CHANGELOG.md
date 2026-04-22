@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Docs — DESIGN_GUIDANCE_PLAN revived for Phase 2
+- **`DESIGN_GUIDANCE_PLAN.md` moved out of `docs/archive/` and back to the repo root.** Rewritten to reflect the post-v1.2.0 architecture: Phase 1 (hub establishment) is marked complete and the plan now scaffolds Phase 2 — adding deep `references/design_best_practices.md` per skill with principles, tool constraints, decision tables, pre-flight acceptance tests, and good/bad examples. Includes a post-v1.2.0 architecture table (who owns what), an updated standard template with cross-references to `oligon-brand/<design_foundation>` / `skills/shared/accessibility/` / `venue-templates/references/figure_specs.md`, and a Phase-2 implementation-order list with per-skill priorities.
+- Clarified the Cross-reference map's column semantics (typography/color/data_viz/layout are concepts distributed across `<design_foundation>` subsections, not literal section names in the hub — with a note to promote them to literal subsections during Phase 2 if they accumulate enough content).
+
 ### Breaking — `visual-design` skill retired, contents redistributed
 - **`skills/visual-design/` deleted.** Design-philosophy content was either Oligon-specific or tightly coupled to a single downstream consumer, so the abstraction layer was replaced with direct ownership in target skills. Reverses direction of the superseded `DESIGN_GUIDANCE_PLAN.md` (archived to `docs/archive/`).
 - **Utilities redistributed** (all 155 prior tests still passing under new homes; no API surface change in function names):
