@@ -12,16 +12,21 @@ A plan for adding **deep, format-specific design best-practices documentation** 
 >
 > **Phase 2 underway — `scientific-slides/` v2.5.0 landed 2026-04-22 (commit `5c8c61c`).** First priority-1 deep doc shipped: [`skills/scientific-slides/references/design_best_practices.md`](skills/scientific-slides/references/design_best_practices.md). Validates the template (see [§Standard template](#standard-template-for-each-design_best_practicesmd)) and the "distribute + capstone" synthesis pattern when a skill already has substantial design reference material. Surfaced a set of upstream gaps now tracked in [§Phase 2 backlog](#phase-2-backlog). Remaining priority-1 target: `research-posters/`.
 >
-> **Phase 2 (remaining)** — expand each of the remaining short inline checklists into a full `references/design_best_practices.md` with principles, tool-specific constraints, decision tables, pre-flight acceptance tests, good/bad examples, and further-reading pointers. Scaffolding below.
+> **Cross-cutting absorption landed 2026-04-23 (commit `5463f4d`).** A long-form, primary-source-verified (April 2026) synthesis covering cognitive science for figures, journal GA specs, and iconography licensing was absorbed horizontally into three consolidation points rather than per-skill deep docs: `venue-templates/references/figure_specs.md` (GA specs, font embedding, alt text, conflict flags), two new shared refs (`skills/shared/references/iconography-licensing.md`, `pre_submission_checklist.md`), and a new "Cognitive foundation" subsection of `oligon-brand/<design_foundation>` (Cleveland-McGill, Cowan, Treisman, Wagemans, Franconeri, Crameri). The 4 visual skills (`paperbanana`, `research-posters`, `scientific-schematics`, `plotting-libraries`) were wired to the new shared refs; source doc preserved at [`docs/design-rationale/infographic-graphic-abstract.md`](docs/design-rationale/infographic-graphic-abstract.md). This is a **third pattern** alongside per-skill deep doc and distribute + capstone: a horizontal slice when content is genuinely cross-cutting and primary-source-verified. See [§Phase 2 backlog](#phase-2-backlog) for what was promoted to the hub and what gaps remain.
+>
+> **Phase 2 (remaining)** — expand each of the remaining short inline checklists into a full `references/design_best_practices.md` with principles, tool-specific constraints, decision tables, pre-flight acceptance tests, good/bad examples, and further-reading pointers. The 2026-04-23 absorption narrows scope for `research-posters`, `paperbanana`, `scientific-schematics`, and `plotting-libraries` deep docs — each can now link to shared refs rather than re-stating icon licensing, pre-submission gates, or cognitive foundations. Scaffolding below.
 
 ### Post-v1.2.0 architecture
 
 | Layer | Home | Responsibility |
 |-------|------|----------------|
-| Cross-format design philosophy | [`skills/oligon-brand/SKILL.md`](skills/oligon-brand/SKILL.md) `<design_foundation>` | Decision flow (audience → chart → palette → a11y), audience matrix, 7 universal pitfalls, generic-fallback palettes (viridis/Okabe-Ito/ColorBrewer) |
+| Cross-format design philosophy | [`skills/oligon-brand/SKILL.md`](skills/oligon-brand/SKILL.md) `<design_foundation>` | Decision flow (audience → chart → palette → a11y), audience matrix, 7 universal pitfalls, generic-fallback palettes (viridis/Okabe-Ito/ColorBrewer), **Cognitive foundation** (Cleveland-McGill 1984, Cowan 2010, Treisman & Gelade 1980, Wagemans et al. 2012, Franconeri et al. 2021, Crameri et al. 2020) — added 2026-04-23 |
 | Accessibility utilities (WCAG, CVD) | [`skills/shared/accessibility/`](skills/shared/accessibility/) | `contrast_ratio`, `validate_accessibility`, colorblind simulation, figure-spec validation, quality scoring, venue specs |
 | Chart & palette selection | [`skills/plotting-libraries/scripts/`](skills/plotting-libraries/scripts/) | `chart_selector.recommend_chart_type()`, `palette_selector.select_palette()` |
-| Per-venue figure dimensions | [`skills/venue-templates/references/figure_specs.md`](skills/venue-templates/references/figure_specs.md) | Column widths, DPI, preferred formats per journal |
+| Per-venue figure + GA specs | [`skills/venue-templates/references/figure_specs.md`](skills/venue-templates/references/figure_specs.md) | Column widths, DPI, preferred formats per journal; **graphical-abstract specs** (Cell 1200×1200@300dpi, Nature Chem 90×50mm, "not used" for most other venues with the alternative they substitute); **color-space preferences**; **font embedding (Type 42)** with per-toolchain commands; **alt-text formula**; Cell GA + Lancet conflict flags — expanded 2026-04-23 |
+| Icon/illustration library licensing | [`skills/shared/references/iconography-licensing.md`](skills/shared/references/iconography-licensing.md) | BioRender (tiered + Academic Individual author-position rule), NIH BIOART, SciDraw, Servier Medical Art, Noun Project, Reactome, WikiPathways, Somersault. Attribution templates, re-verify banner — added 2026-04-23 |
+| Unified pre-submission quality gate | [`skills/shared/references/pre_submission_checklist.md`](skills/shared/references/pre_submission_checklist.md) | 15-point checklist spanning GA policy → dimensions → font embedding → CVD → color-as-information → position-over-area → ≤4 channels → zero baseline → typography → WCAG contrast → magenta+green fluorescence → scale bars → icon licensing → alt text → archive. Each item states check/why/how — added 2026-04-23 |
+| Long-form design rationale | [`docs/design-rationale/infographic-graphic-abstract.md`](docs/design-rationale/infographic-graphic-abstract.md) | Primary-source-verified (April 2026) cognitive-science + publisher-spec synthesis. Canonical "cite-back" for reviewer pushback — moved to docs/ 2026-04-23 |
 | SVG component library | [`skills/shared/svg-components/`](skills/shared/svg-components/) | 9-component catalog + JSX (DonutChart, StatCallout, etc.) |
 | Brand tokens | [`skills/oligon-brand/`](skills/oligon-brand/) | Oligon colors, typography, adapters for matplotlib/ggplot2/reportlab/docx/pptx/HTML |
 
@@ -77,9 +82,11 @@ Canonical APIs for code-checkable rules (contrast, CVD, validation). Phase 2 doc
 
 ---
 
-### `research-posters/` (inline checklist landed; deep doc remaining)
+### `research-posters/` (inline checklist landed; shared refs wired 2026-04-23; deep doc remaining)
 
 **Current (v1.2.0):** Title readable at 10 ft, ≥30% whitespace, ≥300 DPI, bleed/safe margins, QR code resolves.
+
+**Shared refs now wired (2026-04-23):** `SKILL.md <references>` table links to `iconography-licensing.md` (handles BioRender/Servier/Noun Project licensing — common on posters), `pre_submission_checklist.md` (supplements poster-specific checklist with CVD/contrast/alt-text/font-embedding items), and `oligon-brand/<design_foundation>` (cognitive foundation). The eventual deep doc should link to these rather than re-state them.
 
 **Add — `references/design_best_practices.md`:**
 - **Viewing-distance rules:** title readable at 10–15 ft, key message at 5 ft, details at 2 ft
@@ -93,9 +100,11 @@ Canonical APIs for code-checkable rules (contrast, CVD, validation). Phase 2 doc
 
 ---
 
-### `scientific-schematics/` (inline checklist landed; deep doc remaining)
+### `scientific-schematics/` (inline checklist landed; shared refs wired 2026-04-23; deep doc remaining)
 
 **Current (v1.2.0):** Reading direction declared, uniform node size unless ranking, arrow convention in legend, edge-crossings minimized, colorblind-safe palette.
+
+**Shared refs now wired (2026-04-23):** `SKILL.md <references>` table links to `iconography-licensing.md`, `pre_submission_checklist.md`, `figure_specs.md`, and `oligon-brand/<design_foundation>`. Gestalt grouping + pre-attentive features (both relevant to node/edge design) now have primary-lit citations in the hub.
 
 **Add — `references/design_best_practices.md`:**
 - Reading direction (L→R top→bottom for processes; center-out for systems)
@@ -109,9 +118,11 @@ Canonical APIs for code-checkable rules (contrast, CVD, validation). Phase 2 doc
 
 ---
 
-### `paperbanana/` (inline checklist landed; deep doc remaining)
+### `paperbanana/` (inline checklist landed; shared refs wired 2026-04-23; deep doc remaining)
 
 **Current (v1.2.0):** One central message, ≤3 panels for graphical abstracts, typography hierarchy, colorblind-safe palette, Oligon brand by default.
+
+**Shared refs now wired (2026-04-23):** `SKILL.md <references>` table links to `iconography-licensing.md`, `pre_submission_checklist.md`, `figure_specs.md § Graphical-Abstract Specifications` (Cell 1200×1200px@300dpi — directly relevant since paperbanana generates GAs), and `oligon-brand/<design_foundation>`. The eventual deep doc focuses on prompt-engineering patterns; the technical specs and cognitive foundations are already centralized.
 
 **Add — `references/design_best_practices.md`:**
 - Graphical abstract conventions: one central message, arrow-driven narrative, 1–3 panels max
@@ -123,9 +134,11 @@ Canonical APIs for code-checkable rules (contrast, CVD, validation). Phase 2 doc
 
 ---
 
-### `plotting-libraries/` (inline checklist landed; deep doc remaining)
+### `plotting-libraries/` (inline checklist landed; shared refs wired 2026-04-23; deep doc remaining)
 
 **Current (v1.2.0):** Colorblind-safe palette (via `palette_selector`), direct labels over legends ≤5 series, bar y-axis starts at zero, log/linear stated, 300 DPI + font embedding.
+
+**Shared refs now wired (2026-04-23):** `SKILL.md <reference_guides>` gained a "Shared References (Cross-Skill)" section linking to `iconography-licensing.md`, `pre_submission_checklist.md`, `figure_specs.md` (now with font-embedding commands for matplotlib/ggplot2/ragg — directly executable), and `oligon-brand/<design_foundation>` (Cleveland-McGill justifies the palette_selector's position-over-color bias).
 
 **Add — `references/design_best_practices.md`:**
 - Chart selection decision tree (comparison / composition / distribution / relationship / time) — reference `chart_selector.recommend_chart_type()`
@@ -296,9 +309,10 @@ Treat these as acceptance tests, not suggestions.
 Which skills should link to which parts of the shared foundation. Use this to wire up cross-references cleanly.
 
 Column meanings (the concepts, not literal section names in the hub):
-- **typography, color, data_viz, layout** — concerns covered across the `<design_foundation>` subsections (Decision Flow, Audience Matrix, Universal Design Pitfalls, Output-Format Guidance) in `oligon-brand/SKILL.md`. A ✓ means the skill's design doc should link back to the hub when touching that concern.
-- **a11y** — `skills/shared/accessibility/` (contrast, CVD, figure-spec validation).
-- **journal** — `venue-templates/references/figure_specs.md` (per-venue dimensions, DPI, preferred formats).
+- **typography, color, data_viz, layout** — concerns covered across the `<design_foundation>` subsections (Decision Flow, Audience Matrix, Universal Design Pitfalls, Output-Format Guidance, **Cognitive foundation** added 2026-04-23) in `oligon-brand/SKILL.md`. A ✓ means the skill's design doc should link back to the hub when touching that concern.
+- **a11y** — `skills/shared/accessibility/` (contrast, CVD, figure-spec validation). **Note:** as of 2026-04-23, the unified 15-point `skills/shared/references/pre_submission_checklist.md` is the single entry point that each visual-skill's deep doc should link for accessibility/contrast/alt-text/grayscale/CVD gating.
+- **journal** — `venue-templates/references/figure_specs.md` (per-venue dimensions, DPI, preferred formats; as of 2026-04-23 also **graphical-abstract specs**, **color-space preferences**, **Type 42 font-embedding commands**, **alt-text formula**).
+- **icons** (implicit column, not shown in the table) — `skills/shared/references/iconography-licensing.md`. Every skill that composites icons (BioRender, Servier, NIH BIOART, SciDraw, Noun Project) should link here rather than re-stating licensing terms. Wired into `paperbanana`, `research-posters`, `scientific-schematics`, `plotting-libraries` on 2026-04-23.
 
 If Phase 2 work generates enough typography- or color-specific content to warrant explicit subsections in `<design_foundation>`, promote them there so this map becomes literal rather than conceptual.
 
@@ -359,6 +373,46 @@ Issues that the Phase 2 per-skill passes discover in the shared foundation. Thes
 
 **How to act on these:** when two or more priority-1 Phase 2 skills need the same principle, promote it to `<design_foundation>` rather than duplicating. Shared-infra gaps should be filed as standalone upgrade tickets; they block the Phase 2 doc less than they block the underlying rendering.
 
+### Surfaced by 2026-04-23 cross-cutting absorption (`infographic-graphic-abstract.md`)
+
+A long-form primary-source-verified synthesis was absorbed horizontally rather than per-skill. Key movements:
+
+**Promoted to `oligon-brand/<design_foundation>` as a new "Cognitive foundation" subsection:**
+- Cleveland & McGill 1984 *JASA* channel ranking (position > length > angle > area > color saturation)
+- Cowan 2010 *Curr Dir Psych Sci* — ~4-chunk working-memory limit (justifies ≤4 encoded dimensions per panel, 3–5 acts per GA)
+- Treisman & Gelade 1980 *Cog Psych* — feature-integration theory (justifies Rule 6 no-hue-alone)
+- Wagemans et al. 2012 *Psych Bulletin* — Gestalt grouping (justifies direct labeling over corner legends)
+- Franconeri et al. 2021 *PSPI* — serial comparisons vs parallel ensemble perception
+- Crameri et al. 2020 *Nat Comm* — rainbow critique + Scientific Colour Maps
+
+Listed as citations with one-line applications. Linked back from `brand-colors-full.md § 4 Figure Integrity` for reviewer-pushback cite-backs.
+
+**Promoted to shared references (new files):**
+- `skills/shared/references/iconography-licensing.md` — BioRender tiered model, NIH BIOART, SciDraw, Servier, Noun Project, Reactome, WikiPathways, Somersault. Attribution templates + re-verify banner.
+- `skills/shared/references/pre_submission_checklist.md` — 15-point unified gate (check/why/how per item).
+
+**Expanded in `venue-templates/references/figure_specs.md`:**
+- § Graphical-Abstract Specifications (per-publisher policy + dimensions)
+- § Color-Space Preferences (RGB at Nature/PNAS/Science/Cell/JAMA/PLOS/eLife)
+- § Font Embedding with Type 42 / `cairo_pdf()` / `ragg` / Illustrator commands
+- § Alt-Text Formula
+- § Conflict Flags (Cell GA 8–12 vs 12–16 pt; Lancet 75 vs 107 mm)
+
+**Not closed (still in prior backlog):**
+- Dark-background projection palette variant in brand tokens.
+- Alt slide dimensions in `pptx_adapter.py`.
+- "projection" / "dark-background" palette preset in `palette_selector`.
+- Slide/presentation venue coverage in `figure_specs.md` (this pass expanded the journal-figure side only; conference-stage/boardroom/projector specs remain uncovered).
+
+**New pattern validated.** The "horizontal slice" is a third absorption pattern alongside per-skill deep doc (e.g. `scientific-slides`) and distribute + capstone (also `scientific-slides`). Use a horizontal slice when:
+1. The source material is genuinely cross-cutting (relevant to ≥3 priority-1 or priority-2 skills).
+2. The content is primary-source-verified (citations, publisher guides) rather than practitioner heuristics.
+3. The content is reference-shaped (tables, formulae, lookup) rather than workflow-shaped.
+
+When any of those three conditions fail, prefer the per-skill deep doc or the distribute + capstone patterns.
+
+**Implication for remaining Phase 2 deep docs.** `research-posters`, `paperbanana`, `scientific-schematics`, and `plotting-libraries` each now link to the shared refs; their deep docs shrink correspondingly. The remaining scope for each is their format-specific content (poster viewing-distance math, Mermaid classDef recipes, paperbanana prompt-engineering patterns, per-library publication-ready recipes) rather than cross-cutting color/typography/licensing/cognitive principles.
+
 ---
 
 ## Additional guidance
@@ -417,14 +471,16 @@ Update as each skill's deep design doc lands. The "Inline checklist" column refl
 
 | Skill | Inline checklist (v1.2.0) | Deep doc | Pre-flight | Examples | Cross-refs | Notes |
 |-------|:---:|:---:|:---:|:---:|:---:|-------|
-| oligon-brand (hub) | — | ✓ (`<design_foundation>`) | — | — | n/a | Phase 1 complete |
+| oligon-brand (hub) | — | ✓ (`<design_foundation>` + **Cognitive foundation** 2026-04-23) | — | — | n/a | Phase 1 complete + cross-cutting augment 2026-04-23 |
 | skills/shared/accessibility | — | — | — | — | n/a | Utilities only; no SKILL.md |
+| skills/shared/references (new) | — | ✓ (iconography-licensing, pre_submission_checklist) | — | — | n/a | Cross-cutting shared references — landed 2026-04-23 (commit `5463f4d`) |
+| venue-templates/figure_specs | — | ✓ expanded | ✓ 15-point | — | ✓ | GA specs, color-space, font embedding, alt text, conflict flags — expanded 2026-04-23 |
 | scientific-slides | ✓ | ✓ | ✓ |  | ✓ | **Landed v2.5.0** (commit `5c8c61c`, 2026-04-22) — Phase 2 priority 1 complete. Examples (`examples/good_*`, `examples/bad_*_annotated.md`) still pending; upstream findings filed under [§Phase 2 backlog](#phase-2-backlog) |
-| research-posters | ✓ |  |  |  |  | Phase 2 priority 1 |
-| plotting-libraries | ✓ |  |  |  |  | Phase 2 priority 2; leverage `chart_selector`/`palette_selector` |
-| scientific-schematics | ✓ |  |  |  |  | Phase 2 priority 2; include Mermaid `classDef` recipe |
+| research-posters | ✓ |  |  |  | ✓ | Phase 2 priority 1; shared refs wired 2026-04-23 |
+| plotting-libraries | ✓ |  |  |  | ✓ | Phase 2 priority 2; leverage `chart_selector`/`palette_selector`; shared refs wired 2026-04-23 |
+| scientific-schematics | ✓ |  |  |  | ✓ | Phase 2 priority 2; include Mermaid `classDef` recipe; shared refs wired 2026-04-23 |
 | markdown-to-pdf |  |  |  |  |  | Phase 2 priority 3 |
-| paperbanana | ✓ |  |  |  |  | Phase 2 priority 4; prompt-engineering |
+| paperbanana | ✓ |  |  |  | ✓ | Phase 2 priority 4; prompt-engineering; shared refs wired 2026-04-23 (GA specs particularly relevant) |
 | generate-image | ✓ |  |  |  |  | Phase 2 priority 4; prompt-engineering |
 | paper-2-web |  |  |  |  |  | Phase 2 priority 5; three sub-pipelines; link out to posters |
 | oligon-brand (token_application.md) | — |  |  |  |  | Phase 2 priority 6; token-application specifics |
