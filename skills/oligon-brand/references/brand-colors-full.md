@@ -1,1072 +1,696 @@
-# Scientific Brand Visual Identity & Figure Standards
+# Oligon Scientific Brand — Figure & Color Reference
 
-**Version 4.0**
+**Version 5.0 — aligned with Oligon Digital Style Guide v2.3 (April 2026).**
 
-This document outlines the strict visual identity for **figures, charts, diagrams, and presentation slides** for scientific communication (manuscripts, grants, and conferences).
+Canonical reference for figures, charts, diagrams, and slides. Source of
+truth: `Oligon_Digital_Style_Guide_v2.3.html`. Machine-readable tokens:
+`tokens/brand-tokens.json`. Code adapters: `adapters/`.
 
-These rules prioritize scientific clarity, professional publication standards (e.g., *Nature, Science, Cell*), accessibility, and brand consistency. The core principle: **Neutrals are for default data structure; Brand Colors are for highlights and accents; Complementary colors are for scientific contrast.**
-
-**Always follow the approved color palette, layout rules, and typography standards below.** These rules apply to **all visuals**, including when generating **plotting code** (Matplotlib, ggplot2, Plotly, etc.).
+Core principle: **Neutrals are default; Brand Blue highlights the one or
+two elements that matter most; Orange supplies opposition or focus.**
 
 ---
 
 ## 0. Logo & Brand Mark
 
-The Oligon logo uses a stylized "O" with an orbital dot, representing precision targeting — central to the SeekR platform's mechanism. The icon integrates into the wordmark, where it serves as the "O" in "Oligon."
+Oligon logo files live in `assets/`. The wordmark uses Brand Blue
+`#2DB2E8` on light grounds and white `#FFFFFF` on Blue 700+ or Neutral
+800+ grounds.
 
-### Logo Variants
+### Variants
 
-| Variant | Use Case | Dimensions |
-|---------|----------|------------|
-| Full Logo | Headers, presentations, documents | 622 × 263 viewBox |
-| Icon Only | Favicons, app icons, small spaces | 500 × 375 viewBox |
-
-### Color Versions
-
-| Version | HEX | Background |
+| Variant | Use | Dimensions |
 |---------|-----|------------|
-| Brand Blue | `#2DB2E8` | White or light backgrounds |
-| White | `#FFFFFF` | Dark backgrounds, photos |
+| Full wordmark | Headers, presentations, documents | 622 × 263 viewBox |
+| Icon only     | Favicons, app icons, small spaces | 500 × 375 viewBox |
 
-> **Historical note:** Original logo files used `#00A3DA`. The SVGs below use the canonical brand blue `#2DB2E8` for consistency with the scientific figure palette.
+### Minimum sizes (from §01 of v2.3)
 
-### Usage Rules
+| Use                     | Minimum width | Clear space         |
+|-------------------------|---------------|---------------------|
+| Digital header / web    | 120 px        | ½× logo height      |
+| Presentation corner     | 100 px / 1.0″ | ½× logo height      |
+| Document footer         | 80 px / 0.8″  | ½× logo height      |
+| Icon mark standalone    | 24 px         | ¼× icon height      |
 
-1. **Publication figures:** Do NOT include logos — journals prohibit branding
-2. **Presentations & posters:** Logo in header/footer only, not on data panels
-3. **Grants:** Title page or header; never on figures
-4. **Clear space:** Minimum margin equal to the height of the orbital dot
-5. **Minimum size:** Full logo ≥80px width; Icon ≥16px
+### Usage rules
 
-### Do Not
+- **Do** use Brand Blue wordmark on white, Neutral 50, or Neutral 100.
+- **Do** use White wordmark on Blue 700+ or Neutral 800+.
+- **Do not** rotate, skew, or place on low-contrast tinted backgrounds
+  (Blue 300–500).
+- **Do not** include logos on publication figures — journals prohibit
+  branding. Use only on presentations, posters, and internal documents.
 
-- Stretch, rotate, or distort
-- Add shadows, gradients, or outlines
-- Place Brand Blue on dark backgrounds
-- Place White on light backgrounds
-- Use the legacy color `#00A3DA`
-
----
-
-### SVG Source: Full Logo — Brand Blue (`#2DB2E8`)
-
-Use on white/light backgrounds.
-
-```xml
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0" y="0" width="622" height="263" viewBox="0, 0, 622, 263">
-  <defs>
-    <clipPath id="Clip_1">
-      <path d="M0.06,0.598 L621.105,0.598 L621.105,262.94 L0.06,262.94 z"/>
-    </clipPath>
-    <clipPath id="Clip_2">
-      <path d="M0.06,0.598 L621.105,0.598 L621.105,262.94 L0.06,262.94 z"/>
-    </clipPath>
-  </defs>
-  <g id="Layer_1">
-    <path d="M180.725,47.431 L196.105,47.431 L196.105,208.03 L180.725,208.03 z" fill="#2DB2E8"/>
-    <g clip-path="url(#Clip_1)">
-      <path d="M226.182,103.524 L241.565,103.524 L241.565,208.03 L226.182,208.03 z" fill="#2DB2E8"/>
-      <path d="M357.375,174.778 L357.375,133.161 C348.327,119.816 334.528,113.475 320.05,113.475 C297.202,113.475 280.926,131.578 280.926,154.419 C280.926,175.455 297.202,194.455 320.05,194.455 C334.528,194.455 348.327,188.125 357.375,174.778 z M372.754,211.423 C372.754,242.867 351.72,263 320.729,263 C293.359,263 272.778,246.937 269.156,224.09 L284.988,224.09 C288.163,238.787 301.729,248.75 320.729,248.75 C342.445,248.75 357.152,234.5 357.152,211.423 L357.375,211.423 L357.375,193.098 C347.421,202.374 333.851,208.03 318.019,208.03 C288.163,208.03 265.314,183.601 265.314,154.419 C265.314,123.427 288.163,99.905 318.019,99.905 C333.851,99.905 347.421,105.562 357.375,114.834 L357.375,103.524 L372.754,103.524 L372.754,211.423" fill="#2DB2E8"/>
-    </g>
-    <path d="M488.11,155.781 C488.11,133.386 470.921,115.061 448.076,115.061 C425.228,115.061 408.037,133.386 408.037,155.781 C408.037,178.848 425.228,197.394 448.076,197.394 C470.921,197.394 488.11,178.848 488.11,155.781 z M503.489,155.781 C503.489,187.214 479.291,211.423 448.076,211.423 C416.631,211.423 392.424,187.214 392.424,155.781 C392.424,124.792 416.631,100.801 448.076,100.801 C479.291,100.801 503.489,124.792 503.489,155.781" fill="#2DB2E8"/>
-    <g clip-path="url(#Clip_2)">
-      <path d="M621.105,147.862 L621.105,208.03 L605.725,208.03 L605.725,148.532 C605.725,126.827 592.834,114.385 573.832,114.385 C560.484,114.385 546.921,121.396 537.868,133.841 L537.868,208.03 L522.489,208.03 L522.489,103.524 L537.868,103.524 L537.868,115.967 C547.588,106.004 561.162,100.131 576.543,100.131 C602.783,100.131 621.105,118.456 621.105,147.862" fill="#2DB2E8"/>
-      <path d="M233.87,72.65 C225.963,72.65 219.539,66.221 219.539,58.315 C219.539,50.411 225.963,43.979 233.87,43.979 C241.777,43.979 248.209,50.411 248.209,58.315 C248.209,66.221 241.777,72.65 233.87,72.65 z M147.215,129.255 C147.215,165.826 118.515,195.915 81.705,195.915 C45.132,195.915 16.43,165.826 16.43,129.255 C16.43,92.688 45.132,62.602 81.705,62.602 C118.515,62.602 147.215,92.688 147.215,129.255 z M233.87,32.299 C230.061,32.299 226.441,33.128 223.178,34.607 C205.71,13.211 179.4,0.598 151.62,0.598 C118.074,0.598 87.076,19.248 70.96,48.064 C30.819,53.408 -0,87.62 -0,129.255 C-0,174.628 36.572,211.195 81.937,211.195 C127.308,211.195 163.879,174.628 163.879,129.255 C163.879,85.222 129.417,49.475 85.902,47.419 C100.656,26.244 125.207,12.882 151.62,12.882 C175.62,12.882 198.352,23.743 213.494,42.176 C209.971,46.611 207.857,52.221 207.857,58.315 C207.857,72.664 219.532,84.325 233.87,84.325 C248.221,84.325 259.893,72.664 259.893,58.315 C259.893,43.971 248.221,32.299 233.87,32.299" fill="#2DB2E8"/>
-    </g>
-  </g>
-</svg>
-```
+SVG sources for all four logo variants (full-blue, full-white,
+icon-blue, icon-white) live in the `assets/` directory alongside this
+file. Do not embed them inline in this reference.
 
 ---
 
-### SVG Source: Icon Only — Brand Blue (`#2DB2E8`)
+## 1. Color System — Oklch Tonal Ramps
 
-Use for favicons, small contexts on light backgrounds.
+Three perceptually-uniform Oklch ramps span 10 steps each (50 → 900).
+Every step has a defined semantic role; adjacent steps are perceptually
+equidistant.
 
-```xml
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0" y="0" width="500" height="375" viewBox="0, 0, 500, 375">
-  <g id="Layer_1">
-    <path d="M436.683,132.783 C423.099,132.783 412.063,121.738 412.063,108.156 C412.063,94.577 423.099,83.527 436.683,83.527 C450.267,83.527 461.317,94.577 461.317,108.156 C461.317,121.738 450.267,132.783 436.683,132.783 z M287.813,230.028 C287.813,292.856 238.507,344.548 175.269,344.548 C112.437,344.548 63.128,292.856 63.128,230.028 C63.128,167.208 112.437,115.521 175.269,115.521 C238.507,115.521 287.813,167.208 287.813,230.028 z M436.683,63.461 C430.139,63.461 423.92,64.885 418.314,67.426 C388.305,30.669 343.105,9 295.38,9 C237.749,9 184.496,41.04 156.809,90.545 C87.848,99.726 34.902,158.501 34.902,230.028 C34.902,307.978 97.732,370.798 175.667,370.798 C253.613,370.798 316.441,307.978 316.441,230.028 C316.441,154.381 257.236,92.969 182.479,89.437 C207.826,53.059 250.004,30.103 295.38,30.103 C336.611,30.103 375.664,48.762 401.678,80.43 C395.625,88.049 391.993,97.687 391.993,108.156 C391.993,132.807 412.051,152.84 436.683,152.84 C461.337,152.84 481.39,132.807 481.39,108.156 C481.39,83.513 461.337,63.461 436.683,63.461" fill="#2DB2E8" id="Layer_1"/>
-  </g>
-</svg>
-```
+### Blue ramp
 
----
+| Step | Hex      | Role |
+|:----:|:---------|------|
+| 50   | `#EFFBFF` | Callout background, lightest fill |
+| 100  | `#DBF3FF` | Cycle 1 CI band |
+| 200  | `#B3E3FC` | Peer lightest arm; Focus receding |
+| 300  | `#76CAF3` | Cycle 1 control; Focus receding |
+| 400  | `#1FACE3` | Primary data default (Oklch twin of brand.blue) |
+| 500  | `#008ECB` | Focus receding; Cycle 4 mid arm; emphasis |
+| 600  | `#006EA6` | Cycle 3 negative; CTA hover |
+| 700  | `#00507E` | Accent (links, primary buttons); divergent negative |
+| 800  | `#003454` | Peer darkest arm; Cycle 4 dark; dark-theme surface |
+| 900  | `#001A2E` | Dark-theme page background |
 
-### SVG Source: Full Logo — White (`#FFFFFF`)
+### Orange ramp
 
-Use on dark backgrounds (website, dark slides, photo overlays).
+| Step | Hex      | Role |
+|:----:|:---------|------|
+| 50   | `#FFF5F1` | Warning callout background |
+| 100  | `#FFE8E0` | Don't-do box background |
+| 200  | `#FFCEBD` | Light warning fill |
+| 300  | `#F0AA92` | Soft focus fill |
+| 400  | `#DD8363` | Focus soft promotion |
+| 500  | `#C45E39` | Focus default promotion; Cycle 4 outlier |
+| 600  | `#A0421D` | Cycle 3 positive; volcano up-regulated |
+| 700  | `#772E11` | Signal/destructive; divergent positive |
+| 800  | `#4F1B06` | Deep signal, rare dark accent |
+| 900  | `#2B0901` | Deepest warm |
 
-```xml
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0" y="0" width="622" height="263" viewBox="0, 0, 622, 263">
-  <defs>
-    <clipPath id="Clip_1">
-      <path d="M0.06,0.598 L621.105,0.598 L621.105,262.94 L0.06,262.94 z"/>
-    </clipPath>
-    <clipPath id="Clip_2">
-      <path d="M0.06,0.598 L621.105,0.598 L621.105,262.94 L0.06,262.94 z"/>
-    </clipPath>
-  </defs>
-  <g id="Layer_1">
-    <path d="M180.725,47.431 L196.105,47.431 L196.105,208.03 L180.725,208.03 z" fill="#FFFFFF"/>
-    <g clip-path="url(#Clip_1)">
-      <path d="M226.182,103.524 L241.565,103.524 L241.565,208.03 L226.182,208.03 z" fill="#FFFFFF"/>
-      <path d="M357.375,174.778 L357.375,133.161 C348.327,119.816 334.528,113.475 320.05,113.475 C297.202,113.475 280.926,131.578 280.926,154.419 C280.926,175.455 297.202,194.455 320.05,194.455 C334.528,194.455 348.327,188.125 357.375,174.778 z M372.754,211.423 C372.754,242.867 351.72,263 320.729,263 C293.359,263 272.778,246.937 269.156,224.09 L284.988,224.09 C288.163,238.787 301.729,248.75 320.729,248.75 C342.445,248.75 357.152,234.5 357.152,211.423 L357.375,211.423 L357.375,193.098 C347.421,202.374 333.851,208.03 318.019,208.03 C288.163,208.03 265.314,183.601 265.314,154.419 C265.314,123.427 288.163,99.905 318.019,99.905 C333.851,99.905 347.421,105.562 357.375,114.834 L357.375,103.524 L372.754,103.524 L372.754,211.423" fill="#FFFFFF"/>
-    </g>
-    <path d="M488.11,155.781 C488.11,133.386 470.921,115.061 448.076,115.061 C425.228,115.061 408.037,133.386 408.037,155.781 C408.037,178.848 425.228,197.394 448.076,197.394 C470.921,197.394 488.11,178.848 488.11,155.781 z M503.489,155.781 C503.489,187.214 479.291,211.423 448.076,211.423 C416.631,211.423 392.424,187.214 392.424,155.781 C392.424,124.792 416.631,100.801 448.076,100.801 C479.291,100.801 503.489,124.792 503.489,155.781" fill="#FFFFFF"/>
-    <g clip-path="url(#Clip_2)">
-      <path d="M621.105,147.862 L621.105,208.03 L605.725,208.03 L605.725,148.532 C605.725,126.827 592.834,114.385 573.832,114.385 C560.484,114.385 546.921,121.396 537.868,133.841 L537.868,208.03 L522.489,208.03 L522.489,103.524 L537.868,103.524 L537.868,115.967 C547.588,106.004 561.162,100.131 576.543,100.131 C602.783,100.131 621.105,118.456 621.105,147.862" fill="#FFFFFF"/>
-      <path d="M233.87,72.65 C225.963,72.65 219.539,66.221 219.539,58.315 C219.539,50.411 225.963,43.979 233.87,43.979 C241.777,43.979 248.209,50.411 248.209,58.315 C248.209,66.221 241.777,72.65 233.87,72.65 z M147.215,129.255 C147.215,165.826 118.515,195.915 81.705,195.915 C45.132,195.915 16.43,165.826 16.43,129.255 C16.43,92.688 45.132,62.602 81.705,62.602 C118.515,62.602 147.215,92.688 147.215,129.255 z M233.87,32.299 C230.061,32.299 226.441,33.128 223.178,34.607 C205.71,13.211 179.4,0.598 151.62,0.598 C118.074,0.598 87.076,19.248 70.96,48.064 C30.819,53.408 -0,87.62 -0,129.255 C-0,174.628 36.572,211.195 81.937,211.195 C127.308,211.195 163.879,174.628 163.879,129.255 C163.879,85.222 129.417,49.475 85.902,47.419 C100.656,26.244 125.207,12.882 151.62,12.882 C175.62,12.882 198.352,23.743 213.494,42.176 C209.971,46.611 207.857,52.221 207.857,58.315 C207.857,72.664 219.532,84.325 233.87,84.325 C248.221,84.325 259.893,72.664 259.893,58.315 C259.893,43.971 248.221,32.299 233.87,32.299" fill="#FFFFFF"/>
-    </g>
-  </g>
-</svg>
-```
+### Neutral ramp
 
----
+| Step | Hex      | Role |
+|:----:|:---------|------|
+| 50   | `#F3FAFD` | Surface fill; dark-theme text |
+| 100  | `#E9F0F3` | Secondary button fill, subtle surface |
+| 200  | `#D6DCDF` | Borders, rules, axis furniture, gridlines |
+| 300  | `#B9BFC2` | Volcano non-significant; de-emphasized |
+| 400  | `#9A9FA2` | Neutral callout border, annotation mid |
+| 500  | `#7C8184` | Caption placeholder, disabled |
+| 600  | `#5F6467` | Caption text on light |
+| 700  | `#44494B` | Secondary text (`text.muted`); axis furniture dark |
+| 800  | `#2A2F31` | High-contrast text on light |
+| 900  | `#121719` | Body text on light (default) |
 
-### SVG Source: Icon Only — White (`#FFFFFF`)
+### Brand anchor
 
-Use on dark backgrounds.
+| Name       | Hex      | Role |
+|------------|----------|------|
+| Brand Blue | `#2DB2E8` | Logo wordmark; Cycle 1 treatment arm |
 
-```xml
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0" y="0" width="500" height="375" viewBox="0, 0, 500, 375">
-  <g id="Layer_1">
-    <path d="M436.683,132.783 C423.099,132.783 412.063,121.738 412.063,108.156 C412.063,94.577 423.099,83.527 436.683,83.527 C450.267,83.527 461.317,94.577 461.317,108.156 C461.317,121.738 450.267,132.783 436.683,132.783 z M287.813,230.028 C287.813,292.856 238.507,344.548 175.269,344.548 C112.437,344.548 63.128,292.856 63.128,230.028 C63.128,167.208 112.437,115.521 175.269,115.521 C238.507,115.521 287.813,167.208 287.813,230.028 z M436.683,63.461 C430.139,63.461 423.92,64.885 418.314,67.426 C388.305,30.669 343.105,9 295.38,9 C237.749,9 184.496,41.04 156.809,90.545 C87.848,99.726 34.902,158.501 34.902,230.028 C34.902,307.978 97.732,370.798 175.667,370.798 C253.613,370.798 316.441,307.978 316.441,230.028 C316.441,154.381 257.236,92.969 182.479,89.437 C207.826,53.059 250.004,30.103 295.38,30.103 C336.611,30.103 375.664,48.762 401.678,80.43 C395.625,88.049 391.993,97.687 391.993,108.156 C391.993,132.807 412.051,152.84 436.683,152.84 C461.337,152.84 481.39,132.807 481.39,108.156 C481.39,83.513 461.337,63.461 436.683,63.461" fill="#FFFFFF" id="Layer_1"/>
-  </g>
-</svg>
-```
-
----
-
-## Quick Reference
-
-| Logo | Color | HEX | Use On |
-|------|-------|-----|--------|
-| Full Logo | Brand Blue | `#2DB2E8` | White/light backgrounds |
-| Full Logo | White | `#FFFFFF` | Dark backgrounds |
-| Icon | Brand Blue | `#2DB2E8` | White/light backgrounds |
-| Icon | White | `#FFFFFF` | Dark backgrounds |
+Brand Blue is the Oklch twin of Blue 400 `#1FACE3` — the 1-unit drift
+is below perceptual threshold. Use Brand Blue for logos and Cycle 1
+treatment; use ramp steps everywhere else.
 
 ---
 
+## 2. Semantic Tokens
 
-## 1. Color Palettes (HEX + Role)
+Bind primitives to roles so a single token change propagates everywhere.
 
-### Primary Brand Color (Highlights & Key Accents)
+### Light theme
 
-Reserved for the primary data series of interest, the experimental treatment group, or the main focal point of a figure. **Brand Blue should appear in no more than one or two elements per panel in publication figures.**
+| Token        | Source      | Hex       | Role |
+|--------------|-------------|-----------|------|
+| `page`       | white       | `#FFFFFF` | Document / app background |
+| `surface`    | neutral.50  | `#F3FAFD` | Cards, callouts, zebra rows |
+| `border`     | neutral.200 | `#D6DCDF` | Rules, input borders |
+| `text`       | neutral.900 | `#121719` | Body copy |
+| `text.muted` | neutral.700 | `#44494B` | Secondary text, captions |
+| `accent`     | blue.700    | `#00507E` | Links, primary button |
+| `brand`      | brand.blue  | `#2DB2E8` | Logo, Cycle 1 treatment arm |
+| `signal`     | orange.700  | `#772E11` | Warnings, destructive |
 
-| Color | HEX | Role |
-|-------|-----|------|
-| Bright Blue | #2DB2E8 | Hero Color — primary highlight |
+### Dark theme
 
-### Neutral Data Colors (The Default)
-
-Use these for control groups, baseline data, secondary series, context, or when no specific highlight is needed. **Most data should be neutral; color is earned by importance.**
-
-| Color | HEX | Role |
-|-------|-----|------|
-| Very Dark Gray | #222222 | Primary default data lines/points |
-| Medium Gray | #666666 | Secondary data lines/points |
-| Muted Gray | #999999 | Tertiary data (lightest for actual data) |
-| Light Gray | #BDBDBD | Annotations, gridlines, de-emphasized points only |
-
-> **Note:** Do not use #BDBDBD for primary data points or lines; it lacks sufficient contrast against white backgrounds, especially in print. Reserve it for gridlines, annotations, non-significant points (e.g., volcano plots), or reference elements only.
-
-### Scientific Contrast Colors (Divergence & Comparison)
-
-Use *only* when strong opposition is needed against the Brand Blue (e.g., "Up-regulated" vs. "Down-regulated," or "Mutant" vs. "Wild-type").
-
-| Color | HEX | Role |
-|-------|-----|------|
-| Vermilion/Orange | #E8622D | Primary contrast to Brand Blue |
-| Dark Warm | #7D250F | Extreme positive in heatmaps |
-
-### Supporting Brand Blues (Limited Use)
-
-Use sparingly and with clear intent. These are **not** interchangeable with the hero blue.
-
-| Color | HEX | Role & When to Use |
-|-------|-----|-------------------|
-| Medium Blue | #158BBB | Additional categorical series *only* when neutrals + Brand Blue are insufficient. Never use simultaneously with Brand Blue in the same legend without clear semantic distinction. |
-| Dark Teal | #0F5D7D | Reserved primarily for heatmap negative extremes. May serve as a rare secondary highlight in line/scatter plots when Brand Blue is already committed. Avoid combining with multiple other blues. |
-
-### Background & Structure Colors
-
-| Element | Color | HEX |
-|---------|-------|-----|
-| Figure Backgrounds | White ONLY | #FFFFFF |
-| Axes, Ticks, Labels, Titles, Legend Text | Black | #000000 |
-| Gridlines (if essential) | Thin light gray | #E5E5E5 |
+| Token     | Source      | Hex       | Role |
+|-----------|-------------|-----------|------|
+| `page`    | blue.900    | `#001A2E` | Dark page background |
+| `surface` | blue.800    | `#003454` | Elevated cards |
+| `text`    | neutral.50  | `#F3FAFD` | Body text on dark |
+| `accent`  | blue.300    | `#76CAF3` | Links on dark |
+| `brand`   | brand.blue  | `#2DB2E8` | Brand accent on dark (7.28:1) |
 
 ---
 
-## 2. Scenario-Specific Color Cycles
+## 3. Scientific Data Visualization — Two Decision Rules
 
-**Do not use default library color cycles.** Select the cycle that matches your scientific context:
+Every chart color choice is deterministic once you have answered Rule 1
+and Rule 2.
 
-### Cycle 1: Control vs. Treatment (Most Common)
+### Rule 1 — Choose the Cycle
 
-Use when comparing an experimental condition against a baseline.
+Pick the cycle that matches your data's categorical structure.
 
-| Order | Color | HEX | Assigned To |
-|-------|-------|-----|-------------|
-| 1 | Dark Gray | #222222 | Control / Baseline |
-| 2 | Brand Blue | #2DB2E8 | Treatment / Experimental |
-| 3 | Medium Gray | #666666 | Secondary comparison (if needed) |
+| If your data is…                                         | Use cycle                        | Rationale |
+|----------------------------------------------------------|----------------------------------|-----------|
+| Two arms, one carries the narrative (treatment vs control) | **Cycle 1 · Treatment/Control**  | Same-hue pair with lightness hierarchy |
+| N arms, one carries the narrative answer                 | **Cycle 2 · Focus**              | Three background arms + one promoted focus |
+| N arms, all equal weight — no focus                      | **Cycle 2 · Peer**               | Blue ramp at stepped lightness; no promotion |
+| Signed / directional effects (up vs down, gain vs loss)  | **Cycle 3 · Opposing**           | Blue + Orange paired across the ramp |
+| Continuous signed scalar (heatmap z-scores)              | **Cycle 3 · Divergent**          | Blue 700 → white → Orange 700 |
+| 3–4 categories with one conceptual outlier               | **Cycle 4 · Multi-Category**     | Step-spaced Blue + Orange for outlier |
+
+> **The Focus-vs-Peer branch.** Before reaching for Cycle 2, ask: does
+> any arm carry the narrative answer? If yes, Focus. If no, Peer.
+> Never promote an arm arbitrarily just because the palette has a
+> focus slot.
+
+#### Cycle 1 — Treatment / Control
+
+Two-arm studies. Same-hue palette with lightness doing the hierarchy
+work — treatment at saturated Brand Blue, control as a lighter tint of
+the same hue.
+
+| Order | Color     | Hex       | Role |
+|:-----:|-----------|-----------|------|
+| 1     | Brand Blue | `#2DB2E8` | Treatment / experimental |
+| 2     | Blue 300  | `#76CAF3` | Control / baseline |
+| 3     | Blue 100  | `#DBF3FF` | CI band (fill only) |
 
 ```python
-CYCLE_TREATMENT_CONTROL = ["#222222", "#2DB2E8", "#666666"]
+CYCLE_TREATMENT_CONTROL = ['#2DB2E8', '#76CAF3', '#DBF3FF']
 ```
 
-### Cycle 2: Neutrals Only (No Designated Highlight)
+#### Cycle 2 — Peer
 
-Use when all groups are peers and no single condition deserves emphasis.
+Equal-weight peer comparisons where no arm carries the narrative.
+Lightness distinguishes without ranking. Good default for sibling
+siRNAs, cell lines, dose levels where ordering is arbitrary.
 
-| Order | Color | HEX | Assigned To |
-|-------|-------|-----|-------------|
-| 1 | Dark Gray | #222222 | Group A |
-| 2 | Medium Gray | #666666 | Group B |
-| 3 | Muted Gray | #999999 | Group C |
+| Arms | Ramp steps | Hex |
+|:----:|-----------|-----|
+| 4    | blue.800 / 600 / 400 / 200 | `#003454` / `#006EA6` / `#1FACE3` / `#B3E3FC` |
+| 3    | blue.700 / 500 / 300       | `#00507E` / `#008ECB` / `#76CAF3` |
 
 ```python
-CYCLE_NEUTRALS_ONLY = ["#222222", "#666666", "#999999"]
+CYCLE_PEER_4 = ['#003454', '#006EA6', '#1FACE3', '#B3E3FC']
+CYCLE_PEER_3 = ['#00507E', '#008ECB', '#76CAF3']
 ```
 
-### Cycle 3: Opposing Effects (Blue vs. Orange)
+#### Cycle 2 — Focus
 
-Use when showing bidirectional changes (up/down, positive/negative, gain/loss).
+N arms with one promoted. Three background arms in receding Blue +
+one focus variant.
 
-| Order | Color | HEX | Assigned To |
-|-------|-------|-----|-------------|
-| 1 | Brand Blue | #2DB2E8 | Direction A (e.g., Down-regulated) |
-| 2 | Contrast Orange | #E8622D | Direction B (e.g., Up-regulated) |
-| 3 | Dark Gray | #222222 | Neutral / Control / Unchanged |
+| Step     | Color     | Role |
+|----------|-----------|------|
+| Receding 1 | Blue 500 | Background arm (darkest receding) |
+| Receding 2 | Blue 300 | Background arm |
+| Receding 3 | Blue 200 | Background arm (lightest receding) |
+
+**Focus variants** (pick one for the promoted arm):
+
+| Variant        | Color       | Hex       | Use |
+|----------------|-------------|-----------|-----|
+| Default        | Orange 500  | `#C45E39` | Saturated hue contrast. Use when focus is categorically different. |
+| Soft           | Orange 400  | `#DD8363` | Less saturated; focus present but quieter. |
+| Monochromatic  | Blue 800    | `#003454` | Dark lightness alone. Use when focus is "more of the same" rather than different in kind (e.g., highest dose in a dose-response). |
 
 ```python
-CYCLE_OPPOSING = ["#2DB2E8", "#E8622D", "#222222"]
+CYCLE_FOCUS_RECEDING = ['#008ECB', '#76CAF3', '#B3E3FC']
+FOCUS_VARIANTS = {
+    'default':       '#C45E39',  # orange.500
+    'soft':          '#DD8363',  # orange.400
+    'monochromatic': '#003454',  # blue.800
+}
 ```
 
-### Cycle 4: Multiple Categories (≤4 groups, use sparingly)
+#### Cycle 3 — Opposing
 
-Use only when you must distinguish 4 categories and cannot restructure the figure.
+Signed or directional data. Avoids red/green colorblind confusion.
 
-| Order | Color | HEX | Marker Shape |
-|-------|-------|-----|--------------|
-| 1 | Dark Gray | #222222 | Circle (o) |
-| 2 | Brand Blue | #2DB2E8 | Square (s) |
-| 3 | Medium Gray | #666666 | Triangle (^) |
-| 4 | Medium Blue | #158BBB | Diamond (D) |
+| Order | Color      | Hex       | Role |
+|:-----:|------------|-----------|------|
+| 1     | Blue 600   | `#006EA6` | Direction A (e.g., down-regulated) |
+| 2     | Orange 600 | `#A0421D` | Direction B (e.g., up-regulated) |
+| 3     | Neutral 300 | `#B9BFC2` | Non-significant / unchanged |
 
 ```python
-CYCLE_MULTI_CATEGORY = ["#222222", "#2DB2E8", "#666666", "#158BBB"]
+CYCLE_OPPOSING = ['#006EA6', '#A0421D', '#B9BFC2']
 ```
 
-> **Important:** When using Cycle 4, marker shapes or line styles are **mandatory** for accessibility. If you need more than 4 categories, redesign the figure using faceting or small multiples.
+#### Cycle 3 — Divergent colormap
+
+For heatmaps with data centered at zero (z-scores, log2 fold change).
+Matched lightness curves on both ramps keep perceptual distance from
+zero symmetric.
+
+| Position | Color      | Hex       | Label |
+|:--------:|------------|-----------|-------|
+| 0.0      | Blue 700   | `#00507E` | Extreme negative |
+| 0.5      | White      | `#FFFFFF` | Zero / neutral |
+| 1.0      | Orange 700 | `#772E11` | Extreme positive |
+
+```python
+from matplotlib.colors import LinearSegmentedColormap
+brand_divergent = LinearSegmentedColormap.from_list(
+    'brand_divergent',
+    [(0.0, '#00507E'), (0.5, '#FFFFFF'), (1.0, '#772E11')]
+)
+```
+
+Implementation requirements:
+
+1. Center the colormap at zero — do not let auto-scaling shift the
+   neutral point.
+2. Use symmetric limits (e.g. `vmin=-5, vmax=5`) even if data spans
+   `-3 to +5`.
+3. Always include a colorbar with ticks at meaningful intervals.
+
+#### Cycle 4 — Multi-Category
+
+3–4 categories with one conceptually distinct (e.g., vehicle vs
+compounds). If all categories are peers, use **Cycle 2 · Peer** instead.
+
+| Order | Color      | Hex       | Role |
+|:-----:|------------|-----------|------|
+| 1     | Blue 800   | `#003454` | Peer category (dark) |
+| 2     | Blue 500   | `#008ECB` | Peer category (mid) |
+| 3     | Blue 300   | `#76CAF3` | Peer category (light) |
+| 4     | Orange 500 | `#C45E39` | Conceptual outlier |
+
+Marker shapes MANDATORY for accessibility: `['o', 's', '^', 'D']`.
+If 5+ categories, redesign using faceting or small multiples.
+
+```python
+CYCLE_MULTI_CATEGORY = ['#003454', '#008ECB', '#76CAF3', '#C45E39']
+MARKER_SHAPES = ['o', 's', '^', 'D']
+```
+
+### Rule 2 — Choose the Ramp Step
+
+| Step        | Role                         | Where |
+|:------------|------------------------------|-------|
+| 50 – 200    | Fills, tints, surfaces       | CI bands, box fills, callout backgrounds |
+| 300         | Light data strokes           | Cycle 1 control, Cycle 2 Focus receding arms |
+| 400         | Primary data                 | Default for lines and markers |
+| 500 – 600   | Emphasis / button fills      | CTAs, hover states |
+| 700         | Text, borders, links         | Axis titles on light theme; heatmap extremes |
+| 800 – 900   | Dark page, deepest contrast  | Dark-theme background; monochromatic Focus promotion |
 
 ---
 
-## 3. Accessibility & Colorblind Safety
+## 4. Figure Integrity — Eight Rules
 
-### Core Requirements
+These rules govern what a figure is allowed to claim visually.
+Violating any of them misrepresents the data, regardless of how
+well-styled the figure looks.
 
-1. **All figures must remain interpretable in grayscale.** Test by converting to grayscale before submission.
+1. **Zero baseline on bar charts.** Bars encode quantity by length; a
+   truncated y-axis inflates differences. If truncation is unavoidable
+   (tight effect on a large background), switch to a dot plot or
+   Cleveland dot plot rather than a truncated bar.
 
-2. **Do not rely solely on color** to distinguish data series. Combine color with:
-   - Line style (solid, dashed, dotted)
-   - Marker shape (circle, square, triangle, diamond)
-   - Direct labels or annotations
+2. **Log scales labeled as such.** Axis title reads
+   `log10 concentration (nM)` or equivalent, with one tick per decade
+   as the base case. Never a silent log transform.
 
-3. **Avoid similar-hue distinctions.** Do not use #2DB2E8 vs. #158BBB as the primary differentiator between two series—they are too similar for colorblind viewers and in grayscale. If both must appear, use shape/style as the primary encoding.
+3. **Uncertainty is shown.** Error bars, CI bands, or individual
+   points overlaid on summary statistics. Bar definition (SD, SEM, or
+   95% CI) is stated on-figure in caption or legend — not left to the
+   reader to guess.
 
-4. **The blue–orange pair is colorblind-safe.** The combination of #2DB2E8 and #E8622D plus neutral grays provides good discrimination for deuteranopia and protanopia (red-green color blindness, ~8% of males).
+4. **No 3D effects on 2D data.** 3D bars, 3D pies, and drop shadows
+   distort perceived area and introduce perspective error. Flat, 2D,
+   always.
 
-### Testing Tools
+5. **No rainbow / jet colormaps on continuous data.** Rainbow has no
+   perceptual ordering, introduces false luminance bands, and fails
+   both CVD and grayscale. Use viridis-family or the §3 divergent
+   cycle for continuous scalars.
 
-Before finalizing figures, verify discriminability:
+6. **No category encoded by hue alone.** Combine color with shape
+   (circle / square / triangle), line style, or direct label, so the
+   encoding survives grayscale printing, low-quality projection, and
+   color vision deficiency.
+
+7. **Isotype charts replicate 1:1.** To show a 5:1 ratio, draw five
+   icons beside one icon — never one icon scaled 5× larger. Scaling a
+   single icon by height inadvertently scales area and visually
+   overstates the difference.
+
+8. **No dual y-axes without justification.** Dual y-axes invite
+   spurious visual correlation between series scaled independently.
+   Reach for small multiples or a twin-panel layout first.
+
+---
+
+## 5. Typography
+
+Arial / Helvetica for screen; DejaVu Sans as the cross-platform render
+target for matplotlib and ReportLab.
+
+### Document type scale
+
+| Role    | Size             | Weight | Color        |
+|---------|------------------|:------:|--------------|
+| H1      | 28 pt            | 800    | brand.blue   |
+| H2      | 19 pt            | 700    | brand.blue   |
+| H3      | 14 pt uppercase  | 700    | neutral.900  |
+| Body    | 14 pt / 1.55     | 400    | neutral.900  |
+| Caption | 11 pt            | 400    | neutral.600  |
+
+### Figure type scale (document scale — print, PDF, web, 60–80 cm reading)
+
+| Role       | Size       | Weight |
+|------------|------------|:------:|
+| Title      | 12 pt      | 700    |
+| Axis label | 10 pt      | 500    |
+| Tick label | 9 pt       | 400    |
+| Legend     | 8.5–9 pt   | 400    |
+
+### Projection type scale (conference rooms, lecture halls)
+
+Figures embedded in projected slides follow these minimums rather than
+the document figure scale — a 9 pt tick label that reads fine on a
+laptop disappears from the back row of a conference room.
+
+| Role                     | Size  |
+|--------------------------|:-----:|
+| Body                     | 18 pt |
+| Heading                  | 28 pt |
+| Axis labels on embedded figures | 18 pt |
+
+If a data figure's native axis labels fall below 18 pt at projected
+scale, re-label them natively in PowerPoint or scale the figure up
+before exporting.
+
+---
+
+## 6. Layout
+
+| Parameter         | Value |
+|-------------------|-------|
+| Aspect ratio      | Match to the data, not the canvas. Trend data banked so the mean slope sits near 45° (Cleveland). Categorical comparisons tolerate squarer ratios (4:3, 3:2). Do **not** stretch/squash to fill slide real estate. |
+| Spines            | Left + bottom only (top + right hidden) |
+| Gridlines         | Horizontal, neutral.200, 0.5 pt, dashed, off by default |
+| Data line width   | 1.8–2.2 pt primary; 1.0–1.6 pt secondary |
+| Markers           | 5–6 pt filled circles; white outline on colored fills |
+| Resolution        | 300 dpi PNG + SVG/PDF vector |
+
+### Output resolution
+
+| Context               | Resolution             | Formats |
+|-----------------------|------------------------|---------|
+| Print / publication   | 300 dpi (600 for line art) | PDF, SVG, EPS, TIFF |
+| Screen / presentation | 150 dpi                 | PNG, PDF |
+| Web / preprint        | 150 dpi                 | PNG, SVG |
+
+Vector formats (PDF, EPS, SVG) are preferred for line-based figures —
+they scale without quality loss.
+
+---
+
+## 7. Accessibility
+
+Palette is validated against WCAG 2.1 Level AA. Most pairs below
+reach AAA. Blue and Orange ramps share Oklch lightness curves, so
+simulated-colorblind rendering preserves the blue-orange axis as a
+dark-light differential under deuteranopia and protanopia.
+
+### Light-theme contrast pairs
+
+| Pair                      | Ratio   | Level | Use |
+|---------------------------|---------|-------|-----|
+| `#121719` on `#FFFFFF`    | 18.07:1 | AAA   | Body text on page |
+| `#44494B` on `#FFFFFF`    | 9.13:1  | AAA   | Secondary text on page |
+| `#00507E` on `#FFFFFF`    | 8.58:1  | AAA   | Links / CTA text |
+| `#FFFFFF` on `#00507E`    | 8.58:1  | AAA   | Button label on Blue 700 |
+| `#FFFFFF` on `#772E11`    | 9.62:1  | AAA   | Accent button on Orange 700 |
+
+### Dark-theme contrast pairs
+
+| Pair                      | Ratio   | Level | Use |
+|---------------------------|---------|-------|-----|
+| `#F3FAFD` on `#001A2E`    | 16.76:1 | AAA   | Body text on dark page |
+| `#76CAF3` on `#001A2E`    | 9.70:1  | AAA   | Links / eyebrows on dark |
+| `#2DB2E8` on `#001A2E`    | 7.28:1  | AAA   | Brand accent on dark |
+
+### Figure publication checklist
+
+Before publishing a figure:
+
+1. Grayscale version still interpretable.
+2. No category encoded by hue alone — shape, line style, or label also
+   distinguishes.
+3. All text ≥ 9 pt at rendered size, AA contrast verified.
+4. Exported as 300 dpi PNG + vector (SVG/PDF).
+5. Cycle documented in caption or YAML metadata.
+6. Alt text describes the **finding**, not the chart type. Write
+   "Bar chart shows a 2-fold increase in cell viability for the
+   treatment group" — not "image of a bar chart."
+
+### Testing tools
 
 - [Coblis Colorblind Simulator](https://www.color-blindness.com/coblis-color-blindness-simulator/)
 - [Viz Palette](https://projects.susielu.com/viz-palette)
-- Matplotlib: `colorspacious` package
-- ImageJ/FIJI: Built-in colorblind simulation
-
-### Contrast Ratios
-
-| Element | Minimum Contrast vs. White |
-|---------|---------------------------|
-| Text | 4.5:1 |
-| Data points/lines | 3:1 |
-
-All approved colors (#222222, #666666, #999999, #2DB2E8, #E8622D) meet these thresholds. #BDBDBD does not meet the 3:1 threshold for data and should only be used for de-emphasized elements.
+- matplotlib `colorspacious` package
+- Internal: `skills/shared/accessibility/`
 
 ---
 
-## 4. Global Scientific Principles
+## 8. Canonical Plot Templates
 
-1. **White Backgrounds Always:** All figures, charts, and slides must have a pure white background (#FFFFFF).
+Per-chart-type recipes for the most common scientific visualizations.
+Each entry fixes the cycle, line widths, marker sizes, and annotation
+placement so two analysts produce the same figure from the same data.
 
-2. **Black Text & Structure:** For publication figures, all axis lines, ticks, labels, panel titles, and legends must be solid black. (Colored titles are permissible only on slides).
+### 8.1 Kaplan–Meier survival curves
 
-3. **Data-Ink Ratio:** Maximize data visibility. Remove unnecessary borders, heavy fills, and distinct gridlines.
+**Context:** Comparing survival between treatment arms.
 
-4. **Neutrals First:** Do not use Brand Blue (#2DB2E8) as the default color for *all* series. Most baseline data should be grayscale; Brand Blue highlights the most important comparison or effect. **Brand Blue should appear in no more than one or two elements per panel.**
+**Cycle:** Cycle 1 · Treatment/Control.
 
-5. **No Effects:** Avoid gradients, shadows, or 3D elements.
+| Element              | Color / spec                                    |
+|----------------------|-------------------------------------------------|
+| Treatment curve      | `brand.blue` `#2DB2E8`, solid, 2.0 pt           |
+| Control / vehicle curve | `blue.300` `#76CAF3`, solid, 2.0 pt          |
+| Additional arm (rare) | Cycle 3 `orange.600` `#A0421D` if opposing effect |
+| Confidence bands     | Matching-hue tint at α=0.18, no border          |
+| Censored tick marks  | `neutral.900` `#121719`, short vertical ticks   |
+| Median-survival guide | `neutral.400` dashed, 0.5 pt                   |
+| At-risk table        | `neutral.900` text; group labels in arm colors  |
 
-6. **Redundant Encoding:** Never rely on color alone to convey critical information (see Accessibility Standards).
+- Use `ax.step(..., where='post')` for the staircase.
+- Place p-value and hazard ratio in upper-right or lower-left in 9 pt.
+- X-axis: `Time (days)` or appropriate unit; Y-axis: `Survival probability`.
 
----
+### 8.2 Volcano plots
 
-## 5. Typography & Text Standards
+**Context:** Differential expression (fold change vs significance).
 
-These specific rules ensure readability at typical journal print sizes (single-column ~89mm or double-column ~183mm).
+**Cycle:** Cycle 3 · Opposing + non-significant neutral.
 
-### Font Family
+| Element                  | Color            | Hex       |
+|--------------------------|------------------|-----------|
+| Non-significant          | `neutral.300`    | `#B9BFC2` |
+| Significant up-regulated | `orange.600`     | `#A0421D` |
+| Significant down-regulated | `blue.600`      | `#006EA6` |
+| Threshold lines          | `neutral.500`    | `#7C8184` dashed, 0.5 pt |
+| Labeled genes            | `neutral.900`    | `#121719` 9 pt, with leader lines if needed |
 
-Use a clean, standard sans-serif font only.
+- Non-significant points: `s=12, alpha=0.6`.
+- Significant points: `s=20, alpha=0.85`.
+- X-axis: `log₂(Fold Change)`; Y-axis: `-log₁₀(p-value)` or `-log₁₀(FDR)`.
+- Use symmetric x-axis limits.
 
-- **Approved Fonts:** Arial, Helvetica, or DejaVu Sans
-- **Do Not Use:** Calibri, Times New Roman, or system defaults
+### 8.3 Dose–response curves
 
-### Font Sizes (Print/Manuscript)
+**Context:** IC50 / EC50, drug sensitivity.
 
-| Element | Size |
-|---------|------|
-| Panel Labels (A, B, C) | 9–10 pt, **bold** |
-| Panel Titles/Headings | 8–9 pt |
-| Axis Labels | 8 pt |
-| Axis Tick Labels | 7–8 pt |
-| Legend Text | 7–8 pt |
-| Annotations | 7 pt |
+**Cycle:** Cycle 4 · Multi-Category when comparing compounds + vehicle;
+Cycle 1 when comparing a single drug vs vehicle.
 
-### Panel Labels (Multi-Panel Figures)
+| Element           | Color              | Marker / style |
+|-------------------|--------------------|----------------|
+| Compound A        | `blue.800` `#003454` | Circle, solid 2.0 pt |
+| Compound B        | `blue.500` `#008ECB` | Square, solid 2.0 pt |
+| Compound C        | `blue.300` `#76CAF3` | Triangle, solid 2.0 pt |
+| Vehicle control   | `orange.500` `#C45E39` | Diamond, dotted 1.6 pt |
+| 95 % CI bands     | Matching hue, α=0.18, no border |                |
+| IC50 guide line   | `neutral.400` | Horizontal dashed, 0.5 pt |
 
-- **Format:** Uppercase letters (**A**, **B**, **C**)
-- **Style:** Bold, black text, 9–10 pt
-- **Placement:** Top-left corner of each panel, aligned with the left edge of the y-axis
+- X-axis: `log10 concentration (nM)` (per §4 Rule 2: log scales
+  labeled, one tick per decade).
+- Y-axis: `% Viability` or `% Response`.
+- Annotate IC50 values with vertical droplines or inline text at 9 pt.
 
----
+### 8.4 Grouped bar charts
 
-## 6. Output Resolution Standards
+**Context:** Comparing discrete measurements across conditions.
 
-| Output Context | Resolution | File Format |
-|----------------|------------|-------------|
-| Print/Publication | 300 DPI minimum (600 DPI for line art) | TIFF, EPS, PDF |
-| Screen/Presentation | 150 DPI | PNG, PDF |
-| Web/Preprint | 150 DPI | PNG, SVG |
+**Cycle:** Cycle 1 for highlighted comparison, Cycle 2 · Peer for
+equal-weight peers.
 
-> **Vector formats (PDF, EPS, SVG) are preferred** for all line-based figures as they scale without quality loss.
+| Element            | Spec |
+|--------------------|------|
+| Bar fill           | Cycle color at full saturation (no outline) |
+| Bar edge           | `none` — data-ink economy |
+| Error bars         | 0.75 pt, same color as bar or `neutral.900` |
+| Zero baseline      | **Always shown.** Per §4 Rule 1, no truncation. |
+| Individual points  | Overlay at α=0.6 when n < 20 — uncertainty rule §4.3 |
+| Group ordering     | Biological condition (e.g., cell line) on x-axis; treatment as hue |
 
----
+- Prefer dot plots or Cleveland dot plots for n < 10.
+- State error-bar definition (SD / SEM / 95 % CI, n) in caption — §4 Rule 3.
 
-## 7. Chart & Figure Design Standards
+### 8.5 Box / violin plots
 
-### Structure & Layout ("Despined")
+**Context:** Distribution comparisons (e.g. immune populations).
 
-Figures must use an "open" or "despined" layout common in high-impact journals.
+**Cycle:** Cycle 2 · Peer when arms are equal weight; Cycle 4 ·
+Multi-Category when one arm is categorically different.
 
-- **Axes & Spines:** Only keep the **left** and **bottom** spines. **Remove top and right spines.**
-- **Axis Lines:** Thin black lines (0.8 pt weight)
-- **Gridlines:** Off by default. If essential for readability, use very thin light gray (#E5E5E5), 0.5 pt weight
+| Element           | Spec |
+|-------------------|------|
+| Box / violin fill | Cycle color at α=0.50 |
+| Median line       | `neutral.900` solid, 1.0 pt |
+| Whiskers          | `neutral.900` 0.8 pt |
+| Outliers          | Same color as fill, marker size 3 pt |
+| Jittered points   | Fill color at α=0.50 over the box |
 
-### Aspect Ratio
+### 8.6 Divergent heatmaps
 
-| Chart Type | Recommended Ratio |
-|------------|-------------------|
-| Time Series / Line Charts | 4:3 (wider than tall) |
-| Scatter Plots / Correlations | 1:1 (square) |
-| Bar Charts | Context-dependent; avoid excessive width |
-| Heatmaps | Determined by data dimensions |
+**Context:** Z-scored expression, log2 fold-change tiles.
 
-### Legends
+**Cycle:** Cycle 3 · Divergent (see §3 for the 3-stop colormap).
 
-- **Placement:** Inside the plotting area in an empty region whenever possible
-- **Style:** Minimalist, no surrounding frame (`frameon=False`)
-- **Exception:** Use a very thin light gray frame only if legend overlaps data
+| Element             | Spec |
+|---------------------|------|
+| Colormap            | `blue.700` → white → `orange.700`, linear sRGB |
+| Center              | Forced at zero (`vcenter=0`, symmetric `vmin/vmax`) |
+| Colorbar            | Always included, ticks at meaningful intervals |
+| Row / column labels | `neutral.900` 9 pt |
+| Dendrogram lines    | `neutral.700` 0.5 pt |
+| Missing values      | `neutral.200` hatched fill |
 
----
+### 8.7 Flow cytometry histograms
 
-## 8. Color Selection Decision Tree
+**Context:** Marker expression across conditions.
 
-```
-START: How many data series/categories?
-│
-├─► 1 series (single condition)
-│   └─► Use #222222 (Dark Gray) — no highlight needed
-│
-├─► 2 series
-│   │
-│   ├─► Treatment vs. Control?
-│   │   └─► Cycle 1: #222222 (Control) + #2DB2E8 (Treatment)
-│   │
-│   └─► Opposing effects (Up vs. Down)?
-│       └─► Cycle 3: #2DB2E8 + #E8622D
-│
-├─► 3 series
-│   │
-│   ├─► One highlighted condition?
-│   │   └─► Cycle 1: #222222, #2DB2E8, #666666
-│   │
-│   ├─► All conditions equal weight?
-│   │   └─► Cycle 2: #222222, #666666, #999999
-│   │
-│   └─► Two opposing + one neutral?
-│       └─► Cycle 3: #2DB2E8, #E8622D, #222222
-│
-├─► 4 series
-│   └─► Cycle 4: #222222, #2DB2E8, #666666, #158BBB
-│   └─► MANDATORY: Add marker shapes for accessibility
-│
-└─► 5+ series
-    └─► STOP: Redesign the figure
-        • Split into multiple panels
-        • Use faceting/small multiples
-        • Group categories hierarchically
-```
+**Cycle:** Cycle 1 when one condition is the focus; Cycle 3 · Opposing
+when comparing populations with opposing shifts.
 
----
+| Element               | Color                 | Spec |
+|-----------------------|-----------------------|------|
+| Isotype / FMO control | `neutral.300` `#B9BFC2` | α=0.5 fill, behind |
+| Untreated / baseline  | `blue.300` `#76CAF3`  | α=0.5 fill |
+| Treatment             | `brand.blue` `#2DB2E8` | α=0.5 fill, on top |
+| Secondary (opposing)  | `orange.600` `#A0421D` | α=0.5 fill |
+| Gate boundaries       | `neutral.900` `#121719` | Thin solid 0.8 pt |
 
-## 9. Specific Chart Guidance
-
-### Line & Scatter Plots
-
-- **Line width:** 1.0–1.5 pt for primary data; 0.75 pt for secondary
-- **Lines:** Solid for primary data; dashed/dotted for secondary (accessibility redundancy)
-- **Markers:** Clean, defined shapes; size 4–6 pt
-- **Marker edges:** Avoid heavy outlines unless needed for overlap contrast
-
-### Error Representation Standards
-
-| Error Type | When to Use | Visual Style |
-|------------|-------------|--------------|
-| **SEM** (Standard Error of Mean) | Estimating precision of the mean | Default for most experimental comparisons |
-| **SD** (Standard Deviation) | Showing data spread/variability | When variability itself is of interest |
-| **95% CI** (Confidence Interval) | Statistical inference | Preferred for clinical/translational data |
-
-**Visual encoding:**
-
-- **Discrete points (bar charts, dot plots):** Thin error bars (0.75 pt), with or without caps (be consistent)
-- **Continuous data (line plots):** Semi-transparent fill bands (20–30% opacity) without borders
-- **Always state in figure legend:** "Error bars represent [SEM/SD/95% CI], n = X"
-
-### Bar Charts
-
-- **Use neutrals for most bars**; reserve Brand Blue (#2DB2E8) or Contrast Orange (#E8622D) for the bar(s) you want to emphasize
-- Use solid fills based on the appropriate cycle
-- **Do not** outline bars with black lines (reduces data-ink ratio)
-- Consider dot plots or box plots as alternatives for small n
-
-### Box Plots & Violin Plots
-
-- Box/violin fill: 50% opacity of assigned color
-- Median line: solid, same color at full opacity
-- Outliers: same color, smaller marker size
-
-### Heatmaps (Divergent Scales)
-
-For data centered around zero (z-scores, log2 fold change):
-
-| Value | Color | HEX |
-|-------|-------|-----|
-| Extreme Negative | Dark Teal | #0F5D7D |
-| Moderate Negative | Bright Blue | #2DB2E8 |
-| Zero/Neutral | White | #FFFFFF |
-| Moderate Positive | Contrast Orange | #E8622D |
-| Extreme Positive | Dark Warm | #7D250F |
-
-**Implementation requirements:**
-
-1. **Use perceptually uniform interpolation** — linear RGB blending creates artifacts
-2. **Center the colormap at zero** — do not let automatic scaling shift the neutral point
-3. **Consider symmetric limits** — if data ranges -3 to +5, use limits of -5 to +5
-4. **Add a colorbar** — always include with tick marks at meaningful intervals
+- Order overlays with controls behind, treatment in front.
+- Annotate MFI values inline or in legend at 9 pt.
 
 ---
 
-## 10. Canonical Plot Templates for Biology
+## 9. Code Implementation
 
-These patterns cover common visualization needs in biological and biomedical research.
-
-### Kaplan-Meier Survival Curves
-
-**Context:** Comparing survival between treatment groups (common in preclinical oncology).
-
-| Element | Color | Style |
-|---------|-------|-------|
-| Control group | #222222 | Solid line |
-| Treatment group | #2DB2E8 | Solid line |
-| Additional treatment | #E8622D | Solid line (if opposing effect expected) |
-| Confidence bands | Same as line | 20% opacity fill, no border |
-| Censored tick marks | #000000 | Short vertical ticks on curve |
-| At-risk table | #000000 | Below x-axis, matching group colors for labels |
-
-**Additional guidance:**
-
-- Line width: 1.25–1.5 pt
-- Include median survival lines (thin dashed gray) if medians are reached
-- P-value and hazard ratio: place in upper right or lower left, 7 pt text
-- X-axis: "Time (days)" or appropriate unit; Y-axis: "Survival probability" or "Percent survival"
-
-### Volcano Plots
-
-**Context:** Differential expression analysis showing fold change vs. significance.
-
-| Element | Color | HEX |
-|---------|-------|-----|
-| Non-significant points | Light Gray | #BDBDBD |
-| Significant up-regulated | Contrast Orange | #E8622D |
-| Significant down-regulated | Brand Blue | #2DB2E8 |
-| Threshold lines | Medium Gray | #666666 (dashed, 0.5 pt) |
-| Labeled genes | Black text | #000000 (7 pt, with leader lines if needed) |
-
-**Additional guidance:**
-
-- Point size: 3–4 pt for non-significant, 5–6 pt for significant (optional size encoding)
-- Alpha: 0.6–0.8 for non-significant points to reduce overplotting
-- X-axis: "log₂(Fold Change)"; Y-axis: "-log₁₀(p-value)" or "-log₁₀(FDR)"
-- Symmetric x-axis limits recommended
-
-### Grouped Bar Charts (Treatment Comparisons)
-
-**Context:** Comparing measurements across conditions and groups.
-
-| Element | Color | When |
-|---------|-------|------|
-| Control bars | #222222 | Default/baseline condition |
-| Treatment bars | #2DB2E8 | Experimental condition of interest |
-| Secondary treatment | #666666 | Additional comparison (not highlighted) |
-| Vehicle/negative control | #999999 | Reference condition |
-
-**Additional guidance:**
-
-- Group bars by biological condition (e.g., cell line), not by treatment
-- Use neutrals for most bars; reserve Brand Blue for the key comparison
-- Error bars: thin (0.75 pt), same color as bar or black
-- Consider replacing with dot plots if n < 10
-
-### Dose-Response Curves
-
-**Context:** IC50/EC50 determination, drug sensitivity assays.
-
-| Element | Color | Style |
-|---------|-------|-------|
-| Drug A (focus) | #2DB2E8 | Solid line, circle markers |
-| Drug B (comparison) | #222222 | Dashed line, square markers |
-| Vehicle control | #666666 | Dotted line (if shown as curve) |
-| IC50 reference line | #999999 | Thin horizontal dashed line |
-
-**Additional guidance:**
-
-- X-axis: log scale concentration; Y-axis: "% Viability" or "% Response"
-- Include 95% CI bands (20% opacity) for fitted curves
-- Mark IC50 values with vertical droplines or annotations
-- Error bars at each concentration: SEM with n stated
-
-### Flow Cytometry / Population Comparisons
-
-**Context:** Comparing cell populations or marker expression.
-
-| Element | Color | When |
-|---------|-------|------|
-| Isotype/FMO control | #BDBDBD | Negative control (de-emphasized) |
-| Untreated/baseline | #222222 | Reference population |
-| Treatment condition | #2DB2E8 | Experimental condition |
-| Secondary marker | #E8622D | If showing opposing populations |
-
-**Additional guidance:**
-
-- Histogram overlays: 50% opacity fills, no borders
-- Order: controls behind, treatment in front
-- Include gate boundaries as thin black lines
-- MFI values: annotate directly on plot or in legend
-
----
-
-## 11. Presentation Slide Rules (Exceptions)
-
-While publication standards are preferred, presentation slides allow slight deviations for visibility.
-
-| Element | Publication Standard | Slide Exception |
-|---------|---------------------|-----------------|
-| Titles | Black only | May use #0F5D7D or #158BBB |
-| Font sizes | 7–9 pt | Scale up 2–3× for readability |
-| Accent elements | Minimal | Brand Blue (#2DB2E8) for callouts, icons |
-| Body text | Black | Black or #222222 |
-| Background | White | White (avoid dark backgrounds) |
-
----
-
-## 12. Code Implementation
-
-### Matplotlib Complete Setup
+### matplotlib / seaborn
 
 ```python
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-import numpy as np
+import sys
+sys.path.insert(0, 'skills/oligon-brand/adapters')
 
-# =============================================================================
-# BRAND COLOR DEFINITIONS
-# =============================================================================
+from matplotlib_adapter import (
+    set_brand_style, select_cycle,
+    BRAND_BLUE, BLUE_300, BLUE_600, BLUE_700,
+    ORANGE_500, ORANGE_600, ORANGE_700,
+    NEUTRAL_300, NEUTRAL_700, NEUTRAL_900,
+    CYCLE_TREATMENT_CONTROL, CYCLE_OPPOSING,
+    CYCLE_PEER_4, CYCLE_FOCUS, CYCLE_MULTI_CATEGORY,
+    get_divergent_cmap, run_preflight, validate_palette,
+)
 
-BRAND_COLORS = {
-    # Primary highlight
-    'brand_blue': '#2DB2E8',
-    
-    # Neutrals (for data)
-    'dark_gray': '#222222',
-    'medium_gray': '#666666',
-    'muted_gray': '#999999',
-    'light_gray': '#BDBDBD',  # annotations only
-    
-    # Contrast
-    'contrast_orange': '#E8622D',
-    'dark_warm': '#7D250F',
-    
-    # Supporting blues
-    'medium_blue': '#158BBB',
-    'dark_teal': '#0F5D7D',
-    
-    # Structure
-    'black': '#000000',
-    'white': '#FFFFFF',
-    'gridline': '#E5E5E5',
-}
+# Rule 1: pick cycle from data
+cycle_name, colors = select_cycle(n_series=2, context='comparison')
 
-# =============================================================================
-# SCENARIO-SPECIFIC COLOR CYCLES
-# =============================================================================
+# Apply brand defaults
+set_brand_style(cycle_name)
 
-# Cycle 1: Control vs Treatment (most common)
-CYCLE_TREATMENT_CONTROL = ['#222222', '#2DB2E8', '#666666']
+fig, ax = plt.subplots(figsize=(5, 3.75))
+ax.plot(time, treatment, color=BRAND_BLUE, linewidth=2.0, label='Treatment')
+ax.plot(time, control,   color=BLUE_300,  linewidth=2.0, label='Control')
+ax.fill_between(time, lo, hi, color='#DBF3FF', alpha=0.5)  # blue.100 CI
 
-# Cycle 2: Neutrals only (no designated highlight)
-CYCLE_NEUTRALS_ONLY = ['#222222', '#666666', '#999999']
-
-# Cycle 3: Opposing effects (blue vs orange)
-CYCLE_OPPOSING = ['#2DB2E8', '#E8622D', '#222222']
-
-# Cycle 4: Multiple categories (use sparingly, add shapes!)
-CYCLE_MULTI_CATEGORY = ['#222222', '#2DB2E8', '#666666', '#158BBB']
-
-# Volcano plot specific
-VOLCANO_COLORS = {
-    'nonsig': '#BDBDBD',
-    'up': '#E8622D',
-    'down': '#2DB2E8',
-}
-
-# =============================================================================
-# RCPARAMS CONFIGURATION
-# =============================================================================
-
-def set_brand_style(cycle='treatment_control'):
-    """
-    Apply brand visual standards to matplotlib.
-    
-    Parameters
-    ----------
-    cycle : str
-        Which color cycle to use as default:
-        - 'treatment_control' (default)
-        - 'neutrals_only'
-        - 'opposing'
-        - 'multi_category'
-    """
-    
-    cycle_map = {
-        'treatment_control': CYCLE_TREATMENT_CONTROL,
-        'neutrals_only': CYCLE_NEUTRALS_ONLY,
-        'opposing': CYCLE_OPPOSING,
-        'multi_category': CYCLE_MULTI_CATEGORY,
-    }
-    
-    selected_cycle = cycle_map.get(cycle, CYCLE_TREATMENT_CONTROL)
-    
-    plt.rcParams.update({
-        # Figure
-        'figure.facecolor': 'white',
-        'figure.edgecolor': 'white',
-        'figure.dpi': 150,
-        'savefig.dpi': 300,
-        'savefig.facecolor': 'white',
-        'savefig.edgecolor': 'white',
-        'savefig.bbox': 'tight',
-        'savefig.pad_inches': 0.1,
-        
-        # Axes
-        'axes.facecolor': 'white',
-        'axes.edgecolor': 'black',
-        'axes.linewidth': 0.8,
-        'axes.grid': False,
-        'axes.spines.top': False,
-        'axes.spines.right': False,
-        'axes.labelcolor': 'black',
-        'axes.labelsize': 8,
-        'axes.titlesize': 9,
-        'axes.titleweight': 'normal',
-        'axes.prop_cycle': plt.cycler(color=selected_cycle),
-        
-        # Ticks
-        'xtick.labelsize': 7,
-        'ytick.labelsize': 7,
-        'xtick.color': 'black',
-        'ytick.color': 'black',
-        'xtick.direction': 'out',
-        'ytick.direction': 'out',
-        
-        # Grid (off by default)
-        'grid.color': '#E5E5E5',
-        'grid.linewidth': 0.5,
-        'grid.alpha': 1.0,
-        
-        # Legend
-        'legend.fontsize': 7,
-        'legend.frameon': False,
-        'legend.loc': 'best',
-        
-        # Font
-        'font.family': 'sans-serif',
-        'font.sans-serif': ['Arial', 'Helvetica', 'DejaVu Sans'],
-        'font.size': 8,
-        
-        # Lines
-        'lines.linewidth': 1.25,
-        'lines.markersize': 5,
-        
-        # Patches (bars, etc.)
-        'patch.edgecolor': 'none',
-    })
-
-# =============================================================================
-# HELPER FUNCTIONS
-# =============================================================================
-
-def get_divergent_cmap():
-    """
-    Create a perceptually uniform divergent colormap for heatmaps.
-    Centered at white: dark teal (neg) -> brand blue -> white -> orange -> dark warm (pos)
-    """
-    from matplotlib.colors import LinearSegmentedColormap
-    
-    colors = [
-        BRAND_COLORS['dark_teal'],
-        BRAND_COLORS['brand_blue'],
-        BRAND_COLORS['white'],
-        BRAND_COLORS['contrast_orange'],
-        BRAND_COLORS['dark_warm'],
-    ]
-    
-    positions = [0.0, 0.25, 0.5, 0.75, 1.0]
-    
-    return LinearSegmentedColormap.from_list(
-        'brand_divergent', 
-        list(zip(positions, colors))
-    )
-
-
-def add_panel_label(ax, label, offset=(-0.12, 1.05)):
-    """Add a panel label (A, B, C, etc.) to an axes."""
-    ax.text(
-        offset[0], offset[1], 
-        label,
-        transform=ax.transAxes,
-        fontsize=10,
-        fontweight='bold',
-        va='top',
-        ha='left',
-        color='black'
-    )
-
-
-def add_error_band(ax, x, y, yerr, color, alpha=0.25, label=None):
-    """Add a semi-transparent error band around a line."""
-    if isinstance(yerr, tuple):
-        lower, upper = y - yerr[0], y + yerr[1]
-    else:
-        lower, upper = y - yerr, y + yerr
-    
-    ax.fill_between(x, lower, upper, color=color, alpha=alpha, linewidth=0)
-    line, = ax.plot(x, y, color=color, label=label)
-    return line
-
-
-def plot_volcano(ax, log2fc, pval, fc_thresh=1.0, p_thresh=0.05, 
-                 gene_labels=None, n_labels=10):
-    """
-    Create a volcano plot with brand colors.
-    
-    Parameters
-    ----------
-    ax : matplotlib.axes.Axes
-    log2fc : array-like
-        Log2 fold change values
-    pval : array-like
-        P-values (will be -log10 transformed)
-    fc_thresh : float
-        Fold change threshold (absolute log2)
-    p_thresh : float
-        P-value threshold
-    gene_labels : array-like, optional
-        Gene names for labeling
-    n_labels : int
-        Number of top genes to label
-    """
-    neg_log_p = -np.log10(pval)
-    
-    # Classify points
-    nonsig = (np.abs(log2fc) < fc_thresh) | (pval >= p_thresh)
-    sig_up = (log2fc >= fc_thresh) & (pval < p_thresh)
-    sig_down = (log2fc <= -fc_thresh) & (pval < p_thresh)
-    
-    # Plot
-    ax.scatter(log2fc[nonsig], neg_log_p[nonsig], 
-               c=VOLCANO_COLORS['nonsig'], s=12, alpha=0.6, label='NS')
-    ax.scatter(log2fc[sig_up], neg_log_p[sig_up], 
-               c=VOLCANO_COLORS['up'], s=20, alpha=0.8, label='Up')
-    ax.scatter(log2fc[sig_down], neg_log_p[sig_down], 
-               c=VOLCANO_COLORS['down'], s=20, alpha=0.8, label='Down')
-    
-    # Threshold lines
-    ax.axhline(-np.log10(p_thresh), color='#666666', linestyle='--', linewidth=0.5)
-    ax.axvline(-fc_thresh, color='#666666', linestyle='--', linewidth=0.5)
-    ax.axvline(fc_thresh, color='#666666', linestyle='--', linewidth=0.5)
-    
-    ax.set_xlabel('log₂(Fold Change)')
-    ax.set_ylabel('-log₁₀(p-value)')
-    
-    return ax
-
-# =============================================================================
-# EXAMPLE: KAPLAN-MEIER STYLE SURVIVAL PLOT
-# =============================================================================
-
-def plot_survival_example():
-    """Example survival curve following brand standards."""
-    set_brand_style('treatment_control')
-    
-    fig, ax = plt.subplots(figsize=(5, 3.75))
-    
-    # Simulated survival data
-    time_ctrl = np.array([0, 5, 10, 15, 20, 25, 30, 35, 40])
-    surv_ctrl = np.array([1.0, 0.95, 0.85, 0.70, 0.55, 0.40, 0.30, 0.22, 0.18])
-    
-    time_tx = np.array([0, 5, 10, 15, 20, 25, 30, 35, 40])
-    surv_tx = np.array([1.0, 0.98, 0.94, 0.88, 0.80, 0.72, 0.65, 0.58, 0.52])
-    
-    # Plot with confidence bands
-    ax.fill_between(time_ctrl, surv_ctrl - 0.08, surv_ctrl + 0.08,
-                    color=BRAND_COLORS['dark_gray'], alpha=0.2)
-    ax.step(time_ctrl, surv_ctrl, where='post', 
-            color=BRAND_COLORS['dark_gray'], linewidth=1.5, label='Control')
-    
-    ax.fill_between(time_tx, surv_tx - 0.06, surv_tx + 0.06,
-                    color=BRAND_COLORS['brand_blue'], alpha=0.2)
-    ax.step(time_tx, surv_tx, where='post',
-            color=BRAND_COLORS['brand_blue'], linewidth=1.5, label='Treatment')
-    
-    ax.set_xlabel('Time (days)')
-    ax.set_ylabel('Survival probability')
-    ax.set_ylim(0, 1.05)
-    ax.legend(loc='lower left')
-    add_panel_label(ax, 'A')
-    
-    # Add p-value annotation
-    ax.text(0.95, 0.95, 'p = 0.003\nHR = 0.45', transform=ax.transAxes,
-            ha='right', va='top', fontsize=7)
-    
-    plt.tight_layout()
-    return fig
-
-if __name__ == "__main__":
-    fig = plot_survival_example()
-    plt.savefig('survival_example.png', dpi=300)
-    plt.show()
+# Validate
+assert all(run_preflight(fig).values())
 ```
 
-### ggplot2 Complete Setup (R)
+### ggplot2
 
 ```r
-# =============================================================================
-# BRAND COLOR DEFINITIONS
-# =============================================================================
+source("skills/oligon-brand/adapters/ggplot2_adapter.R")
 
-brand_colors <- list(
-  brand_blue = "#2DB2E8",
-  dark_gray = "#222222",
-  medium_gray = "#666666",
-  muted_gray = "#999999",
-  light_gray = "#BDBDBD",
-  contrast_orange = "#E8622D",
-  dark_warm = "#7D250F",
-  medium_blue = "#158BBB",
-  dark_teal = "#0F5D7D",
-  black = "#000000",
-  white = "#FFFFFF",
-  gridline = "#E5E5E5"
-)
-
-# =============================================================================
-# SCENARIO-SPECIFIC SCALES
-# =============================================================================
-
-# Cycle 1: Treatment vs Control
-scale_treatment_control <- c(
-  "Control" = "#222222",
-  "Treatment" = "#2DB2E8"
-)
-
-# Cycle 2: Neutrals only
-scale_neutrals <- c("#222222", "#666666", "#999999")
-
-# Cycle 3: Opposing effects
-scale_opposing <- c(
-  "Down" = "#2DB2E8",
-  "Up" = "#E8622D",
-  "NS" = "#222222"
-)
-
-# Cycle 4: Multiple categories
-scale_multi <- c("#222222", "#2DB2E8", "#666666", "#158BBB")
-
-# Volcano plot
-scale_volcano <- c(
-  "NS" = "#BDBDBD",
-  "Up" = "#E8622D",
-  "Down" = "#2DB2E8"
-)
-
-# =============================================================================
-# BRAND THEME
-# =============================================================================
-
-theme_brand <- function(base_size = 8, base_family = "Arial") {
-  theme_minimal(base_size = base_size, base_family = base_family) %+replace%
-    theme(
-      plot.background = element_rect(fill = "white", color = NA),
-      panel.background = element_rect(fill = "white", color = NA),
-      panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank(),
-      axis.line = element_line(color = "black", linewidth = 0.8 / .pt),
-      axis.ticks = element_line(color = "black", linewidth = 0.4 / .pt),
-      axis.text = element_text(color = "black", size = 7),
-      axis.title = element_text(color = "black", size = 8),
-      plot.title = element_text(color = "black", size = 9, hjust = 0),
-      legend.background = element_blank(),
-      legend.key = element_blank(),
-      legend.text = element_text(size = 7),
-      legend.title = element_text(size = 8),
-      strip.background = element_blank(),
-      strip.text = element_text(color = "black", size = 8)
-    )
-}
-
-# =============================================================================
-# DIVERGENT SCALE FOR HEATMAPS
-# =============================================================================
-
-scale_fill_brand_divergent <- function(limits = NULL, ...) {
-  scale_fill_gradientn(
-    colors = c(
-      brand_colors$dark_teal,
-      brand_colors$brand_blue,
-      brand_colors$white,
-      brand_colors$contrast_orange,
-      brand_colors$dark_warm
-    ),
-    values = scales::rescale(c(-1, -0.5, 0, 0.5, 1)),
-    limits = limits,
-    ...
-  )
-}
-
-# =============================================================================
-# EXAMPLE: VOLCANO PLOT
-# =============================================================================
-
-library(ggplot2)
-
-# Simulated data
-set.seed(42)
-volcano_df <- data.frame(
-  log2FC = rnorm(1000, 0, 1.5),
-  pval = 10^(-runif(1000, 0, 5))
-)
-volcano_df$category <- with(volcano_df, ifelse(
-  abs(log2FC) < 1 | pval > 0.05, "NS",
-  ifelse(log2FC > 0, "Up", "Down")
-))
-
-ggplot(volcano_df, aes(x = log2FC, y = -log10(pval), color = category)) +
-  geom_point(aes(size = category, alpha = category)) +
-  scale_color_manual(values = scale_volcano) +
-  scale_size_manual(values = c("NS" = 1, "Up" = 2, "Down" = 2)) +
-  scale_alpha_manual(values = c("NS" = 0.5, "Up" = 0.8, "Down" = 0.8)) +
-  geom_hline(yintercept = -log10(0.05), linetype = "dashed", 
-             color = "#666666", linewidth = 0.3) +
-  geom_vline(xintercept = c(-1, 1), linetype = "dashed", 
-             color = "#666666", linewidth = 0.3) +
-  labs(x = expression(log[2](Fold~Change)), 
-       y = expression(-log[10](p-value))) +
-  theme_brand() +
-  theme(legend.position = "none")
-
-ggsave("volcano_example.png", width = 4, height = 4, dpi = 300)
+ggplot(df, aes(time, value, color = arm)) +
+  geom_line(linewidth = 0.7) +
+  scale_color_brand_treatment() +
+  theme_brand()
 ```
 
 ---
 
-## 13. Quick Reference Card
-
-### Essential Colors
-
-```
-HIGHLIGHT:     #2DB2E8  (Brand Blue)
-CONTRAST:      #E8622D  (Orange)
-NEUTRAL 1:     #222222  (Dark Gray)
-NEUTRAL 2:     #666666  (Medium Gray)
-NEUTRAL 3:     #999999  (Muted Gray)
-ANNOTATION:    #BDBDBD  (Light Gray - NOT for data)
-```
-
-### Cycle Quick Reference
-
-| Scenario | Colors (in order) |
-|----------|-------------------|
-| Control vs Treatment | #222222, #2DB2E8 |
-| Neutrals only | #222222, #666666, #999999 |
-| Opposing effects | #2DB2E8, #E8622D, #222222 |
-| 4 categories | #222222, #2DB2E8, #666666, #158BBB + shapes |
-
-### Pre-Flight Checklist
+## 10. Pre-flight Checklist
 
 Before submitting any figure:
 
-- [ ] White background (#FFFFFF)
-- [ ] Black text and axis lines (#000000)
+- [ ] White background (`#FFFFFF`) / brand ground (blue.900 for dark theme)
+- [ ] Axis furniture in neutral.200–300; text in neutral.900 on light,
+      neutral.50 on dark
 - [ ] Top and right spines removed
-- [ ] Correct color cycle selected for scientific context
-- [ ] Brand Blue limited to 1–2 elements per panel
-- [ ] Colors match brand palette (no library defaults)
+- [ ] Correct cycle for scientific context (Rule 1) and correct ramp
+      step for visual role (Rule 2)
+- [ ] Brand Blue limited to 1–2 focal elements per panel
+- [ ] No library default colors; no retired v4 hexes (`#E8622D`,
+      `#7D250F`, `#0F5D7D`, `#158BBB`, `#222222`)
 - [ ] Redundant encoding present (shapes/styles with color)
-- [ ] Tested in grayscale
-- [ ] Colorblind simulation checked
-- [ ] Error bars labeled in legend (SEM/SD/95% CI, n = ?)
-- [ ] Font is Arial/Helvetica, 7–9 pt range
-- [ ] Resolution ≥300 DPI for print
-- [ ] Panel labels (A, B, C) bold, 9–10 pt, top-left aligned
+- [ ] Tested in grayscale and under CVD simulation
+- [ ] Uncertainty rendered and labeled (SEM/SD/95 % CI, n=?)
+- [ ] Font Arial/Helvetica/DejaVu Sans; figure scale 9–12 pt,
+      projection scale ≥ 18 pt
+- [ ] Resolution ≥ 300 DPI for print; vector preferred for line art
+- [ ] Alt text describes the finding, not the chart type
 
 ---
 
-## Version History
+## 11. Migration from v4.x → v5.0
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0 | — | Initial release |
-| 2.0 | — | Shifted to neutrals-first philosophy |
-| 3.0 | — | Added accessibility standards, expanded code templates, error bar guidance, decision tree |
-| 4.0 | — | Scenario-specific color cycles, canonical bio-plot templates (K-M, volcano, dose-response, flow), clarified supporting blue roles, grayscale testing requirement, enhanced bar chart guidance |
+If your code still references v4 color names or hexes:
+
+| v4 token / hex              | v5.0 equivalent            |
+|-----------------------------|----------------------------|
+| `contrast_orange` / `#E8622D` | `orange.600` / `#A0421D` |
+| `dark_warm` / `#7D250F`      | `orange.700` / `#772E11` or `orange.800` / `#4F1B06` |
+| `dark_teal` / `#0F5D7D`      | `blue.800` / `#003454`   |
+| `medium_blue` / `#158BBB`    | `blue.500` / `#008ECB`   |
+| `dark_gray` / `#222222`      | `neutral.900` / `#121719` |
+| `medium_gray` / `#666666`    | `neutral.700` / `#44494B` |
+| `muted_gray` / `#999999`     | `neutral.500` / `#7C8184` |
+| `light_gray` / `#BDBDBD`     | `neutral.300` / `#B9BFC2` |
+| Cycle 1 `[#222222, #2DB2E8, #666666]` | Cycle 1 `[brand.blue, blue.300, blue.100]` |
+| Cycle 3 `[#2DB2E8, #E8622D, #222222]` | Cycle 3 `[blue.600, orange.600, neutral.300]` |
+| Cycle 4 `[..., #158BBB]`      | Cycle 4 `[blue.800, blue.500, blue.300, orange.500]` |
+| 5-stop divergent              | 3-stop `blue.700 → white → orange.700` |
+
+Adapters in `adapters/*.py` / `*.R` / `*.css` keep deprecated names
+as aliases that route to v5.0 ramp equivalents, so existing call
+sites continue to work — but prefer the ramp-step names in new code.
 
 ---
 
-*Document maintained for scientific figure standardization. For questions or proposed amendments, contact the visual standards committee.*
+## Version history
+
+| Version | Date      | Changes |
+|---------|-----------|---------|
+| 1.0 – 3.0 | —       | Initial releases; neutrals-first philosophy; accessibility standards |
+| 4.0     | —         | Scenario-specific color cycles, canonical bio-plot templates (K-M, volcano, dose-response, flow), grayscale testing |
+| 4.1     | 2026-04-22 | Visual-design skill retired; design-foundation block moved to SKILL.md |
+| **5.0** | **2026-04-22** | **v2.3 Oklch ramps, Peer vs Focus split, 3-stop divergent, document/figure/projection type scales, figure integrity rules, semantic tokens + dark theme** |

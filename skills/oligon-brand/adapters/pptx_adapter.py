@@ -26,31 +26,53 @@ from pptx.enum.shapes import MSO_SHAPE
 from typing import Optional, List, Tuple
 
 # =============================================================================
-# BRAND COLORS
+# BRAND COLORS (v5.0 — Style Guide v2.3: Oklch tonal ramps)
 # =============================================================================
 
-BRAND_COLORS = {
-    # Primary highlight
-    'brand_blue': RGBColor(0x2D, 0xB2, 0xE8),
+BRAND_HEX = {
+    # Brand anchor
+    'brand_blue': '#2DB2E8',
 
-    # Neutrals
-    'dark_gray': RGBColor(0x22, 0x22, 0x22),
-    'medium_gray': RGBColor(0x66, 0x66, 0x66),
-    'muted_gray': RGBColor(0x99, 0x99, 0x99),
-    'light_gray': RGBColor(0xBD, 0xBD, 0xBD),
+    # Blue ramp
+    'blue_50':  '#EFFBFF', 'blue_100': '#DBF3FF', 'blue_200': '#B3E3FC',
+    'blue_300': '#76CAF3', 'blue_400': '#1FACE3', 'blue_500': '#008ECB',
+    'blue_600': '#006EA6', 'blue_700': '#00507E', 'blue_800': '#003454',
+    'blue_900': '#001A2E',
 
-    # Contrast
-    'contrast_orange': RGBColor(0xE8, 0x62, 0x2D),
-    'dark_warm': RGBColor(0x7D, 0x25, 0x0F),
+    # Orange ramp
+    'orange_50':  '#FFF5F1', 'orange_100': '#FFE8E0', 'orange_200': '#FFCEBD',
+    'orange_300': '#F0AA92', 'orange_400': '#DD8363', 'orange_500': '#C45E39',
+    'orange_600': '#A0421D', 'orange_700': '#772E11', 'orange_800': '#4F1B06',
+    'orange_900': '#2B0901',
 
-    # Supporting blues
-    'medium_blue': RGBColor(0x15, 0x8B, 0xBB),
-    'dark_teal': RGBColor(0x0F, 0x5D, 0x7D),
+    # Neutral ramp
+    'neutral_50':  '#F3FAFD', 'neutral_100': '#E9F0F3', 'neutral_200': '#D6DCDF',
+    'neutral_300': '#B9BFC2', 'neutral_400': '#9A9FA2', 'neutral_500': '#7C8184',
+    'neutral_600': '#5F6467', 'neutral_700': '#44494B', 'neutral_800': '#2A2F31',
+    'neutral_900': '#121719',
 
     # Structure
-    'black': RGBColor(0x00, 0x00, 0x00),
-    'white': RGBColor(0xFF, 0xFF, 0xFF),
+    'black': '#000000',
+    'white': '#FFFFFF',
+
+    # Deprecated v4 aliases (route to closest v2.3 equivalent)
+    'dark_gray':       '#121719',
+    'medium_gray':     '#44494B',
+    'muted_gray':      '#7C8184',
+    'light_gray':      '#B9BFC2',
+    'contrast_orange': '#A0421D',
+    'dark_warm':       '#4F1B06',
+    'medium_blue':     '#008ECB',
+    'dark_teal':       '#003454',
 }
+
+
+def _hex_to_rgb(hex_str: str) -> RGBColor:
+    h = hex_str.lstrip('#')
+    return RGBColor(int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))
+
+
+BRAND_COLORS = {name: _hex_to_rgb(hx) for name, hx in BRAND_HEX.items()}
 
 # =============================================================================
 # TYPOGRAPHY SETTINGS

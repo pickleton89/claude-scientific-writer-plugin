@@ -30,47 +30,52 @@ from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
 from typing import Optional, List, Dict, Any
 
 # =============================================================================
-# BRAND COLORS
+# BRAND COLORS (v5.0 — Style Guide v2.3: Oklch tonal ramps)
 # =============================================================================
 
-BRAND_COLORS = {
-    # Primary highlight
-    'brand_blue': HexColor('#2DB2E8'),
+BRAND_HEX = {
+    # Brand anchor
+    'brand_blue': '#2DB2E8',
 
-    # Neutrals
-    'dark_gray': HexColor('#222222'),
-    'medium_gray': HexColor('#666666'),
-    'muted_gray': HexColor('#999999'),
-    'light_gray': HexColor('#BDBDBD'),
+    # Blue ramp
+    'blue_50':  '#EFFBFF', 'blue_100': '#DBF3FF', 'blue_200': '#B3E3FC',
+    'blue_300': '#76CAF3', 'blue_400': '#1FACE3', 'blue_500': '#008ECB',
+    'blue_600': '#006EA6', 'blue_700': '#00507E', 'blue_800': '#003454',
+    'blue_900': '#001A2E',
 
-    # Contrast
-    'contrast_orange': HexColor('#E8622D'),
-    'dark_warm': HexColor('#7D250F'),
+    # Orange ramp
+    'orange_50':  '#FFF5F1', 'orange_100': '#FFE8E0', 'orange_200': '#FFCEBD',
+    'orange_300': '#F0AA92', 'orange_400': '#DD8363', 'orange_500': '#C45E39',
+    'orange_600': '#A0421D', 'orange_700': '#772E11', 'orange_800': '#4F1B06',
+    'orange_900': '#2B0901',
 
-    # Supporting blues
-    'medium_blue': HexColor('#158BBB'),
-    'dark_teal': HexColor('#0F5D7D'),
+    # Neutral ramp
+    'neutral_50':  '#F3FAFD', 'neutral_100': '#E9F0F3', 'neutral_200': '#D6DCDF',
+    'neutral_300': '#B9BFC2', 'neutral_400': '#9A9FA2', 'neutral_500': '#7C8184',
+    'neutral_600': '#5F6467', 'neutral_700': '#44494B', 'neutral_800': '#2A2F31',
+    'neutral_900': '#121719',
 
     # Structure
-    'black': black,
-    'white': white,
-    'gridline': HexColor('#E5E5E5'),
+    'black':    '#000000',
+    'white':    '#FFFFFF',
+    'gridline': '#D6DCDF',  # neutral.200
+
+    # Deprecated v4 aliases (route to closest v2.3 equivalent)
+    'dark_gray':       '#121719',
+    'medium_gray':     '#44494B',
+    'muted_gray':      '#7C8184',
+    'light_gray':      '#B9BFC2',
+    'contrast_orange': '#A0421D',
+    'dark_warm':       '#4F1B06',
+    'medium_blue':     '#008ECB',
+    'dark_teal':       '#003454',
 }
 
-# Hex strings for convenience
-BRAND_HEX = {
-    'brand_blue': '#2DB2E8',
-    'dark_gray': '#222222',
-    'medium_gray': '#666666',
-    'muted_gray': '#999999',
-    'light_gray': '#BDBDBD',
-    'contrast_orange': '#E8622D',
-    'dark_warm': '#7D250F',
-    'medium_blue': '#158BBB',
-    'dark_teal': '#0F5D7D',
-    'black': '#000000',
-    'white': '#FFFFFF',
-    'gridline': '#E5E5E5',
+BRAND_COLORS = {
+    name: (black if hx == '#000000'
+           else white if hx == '#FFFFFF'
+           else HexColor(hx))
+    for name, hx in BRAND_HEX.items()
 }
 
 # =============================================================================

@@ -15,53 +15,97 @@
  */
 
 /* =============================================================================
-   CSS CUSTOM PROPERTIES (VARIABLES)
+   CSS CUSTOM PROPERTIES — Oligon Digital Style Guide v2.3
    ============================================================================= */
 
 :root {
-  /* Primary Brand Color */
+  /* Brand anchor */
   --brand-blue: #2DB2E8;
 
-  /* Contrast Colors */
-  --brand-contrast-orange: #E8622D;
-  --brand-dark-warm: #7D250F;
+  /* Blue ramp (Oklch, 10 steps) */
+  --blue-50:  #EFFBFF;
+  --blue-100: #DBF3FF;
+  --blue-200: #B3E3FC;
+  --blue-300: #76CAF3;
+  --blue-400: #1FACE3;
+  --blue-500: #008ECB;
+  --blue-600: #006EA6;
+  --blue-700: #00507E;
+  --blue-800: #003454;
+  --blue-900: #001A2E;
 
-  /* Neutral Colors */
-  --brand-dark-gray: #222222;
-  --brand-medium-gray: #666666;
-  --brand-muted-gray: #999999;
-  --brand-light-gray: #BDBDBD;
+  /* Orange ramp (Oklch, 10 steps) */
+  --orange-50:  #FFF5F1;
+  --orange-100: #FFE8E0;
+  --orange-200: #FFCEBD;
+  --orange-300: #F0AA92;
+  --orange-400: #DD8363;
+  --orange-500: #C45E39;
+  --orange-600: #A0421D;
+  --orange-700: #772E11;
+  --orange-800: #4F1B06;
+  --orange-900: #2B0901;
 
-  /* Supporting Blues */
-  --brand-medium-blue: #158BBB;
-  --brand-dark-teal: #0F5D7D;
+  /* Neutral ramp (Oklch, 10 steps) */
+  --neutral-50:  #F3FAFD;
+  --neutral-100: #E9F0F3;
+  --neutral-200: #D6DCDF;
+  --neutral-300: #B9BFC2;
+  --neutral-400: #9A9FA2;
+  --neutral-500: #7C8184;
+  --neutral-600: #5F6467;
+  --neutral-700: #44494B;
+  --neutral-800: #2A2F31;
+  --neutral-900: #121719;
 
-  /* Structure Colors */
+  /* Semantic tokens — light theme */
+  --page:       var(--brand-white);
+  --surface:    var(--neutral-50);
+  --border:     var(--neutral-200);
+  --text:       var(--neutral-900);
+  --text-muted: var(--neutral-700);
+  --accent:     var(--blue-700);
+  --signal:     var(--orange-700);
+  --rule:       var(--neutral-200);
+
+  /* Structure */
   --brand-black: #000000;
   --brand-white: #FFFFFF;
-  --brand-gridline: #E5E5E5;
+  --brand-gridline: var(--neutral-200);
+
+  /* Deprecated v4 aliases (route to v2.3 ramp equivalents) */
+  --brand-contrast-orange: var(--orange-600);
+  --brand-dark-warm:       var(--orange-800);
+  --brand-dark-gray:       var(--neutral-900);
+  --brand-medium-gray:     var(--neutral-700);
+  --brand-muted-gray:      var(--neutral-500);
+  --brand-light-gray:      var(--neutral-300);
+  --brand-medium-blue:     var(--blue-500);
+  --brand-dark-teal:       var(--blue-800);
 
   /* Typography */
   --brand-font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif;
+  --brand-font-mono: 'SF Mono', Menlo, Consolas, monospace;
 
-  /* Font Sizes - Figures */
+  /* Figure Type Scale (v2.3 §04) — rendered at document scale */
+  --brand-font-size-title: 12pt;
+  --brand-font-size-axis-label: 10pt;
+  --brand-font-size-tick-label: 9pt;
+  --brand-font-size-legend: 8.5pt;
+  --brand-font-size-annotation: 9pt;
   --brand-font-size-panel-label: 10pt;
-  --brand-font-size-axis-label: 8pt;
-  --brand-font-size-tick-label: 7pt;
-  --brand-font-size-legend: 7pt;
-  --brand-font-size-annotation: 7pt;
 
-  /* Font Sizes - Documents */
-  --brand-font-size-body: 11pt;
-  --brand-font-size-h1: 14pt;
-  --brand-font-size-h2: 12pt;
-  --brand-font-size-h3: 11pt;
-  --brand-font-size-caption: 10pt;
+  /* Document Type Scale (v2.3 §04) */
+  --brand-font-size-body: 14pt;
+  --brand-font-size-h1: 28pt;
+  --brand-font-size-h2: 19pt;
+  --brand-font-size-h3: 14pt;
+  --brand-font-size-caption: 11pt;
 
-  /* Font Sizes - Presentations */
-  --brand-font-size-title: 28pt;
-  --brand-font-size-subtitle: 20pt;
+  /* Projection Type Scale (v2.3 §11) — projected slides */
   --brand-font-size-slide-body: 18pt;
+  --brand-font-size-slide-heading: 28pt;
+  --brand-font-size-slide-axis: 18pt;
 
   /* Spacing */
   --brand-spacing-xs: 4px;
@@ -70,9 +114,9 @@
   --brand-spacing-lg: 24px;
   --brand-spacing-xl: 32px;
 
-  /* Line Heights */
+  /* Line heights */
   --brand-line-height-tight: 1.2;
-  --brand-line-height-normal: 1.5;
+  --brand-line-height-normal: 1.55;
   --brand-line-height-relaxed: 1.75;
 
   /* Border */
@@ -80,31 +124,53 @@
   --brand-border-width: 1px;
 }
 
+/* Dark theme overrides — apply by adding class="theme-dark" to <body> or a container. */
+.theme-dark {
+  --page:       var(--blue-900);
+  --surface:    var(--blue-800);
+  --text:       var(--neutral-50);
+  --text-muted: var(--neutral-200);
+  --accent:     var(--blue-300);
+  --rule:       var(--blue-700);
+}
+
 
 /* =============================================================================
-   COLOR CYCLE CLASSES
+   COLOR CYCLE CLASSES (v2.3 — Rule 1 cycles)
    ============================================================================= */
 
-/* Treatment vs Control Cycle */
-.brand-color-cycle-treatment .series-1 { color: var(--brand-dark-gray); }
-.brand-color-cycle-treatment .series-2 { color: var(--brand-blue); }
-.brand-color-cycle-treatment .series-3 { color: var(--brand-medium-gray); }
+/* Cycle 1 — Treatment / Control: same-hue pair */
+.brand-color-cycle-treatment .series-1 { color: var(--brand-blue); }  /* treatment */
+.brand-color-cycle-treatment .series-2 { color: var(--blue-300); }    /* control   */
+.brand-color-cycle-treatment .series-3 { color: var(--blue-100); }    /* CI band   */
 
-/* Neutrals Only Cycle */
-.brand-color-cycle-neutrals .series-1 { color: var(--brand-dark-gray); }
-.brand-color-cycle-neutrals .series-2 { color: var(--brand-medium-gray); }
-.brand-color-cycle-neutrals .series-3 { color: var(--brand-muted-gray); }
+/* Cycle 2 — Peer (equal-weight arms) */
+.brand-color-cycle-peer .series-1 { color: var(--blue-800); }
+.brand-color-cycle-peer .series-2 { color: var(--blue-600); }
+.brand-color-cycle-peer .series-3 { color: var(--blue-400); }
+.brand-color-cycle-peer .series-4 { color: var(--blue-200); }
 
-/* Opposing Effects Cycle */
-.brand-color-cycle-opposing .series-1 { color: var(--brand-blue); }
-.brand-color-cycle-opposing .series-2 { color: var(--brand-contrast-orange); }
-.brand-color-cycle-opposing .series-3 { color: var(--brand-dark-gray); }
+/* Cycle 2 — Focus (one promoted) */
+.brand-color-cycle-focus .series-1 { color: var(--blue-500); }    /* receding */
+.brand-color-cycle-focus .series-2 { color: var(--blue-300); }    /* receding */
+.brand-color-cycle-focus .series-3 { color: var(--blue-200); }    /* receding */
+.brand-color-cycle-focus .series-4 { color: var(--orange-500); }  /* focus    */
 
-/* Multi-Category Cycle */
-.brand-color-cycle-multi .series-1 { color: var(--brand-dark-gray); }
-.brand-color-cycle-multi .series-2 { color: var(--brand-blue); }
-.brand-color-cycle-multi .series-3 { color: var(--brand-medium-gray); }
-.brand-color-cycle-multi .series-4 { color: var(--brand-medium-blue); }
+/* Cycle 3 — Opposing (signed effects) */
+.brand-color-cycle-opposing .series-1 { color: var(--blue-600); }    /* negative */
+.brand-color-cycle-opposing .series-2 { color: var(--orange-600); }  /* positive */
+.brand-color-cycle-opposing .series-3 { color: var(--neutral-300); } /* non-sig  */
+
+/* Cycle 4 — Multi-Category (3–4 with one outlier) */
+.brand-color-cycle-multi .series-1 { color: var(--blue-800); }
+.brand-color-cycle-multi .series-2 { color: var(--blue-500); }
+.brand-color-cycle-multi .series-3 { color: var(--blue-300); }
+.brand-color-cycle-multi .series-4 { color: var(--orange-500); }  /* conceptual outlier */
+
+/* Deprecated alias — routes to Cycle 2 · Peer 3-arm */
+.brand-color-cycle-neutrals .series-1 { color: var(--blue-700); }
+.brand-color-cycle-neutrals .series-2 { color: var(--blue-500); }
+.brand-color-cycle-neutrals .series-3 { color: var(--blue-300); }
 
 
 /* =============================================================================

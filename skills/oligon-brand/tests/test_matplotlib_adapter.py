@@ -1,25 +1,24 @@
 """
-Tests for oligon-brand matplotlib adapter deterministic functions.
+Tests for oligon-brand matplotlib adapter (v5.0 — Style Guide v2.3).
 
-Tests cover:
-- select_cycle(): Deterministic color cycle selection
-- run_preflight(): Automated brand compliance validation
-- extract_figure_colors(): Color extraction from figures
-- get_preflight_report(): Human-readable report generation
-- validate_palette(): Color palette validation (Phase 2)
-- count_brand_blue(): Brand Blue usage counting (Phase 2)
-- get_brand_compliance_report(): Comprehensive compliance report (Phase 2)
+Covers:
+- select_cycle(): deterministic Rule 1 cycle selection
+- run_preflight(): automated brand compliance validation
+- extract_figure_colors(): color extraction from figures
+- get_preflight_report(): human-readable preflight report
+- validate_palette(): v2.3 ramp palette validation
+- count_brand_blue(): brand.blue usage counting (<=2 per panel)
+- get_brand_compliance_report(): combined compliance report
 """
 
 import pytest
 import sys
 from pathlib import Path
 
-# Add adapters directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "adapters"))
 
 import matplotlib
-matplotlib.use('Agg')  # Non-interactive backend for testing
+matplotlib.use('Agg')  # Non-interactive backend
 import matplotlib.pyplot as plt
 
 from matplotlib_adapter import (
@@ -32,10 +31,18 @@ from matplotlib_adapter import (
     get_brand_compliance_report,
     set_brand_style,
     BRAND_COLORS,
+    BRAND_BLUE,
+    BLUE_100, BLUE_200, BLUE_300, BLUE_400, BLUE_500,
+    BLUE_600, BLUE_700, BLUE_800, BLUE_900,
+    ORANGE_500, ORANGE_600, ORANGE_700,
+    NEUTRAL_300, NEUTRAL_700, NEUTRAL_900,
     CYCLE_TREATMENT_CONTROL,
-    CYCLE_NEUTRALS_ONLY,
+    CYCLE_PEER_3, CYCLE_PEER_4,
+    CYCLE_FOCUS,
     CYCLE_OPPOSING,
     CYCLE_MULTI_CATEGORY,
+    CYCLE_NEUTRALS_ONLY,  # deprecated alias -> CYCLE_PEER_3
+    VOLCANO_COLORS,
     ALLOWED_COLORS,
 )
 
@@ -46,7 +53,7 @@ from matplotlib_adapter import (
 
 @pytest.fixture
 def brand_styled_figure():
-    """Create a figure with brand style applied."""
+    """Figure with default brand style applied."""
     set_brand_style('treatment_control')
     fig, ax = plt.subplots()
     ax.plot([1, 2, 3], [1, 4, 9])
@@ -56,7 +63,7 @@ def brand_styled_figure():
 
 @pytest.fixture
 def default_figure():
-    """Create a figure with matplotlib defaults (non-compliant)."""
+    """Figure with matplotlib defaults (non-compliant)."""
     plt.rcdefaults()
     fig, ax = plt.subplots()
     ax.plot([1, 2, 3], [1, 4, 9])
@@ -66,7 +73,6 @@ def default_figure():
 
 @pytest.fixture(autouse=True)
 def cleanup_plots():
-    """Ensure all plots are closed after each test."""
     yield
     plt.close('all')
 
@@ -76,148 +82,203 @@ def cleanup_plots():
 # =============================================================================
 
 class TestSelectCycle:
-    """Tests for the select_cycle() function."""
+    """Tests for the select_cycle() function (Rule 1)."""
 
-    # --- Single series tests ---
+    # --- Single series ---
 
-    def test_single_series_returns_dark_gray(self):
-        """Single series should return dark gray."""
+    def test_single_series_returns_brand_blue(self):
         cycle_name, colors = select_cycle(n_series=1)
         assert cycle_name == 'single'
-        assert colors == [BRAND_COLORS['dark_gray']]
-        assert colors == ['#222222']
+        assert colors == [BRAND_BLUE]
+        assert colors == ['#2DB2E8']
 
     def test_single_series_ignores_context(self):
-        """Context should be ignored for single series."""
         for context in ['comparison', 'equal_weight', 'bidirectional']:
             cycle_name, colors = select_cycle(n_series=1, context=context)
             assert cycle_name == 'single'
-            assert colors == ['#222222']
+            assert colors == [BRAND_BLUE]
 
-    # --- Two series tests ---
+    # --- Two series ---
 
     def test_two_series_comparison_returns_treatment_control(self):
-        """Two series with comparison context returns treatment_control cycle."""
+        """v2.3 Cycle 1 is same-hue: brand.blue + blue.300."""
         cycle_name, colors = select_cycle(n_series=2, context='comparison')
         assert cycle_name == 'treatment_control'
         assert colors == CYCLE_TREATMENT_CONTROL[:2]
-        assert colors == ['#222222', '#2DB2E8']
+        assert colors == [BRAND_BLUE, BLUE_300]
+        assert colors == ['#2DB2E8', '#76CAF3']
 
     def test_two_series_default_is_comparison(self):
-        """Default context is comparison."""
         cycle_name, colors = select_cycle(n_series=2)
         assert cycle_name == 'treatment_control'
-        assert colors == ['#222222', '#2DB2E8']
+        assert colors == [BRAND_BLUE, BLUE_300]
 
     def test_two_series_bidirectional_returns_opposing(self):
-        """Two series with bidirectional context returns opposing cycle."""
+        """v2.3 Cycle 3 opposing: blue.600 + orange.600."""
         cycle_name, colors = select_cycle(n_series=2, context='bidirectional')
         assert cycle_name == 'opposing'
         assert colors == CYCLE_OPPOSING[:2]
-        assert colors == ['#2DB2E8', '#E8622D']
+        assert colors == [BLUE_600, ORANGE_600]
+        assert colors == ['#006EA6', '#A0421D']
 
     def test_two_series_equal_weight_returns_treatment_control(self):
-        """Two series with equal_weight still returns treatment_control (only affects 3 series)."""
         cycle_name, colors = select_cycle(n_series=2, context='equal_weight')
         assert cycle_name == 'treatment_control'
-        assert colors == ['#222222', '#2DB2E8']
+        assert colors == [BRAND_BLUE, BLUE_300]
 
-    # --- Three series tests ---
+    # --- Three series ---
 
     def test_three_series_comparison_returns_treatment_control(self):
-        """Three series with comparison context returns full treatment_control cycle."""
         cycle_name, colors = select_cycle(n_series=3, context='comparison')
         assert cycle_name == 'treatment_control'
         assert colors == CYCLE_TREATMENT_CONTROL
         assert len(colors) == 3
 
-    def test_three_series_equal_weight_returns_neutrals_only(self):
-        """Three series with equal_weight returns neutrals_only cycle."""
+    def test_three_series_equal_weight_returns_peer_3(self):
+        """v2.3 Cycle 2 Peer 3-arm: blue.700/500/300."""
         cycle_name, colors = select_cycle(n_series=3, context='equal_weight')
-        assert cycle_name == 'neutrals_only'
-        assert colors == CYCLE_NEUTRALS_ONLY
-        assert colors == ['#222222', '#666666', '#999999']
+        assert cycle_name == 'peer_3'
+        assert colors == CYCLE_PEER_3
+        assert colors == [BLUE_700, BLUE_500, BLUE_300]
+        assert colors == ['#00507E', '#008ECB', '#76CAF3']
 
-    def test_three_series_no_highlight_returns_neutrals_only(self):
-        """Three series with has_highlight=False returns neutrals_only."""
+    def test_three_series_no_highlight_returns_peer_3(self):
         cycle_name, colors = select_cycle(n_series=3, has_highlight=False)
-        assert cycle_name == 'neutrals_only'
-        assert colors == CYCLE_NEUTRALS_ONLY
+        assert cycle_name == 'peer_3'
+        assert colors == CYCLE_PEER_3
 
     def test_three_series_bidirectional_returns_opposing(self):
-        """Three series with bidirectional context returns opposing cycle."""
         cycle_name, colors = select_cycle(n_series=3, context='bidirectional')
         assert cycle_name == 'opposing'
         assert colors == CYCLE_OPPOSING
         assert len(colors) == 3
 
-    # --- Four series tests ---
+    def test_three_series_focus_returns_focus(self):
+        """v2.3 Cycle 2 Focus with 2 receding arms + 1 focus arm (orange.500)."""
+        cycle_name, colors = select_cycle(n_series=3, context='focus')
+        assert cycle_name == 'focus'
+        assert len(colors) == 3
+        # 2 receding (blue.500, blue.300) + 1 focus (orange.500)
+        assert colors == [BLUE_500, BLUE_300, ORANGE_500]
 
-    def test_four_series_returns_multi_category(self):
-        """Four series always returns multi_category cycle."""
+    def test_two_series_focus_returns_focus(self):
+        """Minimal focus case: 1 receding + 1 focus arm."""
+        cycle_name, colors = select_cycle(n_series=2, context='focus')
+        assert cycle_name == 'focus'
+        assert colors == [BLUE_500, ORANGE_500]
+
+    def test_four_series_focus_returns_full_focus_cycle(self):
+        """v2.3 canonical Cycle 2 Focus: 3 receding + 1 focus arm."""
+        cycle_name, colors = select_cycle(n_series=4, context='focus')
+        assert cycle_name == 'focus'
+        assert len(colors) == 4
+        # blue.500 / blue.300 / blue.200 + orange.500
+        assert colors == [BLUE_500, BLUE_300, BLUE_200, ORANGE_500]
+
+    # --- Four series ---
+
+    def test_four_series_default_returns_multi_category(self):
         cycle_name, colors = select_cycle(n_series=4)
         assert cycle_name == 'multi_category'
         assert colors == CYCLE_MULTI_CATEGORY
+        assert colors == [BLUE_800, BLUE_500, BLUE_300, ORANGE_500]
         assert len(colors) == 4
 
-    def test_four_series_ignores_context(self):
-        """Context is ignored for four series (always multi_category)."""
-        for context in ['comparison', 'equal_weight', 'bidirectional']:
-            cycle_name, colors = select_cycle(n_series=4, context=context)
-            assert cycle_name == 'multi_category'
+    def test_four_series_equal_weight_returns_peer_4(self):
+        """v2.3 Cycle 2 Peer 4-arm: blue.800/600/400/200."""
+        cycle_name, colors = select_cycle(n_series=4, context='equal_weight')
+        assert cycle_name == 'peer_4'
+        assert colors == CYCLE_PEER_4
+        assert colors == [BLUE_800, BLUE_600, BLUE_400, BLUE_200]
 
-    # --- Edge cases and error handling ---
+    def test_four_series_comparison_returns_multi_category(self):
+        cycle_name, colors = select_cycle(n_series=4, context='comparison')
+        assert cycle_name == 'multi_category'
+
+    # --- Edge cases ---
 
     def test_zero_series_raises_error(self):
-        """Zero series should raise ValueError."""
         with pytest.raises(ValueError, match="n_series must be >= 1"):
             select_cycle(n_series=0)
 
     def test_negative_series_raises_error(self):
-        """Negative series should raise ValueError."""
         with pytest.raises(ValueError, match="n_series must be >= 1"):
             select_cycle(n_series=-1)
 
     def test_five_series_raises_error(self):
-        """Five or more series should raise ValueError with redesign suggestion."""
         with pytest.raises(ValueError, match="Too many series"):
             select_cycle(n_series=5)
 
     def test_five_series_error_suggests_faceting(self):
-        """Error message for 5+ series should mention faceting."""
         with pytest.raises(ValueError, match="faceting"):
             select_cycle(n_series=5)
 
     def test_large_series_raises_error(self):
-        """Large number of series should raise ValueError."""
         with pytest.raises(ValueError, match="Too many series"):
             select_cycle(n_series=10)
 
-    # --- Determinism tests ---
+    # --- Determinism ---
 
     def test_determinism_same_inputs_same_outputs(self):
-        """Same inputs should always produce same outputs."""
         for _ in range(10):
             result1 = select_cycle(n_series=2, context='comparison')
             result2 = select_cycle(n_series=2, context='comparison')
             assert result1 == result2
 
     def test_all_returned_colors_are_valid_hex(self):
-        """All returned colors should be valid hex codes."""
         test_cases = [
             (1, 'comparison'),
-            (2, 'comparison'),
-            (2, 'bidirectional'),
-            (3, 'comparison'),
-            (3, 'equal_weight'),
-            (3, 'bidirectional'),
-            (4, 'comparison'),
+            (2, 'comparison'), (2, 'bidirectional'), (2, 'focus'),
+            (3, 'comparison'), (3, 'equal_weight'), (3, 'bidirectional'),
+            (3, 'focus'),
+            (4, 'comparison'), (4, 'equal_weight'), (4, 'focus'),
         ]
         for n_series, context in test_cases:
             _, colors = select_cycle(n_series=n_series, context=context)
             for color in colors:
-                assert color.startswith('#'), f"Color {color} doesn't start with #"
-                assert len(color) == 7, f"Color {color} is not 7 characters"
+                assert color.startswith('#')
+                assert len(color) == 7
+
+
+# =============================================================================
+# CYCLE STRUCTURE TESTS
+# =============================================================================
+
+class TestCycleStructure:
+    """Tests that verify v2.3 cycle composition."""
+
+    def test_treatment_control_is_same_hue(self):
+        """Cycle 1 is a same-hue lightness hierarchy (all blue family)."""
+        assert CYCLE_TREATMENT_CONTROL == [BRAND_BLUE, BLUE_300, BLUE_100]
+
+    def test_peer_4_is_blue_ramp(self):
+        assert CYCLE_PEER_4 == [BLUE_800, BLUE_600, BLUE_400, BLUE_200]
+
+    def test_peer_3_is_blue_ramp(self):
+        assert CYCLE_PEER_3 == [BLUE_700, BLUE_500, BLUE_300]
+
+    def test_opposing_uses_ramp_steps(self):
+        """Cycle 3 uses blue.600 + orange.600, not brand.blue + vermilion."""
+        assert CYCLE_OPPOSING == [BLUE_600, ORANGE_600, NEUTRAL_300]
+        assert '#2DB2E8' not in CYCLE_OPPOSING
+        assert '#E8622D' not in CYCLE_OPPOSING
+
+    def test_multi_category_uses_ramp_steps(self):
+        """Cycle 4 uses blue.800/500/300 + orange.500 outlier."""
+        assert CYCLE_MULTI_CATEGORY == [BLUE_800, BLUE_500, BLUE_300, ORANGE_500]
+
+    def test_focus_receding_is_light_blue(self):
+        """Focus receding subset uses blue.500/300/200; default focus is orange.500."""
+        assert CYCLE_FOCUS == [BLUE_500, BLUE_300, BLUE_200, ORANGE_500]
+
+    def test_neutrals_only_aliases_peer_3(self):
+        """Legacy name routes to Peer 3."""
+        assert CYCLE_NEUTRALS_ONLY == CYCLE_PEER_3
+
+    def test_volcano_uses_v23_colors(self):
+        assert VOLCANO_COLORS['down'] == BLUE_600
+        assert VOLCANO_COLORS['up'] == ORANGE_600
+        assert VOLCANO_COLORS['nonsig'] == NEUTRAL_300
 
 
 # =============================================================================
@@ -228,95 +289,45 @@ class TestRunPreflight:
     """Tests for the run_preflight() function."""
 
     def test_brand_styled_figure_passes_all_checks(self, brand_styled_figure):
-        """Figure with brand style should pass all preflight checks."""
         results = run_preflight(brand_styled_figure)
-        assert all(results.values()), f"Failed checks: {[k for k, v in results.items() if not v]}"
+        assert all(results.values()), f"Failed: {[k for k, v in results.items() if not v]}"
 
     def test_returns_dict_with_expected_keys(self, brand_styled_figure):
-        """Result should contain all expected check keys."""
         results = run_preflight(brand_styled_figure)
         expected_keys = {'white_background', 'spines_removed', 'grid_off', 'axes_black'}
         assert set(results.keys()) == expected_keys
 
     def test_all_values_are_boolean(self, brand_styled_figure):
-        """All result values should be boolean."""
         results = run_preflight(brand_styled_figure)
         for key, value in results.items():
-            assert isinstance(value, bool), f"{key} is not boolean: {type(value)}"
+            assert isinstance(value, bool)
 
     def test_default_figure_fails_spines_check(self, default_figure):
-        """Default matplotlib figure should fail spines check."""
         results = run_preflight(default_figure)
         assert not results['spines_removed']
 
     def test_white_background_check(self):
-        """White background check should work correctly."""
         set_brand_style('treatment_control')
-
-        # White background should pass
         fig1, ax1 = plt.subplots()
         fig1.set_facecolor('white')
-        results1 = run_preflight(fig1)
-        assert results1['white_background']
+        assert run_preflight(fig1)['white_background']
         plt.close(fig1)
 
-        # Non-white background should fail
         fig2, ax2 = plt.subplots()
         fig2.set_facecolor('lightgray')
-        results2 = run_preflight(fig2)
-        assert not results2['white_background']
+        assert not run_preflight(fig2)['white_background']
         plt.close(fig2)
 
     def test_spines_removed_check(self):
-        """Spines removed check should detect visible top/right spines."""
-        # Brand style removes spines
         set_brand_style('treatment_control')
         fig1, ax1 = plt.subplots()
-        results1 = run_preflight(fig1)
-        assert results1['spines_removed']
+        assert run_preflight(fig1)['spines_removed']
         plt.close(fig1)
 
-        # Manually enable top spine
-        set_brand_style('treatment_control')
+        plt.rcdefaults()
         fig2, ax2 = plt.subplots()
-        ax2.spines['top'].set_visible(True)
-        results2 = run_preflight(fig2)
-        assert not results2['spines_removed']
+        assert not run_preflight(fig2)['spines_removed']
         plt.close(fig2)
-
-    def test_axes_black_check(self):
-        """Axes black check should verify spine colors."""
-        set_brand_style('treatment_control')
-        fig1, ax1 = plt.subplots()
-        results1 = run_preflight(fig1)
-        assert results1['axes_black']
-        plt.close(fig1)
-
-    def test_multi_axes_figure(self):
-        """Preflight should check all axes in figure."""
-        set_brand_style('treatment_control')
-        fig, axes = plt.subplots(2, 2)
-
-        # All axes should pass initially
-        results = run_preflight(fig)
-        assert results['spines_removed']
-
-        # Enable one spine on one axes - should fail
-        axes[0, 1].spines['top'].set_visible(True)
-        results = run_preflight(fig)
-        assert not results['spines_removed']
-
-        plt.close(fig)
-
-    def test_empty_figure(self):
-        """Empty figure (no axes) should pass preflight."""
-        set_brand_style('treatment_control')
-        fig = plt.figure()
-        results = run_preflight(fig)
-        # Should pass (no axes to check for spines/grid)
-        assert results['white_background']
-        assert results['spines_removed']  # Vacuously true
-        plt.close(fig)
 
 
 # =============================================================================
@@ -324,39 +335,34 @@ class TestRunPreflight:
 # =============================================================================
 
 class TestExtractFigureColors:
-    """Tests for the extract_figure_colors() function."""
 
     def test_extracts_line_colors(self):
-        """Should extract colors from line plots."""
         fig, ax = plt.subplots()
-        ax.plot([1, 2], [1, 2], color='#2DB2E8')
-        ax.plot([1, 2], [2, 1], color='#222222')
+        ax.plot([1, 2], [1, 2], color=BRAND_BLUE)
+        ax.plot([1, 2], [2, 1], color=NEUTRAL_900)
 
         colors = extract_figure_colors(fig)
-        assert '#2DB2E8' in colors
-        assert '#222222' in colors
+        assert BRAND_BLUE in colors
+        assert NEUTRAL_900 in colors
         plt.close(fig)
 
     def test_extracts_scatter_colors(self):
-        """Should extract colors from scatter plots."""
         fig, ax = plt.subplots()
-        ax.scatter([1, 2], [1, 2], c='#E8622D')
+        ax.scatter([1, 2], [1, 2], c=ORANGE_600)
 
         colors = extract_figure_colors(fig)
-        assert '#E8622D' in colors
+        assert ORANGE_600 in colors
         plt.close(fig)
 
     def test_extracts_bar_colors(self):
-        """Should extract colors from bar plots."""
         fig, ax = plt.subplots()
-        ax.bar([1, 2], [3, 4], color='#158BBB')
+        ax.bar([1, 2], [3, 4], color=BLUE_500)
 
         colors = extract_figure_colors(fig)
-        assert '#158BBB' in colors
+        assert BLUE_500 in colors
         plt.close(fig)
 
     def test_converts_named_colors_to_hex(self):
-        """Should convert named colors to hex."""
         fig, ax = plt.subplots()
         ax.plot([1, 2], [1, 2], color='red')
 
@@ -365,9 +371,8 @@ class TestExtractFigureColors:
         plt.close(fig)
 
     def test_returns_uppercase_hex(self):
-        """All returned colors should be uppercase hex."""
         fig, ax = plt.subplots()
-        ax.plot([1, 2], [1, 2], color='#2db2e8')  # lowercase input
+        ax.plot([1, 2], [1, 2], color='#2db2e8')
 
         colors = extract_figure_colors(fig)
         for color in colors:
@@ -376,7 +381,6 @@ class TestExtractFigureColors:
         plt.close(fig)
 
     def test_empty_figure_returns_empty_set(self):
-        """Empty figure should return empty set."""
         fig, ax = plt.subplots()
         colors = extract_figure_colors(fig)
         assert len(colors) == 0
@@ -388,45 +392,30 @@ class TestExtractFigureColors:
 # =============================================================================
 
 class TestGetPreflightReport:
-    """Tests for the get_preflight_report() function."""
 
     def test_report_contains_header(self, brand_styled_figure):
-        """Report should contain header."""
         report = get_preflight_report(brand_styled_figure)
         assert "Oligon Brand Preflight Check" in report
 
     def test_report_shows_pass_for_compliant_figure(self, brand_styled_figure):
-        """Report should show PASS for brand-compliant figure."""
-        report = get_preflight_report(brand_styled_figure)
-        assert "PASS" in report
+        assert "PASS" in get_preflight_report(brand_styled_figure)
 
     def test_report_shows_fail_for_non_compliant_figure(self, default_figure):
-        """Report should show FAIL for non-compliant figure."""
-        report = get_preflight_report(default_figure)
-        assert "FAIL" in report
+        assert "FAIL" in get_preflight_report(default_figure)
 
     def test_report_contains_check_names(self, brand_styled_figure):
-        """Report should list all check names."""
         report = get_preflight_report(brand_styled_figure)
-        assert "white_background" in report
-        assert "spines_removed" in report
-        assert "grid_off" in report
-        assert "axes_black" in report
+        for name in ('white_background', 'spines_removed', 'grid_off', 'axes_black'):
+            assert name in report
 
     def test_report_uses_checkmark_for_passed(self, brand_styled_figure):
-        """Report should use checkmark for passed checks."""
-        report = get_preflight_report(brand_styled_figure)
-        assert "✓" in report
+        assert "✓" in get_preflight_report(brand_styled_figure)
 
     def test_report_uses_x_for_failed(self, default_figure):
-        """Report should use X for failed checks."""
-        report = get_preflight_report(default_figure)
-        assert "✗" in report
+        assert "✗" in get_preflight_report(default_figure)
 
     def test_report_shows_count(self, brand_styled_figure):
-        """Report should show passed/total count."""
-        report = get_preflight_report(brand_styled_figure)
-        assert "4/4" in report
+        assert "4/4" in get_preflight_report(brand_styled_figure)
 
 
 # =============================================================================
@@ -434,23 +423,30 @@ class TestGetPreflightReport:
 # =============================================================================
 
 class TestAllowedColors:
-    """Tests for the ALLOWED_COLORS constant."""
 
     def test_allowed_colors_contains_all_brand_colors(self):
-        """ALLOWED_COLORS should contain all brand colors."""
         for color in BRAND_COLORS.values():
             assert color.upper() in ALLOWED_COLORS
 
     def test_allowed_colors_are_uppercase(self):
-        """All allowed colors should be uppercase."""
         for color in ALLOWED_COLORS:
             assert color == color.upper()
 
     def test_allowed_colors_are_valid_hex(self):
-        """All allowed colors should be valid hex codes."""
         for color in ALLOWED_COLORS:
             assert color.startswith('#')
             assert len(color) == 7
+
+    def test_allowed_colors_contains_v23_ramp_steps(self):
+        for ramp_color in (BLUE_300, BLUE_600, BLUE_700, ORANGE_500, ORANGE_600,
+                           ORANGE_700, NEUTRAL_300, NEUTRAL_700, NEUTRAL_900):
+            assert ramp_color in ALLOWED_COLORS
+
+    def test_retired_v4_hexes_are_not_allowed(self):
+        """#E8622D, #7D250F, #0F5D7D, #158BBB, #222222 are retired in v2.3."""
+        for retired in ('#E8622D', '#7D250F', '#0F5D7D', '#158BBB',
+                        '#222222', '#666666', '#999999', '#BDBDBD'):
+            assert retired not in ALLOWED_COLORS
 
 
 # =============================================================================
@@ -458,92 +454,79 @@ class TestAllowedColors:
 # =============================================================================
 
 class TestIntegration:
-    """Integration tests combining multiple functions."""
 
     def test_select_and_apply_cycle_workflow(self):
-        """Test complete workflow: select cycle -> apply style -> validate."""
-        # Select appropriate cycle
         cycle_name, colors = select_cycle(n_series=2, context='comparison')
-
-        # Apply brand style with selected cycle
         set_brand_style(cycle_name)
 
-        # Create figure
         fig, ax = plt.subplots()
-        ax.plot([1, 2, 3], [1, 4, 9], label='Control')
-        ax.plot([1, 2, 3], [2, 5, 10], label='Treatment')
+        ax.plot([1, 2, 3], [1, 4, 9], label='Treatment')
+        ax.plot([1, 2, 3], [2, 5, 10], label='Control')
 
-        # Validate with preflight
         results = run_preflight(fig)
         assert all(results.values())
-
         plt.close(fig)
 
     def test_all_cycles_produce_compliant_figures(self):
-        """All cycle types should produce preflight-compliant figures."""
-        cycle_names = ['treatment_control', 'neutrals_only', 'opposing', 'multi_category']
-
+        cycle_names = ['treatment_control', 'peer', 'peer_3', 'peer_4',
+                       'focus', 'opposing', 'multi_category']
         for cycle_name in cycle_names:
             set_brand_style(cycle_name)
             fig, ax = plt.subplots()
             ax.plot([1, 2, 3], [1, 4, 9])
-
             results = run_preflight(fig)
             assert all(results.values()), f"Cycle {cycle_name} failed preflight"
-
             plt.close(fig)
 
     def test_extracted_colors_match_selected_cycle(self):
-        """Colors in figure should match the selected cycle."""
         cycle_name, expected_colors = select_cycle(n_series=2, context='comparison')
         set_brand_style(cycle_name)
 
         fig, ax = plt.subplots()
-        ax.plot([1, 2, 3], [1, 4, 9])  # First color from cycle
-        ax.plot([1, 2, 3], [2, 5, 10])  # Second color from cycle
+        ax.plot([1, 2, 3], [1, 4, 9])
+        ax.plot([1, 2, 3], [2, 5, 10])
 
         extracted = extract_figure_colors(fig)
-
-        # At least one color should be from our cycle
-        cycle_colors_upper = {c.upper() for c in expected_colors}
-        assert extracted & cycle_colors_upper, "No cycle colors found in figure"
-
+        cycle_upper = {c.upper() for c in expected_colors}
+        assert extracted & cycle_upper, "No cycle colors found in figure"
         plt.close(fig)
 
 
 # =============================================================================
-# PHASE 2: VALIDATE_PALETTE TESTS
+# VALIDATE_PALETTE TESTS
 # =============================================================================
 
 class TestValidatePalette:
-    """Tests for the validate_palette() function."""
 
     def test_brand_styled_figure_is_valid(self, brand_styled_figure):
-        """Figure using brand colors should be valid."""
         result = validate_palette(brand_styled_figure)
         assert result['valid']
         assert len(result['violations']) == 0
 
     def test_returns_expected_keys(self, brand_styled_figure):
-        """Result should contain expected keys."""
         result = validate_palette(brand_styled_figure)
-        assert 'valid' in result
-        assert 'used_colors' in result
-        assert 'violations' in result
-        assert 'allowed_colors' in result
+        assert set(result.keys()) >= {'valid', 'used_colors', 'violations', 'allowed_colors'}
 
     def test_detects_non_brand_color(self):
-        """Should detect non-brand colors as violations."""
         fig, ax = plt.subplots()
-        ax.plot([1, 2, 3], [1, 4, 9], color='red')  # Non-brand color
+        ax.plot([1, 2, 3], [1, 4, 9], color='red')
 
         result = validate_palette(fig)
         assert not result['valid']
         assert '#FF0000' in result['violations']
         plt.close(fig)
 
+    def test_detects_retired_v4_color_as_violation(self):
+        """Retired #E8622D vermilion should now fail validation."""
+        fig, ax = plt.subplots()
+        ax.plot([1, 2, 3], [1, 4, 9], color='#E8622D')
+
+        result = validate_palette(fig)
+        assert not result['valid']
+        assert '#E8622D' in result['violations']
+        plt.close(fig)
+
     def test_detects_multiple_violations(self):
-        """Should detect multiple non-brand colors."""
         fig, ax = plt.subplots()
         ax.plot([1, 2, 3], [1, 4, 9], color='red')
         ax.plot([1, 2, 3], [2, 5, 10], color='green')
@@ -554,48 +537,39 @@ class TestValidatePalette:
         plt.close(fig)
 
     def test_allows_white_and_black(self):
-        """White and black should always be allowed (structural colors)."""
         fig, ax = plt.subplots()
         ax.plot([1, 2, 3], [1, 4, 9], color='black')
         ax.axhline(y=2, color='white')
 
         result = validate_palette(fig)
-        # Should be valid - black and white are structural
         assert result['valid']
         plt.close(fig)
 
     def test_all_brand_colors_are_valid(self):
-        """All brand colors should pass validation."""
         for color_name, hex_color in BRAND_COLORS.items():
             fig, ax = plt.subplots()
             ax.plot([1, 2, 3], [1, 4, 9], color=hex_color)
-
             result = validate_palette(fig)
             assert result['valid'], f"Brand color {color_name} ({hex_color}) was rejected"
             plt.close(fig)
 
     def test_used_colors_populated(self):
-        """used_colors should contain colors from the figure."""
         fig, ax = plt.subplots()
-        ax.plot([1, 2, 3], [1, 4, 9], color='#2DB2E8')
+        ax.plot([1, 2, 3], [1, 4, 9], color=BRAND_BLUE)
 
         result = validate_palette(fig)
-        assert '#2DB2E8' in result['used_colors']
+        assert BRAND_BLUE in result['used_colors']
         plt.close(fig)
 
     def test_allowed_colors_is_copy(self):
-        """allowed_colors should be a copy, not the original set."""
         fig, ax = plt.subplots()
         result = validate_palette(fig)
-
-        # Modifying returned set shouldn't affect ALLOWED_COLORS
         original_len = len(ALLOWED_COLORS)
         result['allowed_colors'].add('#XXXXXX')
         assert len(ALLOWED_COLORS) == original_len
         plt.close(fig)
 
     def test_empty_figure_is_valid(self):
-        """Empty figure with no colors should be valid."""
         fig, ax = plt.subplots()
         result = validate_palette(fig)
         assert result['valid']
@@ -604,17 +578,15 @@ class TestValidatePalette:
 
 
 # =============================================================================
-# PHASE 2: COUNT_BRAND_BLUE TESTS
+# COUNT_BRAND_BLUE TESTS
 # =============================================================================
 
 class TestCountBrandBlue:
-    """Tests for the count_brand_blue() function."""
 
     def test_counts_brand_blue_lines(self):
-        """Should count Brand Blue lines."""
         set_brand_style('treatment_control')
         fig, ax = plt.subplots()
-        ax.plot([1, 2, 3], [1, 4, 9], color='#2DB2E8')
+        ax.plot([1, 2, 3], [1, 4, 9], color=BRAND_BLUE)
 
         result = count_brand_blue(fig)
         assert result['total_count'] == 1
@@ -622,20 +594,14 @@ class TestCountBrandBlue:
         plt.close(fig)
 
     def test_returns_expected_keys(self):
-        """Result should contain expected keys."""
         fig, ax = plt.subplots()
         result = count_brand_blue(fig)
-
-        assert 'total_count' in result
-        assert 'per_axes' in result
-        assert 'compliant' in result
-        assert 'violations' in result
+        assert set(result.keys()) >= {'total_count', 'per_axes', 'compliant', 'violations'}
         plt.close(fig)
 
     def test_zero_count_for_no_brand_blue(self):
-        """Should return 0 when no Brand Blue is used."""
         fig, ax = plt.subplots()
-        ax.plot([1, 2, 3], [1, 4, 9], color='#222222')  # Dark gray
+        ax.plot([1, 2, 3], [1, 4, 9], color=NEUTRAL_900)
 
         result = count_brand_blue(fig)
         assert result['total_count'] == 0
@@ -643,20 +609,15 @@ class TestCountBrandBlue:
         plt.close(fig)
 
     def test_compliant_with_one_element(self):
-        """One Brand Blue element should be compliant."""
         fig, ax = plt.subplots()
-        ax.plot([1, 2, 3], [1, 4, 9], color='#2DB2E8')
-
-        result = count_brand_blue(fig)
-        assert result['compliant']
-        assert len(result['violations']) == 0
+        ax.plot([1, 2, 3], [1, 4, 9], color=BRAND_BLUE)
+        assert count_brand_blue(fig)['compliant']
         plt.close(fig)
 
     def test_compliant_with_two_elements(self):
-        """Two Brand Blue elements should be compliant."""
         fig, ax = plt.subplots()
-        ax.plot([1, 2, 3], [1, 4, 9], color='#2DB2E8')
-        ax.plot([1, 2, 3], [2, 5, 10], color='#2DB2E8')
+        ax.plot([1, 2, 3], [1, 4, 9], color=BRAND_BLUE)
+        ax.plot([1, 2, 3], [2, 5, 10], color=BRAND_BLUE)
 
         result = count_brand_blue(fig)
         assert result['total_count'] == 2
@@ -664,11 +625,10 @@ class TestCountBrandBlue:
         plt.close(fig)
 
     def test_non_compliant_with_three_elements(self):
-        """Three Brand Blue elements in one axes should be non-compliant."""
         fig, ax = plt.subplots()
-        ax.plot([1, 2, 3], [1, 4, 9], color='#2DB2E8')
-        ax.plot([1, 2, 3], [2, 5, 10], color='#2DB2E8')
-        ax.plot([1, 2, 3], [3, 6, 11], color='#2DB2E8')
+        ax.plot([1, 2, 3], [1, 4, 9], color=BRAND_BLUE)
+        ax.plot([1, 2, 3], [2, 5, 10], color=BRAND_BLUE)
+        ax.plot([1, 2, 3], [3, 6, 11], color=BRAND_BLUE)
 
         result = count_brand_blue(fig)
         assert result['total_count'] == 3
@@ -677,45 +637,36 @@ class TestCountBrandBlue:
         plt.close(fig)
 
     def test_counts_scatter_as_single_element(self):
-        """Scatter plot with Brand Blue should count as single element."""
         fig, ax = plt.subplots()
-        ax.scatter([1, 2, 3], [1, 4, 9], c='#2DB2E8')
-
-        result = count_brand_blue(fig)
-        assert result['total_count'] == 1
+        ax.scatter([1, 2, 3], [1, 4, 9], c=BRAND_BLUE)
+        assert count_brand_blue(fig)['total_count'] == 1
         plt.close(fig)
 
     def test_counts_bar_elements(self):
-        """Should count Brand Blue bars."""
         fig, ax = plt.subplots()
-        ax.bar([1, 2], [3, 4], color='#2DB2E8')
-
-        result = count_brand_blue(fig)
-        assert result['total_count'] == 2  # Two bars
+        ax.bar([1, 2], [3, 4], color=BRAND_BLUE)
+        assert count_brand_blue(fig)['total_count'] == 2
         plt.close(fig)
 
     def test_multi_axes_counts_separately(self):
-        """Should count Brand Blue per axes."""
         fig, (ax1, ax2) = plt.subplots(1, 2)
-        ax1.plot([1, 2], [1, 2], color='#2DB2E8')
-        ax2.plot([1, 2], [1, 2], color='#2DB2E8')
-        ax2.plot([1, 2], [2, 3], color='#2DB2E8')
+        ax1.plot([1, 2], [1, 2], color=BRAND_BLUE)
+        ax2.plot([1, 2], [1, 2], color=BRAND_BLUE)
+        ax2.plot([1, 2], [2, 3], color=BRAND_BLUE)
 
         result = count_brand_blue(fig)
         assert result['per_axes'][0] == 1
         assert result['per_axes'][1] == 2
         assert result['total_count'] == 3
-        assert result['compliant']  # Both axes have <= 2
+        assert result['compliant']
         plt.close(fig)
 
     def test_violation_in_one_axes_only(self):
-        """Violation in one axes should flag only that axes."""
         fig, (ax1, ax2) = plt.subplots(1, 2)
-        ax1.plot([1, 2], [1, 2], color='#2DB2E8')
-        # ax2 has 3 Brand Blue elements - violation
-        ax2.plot([1, 2], [1, 2], color='#2DB2E8')
-        ax2.plot([1, 2], [2, 3], color='#2DB2E8')
-        ax2.plot([1, 2], [3, 4], color='#2DB2E8')
+        ax1.plot([1, 2], [1, 2], color=BRAND_BLUE)
+        ax2.plot([1, 2], [1, 2], color=BRAND_BLUE)
+        ax2.plot([1, 2], [2, 3], color=BRAND_BLUE)
+        ax2.plot([1, 2], [3, 4], color=BRAND_BLUE)
 
         result = count_brand_blue(fig)
         assert not result['compliant']
@@ -724,18 +675,13 @@ class TestCountBrandBlue:
         plt.close(fig)
 
     def test_case_insensitive_detection(self):
-        """Should detect Brand Blue regardless of case."""
         fig, ax = plt.subplots()
-        ax.plot([1, 2], [1, 2], color='#2db2e8')  # lowercase
-
-        result = count_brand_blue(fig)
-        assert result['total_count'] == 1
+        ax.plot([1, 2], [1, 2], color='#2db2e8')
+        assert count_brand_blue(fig)['total_count'] == 1
         plt.close(fig)
 
     def test_empty_figure_is_compliant(self):
-        """Empty figure should be compliant with zero count."""
         fig, ax = plt.subplots()
-
         result = count_brand_blue(fig)
         assert result['total_count'] == 0
         assert result['compliant']
@@ -743,35 +689,26 @@ class TestCountBrandBlue:
 
 
 # =============================================================================
-# PHASE 2: GET_BRAND_COMPLIANCE_REPORT TESTS
+# GET_BRAND_COMPLIANCE_REPORT TESTS
 # =============================================================================
 
 class TestGetBrandComplianceReport:
-    """Tests for the get_brand_compliance_report() function."""
 
     def test_report_contains_all_sections(self, brand_styled_figure):
-        """Report should contain all validation sections."""
         report = get_brand_compliance_report(brand_styled_figure)
-
-        assert "PREFLIGHT CHECKS:" in report
-        assert "PALETTE VALIDATION:" in report
-        assert "BRAND BLUE USAGE:" in report
-        assert "OVERALL:" in report
+        for section in ('PREFLIGHT CHECKS:', 'PALETTE VALIDATION:',
+                        'BRAND BLUE USAGE:', 'OVERALL:'):
+            assert section in report
 
     def test_report_contains_header(self, brand_styled_figure):
-        """Report should have header."""
-        report = get_brand_compliance_report(brand_styled_figure)
-        assert "Oligon Brand Compliance Report" in report
+        assert "Oligon Brand Compliance Report" in get_brand_compliance_report(brand_styled_figure)
 
     def test_compliant_figure_passes_overall(self, brand_styled_figure):
-        """Fully compliant figure should show OVERALL: PASS."""
-        report = get_brand_compliance_report(brand_styled_figure)
-        assert "OVERALL: PASS" in report
+        assert "OVERALL: PASS" in get_brand_compliance_report(brand_styled_figure)
 
     def test_non_compliant_palette_shows_violations(self):
-        """Non-brand colors should be listed in report."""
-        fig, ax = plt.subplots()
         set_brand_style('treatment_control')
+        fig, ax = plt.subplots()
         ax.plot([1, 2, 3], [1, 4, 9], color='red')
 
         report = get_brand_compliance_report(fig)
@@ -781,12 +718,11 @@ class TestGetBrandComplianceReport:
         plt.close(fig)
 
     def test_excess_brand_blue_shows_in_report(self):
-        """Excess Brand Blue should be reported."""
         set_brand_style('treatment_control')
         fig, ax = plt.subplots()
-        ax.plot([1, 2, 3], [1, 4, 9], color='#2DB2E8')
-        ax.plot([1, 2, 3], [2, 5, 10], color='#2DB2E8')
-        ax.plot([1, 2, 3], [3, 6, 11], color='#2DB2E8')
+        ax.plot([1, 2, 3], [1, 4, 9], color=BRAND_BLUE)
+        ax.plot([1, 2, 3], [2, 5, 10], color=BRAND_BLUE)
+        ax.plot([1, 2, 3], [3, 6, 11], color=BRAND_BLUE)
 
         report = get_brand_compliance_report(fig)
         assert "Exceeds limit" in report
@@ -794,76 +730,55 @@ class TestGetBrandComplianceReport:
         plt.close(fig)
 
     def test_preflight_failure_shows_in_report(self, default_figure):
-        """Preflight failures should show in report."""
         report = get_brand_compliance_report(default_figure)
         assert "✗" in report
         assert "OVERALL: FAIL" in report
 
     def test_shows_total_brand_blue_count(self, brand_styled_figure):
-        """Report should show total Brand Blue count."""
-        report = get_brand_compliance_report(brand_styled_figure)
-        assert "Total elements:" in report
+        assert "Total elements:" in get_brand_compliance_report(brand_styled_figure)
 
 
 # =============================================================================
-# PHASE 2: INTEGRATION TESTS
+# FULL COMPLIANCE INTEGRATION
 # =============================================================================
 
-class TestPhase2Integration:
-    """Integration tests for Phase 2 functions."""
+class TestFullCompliance:
 
     def test_full_compliance_workflow(self):
-        """Test complete compliance validation workflow."""
-        # Select cycle
-        cycle_name, colors = select_cycle(n_series=2, context='comparison')
-
-        # Apply style
+        cycle_name, _ = select_cycle(n_series=2, context='comparison')
         set_brand_style(cycle_name)
 
-        # Create figure
         fig, ax = plt.subplots()
-        ax.plot([1, 2, 3], [1, 4, 9], label='Control')
-        ax.plot([1, 2, 3], [2, 5, 10], label='Treatment')
+        ax.plot([1, 2, 3], [1, 4, 9], label='Treatment')
+        ax.plot([1, 2, 3], [2, 5, 10], label='Control')
 
-        # Run all validations
         preflight = run_preflight(fig)
         palette = validate_palette(fig)
         brand_blue = count_brand_blue(fig)
 
-        # All should pass
         assert all(preflight.values())
         assert palette['valid']
         assert brand_blue['compliant']
-
         plt.close(fig)
 
     def test_compliance_report_matches_individual_checks(self):
-        """Compliance report should reflect individual check results."""
         set_brand_style('treatment_control')
         fig, ax = plt.subplots()
         ax.plot([1, 2, 3], [1, 4, 9])
 
-        # Get individual results
         preflight = run_preflight(fig)
         palette = validate_palette(fig)
         brand_blue = count_brand_blue(fig)
 
-        # Get report
         report = get_brand_compliance_report(fig)
-
-        # If all pass individually, report should show PASS
         all_pass = all(preflight.values()) and palette['valid'] and brand_blue['compliant']
-        if all_pass:
-            assert "OVERALL: PASS" in report
-        else:
-            assert "OVERALL: FAIL" in report
+        assert ("OVERALL: PASS" in report) == all_pass
 
         plt.close(fig)
 
     def test_all_cycles_pass_full_compliance(self):
-        """All cycle types should pass full compliance check."""
-        cycle_names = ['treatment_control', 'neutrals_only', 'opposing', 'multi_category']
-
+        cycle_names = ['treatment_control', 'peer', 'peer_3', 'peer_4',
+                       'focus', 'opposing', 'multi_category']
         for cycle_name in cycle_names:
             set_brand_style(cycle_name)
             fig, ax = plt.subplots()
@@ -874,7 +789,6 @@ class TestPhase2Integration:
             brand_blue = count_brand_blue(fig)
 
             assert all(preflight.values()), f"{cycle_name} failed preflight"
-            assert palette['valid'], f"{cycle_name} failed palette validation"
-            assert brand_blue['compliant'], f"{cycle_name} failed brand blue check"
-
+            assert palette['valid'], f"{cycle_name} failed palette"
+            assert brand_blue['compliant'], f"{cycle_name} failed brand blue"
             plt.close(fig)

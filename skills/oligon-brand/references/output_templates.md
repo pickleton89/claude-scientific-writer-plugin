@@ -1,6 +1,7 @@
 # Output Templates for Visual Design
 
 > Reusable templates for design specifications and quality verification.
+> Aligned with Oligon Digital Style Guide v2.3 / brand skill v5.0.
 
 ## Visual Specifications Document
 
@@ -63,32 +64,35 @@ Use this template to document design decisions before implementation.
 - **File format:** PDF (vector)
 - **Color mode:** RGB
 
-## Color Palette
-| Role | Color | Hex Code |
-|------|-------|----------|
-| Primary | Dark Gray | #222222 |
-| Secondary | Brand Blue | #2DB2E8 |
-| Accent | Contrast Orange | #E8622D |
-| Background | White | #FFFFFF |
-| Text | Black | #000000 |
+## Color Palette (Cycle 1 · Treatment/Control)
+| Role       | Token       | Hex Code  |
+|------------|-------------|-----------|
+| Treatment  | brand.blue  | #2DB2E8   |
+| Control    | blue.300    | #76CAF3   |
+| CI band    | blue.100    | #DBF3FF   |
+| Background | white       | #FFFFFF   |
+| Text       | neutral.900 | #121719   |
+| Axis furniture | neutral.200 | #D6DCDF |
 
-## Typography
-- **Font family:** Arial
-- **Title:** 9pt bold
-- **Axis labels:** 8pt regular
-- **Legend:** 7pt regular
+## Typography (v2.3 Figure Type Scale)
+- **Font family:** Arial / Helvetica / DejaVu Sans
+- **Title:** 12 pt bold
+- **Axis labels:** 10 pt medium
+- **Tick labels:** 9 pt regular
+- **Legend:** 8.5 pt regular
 
 ## Accessibility
-- [x] Colorblind-safe palette verified (Okabe-Ito compatible)
-- [x] Contrast ≥4.5:1 for all text
-- [x] Redundant encoding used (solid vs dashed lines)
-- [x] Readable at final size (7pt minimum)
+- [x] Cycle follows v2.3 Rule 1 (treatment_control for 2-arm narrative)
+- [x] Ramp-matched lightness preserves dark/light differential under CVD
+- [x] Contrast ≥ 4.5:1 for all text (neutral.900 on white = 18.07:1 AAA)
+- [x] Redundant encoding used (solid vs dashed lines, circle vs square markers)
+- [x] Readable at final size (9 pt minimum at 89 mm column width)
 
 ## Notes
-- Control group: dark gray solid line with circles
-- Treatment group: brand blue solid line with squares
-- Error bands: 95% CI, 20% opacity fill
-- Include at-risk table below x-axis
+- Treatment group: brand.blue solid line with filled circles (5–6 pt)
+- Control group: blue.300 solid line with filled squares (5–6 pt)
+- Error bands: 95% CI, ~18% opacity (v2.3 default) of same hue, no border
+- Include at-risk table below x-axis in neutral.900 text
 ```
 
 ---
@@ -112,10 +116,11 @@ Use before submitting any figure to verify quality standards.
 - [ ] Fonts embedded (for vector formats)
 
 ### Accessibility
-- [ ] Colorblind-safe palette used
-- [ ] Contrast ratio ≥4.5:1
-- [ ] Redundant encoding present
-- [ ] Minimum 7pt font at final size
+- [ ] Cycle drawn from v2.3 Blue / Orange / Neutral ramps
+- [ ] No retired v4 hexes (`#E8622D`, `#7D250F`, `#0F5D7D`, `#158BBB`, `#222222`)
+- [ ] Contrast ratio ≥ 4.5:1 for text (≥ 3:1 for data elements)
+- [ ] No category encoded by hue alone — shape/line-style/label redundancy
+- [ ] Minimum 9 pt font at final size (document scale) or 18 pt (projection)
 
 ### Consistency
 - [ ] Matches style of other figures
@@ -141,13 +146,13 @@ For rapid design documentation when full template is excessive:
 
 **Target:** {{Journal/Conference}} | **Size:** {{W}}×{{H}}mm | **DPI:** {{300}}
 
-**Colors:** Control=#222222, Treatment=#2DB2E8, Contrast=#E8622D
+**Cycle:** Treatment=brand.blue `#2DB2E8`, Control=blue.300 `#76CAF3`, CI=blue.100 `#DBF3FF`
 
-**Font:** Arial 8pt | **Accessibility:** Okabe-Ito, shapes + color
+**Font:** Arial / DejaVu Sans; title 12 pt, axis 10 pt, tick 9 pt | **Accessibility:** v2.3 ramps (Okabe-Ito-class), shapes + color
 
 **Key message:** {{One sentence describing the insight}}
 ```
 
 ---
 
-*See [SKILL.md](../SKILL.md) for design workflow and [publication_specs.md](publication_specs.md) for journal requirements.*
+*See [SKILL.md](../SKILL.md) for the v5.0 workflow, [brand-colors-full.md](brand-colors-full.md) for ramps and cycles, and `../../venue-templates/references/figure_specs.md` for per-journal dimensions.*

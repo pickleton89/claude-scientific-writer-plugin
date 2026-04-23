@@ -27,48 +27,55 @@ from docx.oxml import OxmlElement
 from typing import Optional, Tuple
 
 # =============================================================================
-# BRAND COLORS (RGB tuples)
+# BRAND COLORS (v5.0 — Style Guide v2.3: Oklch tonal ramps)
 # =============================================================================
 
-BRAND_COLORS = {
-    # Primary highlight
-    'brand_blue': RGBColor(0x2D, 0xB2, 0xE8),
+# Hex primitives for reference / lookups.
+BRAND_HEX = {
+    # Brand anchor
+    'brand_blue': '#2DB2E8',
 
-    # Neutrals
-    'dark_gray': RGBColor(0x22, 0x22, 0x22),
-    'medium_gray': RGBColor(0x66, 0x66, 0x66),
-    'muted_gray': RGBColor(0x99, 0x99, 0x99),
-    'light_gray': RGBColor(0xBD, 0xBD, 0xBD),
+    # Blue ramp (10 steps)
+    'blue_50':  '#EFFBFF', 'blue_100': '#DBF3FF', 'blue_200': '#B3E3FC',
+    'blue_300': '#76CAF3', 'blue_400': '#1FACE3', 'blue_500': '#008ECB',
+    'blue_600': '#006EA6', 'blue_700': '#00507E', 'blue_800': '#003454',
+    'blue_900': '#001A2E',
 
-    # Contrast
-    'contrast_orange': RGBColor(0xE8, 0x62, 0x2D),
-    'dark_warm': RGBColor(0x7D, 0x25, 0x0F),
+    # Orange ramp (10 steps)
+    'orange_50':  '#FFF5F1', 'orange_100': '#FFE8E0', 'orange_200': '#FFCEBD',
+    'orange_300': '#F0AA92', 'orange_400': '#DD8363', 'orange_500': '#C45E39',
+    'orange_600': '#A0421D', 'orange_700': '#772E11', 'orange_800': '#4F1B06',
+    'orange_900': '#2B0901',
 
-    # Supporting blues
-    'medium_blue': RGBColor(0x15, 0x8B, 0xBB),
-    'dark_teal': RGBColor(0x0F, 0x5D, 0x7D),
+    # Neutral ramp (10 steps)
+    'neutral_50':  '#F3FAFD', 'neutral_100': '#E9F0F3', 'neutral_200': '#D6DCDF',
+    'neutral_300': '#B9BFC2', 'neutral_400': '#9A9FA2', 'neutral_500': '#7C8184',
+    'neutral_600': '#5F6467', 'neutral_700': '#44494B', 'neutral_800': '#2A2F31',
+    'neutral_900': '#121719',
 
     # Structure
-    'black': RGBColor(0x00, 0x00, 0x00),
-    'white': RGBColor(0xFF, 0xFF, 0xFF),
-    'gridline': RGBColor(0xE5, 0xE5, 0xE5),
+    'black':    '#000000',
+    'white':    '#FFFFFF',
+    'gridline': '#D6DCDF',  # neutral.200
+
+    # Deprecated v4 aliases (route to closest v2.3 equivalent)
+    'dark_gray':       '#121719',  # was #222222 -> neutral.900
+    'medium_gray':     '#44494B',  # was #666666 -> neutral.700
+    'muted_gray':      '#7C8184',  # was #999999 -> neutral.500
+    'light_gray':      '#B9BFC2',  # was #BDBDBD -> neutral.300
+    'contrast_orange': '#A0421D',  # was #E8622D -> orange.600
+    'dark_warm':       '#4F1B06',  # was #7D250F -> orange.800
+    'medium_blue':     '#008ECB',  # was #158BBB -> blue.500
+    'dark_teal':       '#003454',  # was #0F5D7D -> blue.800
 }
 
-# Hex strings for reference
-BRAND_HEX = {
-    'brand_blue': '#2DB2E8',
-    'dark_gray': '#222222',
-    'medium_gray': '#666666',
-    'muted_gray': '#999999',
-    'light_gray': '#BDBDBD',
-    'contrast_orange': '#E8622D',
-    'dark_warm': '#7D250F',
-    'medium_blue': '#158BBB',
-    'dark_teal': '#0F5D7D',
-    'black': '#000000',
-    'white': '#FFFFFF',
-    'gridline': '#E5E5E5',
-}
+
+def _hex_to_rgb(hex_str: str) -> RGBColor:
+    h = hex_str.lstrip('#')
+    return RGBColor(int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))
+
+
+BRAND_COLORS = {name: _hex_to_rgb(hx) for name, hx in BRAND_HEX.items()}
 
 # =============================================================================
 # TYPOGRAPHY SETTINGS
@@ -288,8 +295,8 @@ def create_brand_table(
             if i == 0:
                 for run in paragraph.runs:
                     run.font.bold = True
-                # Set background color
-                set_cell_shading(cell, BRAND_HEX.get(header_bg, '#BDBDBD'))
+                # Set background color (fallback: neutral.300)
+                set_cell_shading(cell, BRAND_HEX.get(header_bg, '#B9BFC2'))
 
     return table
 
@@ -303,7 +310,7 @@ def set_cell_shading(cell, hex_color: str) -> None:
     cell : Cell
         The table cell
     hex_color : str
-        Hex color string (e.g., '#BDBDBD')
+        Hex color string (e.g., '#B9BFC2' for neutral.300)
     """
     # Remove # if present
     color = hex_color.lstrip('#')
