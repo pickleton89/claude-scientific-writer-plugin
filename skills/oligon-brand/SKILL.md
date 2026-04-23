@@ -119,7 +119,7 @@ n_series ≥ 5                    →  REDESIGN (facet / small multiples)
 
 | Cycle                       | Colors (ramp steps)                                    |
 |-----------------------------|--------------------------------------------------------|
-| Cycle 1 · Treatment/Control | `brand.blue`, `blue.300`, `blue.100` (CI)              |
+| Cycle 1 · Treatment/Control | `brand.blue`, `blue.300`                               |
 | Cycle 2 · Peer (4-arm)      | `blue.800`, `blue.600`, `blue.400`, `blue.200`         |
 | Cycle 2 · Peer (3-arm)      | `blue.700`, `blue.500`, `blue.300`                     |
 | Cycle 2 · Focus             | `blue.500`, `blue.300`, `blue.200` + `orange.500` focus |
@@ -177,7 +177,6 @@ import matplotlib.pyplot as plt
 fig, ax = plt.subplots(figsize=(5, 3.75))
 ax.plot(t, tx,   color=BRAND_BLUE, linewidth=2.0, label='Treatment')
 ax.plot(t, ctrl, color=BLUE_300,   linewidth=2.0, label='Control')
-ax.fill_between(t, lo, hi, color='#DBF3FF', alpha=0.5)  # blue.100 CI
 ax.set_xlabel('Time (days)')
 ax.set_ylabel('Survival probability')
 ax.legend(loc='lower left')
@@ -242,8 +241,9 @@ figure looks.
    is unavoidable.
 2. **Log scales labeled as such** (`log10 concentration (nM)`), one
    tick per decade baseline. Never a silent log transform.
-3. **Uncertainty is shown** — error bars, CI bands, or individual
-   points. Bar definition (SD / SEM / 95 % CI) stated on-figure.
+3. **Uncertainty is shown** — error bars or individual points on
+   summary statistics. Bar definition (SD / SEM / 95 % CI) stated
+   on-figure.
 4. **No 3D effects on 2D data.** Flat, 2D, always.
 5. **No rainbow / jet colormaps on continuous data.** Use viridis-
    family or the §3 divergent cycle.

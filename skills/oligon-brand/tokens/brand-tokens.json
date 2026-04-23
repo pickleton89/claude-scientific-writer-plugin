@@ -33,7 +33,7 @@
     "ramps": {
       "blue": {
         "50":  {"hex": "#EFFBFF", "role": "Callout background, lightest fill"},
-        "100": {"hex": "#DBF3FF", "role": "CI band for Cycle 1 treatment/control"},
+        "100": {"hex": "#DBF3FF", "role": "Lightest blue fill / tint"},
         "200": {"hex": "#B3E3FC", "role": "Cycle 2 Peer lightest arm, Cycle 2 Focus receding"},
         "300": {"hex": "#76CAF3", "role": "Cycle 1 control, Cycle 2 Peer/Focus light stroke"},
         "400": {"hex": "#1FACE3", "role": "Primary data default (Oklch twin of brand.blue)"},
@@ -105,11 +105,10 @@
     "treatment_control": {
       "description": "Two-arm study, treatment carries the narrative. Same-hue pair with lightness hierarchy.",
       "when": "Treatment vs control; any 2-arm design where one arm is the answer.",
-      "colors": ["#2DB2E8", "#76CAF3", "#DBF3FF"],
+      "colors": ["#2DB2E8", "#76CAF3"],
       "assignments": {
         "1": "Treatment / experimental (brand.blue)",
-        "2": "Control / baseline (blue.300)",
-        "3": "Confidence band (blue.100, fill only)"
+        "2": "Control / baseline (blue.300)"
       }
     },
     "peer": {
@@ -163,7 +162,7 @@
     }
   },
   "ramp_role_mapping": {
-    "50_200":  "Fills, tints, surfaces - CI bands, box fills, callout backgrounds",
+    "50_200":  "Fills, tints, surfaces - box fills, callout backgrounds, light emphasis panels",
     "300":     "Light data strokes - Cycle 1 control, Cycle 2 Focus receding arms",
     "400":     "Primary data - default for lines and markers",
     "500_600": "Emphasis / button fills - CTAs, hover states",
@@ -242,7 +241,7 @@
     },
     {
       "rule": "Uncertainty is shown",
-      "detail": "Error bars, CI bands, or individual points overlaid on summary statistics. Bar definition (SD, SEM, or 95% CI) stated on-figure in caption or legend."
+      "detail": "Error bars or individual points overlaid on summary statistics. Bar definition (SD, SEM, or 95% CI) stated on-figure in caption or legend."
     },
     {
       "rule": "No 3D effects on 2D data",

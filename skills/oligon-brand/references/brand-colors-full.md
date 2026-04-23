@@ -59,7 +59,7 @@ equidistant.
 | Step | Hex      | Role |
 |:----:|:---------|------|
 | 50   | `#EFFBFF` | Callout background, lightest fill |
-| 100  | `#DBF3FF` | Cycle 1 CI band |
+| 100  | `#DBF3FF` | Lightest blue fill / tint |
 | 200  | `#B3E3FC` | Peer lightest arm; Focus receding |
 | 300  | `#76CAF3` | Cycle 1 control; Focus receding |
 | 400  | `#1FACE3` | Primary data default (Oklch twin of brand.blue) |
@@ -173,10 +173,9 @@ the same hue.
 |:-----:|-----------|-----------|------|
 | 1     | Brand Blue | `#2DB2E8` | Treatment / experimental |
 | 2     | Blue 300  | `#76CAF3` | Control / baseline |
-| 3     | Blue 100  | `#DBF3FF` | CI band (fill only) |
 
 ```python
-CYCLE_TREATMENT_CONTROL = ['#2DB2E8', '#76CAF3', '#DBF3FF']
+CYCLE_TREATMENT_CONTROL = ['#2DB2E8', '#76CAF3']
 ```
 
 #### Cycle 2 — Peer
@@ -289,7 +288,7 @@ MARKER_SHAPES = ['o', 's', '^', 'D']
 
 | Step        | Role                         | Where |
 |:------------|------------------------------|-------|
-| 50 – 200    | Fills, tints, surfaces       | CI bands, box fills, callout backgrounds |
+| 50 – 200    | Fills, tints, surfaces       | Box fills, callout backgrounds, light emphasis panels |
 | 300         | Light data strokes           | Cycle 1 control, Cycle 2 Focus receding arms |
 | 400         | Primary data                 | Default for lines and markers |
 | 500 – 600   | Emphasis / button fills      | CTAs, hover states |
@@ -315,8 +314,8 @@ well-styled the figure looks.
    `log10 concentration (nM)` or equivalent, with one tick per decade
    as the base case. Never a silent log transform.
 
-3. **Uncertainty is shown.** Error bars, CI bands, or individual
-   points overlaid on summary statistics. Bar definition (SD, SEM, or
+3. **Uncertainty is shown.** Error bars or individual points
+   overlaid on summary statistics. Bar definition (SD, SEM, or
    95% CI) is stated on-figure in caption or legend — not left to the
    reader to guess.
 
@@ -476,7 +475,6 @@ placement so two analysts produce the same figure from the same data.
 | Treatment curve      | `brand.blue` `#2DB2E8`, solid, 2.0 pt           |
 | Control / vehicle curve | `blue.300` `#76CAF3`, solid, 2.0 pt          |
 | Additional arm (rare) | Cycle 3 `orange.600` `#A0421D` if opposing effect |
-| Confidence bands     | Matching-hue tint at α=0.18, no border          |
 | Censored tick marks  | `neutral.900` `#121719`, short vertical ticks   |
 | Median-survival guide | `neutral.400` dashed, 0.5 pt                   |
 | At-risk table        | `neutral.900` text; group labels in arm colors  |
@@ -517,7 +515,6 @@ Cycle 1 when comparing a single drug vs vehicle.
 | Compound B        | `blue.500` `#008ECB` | Square, solid 2.0 pt |
 | Compound C        | `blue.300` `#76CAF3` | Triangle, solid 2.0 pt |
 | Vehicle control   | `orange.500` `#C45E39` | Diamond, dotted 1.6 pt |
-| 95 % CI bands     | Matching hue, α=0.18, no border |                |
 | IC50 guide line   | `neutral.400` | Horizontal dashed, 0.5 pt |
 
 - X-axis: `log10 concentration (nM)` (per §4 Rule 2: log scales
@@ -621,7 +618,6 @@ set_brand_style(cycle_name)
 fig, ax = plt.subplots(figsize=(5, 3.75))
 ax.plot(time, treatment, color=BRAND_BLUE, linewidth=2.0, label='Treatment')
 ax.plot(time, control,   color=BLUE_300,  linewidth=2.0, label='Control')
-ax.fill_between(time, lo, hi, color='#DBF3FF', alpha=0.5)  # blue.100 CI
 
 # Validate
 assert all(run_preflight(fig).values())

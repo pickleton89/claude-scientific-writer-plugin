@@ -32,7 +32,7 @@ from matplotlib_adapter import (
     set_brand_style,
     BRAND_COLORS,
     BRAND_BLUE,
-    BLUE_100, BLUE_200, BLUE_300, BLUE_400, BLUE_500,
+    BLUE_200, BLUE_300, BLUE_400, BLUE_500,
     BLUE_600, BLUE_700, BLUE_800, BLUE_900,
     ORANGE_500, ORANGE_600, ORANGE_700,
     NEUTRAL_300, NEUTRAL_700, NEUTRAL_900,
@@ -104,7 +104,7 @@ class TestSelectCycle:
         """v2.3 Cycle 1 is same-hue: brand.blue + blue.300."""
         cycle_name, colors = select_cycle(n_series=2, context='comparison')
         assert cycle_name == 'treatment_control'
-        assert colors == CYCLE_TREATMENT_CONTROL[:2]
+        assert colors == CYCLE_TREATMENT_CONTROL
         assert colors == [BRAND_BLUE, BLUE_300]
         assert colors == ['#2DB2E8', '#76CAF3']
 
@@ -128,10 +128,10 @@ class TestSelectCycle:
 
     # --- Three series ---
 
-    def test_three_series_comparison_returns_treatment_control(self):
+    def test_three_series_comparison_returns_focus(self):
+        """v2.3: no 3-arm treatment/control cycle exists; comparison falls to focus."""
         cycle_name, colors = select_cycle(n_series=3, context='comparison')
-        assert cycle_name == 'treatment_control'
-        assert colors == CYCLE_TREATMENT_CONTROL
+        assert cycle_name == 'focus'
         assert len(colors) == 3
 
     def test_three_series_equal_weight_returns_peer_3(self):
@@ -249,7 +249,7 @@ class TestCycleStructure:
 
     def test_treatment_control_is_same_hue(self):
         """Cycle 1 is a same-hue lightness hierarchy (all blue family)."""
-        assert CYCLE_TREATMENT_CONTROL == [BRAND_BLUE, BLUE_300, BLUE_100]
+        assert CYCLE_TREATMENT_CONTROL == [BRAND_BLUE, BLUE_300]
 
     def test_peer_4_is_blue_ramp(self):
         assert CYCLE_PEER_4 == [BLUE_800, BLUE_600, BLUE_400, BLUE_200]

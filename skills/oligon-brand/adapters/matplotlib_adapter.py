@@ -196,8 +196,8 @@ SEMANTIC_DARK = {
 # =============================================================================
 
 # Cycle 1 — Treatment / Control: same-hue pair, lightness hierarchy.
-# Treatment in Brand Blue, control in Blue 300, CI band in Blue 100.
-CYCLE_TREATMENT_CONTROL = [BRAND_BLUE, BLUE_300, BLUE_100]
+# Treatment in Brand Blue, control in Blue 300.
+CYCLE_TREATMENT_CONTROL = [BRAND_BLUE, BLUE_300]
 
 # Cycle 2 — Peer: N equal-weight arms, no promotion.
 CYCLE_PEER_4 = [BLUE_800, BLUE_600, BLUE_400, BLUE_200]
@@ -352,8 +352,7 @@ def select_cycle(
         n=2 + comparison               → treatment_control (brand.blue, blue.300)
         n=3 + equal_weight             → peer_3
         n=3 + bidirectional            → opposing
-        n=3 + focus                    → focus (2 receding + 1 focus arm)
-        n=3 + comparison (no focus)    → treatment_control (extended with CI)
+        n=3 + focus or comparison      → focus (2 receding + 1 focus arm)
         n=4 + equal_weight             → peer_4
         n=4 + focus                    → focus (3 receding + 1 focus arm)
         n=4 + comparison               → multi_category
@@ -380,9 +379,8 @@ def select_cycle(
             return 'peer_3', CYCLE_PEER_3
         if context == 'bidirectional':
             return 'opposing', CYCLE_OPPOSING
-        if context == 'focus':
-            return 'focus', [*CYCLE_FOCUS_RECEDING[:2], FOCUS_VARIANTS['default']]
-        return 'treatment_control', CYCLE_TREATMENT_CONTROL
+        # 'focus' or 'comparison' with a narrative arm → focus cycle
+        return 'focus', [*CYCLE_FOCUS_RECEDING[:2], FOCUS_VARIANTS['default']]
 
     if n_series == 4:
         if context == 'equal_weight' or not has_highlight:

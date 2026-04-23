@@ -142,7 +142,6 @@
 /* Cycle 1 — Treatment / Control: same-hue pair */
 .brand-color-cycle-treatment .series-1 { color: var(--brand-blue); }  /* treatment */
 .brand-color-cycle-treatment .series-2 { color: var(--blue-300); }    /* control   */
-.brand-color-cycle-treatment .series-3 { color: var(--blue-100); }    /* CI band   */
 
 /* Cycle 2 — Peer (equal-weight arms) */
 .brand-color-cycle-peer .series-1 { color: var(--blue-800); }

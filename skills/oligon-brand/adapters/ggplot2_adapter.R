@@ -68,8 +68,7 @@ semantic_light <- list(
 # Cycle 1 — Treatment / Control: same-hue, lightness hierarchy.
 cycle_treatment_control <- c(
   "Treatment" = "#2DB2E8",  # brand.blue
-  "Control"   = "#76CAF3",  # blue.300
-  "CI"        = "#DBF3FF"   # blue.100 (fill only)
+  "Control"   = "#76CAF3"   # blue.300
 )
 
 # Cycle 2 — Peer: equal-weight arms, no promotion.

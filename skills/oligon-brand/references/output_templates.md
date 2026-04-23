@@ -69,7 +69,6 @@ Use this template to document design decisions before implementation.
 |------------|-------------|-----------|
 | Treatment  | brand.blue  | #2DB2E8   |
 | Control    | blue.300    | #76CAF3   |
-| CI band    | blue.100    | #DBF3FF   |
 | Background | white       | #FFFFFF   |
 | Text       | neutral.900 | #121719   |
 | Axis furniture | neutral.200 | #D6DCDF |
@@ -91,7 +90,6 @@ Use this template to document design decisions before implementation.
 ## Notes
 - Treatment group: brand.blue solid line with filled circles (5–6 pt)
 - Control group: blue.300 solid line with filled squares (5–6 pt)
-- Error bands: 95% CI, ~18% opacity (v2.3 default) of same hue, no border
 - Include at-risk table below x-axis in neutral.900 text
 ```
 
