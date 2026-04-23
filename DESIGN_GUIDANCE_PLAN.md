@@ -10,7 +10,9 @@ A plan for adding **deep, format-specific design best-practices documentation** 
 >
 > Phase 1 of this plan originally designated `visual-design/` as the hub. Subsequent audit showed most design content was either Oligon-specific or coupled to a single consumer, so the direction was reversed: `visual-design/` was retired, utilities redistributed, and design-philosophy prose moved into `oligon-brand/SKILL.md`'s `<design_foundation>` block (with a generic-fallback paragraph for non-Oligon output). Each of the 6 extending skills received a short inline **Design checklist** (3–5 bullets) so they're self-contained.
 >
-> **Phase 2 (remaining)** — expand each of those short inline checklists into a full `references/design_best_practices.md` with principles, tool-specific constraints, decision tables, pre-flight acceptance tests, good/bad examples, and further-reading pointers. The scaffolding for Phase 2 is documented below.
+> **Phase 2 underway — `scientific-slides/` v2.5.0 landed 2026-04-22 (commit `5c8c61c`).** First priority-1 deep doc shipped: [`skills/scientific-slides/references/design_best_practices.md`](skills/scientific-slides/references/design_best_practices.md). Validates the template (see [§Standard template](#standard-template-for-each-design_best_practicesmd)) and the "distribute + capstone" synthesis pattern when a skill already has substantial design reference material. Surfaced a set of upstream gaps now tracked in [§Phase 2 backlog](#phase-2-backlog). Remaining priority-1 target: `research-posters/`.
+>
+> **Phase 2 (remaining)** — expand each of the remaining short inline checklists into a full `references/design_best_practices.md` with principles, tool-specific constraints, decision tables, pre-flight acceptance tests, good/bad examples, and further-reading pointers. Scaffolding below.
 
 ### Post-v1.2.0 architecture
 
@@ -55,19 +57,23 @@ Canonical APIs for code-checkable rules (contrast, CVD, validation). Phase 2 doc
 
 ---
 
-### `scientific-slides/` (inline checklist landed; deep doc remaining)
+### `scientific-slides/` — **Phase 2 landed (v2.5.0, 2026-04-22)** ✓
 
-**Current (v1.2.0):** Inline Design checklist in SKILL.md — ≥24 pt body, ≥36 pt title, ≥4.5:1 contrast, ≤6 bullets/slide, dark/light per venue, animations narrative-only.
+**Capstone:** [`skills/scientific-slides/references/design_best_practices.md`](skills/scientific-slides/references/design_best_practices.md) — ~320-line executive summary following the standard template. Eight format-specific principles each mapped to python-pptx / Beamer / html2pptx; tool-capability matrix; four decision tables (venue → typography/density, narrative arc selector, table vs chart, split vs keep); code-checkable pre-flight keyed to `skills/shared/accessibility/` functions; ten common mistakes; canonical further reading (Alley, Doumont, Garner & Alley, Naegle, Rougier, Wong, Reynolds, Tufte, Minto, Morrison).
 
-**Add — `references/design_best_practices.md`:**
-- Slide grid (12-col), title/body hierarchy, 6×6 or 1-idea-per-slide rule
-- **Projection-specific:** min font 24pt body / 32pt title, contrast for dim vs lit rooms, sans-serif default
-- Animation discipline (reveal to support narrative, never decoration)
-- Speaker notes conventions and presenter view expectations
-- Dark vs light theme decision based on venue
-- Handout vs presentation duality (same deck, different rendering pass)
+**Updated inline checklist** (SKILL.md v2.5.0): assertion-evidence default, two-tier typography (24 pt projection / 18 pt reading / 32 pt dual-purpose headline), WCAG 4.5:1 contrast with `check_contrast()` pointer, grayscale test, one-minute test, animation default-none.
 
-**Tailor to tools:** `python-pptx` constraints (placeholder-based layouts, slide master inheritance, no real CSS), Beamer equivalents (frames, `\pause`, themes). Include a decision matrix: venue type → theme → font sizes → figure density.
+**Synthesis strategy used.** The skill already had ~4,900 lines of reference material across 7 existing files. Rather than create a parallel `design_best_practices.md` that duplicated 60% of `slide_design_principles.md`, the Phase 2 pass was executed in two parts:
+1. **Capstone** as a high-density executive doc that summarizes and cross-references; each section links to the detailed file rather than duplicating it.
+2. **Distribution**: content from three new source docs (a 509-line v3 scientific-slide-decks combined guide, a 664-line PowerPoint design guide, a 1762-line NotebookLM Q&A transcript) was routed into matching existing refs, then the source docs were deleted so there is one source of truth per topic. Reference listing in SKILL.md restructured into six groups (design entry point, structure, design details, implementation by tool, validation/delivery, legacy) for scannability.
+
+**File reorganization.** `assets/powerpoint_design_guide.md` → `references/powerpoint_implementation_guide.md` (prose+code belongs in refs, not assets). Two untracked source files deleted after content distribution.
+
+**Validator bugfix (in-scope surfacing).** Fresh-eyes review caught that `SlidePlanValidator.validate()` short-circuited after JSONSchema errors, masking three business-rule test expectations. Fixed by continuing past schema errors (business rules already use defensive `.get()`). Test suite now 47/47 passing (was 44/47).
+
+**Examples still pending.** The standard template asks for `examples/good_<format>.{ext}` + `examples/bad_<format>_annotated.md`. Deferred to a follow-on; not blocking.
+
+**Template-validation note for future priority-1 skills.** The capstone template worked well. The "distribute + capstone" pattern is the right default when a skill already has substantial design reference material; use it (rather than writing a single standalone deep doc) for `research-posters/` and `plotting-libraries/`, which both already have rich per-format content.
 
 ---
 
@@ -316,13 +322,42 @@ Phase 1 (hub establishment + inline checklists in 6 extenders) is **complete** p
 
 For Phase 2, land these deep docs in this order — highest payoff first, since format-specific depth compounds with existing tooling:
 
-1. **`scientific-slides/`, `research-posters/`** — highest format-specific payoff; projection and print constraints are concrete.
+1. **`scientific-slides/`** ✓ landed v2.5.0 (2026-04-22, commit `5c8c61c`); **`research-posters/`** — next up. Highest format-specific payoff; projection and print constraints are concrete.
 2. **`plotting-libraries/`, `scientific-schematics/`** — tight coupling to code + deterministic utilities already in place (`chart_selector`, `palette_selector`, Mermaid `classDef`).
 3. **`markdown-to-pdf/`** — template-driven; document which decisions are template-locked vs content-overridable.
 4. **`paperbanana/`, `generate-image/`** — AI-driven, prompt-engineering-flavored. Treat as a separate pattern.
 5. **`paper-2-web/`** — three sub-pipelines; do after poster/figure guidance exists so it can link rather than duplicate.
 6. **`oligon-brand/references/token_application.md`** — token-application specifics separate from the already-landed `<design_foundation>`.
 7. **`brand-interface/`** — contract docs, written alongside or after the first few deep docs (uses them as examples).
+
+---
+
+## Phase 2 backlog
+
+*Upstream follow-ups surfaced during implementation.*
+
+Issues that the Phase 2 per-skill passes discover in the shared foundation. These are not themselves Phase 2 deep docs; they are candidates for promotion to the hub layer or for targeted upgrades to shared utilities. Log them here so they surface when subsequent Phase 2 skills hit the same gap.
+
+### Surfaced by `scientific-slides/` (v2.5.0)
+
+**Candidates for promotion to `oligon-brand/<design_foundation>`** — cross-format principles currently sitting inside a single skill's deep doc:
+
+- **Color theory foundations** — hue / saturation / brightness as three independent dimensions; monochromatic / analogous / complementary / triadic palette schemes. Currently in `slide_design_principles.md` (absorbed from v3 §D). Applies equally to figures, posters, and presentations.
+- **Grayscale-encoding test** — toggle `View > Grayscale` (or `Image > Grayscale` in Inkscape/Illustrator) and verify every data series remains distinguishable. Five-second sanity check for color-alone encoding failures. Currently in `slide_design_principles.md`; applies to any figure or chart.
+- **Single-message test** — "if you cannot state what the slide/figure is about in one sentence, it is doing too much." Currently in `slide_design_principles.md`; applies to any figure/poster/slide.
+- **Assertion-evidence framework** — title as declarative takeaway, body as supporting evidence (Alley 2013). Currently framed as a slide principle but applies to figure titles, poster sections, and graphical-abstract captions.
+- **5-second rule + Squint test** — headline legibility audits that apply to any visual artifact with a primary entry point.
+
+**Shared-infrastructure gaps:**
+
+| Gap | Location | Impact |
+|-----|----------|--------|
+| No dark-background projection palette variant | `oligon-brand/tokens/brand-tokens.json` v5.0 | `scientific-slides/` design doc has to specify generic fallback; dark-room venues currently unsupported by brand tokens |
+| No alternative slide dimensions (4:3, vertical) | `oligon-brand/adapters/pptx_adapter.py` — hardcodes 13.333" × 7.5" | Legacy venues and mobile-first decks require manual override |
+| No "projection" or "dark-background" palette preset | `plotting-libraries/scripts/palette_selector.py` | Slide-specific figures built through the palette selector get reading-deck colors |
+| Zero slide/presentation venue coverage in figure specs | `venue-templates/references/figure_specs.md` | Covers only journal figs; slide venues (conference stage, boardroom, projector vs laptop) need parallel `slide_specs.md` eventually |
+
+**How to act on these:** when two or more priority-1 Phase 2 skills need the same principle, promote it to `<design_foundation>` rather than duplicating. Shared-infra gaps should be filed as standalone upgrade tickets; they block the Phase 2 doc less than they block the underlying rendering.
 
 ---
 
@@ -384,7 +419,7 @@ Update as each skill's deep design doc lands. The "Inline checklist" column refl
 |-------|:---:|:---:|:---:|:---:|:---:|-------|
 | oligon-brand (hub) | — | ✓ (`<design_foundation>`) | — | — | n/a | Phase 1 complete |
 | skills/shared/accessibility | — | — | — | — | n/a | Utilities only; no SKILL.md |
-| scientific-slides | ✓ | ✓ | ✓ |  | ✓ | Phase 2 priority 1 — landed v2.5.0; examples (`examples/good_*`, `examples/bad_*_annotated.md`) still pending |
+| scientific-slides | ✓ | ✓ | ✓ |  | ✓ | **Landed v2.5.0** (commit `5c8c61c`, 2026-04-22) — Phase 2 priority 1 complete. Examples (`examples/good_*`, `examples/bad_*_annotated.md`) still pending; upstream findings filed under [§Phase 2 backlog](#phase-2-backlog) |
 | research-posters | ✓ |  |  |  |  | Phase 2 priority 1 |
 | plotting-libraries | ✓ |  |  |  |  | Phase 2 priority 2; leverage `chart_selector`/`palette_selector` |
 | scientific-schematics | ✓ |  |  |  |  | Phase 2 priority 2; include Mermaid `classDef` recipe |

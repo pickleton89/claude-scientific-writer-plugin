@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Docs — DESIGN_GUIDANCE_PLAN synced with scientific-slides v2.5.0 landing
+- **Status blockquote** flags Phase 2 as underway with `scientific-slides` as the first priority-1 deep doc shipped; points to the capstone and to the new backlog section.
+- **`scientific-slides/` per-skill section** rewritten from "remaining" framing to "landed" framing: documents the capstone, the "distribute + capstone" synthesis strategy (cherry-pick into existing refs instead of duplicating 60% of `slide_design_principles.md`), the file reorganization (`assets/powerpoint_design_guide.md` → `references/powerpoint_implementation_guide.md`), the in-scope validator bugfix, and the still-pending examples.
+- **Implementation order list** marks `scientific-slides/` ✓ and calls out `research-posters/` as the next priority-1 target.
+- **New `## Phase 2 backlog` section** captures upstream follow-ups surfaced during implementation: 5 candidates for promotion to `oligon-brand/<design_foundation>` (color-theory foundations, grayscale test, single-message test, assertion-evidence framework, 5-second/Squint tests) and 4 shared-infra gaps (dark-background projection palette, alt slide dimensions, projection palette preset, slide/presentation venue specs). Includes the criterion for acting on promotions: when 2+ priority-1 skills need the same principle.
+- **Progress tracker** updated to reflect v2.5.0 commit `5c8c61c` with cross-link to the backlog.
+
 ### `scientific-slides` v2.5.0 — Phase 2 design synthesis
 - **`skills/scientific-slides/` bumped to 2.5.0** — first Phase 2 landing of the `DESIGN_GUIDANCE_PLAN.md` rollout. Combined three new source docs (the v3 scientific-slide-decks combined guide, the existing PowerPoint design guide, and a 1762-line NotebookLM Q&A transcript) into the existing mature reference structure, then added the Phase 2 capstone.
 - **New capstone:** `references/design_best_practices.md` (~500 lines) following the DESIGN_GUIDANCE_PLAN template — 8 format-specific principles with tool-mapping (python-pptx / Beamer / html2pptx), tool-capability matrix, decision tables (venue → typography/density, narrative arc selector, table vs chart, split vs keep), code-checkable pre-flight checklist keyed to `skills/shared/accessibility/` functions, 10 common mistakes, canonical further reading (Alley, Doumont, Garner & Alley, Naegle, Rougier, Wong, Reynolds, Tufte, Minto, Morrison).
