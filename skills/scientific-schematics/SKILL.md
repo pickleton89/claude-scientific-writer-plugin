@@ -906,6 +906,10 @@ See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 | `{baseDir}/references/diagram_types.md` | Catalog of scientific diagram types with prompt keywords |
 | `{baseDir}/references/best_practices.md` | Publication standards and accessibility guidelines |
 | `{baseDir}/references/quick_reference.md` | Quick start guide and common examples |
+| `../shared/references/iconography-licensing.md` | Icon-library licensing terms and attribution templates (BioRender, NIH BIOART, SciDraw, Servier, Noun Project). Re-verify at submission. |
+| `../shared/references/pre_submission_checklist.md` | 15-point pre-submission quality gate for visual deliverables. |
+| `../venue-templates/references/figure_specs.md` | Per-journal figure dimensions, DPI, formats, color-space requirements. |
+| `../oligon-brand/SKILL.md` | `<design_foundation>` → cognitive principles (Cleveland-McGill, Gestalt, pre-attentive features). |
 
 ### External Resources
 

@@ -606,6 +606,10 @@ See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 |----------|---------|
 | `{baseDir}/references/integration_notes.md` | Architecture decisions and PaperBanana version notes |
 | `{baseDir}/data/guidelines/oligon_style.yaml` | Oligon aesthetic guidelines for Stylist agent |
+| `../shared/references/iconography-licensing.md` | Icon-library licensing terms and attribution templates (BioRender, NIH BIOART, SciDraw, Servier, Noun Project). Re-verify at submission. |
+| `../shared/references/pre_submission_checklist.md` | 15-point pre-submission quality gate for visual deliverables (dimensions, fonts, CVD, contrast, alt text, licensing). |
+| `../venue-templates/references/figure_specs.md` | Per-journal figure dimensions, DPI, formats, color-space requirements, and graphical-abstract specifications. |
+| `../oligon-brand/SKILL.md` | `<design_foundation>` → cognitive principles (Cleveland-McGill, Cowan, Treisman, Gestalt, Franconeri, Crameri). |
 
 ### External Resources
 

@@ -315,6 +315,23 @@ figure is doing too many jobs — split into panels or multiple figures.
 6. **Truncated axes** — start bar charts at zero
 7. **3D for 2D data** — distorts perception
 
+### Cognitive foundation
+
+The design rules above are applications of a small set of settled cognitive-science results. When reviewers push back, these are the primary references to cite.
+
+- **Cleveland & McGill (1984), *JASA* 79(387)** — ranking of elementary perceptual tasks for quantitative judgment. From most to least accurate: position on a common scale > length > angle/slope > area > volume > shading/color saturation. Justifies encoding the most important quantitative claim with position, not color or area. Replicated on Mechanical Turk by Heer & Bostock (2010).
+- **Cowan (2010), *Current Directions in Psychological Science* 19(1)** — working memory holds ~4 chunks, not Miller's 7 ± 2. Justifies the "≤4 simultaneously encoded dimensions per panel" constraint and "3–5 acts per graphical abstract" rule.
+- **Treisman & Gelade (1980), *Cognitive Psychology* 12(1)** — feature integration theory. Feature search (one distinctive dimension) is pre-attentive; conjunction search (two non-distinctive features) is serial. Justifies **Rule 6 (no hue-alone encoding):** a result highlighted by a conjunction of non-distinctive features will only be found by readers who already know where to look.
+- **Wagemans et al. (2012), *Psychological Bulletin* 138(6)** — Gestalt grouping principles (proximity, similarity, continuity, closure, common region, connectedness). Justifies direct labeling at line endpoints over corner legends, and shared background tints for panel families over boxed borders.
+- **Franconeri, Padilla, Shah, Zacks & Hullman (2021), *Psychological Science in the Public Interest* 22(3)** — evidence synthesis on visual data communication. Key finding: comparisons are serial, ensemble statistics are parallel. Justifies calling out the key comparison as a direct-encoded annotation rather than expecting the reader to scan a dense heatmap.
+- **Crameri, Shephard & Heron (2020), *Nature Communications* 11** — authoritative rainbow-colormap critique and home of the free Scientific Colour Maps (batlow, vik, roma, lajolla, berlin) at https://fabiocrameri.ch/colourmaps. Justifies viridis/cividis for sequential, RdBu/PuOr/vik/berlin for diverging.
+
+Long-form synthesis with Treisman 1988, Rensink 1997 change blindness, Drew et al. 2013 inattentional blindness in radiologists, and Okabe-Ito color-universal-design rationale: [`docs/design-rationale/infographic-graphic-abstract.md`](../../docs/design-rationale/infographic-graphic-abstract.md).
+
+### Font embedding
+
+Embed fonts; do not outline. Publishers need editable text for house-style changes, HTML translation, and accessibility tooling. Concrete commands per toolchain (matplotlib `rcParams['pdf.fonttype'] = 42`; R `cairo_pdf()` or `extrafont::embed_fonts()`; Illustrator subset fonts at 100 %) live in `venue-templates/references/figure_specs.md § Font Embedding`. Verify with `pdffonts file.pdf` — expect `emb=yes` for every face.
+
 ### Output-format guidance
 
 - **Figures (matplotlib/seaborn/SVG)** — delegate code to

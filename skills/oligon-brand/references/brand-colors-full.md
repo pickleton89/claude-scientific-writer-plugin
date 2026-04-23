@@ -304,6 +304,8 @@ These rules govern what a figure is allowed to claim visually.
 Violating any of them misrepresents the data, regardless of how
 well-styled the figure looks.
 
+**Primary-literature justification** for the rules below lives in [`SKILL.md` `<design_foundation>` → Cognitive foundation](../SKILL.md) — Cleveland-McGill (channel ranking), Cowan (working memory), Treisman (pre-attentive features), Wagemans (Gestalt), Franconeri (serial comparisons), Crameri (rainbow critique). Cite those when defending a rule against reviewer pushback.
+
 1. **Zero baseline on bar charts.** Bars encode quantity by length; a
    truncated y-axis inflates differences. If truncation is unavoidable
    (tight effect on a large background), switch to a dot plot or

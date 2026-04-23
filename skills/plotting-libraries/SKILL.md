@@ -570,6 +570,12 @@ See `oligon-brand` skill for complete brand implementation patterns.
 - **[{baseDir}/references/heatmaps.md]({baseDir}/references/heatmaps.md)**: Expression heatmaps with clustering (Python + R)
 - **[{baseDir}/references/survival_curves.md]({baseDir}/references/survival_curves.md)**: Kaplan-Meier and survival analysis (Python lifelines + R survminer)
 - **[{baseDir}/references/genome_tracks.md]({baseDir}/references/genome_tracks.md)**: Genome visualization (pyGenomeTracks + Gviz)
+
+### Shared References (Cross-Skill)
+- **[../shared/references/pre_submission_checklist.md](../shared/references/pre_submission_checklist.md)**: 15-point pre-submission quality gate (dimensions, fonts, CVD, contrast, alt text, licensing). Run before final export.
+- **[../shared/references/iconography-licensing.md](../shared/references/iconography-licensing.md)**: Icon-library licensing terms (BioRender, NIH BIOART, SciDraw, Servier, Noun Project). Re-verify at submission.
+- **[../venue-templates/references/figure_specs.md](../venue-templates/references/figure_specs.md)**: Per-journal figure dimensions, DPI, formats, color-space, font-embedding commands (Type 42), and graphical-abstract specifications.
+- **[../oligon-brand/SKILL.md](../oligon-brand/SKILL.md)**: `<design_foundation>` → cognitive principles (Cleveland-McGill, Cowan, Treisman, Gestalt, Franconeri, Crameri) that justify the color and typography rules applied by this skill.
 </reference_guides>
 
 <cross_references>

@@ -622,6 +622,9 @@ See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 | `{baseDir}/references/poster_layout_design.md` | Layout principles, grid systems, visual flow |
 | `{baseDir}/references/latex_packages.md` | LaTeX package comparison (beamerposter, tikzposter, baposter) |
 | `{baseDir}/references/pptx_workflows.md` | PowerPoint templates and workflows |
+| `../shared/references/iconography-licensing.md` | Icon-library licensing terms and attribution templates (BioRender, NIH BIOART, SciDraw, Servier, Noun Project). Re-verify at submission. |
+| `../shared/references/pre_submission_checklist.md` | 15-point pre-submission quality gate for visual deliverables. Supplements the poster-specific checklist. |
+| `../oligon-brand/SKILL.md` | `<design_foundation>` → cognitive principles behind the poster design rules. |
 
 ## Templates
 
