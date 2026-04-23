@@ -595,3 +595,53 @@ Emergency Strategies:
 Remember: Better to finish early than run over!
 ```
 
+## Delivery Technique — the Technical Half of the Talk
+
+The best-designed deck fails under poor delivery, and the most important delivery moves are **technical** rather than rhetorical.
+
+### Pacing governs everything
+
+Allot at least **60 seconds** to any content slide that carries a data figure. Audiences cannot parse a four-panel figure in the 20 seconds a TED-pacing talk would give it.
+
+For a 20-minute conference slot with five minutes of discussion, that puts the useful maximum at roughly **12–15 data slides** plus a title, agenda, conclusion, and acknowledgments. Decks that overshoot this budget force the speaker to skip slides live, which destroys the narrative the deck was built to carry and signals to the audience that the planning was thin.
+
+**When density genuinely requires more content** — a partnering deck that must cover preclinical, CMC, clinical, and commercial in one meeting — split the content into a deck the speaker walks through **plus an appendix the speaker points to on demand**, rather than padding the main flow.
+
+### Pointer discipline — cursor > laser
+
+The presenter's attention should travel with the audience's attention.
+
+**Laser pointers**, wielded as continuous motion, wander faster than the audience can track and draw attention to **noise** rather than signal.
+
+**A cursor** moved deliberately to the panel under discussion, held still while the assertion is made, and then moved to the next panel does the same work without the tremor.
+
+**For remote talks**, the cursor is the pointer by default; the laser has no role.
+
+**For recorded decks** (KOL kits, conference-on-demand, training videos), the cursor's precision matters more, because viewers cannot ask the presenter to clarify.
+
+### Q&A — handle it as a technical act
+
+Q&A is a technical act, not a social one.
+
+**Always repeat every question audibly before answering.** This:
+- Gives the rest of the audience the context
+- Gives the presenter time to compose a precise answer
+- Corrects a misheard question before the answer gets built on a wrong premise
+
+**For hostile or loaded questions**, separate the factual component from the framing and answer the factual component first. If the framing contains an embedded claim that is wrong, address it explicitly rather than ignoring it.
+
+**For questions outside the scope of the talk**, say so: *"That's outside what we looked at here, but my instinct would be…"* — rather than extemporizing data you do not have.
+
+**For questions you cannot answer at all**, commit to a follow-up with a timeline (*"I'll send you the numbers by end of week"*) and move on. Audiences respect that more than a confident guess.
+
+### Recovery protocols
+
+Technical failure is common. Rehearse the failure modes; the audience will forgive a recorded fallback more readily than 90 seconds of silent troubleshooting.
+
+- **Slide advance fails** — describe what the slide would have shown rather than stopping the talk. Decks designed to the assertion-evidence standard can be narrated from the assertion headlines alone.
+- **Display fails entirely** — the printed reading deck (if distributed in advance) or the PDF on the presenter's laptop becomes the substrate.
+- **Embedded video fails** — have a backup screenshot of the key frame and the expected result ready as the next slide.
+- **Live demo fails** — move to the pre-recorded fallback.
+
+**For high-stakes decks** (FDA advisory committees, investor pitches, SAB first meetings), rehearse the failure modes explicitly with a colleague playing the problem.
+

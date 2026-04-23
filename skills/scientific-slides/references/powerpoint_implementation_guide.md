@@ -1,8 +1,10 @@
-# PowerPoint Design Guide for Scientific Presentations
+# PowerPoint Implementation Guide for Scientific Presentations
 
 ## Overview
 
-This guide provides comprehensive instructions for creating professional scientific presentations using PowerPoint, with emphasis on integration with the pptx skill for programmatic creation and best practices for scientific content.
+This guide covers two things: (1) discipline for building scientific decks in the PowerPoint Microsoft 365 desktop application (Slide Master, placeholders, theme colors, accessibility, Copilot audits, distribution hygiene), and (2) programmatic creation via the `document-skills:pptx` skill (html2pptx / PptxGenJS) when a deck needs to be generated from code.
+
+For cross-cutting design principles (typography floors, color theory, assertion-evidence, narrative arcs, pre-flight QA) read [`design_best_practices.md`](design_best_practices.md) first. For deeper typography/color/layout detail see [`slide_design_principles.md`](slide_design_principles.md).
 
 **CRITICAL**: Avoid dry, text-heavy presentations. Scientific slides should be:
 - **Visually engaging**: High-quality images, figures, diagrams on EVERY slide
@@ -12,6 +14,153 @@ This guide provides comprehensive instructions for creating professional scienti
 - **Professional polish**: Consistent but varied layouts, generous white space
 
 **Anti-Pattern Warning**: All-bullet-point slides with black text on white background = instant boredom and forgotten science.
+
+---
+
+## PowerPoint Microsoft 365 Desktop Discipline
+
+This section governs work inside the PowerPoint M365 desktop app. Apply these rules before opening any slide file; technical-level drift quietly corrupts both per-slide composition and the deck's macro flow.
+
+### Work at the master, not the slide
+
+Establish theme colors, theme fonts, custom layouts, footer text, and guide positions in `View > Slide Master` before building content. Changes at the master cascade; changes at the slide become overrides that break when the theme is updated. Pick Heading and Body fonts via `Slide Master > Fonts > Customize Fonts` so that placeholder text inherits them; avoid naming specific fonts in text boxes for any content other than code blocks or equation-editor glyphs. When a collaborator pastes in slides from another deck, run `Home > Reset` after re-applying the correct layout to restore placeholder geometry and theme linkage.
+
+Master-level discipline is the primary defense against **slide drift** — the incremental loss of visual consistency that accumulates as collaborators paste content across templates, override fonts from the Home ribbon, and insert free text boxes in place of placeholders. The visible diagnostic is **jittering** — an element that should sit in the same position across slides (a logo, a section header, a footer citation) shifts left-right or up-down as the reader advances. Flip through the deck in Slide Sorter view; anything that jitters is almost certainly not using a placeholder.
+
+Minimum layout set: Title, Section Divider, Content (single column), Two-Content/Comparison, Multi-Panel Figure, Data Table, Equation, References, Disclosures, Backup/Appendix. Build in Slide Master view (`View > Slide Master > Insert Layout`), and populate with `Insert Placeholder` — not text boxes. Two downstream capabilities depend on this: Outline View (`View > Outline View`) only shows placeholder text, and the Accessibility Checker (`Review > Check Accessibility`) flags "missing slide title" if the title lives in a free text box styled to look like a title.
+
+### Build layouts Maximum-to-Minimum
+
+When constructing custom layouts, build the **most complex** layout first and create simpler layouts by duplicating the complex one and **subtracting** placeholders. Do not build simple layouts first and add placeholders to create complex ones.
+
+**Why:** Each placeholder on a layout is assigned an index in creation order. PowerPoint's layout-switching logic tries to match placeholder indices across layouts when a slide is reassigned. Building Maximum-to-Minimum preserves index order automatically because every simpler layout is a strict subset of the complex one. Building Minimum-to-Maximum reverses the order and causes layout switches to silently lose content, reshuffle placeholders, or drop text into unexpected boxes — a failure mode that is hard to diagnose after the fact.
+
+**The rule:** identify the most placeholder-rich layout you will need, build it completely, then duplicate and delete placeholders to make each simpler layout.
+
+### Theme Colors vs Standard Colors
+
+PowerPoint's color picker shows two rows at the top: **Theme Colors** and **Standard Colors**. Theme colors are tied to the Slide Master's theme definition; if the master's color scheme changes (rebrand, partner variant, CVD-safe retool), every element colored from the Theme row updates in one step. Standard colors and manually entered hex values are baked into each object individually and do not respond to theme changes — a rebrand of a deck built with standard colors requires touching every object by hand.
+
+**Rule:** pick colors from the Theme Colors row only for primary content. Reserve Standard Colors and manual hex entries for one-off annotations where the color is genuinely fixed (a specific CPK atom, a published figure's exact shade).
+
+**Audit:** open `Home > Font Color > More Colors > Custom` on any colored element; if the current color is not visibly highlighted in the Theme row, it is not a theme color. For co-branded or licensing contexts where the deck may be rebuilt in the partner's theme, this audit is not optional.
+
+Load the Okabe-Ito categorical palette into the Slide Master's Theme Colors (`Slide Master > Colors > Customize Colors`), mapping the primary brand color to Accent 1 (the default for new shapes and the first chart series).
+
+### Evaluate third-party templates before committing
+
+Downloaded or vendor templates vary enormously. Before adopting one as a project base, test four things:
+
+1. **Real custom layouts exist.** Open Slide Master view; a template with only default Title/Title+Content/Two-Content layouts inherited from PowerPoint's built-in themes is no better than starting blank.
+2. **Layout switches survive content.** Insert a test slide on a custom layout, switch it to another custom layout, and verify content survives intact. A template built min-to-max will fail.
+3. **Theme Colors customized.** Check `Slide Master > Colors`; uncustomized theme colors mean no visual language has been defined.
+4. **Notes + Handout Masters styled.** Open `View > Notes Master` and `View > Handout Master`; a template that only touched the Slide Master leaves notes and handouts exposing default Office styling when printed.
+
+A template that fails any test should be rebuilt or rejected. The cost of rebuilding is lower than the cost of compounding failures across every deck in the project.
+
+### Accessibility as discipline
+
+Run `Review > Check Accessibility` on every deck and address all Errors and most Warnings. Enable "Keep accessibility checker running while I work" so issues surface as they are created.
+
+Alt text is mandatory for every non-decorative image, shape, SmartArt, chart, and embedded object. Add via right-click `View Alt Text` or `Picture Format > Alt Text`. Write one or two descriptive sentences that state the **finding** rather than the chart type — e.g., "Bar chart shows a 2-fold increase in cell viability for the treatment group," not "Image of a bar chart." Mark genuinely decorative elements with the Mark as Decorative checkbox so screen readers skip them.
+
+For reading order, use the **Reading Order Pane** (`Review > Check Accessibility` dropdown > `Reading Order Pane`) — not the Selection Pane. The Reading Order Pane lists objects top-to-bottom in the order a screen reader reads them. The Selection Pane shows z-order for layering and is read bottom-up; using it for reading order is a common source of confusion. Group multi-panel figure elements (Ctrl+G) so the screen reader treats the figure as one unit.
+
+For code-checkable contrast (WCAG 4.5:1 body, 3:1 large text / meaningful non-text) use `skills/shared/accessibility/check_contrast(fg, bg)` rather than PowerPoint's built-in Accessibility Checker warning ("Hard-to-read text contrast"), which is heuristic.
+
+### Embedded vs linked
+
+Link Excel charts while drafting so they update live. Before distribution, either break the links (`File > Info > Edit Links to Files > Break Link`) or re-paste as embedded chart or picture. A linked chart emailed externally displays the last rendered state, throws a broken-link error on open, and the Edit Links dialog reveals the absolute local path of the original. Embedded Excel carries the entire workbook inside the .pptx — inflates file size and can expose hidden sheets, comments, named ranges, or pivot sources. Run `File > Info > Check for Issues > Inspect Document` before distribution. Videos: embed rather than link; compress via `File > Info > Compress Media` before sending.
+
+### Font embedding
+
+Embed fonts for any deck going to another machine: `File > Options > Save > Embed fonts in the file`.
+
+- **"Embed only the characters used"** — smaller file, recipients cannot edit without losing glyphs. Use for final distribution.
+- **"Embed all characters"** — larger file, full edit capability. Use for collaborative editing.
+
+TrueType and OpenType embed reliably; PostScript Type 1 does not. Microsoft cloud fonts (Aptos, Bahnschrift) auto-download on M365 devices and remove the need to embed, but require sign-in. If a licensed foundry font flags as non-embeddable, replace the font or convert text to shapes in final artwork.
+
+### Slide dimensions and file hygiene
+
+Default to 16:9 widescreen (13.333" × 7.5") — the PowerPoint default since 2013, matching modern projectors. Use 4:3 (10" × 7.5") only for known legacy display systems. Set dimensions before building; rescaling after introduces artifacts.
+
+**Before distribution:**
+- `Picture Format > Compress Pictures` at HD (330 ppi) or Print (220 ppi) quality
+- Delete unused masters and layouts from Slide Master
+- `Compress Media` for embedded video
+- Store in OneDrive or SharePoint for `File > Info > Version History` (AutoRecover is crash recovery, not version control)
+
+### SmartArt, Designer, Copilot — generation anti-patterns
+
+**SmartArt** (`Insert > SmartArt`) is recognizable at a glance and signals template-driven work. Defaults read as dated; auto-sizing collapses text to illegibility when nodes are added. If used as a starting point, immediately right-click and `Convert > Convert to Shapes` to break into editable primitives before styling.
+
+**Designer** (`Design > Designer`) proposes layouts via cloud services and works for title slides and single-visual slides; will not improve data-dense content and tends toward minimalist stock-photo aesthetics wrong for scientific decks. Honest use: inspiration for section dividers and title slides only.
+
+**Microsoft 365 Copilot** can generate entire decks from a prompt or reference document. Use *after* the outline and figures are locked, not before. Audit for these five failure modes whenever Copilot has touched a deck:
+
+1. **Stock imagery instead of data figures** — replace with the actual figure.
+2. **Over-bulleted body text** — rewrite as assertion headline + visual evidence.
+3. **Loss of scientific specificity** — quantitative claims softened into qualitative summaries that read well but misrepresent the data. Verify every number.
+4. **Hallucinated citations** — made-up author names and DOIs. Verify every citation against your reference manager.
+5. **Inconsistent color usage** — Copilot ignores the Slide Master theme and introduces its own palette. Reset via `Home > Reset` and re-apply the theme.
+
+**Never ship a Copilot-generated slide without a human read of every claim.** AI-generated images may carry watermark artifacts or C2PA content credentials; disclose if the deck represents the image as a photograph or experimental result. Use AI images for decorative elements and section dividers only — never as data or representations of experimental conditions.
+
+### Collaborative authoring in OneDrive/SharePoint
+
+Real-time co-authoring improves on emailed copies but introduces three failure modes:
+
+1. **Font and color drift from multiple authors** is harder to prevent than to repair. Set the Slide Master early, lock sensitive sections, run a drift audit (`Home > Reset` on each slide) before final distribution.
+2. **Silent conflicts** on simultaneous edits to the same placeholder. PowerPoint resolves by keeping the last-saved change, which is occasionally the wrong one. Use `File > Info > Version History` to recover a known-good prior state.
+3. **No word-level track changes.** Closest analogs: Comments (`Review > New Comment`) for discussion; `Review > Compare` to diff two versions after the fact. For decks circulating through MLR or legal review: author in a personal drive, circulate a PDF export for comment, log comments into a change register, apply edits, re-export.
+
+### Guides, grids, and alignment
+
+Enable Guides (Alt+F9) and Smart Guides; set master-level guides at safe-area margins (~0.5" from each edge) and at column boundaries for two-content layouts. Use `Shape Format > Align` with Align to Slide for slide-relative alignment and Align Selected Objects for inter-object alignment.
+
+For multi-object alignment, `Align > Distribute Horizontally` / `Distribute Vertically` equalizes spacing between three or more selected objects in one step — the correct tool for four-panel figure layouts and button-style comparison elements.
+
+For cases where a literal grid is needed (aligning six independent text blocks, positioning icons on a lattice), the **table trick**: insert a table sized to the grid (e.g., 12 columns × 8 rows covering the slide area), turn off all borders, use each cell as a positioning anchor. Delete the table when alignment is confirmed, or keep with transparent borders as a persistent scaffold.
+
+### Cameo, live captions, recording
+
+`Insert > Cameo` embeds the presenter's webcam feed as a slide object — useful for hybrid talks and recorded asynchronous decks. Live Captions (`Slide Show > Always Use Subtitles`) provides cloud-based transcription, with optional translation into a second language. Record (`Record > From Beginning`) produces an MP4 with narration, timings, ink, and cameo — increasingly how KOL slide kits are distributed. Some M365 builds report issues running cameo and live captions simultaneously during recording; test the combination before committing.
+
+### Content security, hidden data, DLP
+
+Scientific decks often contain more than what is visible:
+- Embedded Excel workbooks carry their full sheet structure — hidden sheets, comments, named ranges, pivot sources.
+- Speaker notes travel with the .pptx and are visible to anyone who opens it.
+- Revision history metadata, author names, file paths in linked objects, and comments can leak information unintentionally.
+
+**Before distributing:** run `File > Info > Check for Issues > Inspect Document` and remove revealed items that should not travel (comments, ink annotations, document properties, embedded documents, presentation notes if sensitive, off-slide content). For decks going outside the company, **export to PDF** rather than .pptx — PDF flattens embedded objects and strips metadata.
+
+For Data Loss Prevention in corporate environments, Microsoft Purview policies apply to .pptx the same way they apply to Word and Excel; a classified file cannot be emailed externally without policy review. Assume every deck you distribute could be forwarded.
+
+### External image preprocessing
+
+PowerPoint's built-in background removal tool produces fuzzy edges and poor handling of hair/fine detail. For production-quality background removal, use an external tool before insertion:
+
+- **Adobe Express** (background removal)
+- **removal.ai**
+- **inPixio**
+- **removebg** (remove.bg)
+- **Erase.bg**
+
+All produce cleaner results than PowerPoint's native tool. Insert the cleaned PNG (or better, transparent-background SVG if the source supports it) into the slide.
+
+### Template variant stripping via POTX
+
+Office theme variants can accidentally apply to template-based decks when users click through `Design > Themes`. To strip variants from a template, save the file as **POTX** and then save back as **PPTX**:
+
+1. `File > Save As` → choose **PowerPoint Template (.potx)`
+2. Close and reopen the saved .potx file
+3. `File > Save As` → choose **PowerPoint Presentation (.pptx)`
+
+The POTX roundtrip removes the variant metadata. Swinford & Terberg, *Building PowerPoint Templates* (2nd ed.) documents this pattern and is the canonical reference for template maintenance.
+
+---
 
 ## Using the PPTX Skill
 

@@ -739,6 +739,61 @@ for slide_num in range(1, 26):
 - **Color Oracle**: Free desktop application
 - **Photoshop/GIMP**: Built-in color blindness filters
 
+## Appendix — Metadata, Professionalism, and File Hygiene
+
+This appendix collects the metadata and file-hygiene discipline that turns a working deck into a distributable artifact. Most items are invisible in Slide Show mode but show up when the deck travels outside the author's machine.
+
+### Persistent footer content
+
+Every scientific content slide after the title should carry a **slide number** (`Insert > Header & Footer > Slide number`).
+
+Audience-specific footer content:
+- **BD and investor decks** — "Confidential" or "Confidential — Do Not Distribute"
+- **KOL kits** — MLR job code (e.g., `US-BRAND-123456 06/2026`) with expiration date
+- **SAB decks** — "Confidential — SAB use only"; often a per-advisor watermark
+- **Conference decks with embargoed data** — embargo line
+
+**Place all footer content at the master level** (`View > Slide Master > Insert > Header & Footer`) so it cannot be accidentally removed on individual slides.
+
+### Citations and attribution
+
+- **Inline citations** — author-year (Smith et al. 2023) or superscript-numbered on the slide
+- **References slide or appendix** — full citations in a consistent style (AMA is common in pharma; Nature or Cell style in academic decks)
+- **Every figure reused from another source** gets an on-slide attribution:
+  - **CC BY**: "Figure from Smith et al., *Nature* 2023, doi:10.1038/..., CC BY 4.0"
+  - **All-rights-reserved (with permission)**: "Adapted from Smith et al. (2023) with permission"
+  - **CC BY-NC / CC BY-ND**: generally cannot be used in commercial contexts (BD, investor pitches, promotional KOL kits) without explicit permission. **CC BY is the safest default for reuse.**
+  - **Internal unpublished data**: "Data on File, Company X"
+- **Title slides** carry authors and affiliations, funding acknowledgments (NIH grant numbers, foundations), and a conflicts-of-interest disclosure either on the title slide or a dedicated slide 2. The **ICMJE disclosure framework** (ICMJE 2009, updated 2019) is the de facto standard at medical conferences.
+
+### Filename and version control
+
+Name files with a **deck identifier, date, and version**:
+
+```
+Project-X_Partnering-Deck_2026-04-15_v3.2.pptx
+```
+
+- Add a version line to the title slide for decks that circulate widely
+- Store in OneDrive or SharePoint to retain `File > Info > Version History`
+- For **decks sent externally**, export to PDF (`File > Export > Create PDF/XPS`) and send the PDF rather than the .pptx unless the recipient explicitly needs to edit. PDF preserves vector content, equations, accessibility tags, and blocks recipients from inadvertently breaking the formatting.
+- For **dual-variant decks**, maintain the master and both exports (projection PDF and reading PDF) under matching version numbers. The reading-deck PDF is often the artifact that actually gets forwarded.
+- For **regulated archival**, export to **PDF/A** rather than standard PDF.
+
+### Pre-distribution checklist
+
+- [ ] Slide numbers on every slide after title (master-level)
+- [ ] Confidentiality / embargo / MLR footer where applicable (master-level)
+- [ ] Every borrowed figure has on-slide attribution with license info
+- [ ] Every claim traceable to a source is referenced (author-year or superscript)
+- [ ] Full references on References slide or appendix
+- [ ] Conflict-of-interest disclosure on title slide or slide 2
+- [ ] Filename follows `project_purpose_date_version` convention
+- [ ] `File > Info > Inspect Document` run and leaked metadata removed (comments, ink annotations, embedded documents, speaker notes if sensitive)
+- [ ] Embedded fonts enabled in `File > Options > Save` if non-standard fonts are in use
+- [ ] Export is PDF (or PDF/A for regulated archival) unless recipient explicitly requested .pptx
+- [ ] Both projection and reading variants exported with matching version numbers (if dual-variant)
+
 ## Summary Checklist
 
 Before finalizing your presentation:

@@ -384,7 +384,7 @@ Update as each skill's deep design doc lands. The "Inline checklist" column refl
 |-------|:---:|:---:|:---:|:---:|:---:|-------|
 | oligon-brand (hub) | — | ✓ (`<design_foundation>`) | — | — | n/a | Phase 1 complete |
 | skills/shared/accessibility | — | — | — | — | n/a | Utilities only; no SKILL.md |
-| scientific-slides | ✓ |  |  |  |  | Phase 2 priority 1 |
+| scientific-slides | ✓ | ✓ | ✓ |  | ✓ | Phase 2 priority 1 — landed v2.5.0; examples (`examples/good_*`, `examples/bad_*_annotated.md`) still pending |
 | research-posters | ✓ |  |  |  |  | Phase 2 priority 1 |
 | plotting-libraries | ✓ |  |  |  |  | Phase 2 priority 2; leverage `chart_selector`/`palette_selector` |
 | scientific-schematics | ✓ |  |  |  |  | Phase 2 priority 2; include Mermaid `classDef` recipe |

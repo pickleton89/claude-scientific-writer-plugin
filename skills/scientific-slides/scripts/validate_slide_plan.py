@@ -97,21 +97,22 @@ class SlidePlanValidator:
         errors: list[str] = []
         warnings: list[str] = []
 
-        # Schema validation
+        # Schema validation — collect errors but continue to business rules so
+        # callers get the full picture in a single pass. Only short-circuit if
+        # the plan is so malformed that business rules cannot run safely
+        # (missing the top-level required fields that downstream code reads).
         if HAS_JSONSCHEMA:
             try:
                 validate(instance=plan, schema=self.schema)
             except ValidationError as e:
                 errors.append(f"Schema validation failed: {e.message}")
-                return False, errors, warnings
-        else:
-            # Basic validation without jsonschema
-            required_fields = ["talk_type", "duration_minutes", "title", "slides"]
-            for field in required_fields:
-                if field not in plan:
-                    errors.append(f"Missing required field: {field}")
-            if errors:
-                return False, errors, warnings
+        # Require the top-level fields downstream business rules depend on.
+        required_fields = ["talk_type", "duration_minutes", "title", "slides"]
+        missing = [f for f in required_fields if f not in plan]
+        if missing:
+            for field in missing:
+                errors.append(f"Missing required field: {field}")
+            return False, errors, warnings
 
         # Business rule validation
         talk_type = plan.get("talk_type", "conference")

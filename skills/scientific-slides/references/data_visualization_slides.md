@@ -667,6 +667,132 @@ ggplot(data, aes(x, y)) + geom_point(size=4) + theme_presentation
 - Format → Line → Width (increase to 2-3pt)
 - Format → Marker → Size (increase to 10-12pt)
 
+## Advanced Visualization Types for Specific Scientific Tasks
+
+Beyond the standard bar/line/scatter repertoire, several chart types solve specific scientific-communication problems well. Reach for them deliberately when the task matches; they are not decorative alternatives.
+
+### Connected scatterplots for time-delayed correlations
+
+When two variables move together over time with a lag, a **connected scatterplot** — points connected by lines or arrows in temporal order — reveals the temporal structure that a standard correlation plot hides. "L-shapes" and "loops" in the connected path signify delays (e.g., the characteristic lag between job openings and unemployment).
+
+For multi-dimensional temporal trajectories of up to four variables, a **Rosling-style moving-bubble** approach extends this idea: bubbles where size encodes a third variable and color encodes a fourth, with faded trails showing historical paths. Useful for PK/PD trajectories, clonal evolution, and treatment-response time courses.
+
+### Correlation matrices with diagonal histograms
+
+A standard correlation matrix duplicates every comparison (A vs B is the same as B vs A) — half the grid is redundant ink. **Delete the upper or lower triangle** and use the freed diagonal cells to display per-variable histograms (sparklines or small histograms), giving the reader the marginal distribution of each variable at the same glance as the pairwise correlations.
+
+In PowerPoint, this lives as a table with conditional cell shading plus inserted sparkline histograms on the diagonal.
+
+### Cleveland dot plots with direct labeling
+
+For ranked or categorical quantities, a **Cleveland dot plot** — category labels down the y-axis, a single dot per category positioned along the x-axis — is lighter than a bar chart and does not require a zero baseline. When each point is directly labeled with its value, the x-axis itself can be removed.
+
+Implement as a scatter plot with category labels on y and data labels placed immediately adjacent to each dot.
+
+### Isotypes — with correct scaling
+
+Icons can re-humanize data (one icon represents N people, patients, or events) and can carry qualitative detail such as gender balance.
+
+**The common failure mode** is to scale a single icon by height to represent magnitude, which inadvertently scales **area** and visually overstates the difference — the *area-vs-height scaling error*.
+
+**The correct implementation** is 1:1 replication: to show a 5:1 ratio, draw **five icons beside one icon**, not one icon five times larger. Waffle charts and bar-style icon charts both follow this pattern. Keep replication sizes identical.
+
+### Dual-purpose selection
+
+- **Reading deck** — denser types (correlation matrices with diagonals, moving-bubble trajectories) earn their place. A reader can zoom in and dwell.
+- **Projection deck** — prefer the sparser types (Cleveland dot plots, simple connected scatterplots). Correlation matrices with four-variable bubble trails do not survive back-row legibility.
+
+---
+
+## Vector Over Raster — Always (except for photos)
+
+Line art, schematics, icons, chemical structures, and charts should live as **vector content**: EMF, WMF, SVG, or native PowerPoint shapes. Vectors scale to any size without pixelation, export cleanly to PDF, and respect theme colors if built from native shapes.
+
+Raster formats (PNG for figures with text and sharp edges; JPEG only for continuous-tone photographs) are appropriate for micrographs, gel blots, photographs, and anything with genuinely continuous pixel data.
+
+**Targets:** 300 ppi for print, 150 ppi for screen at final display size. Use `Picture Format > Compress Pictures` with "Do not compress images in file" off for the working deck and the HD (330 ppi) or Print (220 ppi) preset before distribution.
+
+**SVG gotchas:** whenever an SVG inserts cleanly but renders oddly, pre-flatten filters in Inkscape (Object to Path, flatten filters, Save as Optimized SVG) before bringing it into PowerPoint. A late-2025 bug in some M365 builds grays out `Graphics Format > Convert to Shape` for certain SVGs; a cut-and-paste of the SVG has been reported to restore it.
+
+## Axis, Uncertainty, and Aspect Ratio
+
+- **Bar charts encoding quantity anchor to zero.** Truncated bars mislead (Rougier et al. 2014, Rule 7).
+- **Log scales are labeled as such** on the axis title ("log₁₀ concentration (nM)") with one tick per decade.
+- **Show uncertainty** — error bars with their definition stated (SD, SEM, 95% CI), confidence bands, or individual data points overlaid on summary statistics.
+- **Prefer dot plots or strip plots** over bar charts when n is small enough to plot individuals. SAB decks especially benefit.
+- **Black on white with one highlight color** unless there's an explicit reason otherwise. Rougier et al.'s fifth rule is "do not trust the defaults" — that includes a chart coming out blue for no reason.
+
+**Aspect ratio — Cleveland's banking-to-45-degrees:** match the aspect ratio to the underlying variance in the data, not to the available slide real estate. A time course with small signal-to-noise looks flat when squeezed into 16:9 and deceptively steep when stretched vertically; the honest composition **centers the mean trend line near a 45-degree orientation** through the data.
+
+For bar charts and similar categorical figures the aspect-ratio decision matters less, but the broader rule stands: **do not stretch or squash a figure to fit a layout** — the resulting slope change will visually distort the reader's interpretation of rate or trend.
+
+## Iconography and Vector Icon Workflow
+
+Scientific decks use icons sparingly — an overloaded icon set clutters more than it communicates — but targeted icons earn their place for schematic indicators (mechanism of action glyphs, modality icons, pathway elements, regulatory status markers).
+
+**The operational workflow** that keeps icons brand-consistent:
+
+1. Download as EPS or SVG from a vector library
+2. Insert into PowerPoint
+3. Right-click → `Convert to Shape` (for SVGs) or `Group > Ungroup` (typically twice — once to ungroup the import container, once to break into component shapes)
+4. **Recolor** the individual shapes to the deck's theme colors
+5. **Regroup**
+
+This converts an off-the-shelf icon into a theme-linked asset that responds to rebranding. **Never drop an icon as a raster PNG when a vector source exists** — the PNG will not recolor, scales poorly, and fails to match any theme change.
+
+### Icon libraries
+
+**Biomedical-specific:**
+- **BioRender** — curated biomedical schematics, paid, widely accepted in publications
+- **Bioicons** — free open-source library, CC0 or CC BY licensed
+
+**General-purpose:**
+- **Flaticon** — large indexed library; mixed free/paid with attribution requirements for free tier
+- **SlideRoom** — curated PowerPoint-native icon sets
+- **PowerPoint's `Insert > Icons`** — acceptable for generic UI iconography, thin for scientific content
+
+**License every icon** used in commercial/promotional decks. CC BY requires visible attribution; CC0 does not; Flaticon's free tier requires attribution that MLR may flag if missed.
+
+**Consistency rule:** keep the icon set to two or three styles across the deck. Mixing outlined, filled, and flat-color icons in the same deck reads as visual noise.
+
+## Reproducible Code-to-Deck Pipelines
+
+For analyses where the deck must stay in sync with upstream data, three workflows are mature enough for biotech use:
+
+### R — officer + officedown + flextable
+
+`officer` and `officedown` generate .pptx files programmatically from RMarkdown. `flextable` renders publication-quality tables that round-trip into PowerPoint preserving formatting.
+
+### Quarto (Posit 2022–present)
+
+A Quarto document with `.qmd` source and a `pptx` format block renders slides from chunks of R or Python, embedding figures directly with full reproducibility.
+
+**Weakness:** template fidelity. The default Quarto template is generic; matching a corporate or brand template requires supplying a reference .pptx with the Slide Master already populated.
+
+### Python — python-pptx
+
+`python-pptx` provides a lower-level API for composing slides by opening a template and inserting shapes, charts, and text programmatically. Right tool when the deck is primarily data-driven (weekly metrics reviews, automated clinical-trial status updates).
+
+For Oligon-branded slide generation via Claude, see [`skills/oligon-brand/adapters/pptx_adapter.py`](../../oligon-brand/adapters/pptx_adapter.py) which wraps python-pptx with v5.0 brand tokens.
+
+### The defensible pipeline for LLM-drafted decks
+
+1. Generate figures in R or Python with the **Okabe-Ito palette hard-coded** (use `skills/plotting-libraries/scripts/palette_selector.select_palette()`)
+2. Save as **EMF or SVG**
+3. Assemble in PowerPoint by hand or via `python-pptx` against a branded reference template
+
+This preserves both reproducibility and design integrity.
+
+## Effect-Size Evidence for Design Decisions
+
+Several rules in this guide have direct empirical backing worth citing when challenged:
+
+- **Assertion-evidence headlines** produce ~**59% vs 42%** comprehension over topic-subtitle slides (Garner & Alley 2013, p < 0.01, n=110), reduce major misconceptions by ~**10×**, and increase delayed recall
+- **Red-green color vision deficiency** affects ~**8% of men** and **0.5% of women** of Northern European ancestry (Wong 2011)
+- **Rainbow colormaps** introduce false banding at luminance transitions (Borland & Taylor 2007)
+
+Beyond these, effect-size data for specific design choices (serif vs sans-serif legibility deltas, direct-labeling comprehension gains over legends, zero-baseline distortion magnitudes) is **sparse** in the peer-reviewed literature — the consensus comes from professional practice and design-industry research rather than controlled studies.
+
 ## Summary Checklist
 
 Before including a figure in your presentation:

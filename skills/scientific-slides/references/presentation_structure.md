@@ -18,6 +18,95 @@ All scientific presentations should follow a story arc that engages, informs, an
 
 This arc mirrors the scientific method while maintaining narrative flow that keeps audiences engaged.
 
+## Stakeholder Mapping — the pre-deck step
+
+Before picking an arc, map the audience. A BD deck whose audience is a Senior VP of BD, a VP of Clinical Development, and a Senior Director of Finance is not the same deck even with identical content — each has different authority, different prior knowledge, and different likely objections. Write out, for each person likely in the room:
+
+- Their **role in the decision** (approver, advisor, gatekeeper, influencer)
+- **What they already know** about the area
+- **What technical depth** they can absorb
+- **What outcome they have authority over**
+- **Two or three objections** they are most likely to raise
+
+This step has no PowerPoint analog — it happens on paper or in a shared note before the deck is opened — but it is the step that most often separates a deck that closes from a deck that merely informs. Stakeholder mapping also surfaces where a single deck is trying to serve irreconcilable audiences (executives wanting implications plus scientists wanting methods); in those cases, split into a main deck plus a technical appendix routed only to the audience that asks, rather than compromising for both.
+
+## Narrative Arcs by Audience
+
+The 7-step arc above is the IMRaD-flavored default. Different audiences respond to different arcs; pick deliberately.
+
+### SCQA — biotech BD and investor decks
+
+**Situation → Complication → Question → Answer** (Minto 1987, *The Pyramid Principle*).
+
+Biotech BD and investor decks should open with something close to SCQA: situation the partner already accepts, complication that shifts the landscape, implied question, and the answer the asset or platform provides. This maps onto "problem, solution, asset, data, ask" — the dominant convention at JPM-style partnering conferences. For the strategy slides inside such decks, Rumelt's (2011) strategic kernel (diagnosis → guiding policy → coherent actions) tightens a milestone or use-of-funds slide from a wish list into an argument.
+
+Quick mnemonic: **Problem → Solution → Data → Validation** (captures the SCQA/BD pattern, though SCQA's *complication* step is where the argument turns from a catalog into a case).
+
+### IMRaD — conference talks, seminars, journal clubs
+
+**Introduction → Methods → Results → Discussion.** Default for academic conference talks, department seminars, and most journal clubs. Each results block typically follows hypothesis → prediction → test → finding.
+
+Quick mnemonic: **Question → Method → Result → Impact**.
+
+### Open-question inversion — Scientific Advisory Board (SAB) decks
+
+SAB decks invert the answer-first discipline deliberately: they foreground open questions so advisors can weigh in. Display two to six specific questions early in the deck.
+
+### Medical narrative — Hook-Context-Discovery-Meaning-Takeaway (HCDMT)
+
+Medical audiences often respond better to an arc that is not quite SCQA and not quite IMRaD:
+
+- **Hook** — a patient presentation, an unexpected finding, or a counterintuitive clinical observation
+- **Context** — the pathophysiology and prior literature that set up the stakes
+- **Discovery** — the pivotal result the talk exists to convey
+- **Meaning** — what changes in practice, risk, or biology because of the discovery
+- **Takeaway** — the single sentence the audience should walk out carrying
+
+Use HCDMT for grand rounds, invited medical seminars, tumor and transplant boards, and many CME-eligible formats where the audience expects case-led storytelling and the answer-first BD structure reads as brisk or transactional.
+
+For **morbidity and mortality conferences**, the arc compresses further: case presentation → critical decision points → outcome → learning points. The deck supports structured discussion rather than delivering an answer.
+
+### PICO seven-step — journal clubs
+
+An explicit PICO frame anchors journal club presentations:
+
+1. **Clinical question** (the PICO: Patient population → Intervention → Comparator → Outcome)
+2. **Study design**
+3. **Population** (who was enrolled, who was excluded)
+4. **Intervention / Comparator** (what was done vs the comparator arm)
+5. **Results** (primary, secondary, subgroup)
+6. **Internal validity and bias assessment** (risk of bias, confounders, sample size)
+7. **Generalizability** to the audience's practice
+
+PICO is especially useful when the audience spans trainees and attendings, because the frame itself teaches the evaluative move rather than presenting it as a conclusion.
+
+### Internal review
+
+**Data → Limitations → Next Steps.** Short, honest framing for lab meetings, PI updates, and program reviews. Lead with data, be explicit about what went wrong, end with what to do next.
+
+### Arc selector cheat-sheet
+
+| Audience | Arc | Why |
+|----------|-----|-----|
+| Biotech BD / investor | SCQA (Problem → Solution → Data → Validation) | Decision-first; partners expect answer-first framing |
+| Conference talk / seminar | IMRaD (Question → Method → Result → Impact) | Academic convention; methods-transparent |
+| Journal club | PICO seven-step | Teaches evaluative method; works across trainee/attending audiences |
+| Grand rounds / tumor board / CME | HCDMT (Hook → Context → Discovery → Meaning → Takeaway) | Case-led storytelling; answer-first reads as transactional |
+| M&M conference | Case → Decision points → Outcome → Lessons | Supports discussion rather than delivers answer |
+| SAB | Open-question inversion | Advisors need questions to weigh in on, not a pre-baked answer |
+| Internal review | Data → Limitations → Next Steps | Honest, action-oriented |
+
+## The Iceberg Principle — appendix does real work
+
+A scientific appendix is not padding. It holds dense supporting data that would derail the main arc but that a skeptical reader or a question from the floor will demand: full dose-response curves, individual-patient data, replicate experiments, toxicology, sequence alignments, PK/PD details, statistical sensitivity analyses.
+
+**Think of the deck as an iceberg** — the main arc is the tip above the waterline, the appendix is the mass below. The presenter argues from the tip while every claim is grounded in the mass beneath.
+
+- A dedicated **Backup** section divider makes navigation possible in a PDF.
+- Number appendix slides distinctly (e.g., B1–B23 or A-1, A-2) so references from main-deck slides ("see Backup 6") are unambiguous.
+- In Presenter View, use **Section Zoom** (`Insert > Zoom > Section Zoom`) if you plan to jump to appendix slides during Q&A; keep target sections small and named.
+- For inline jumps, hidden hyperlinks on primary slides (`Insert > Action` or `Insert > Hyperlink`) jump directly to a specific appendix slide. Section Zoom is the more modern approach.
+
 ## Slide Count Guidelines
 
 **General Rule**: Approximately 1 slide per minute, with adjustments based on content complexity.
@@ -605,6 +694,41 @@ For seminars and longer talks:
 - Emphasize feasibility and timeline
 - Clear, simple language
 - Strong business case or societal benefit
+
+## Dual-Purpose Decks — the projection-vs-reading problem
+
+Many scientific decks serve two uses simultaneously: projection in a room while a presenter speaks, and asynchronous reading on a laptop by someone who will never hear the presenter. These two uses impose different constraints on density, type size, caption length, and figure composition. Rather than collapse them into a single compromise, recognize two deliberate variants and call them out where rules diverge.
+
+### The three variants
+
+- **Projection deck.** Intended primarily for live presentation in an auditorium or conference room. Maximum type sizes, generous whitespace, panels tuned for projector bloom, density slanted toward what a presenter can walk through at ~1 minute per slide. Captions are present but shorter; the presenter carries the connective tissue.
+- **Reading deck.** Intended primarily for asynchronous distribution — the BD partner forwarding to three colleagues, the SAB member reading on an airplane, the investor associate triaging a pitch queue. Dense panels are acceptable and often necessary; captions carry the presenter's voice in text; assertion headlines do the work of a voiceover.
+- **Dual-purpose deck (default).** When the deck must serve both uses from a single artifact — the common case for BD, investor, SAB, KOL, and conference decks — **compose on the reading-deck side of the tradeoff**. The live presenter can skip over density; the reader cannot conjure context that was never written down.
+
+### The defining problem
+
+A scientific deck that is unintelligible without its presenter has failed, because the actual audience includes the VC partner who forwards it to three colleagues, the pharma BD lead who circulates it internally after a one-hour meeting, the SAB member reading it on an airplane the night before, and the colleague screenshotting a results slide onto social media. The design response is to carry the presenter's voice inside the slide without destroying the projection experience.
+
+### Rules that make slides survive asynchronous reading
+
+- **Assertion headlines carry the voiceover.** A reader scanning only the titles should be able to reconstruct the argument.
+- **Short panel captions** under each panel of a multi-panel figure (2–3 lines, 14–16 pt) — do not rely on the presenter to narrate.
+- **Methods slides include context** for a reader to understand what was done and why, in a single sentence ("Mouse xenograft, n = 8 per arm, dosed QD × 21 days, primary endpoint tumor volume at Day 28").
+- **"So what" line on conclusions slides** in slightly smaller type, stating the implication. On BD and investor decks this anchors the slide for a non-scientist reader.
+- **Speaker notes for presenter-only content** (`View > Notes Page`): transitions, planned asides, answers to anticipated questions, citations to read aloud. Notes travel with the file and are visible in Normal view to anyone who opens the .pptx. Run `File > Info > Check for Issues > Inspect Document` before distribution if notes are sensitive.
+
+### Producing two variants from one master
+
+For long BD decks, it is legitimate to produce two variants from a single master: a live-meeting deck with fewer words, larger type, and more negative space; a reading deck with self-contained captions, expanded methods, and denser advanced chart types that reward dwell time. The two variants differ in four concrete ways:
+
+1. **Type sizes** (projection 24pt body / reading 18pt body)
+2. **Panel density** (projection tilts toward splitting dense slides; reading tilts toward keeping together)
+3. **Caption length** (short vs self-contained)
+4. **Chart-type selection** (sparser vs denser; see `data_visualization_slides.md`)
+
+Build the master with both tiers of type sizes defined as style presets, and maintain reading-deck-only content on slides marked as such in the Sections panel; the live presenter can hide or skip those sections.
+
+**When the file is likely to be the only artifact**, merge into one dual-purpose deck on the reading-deck side of the tradeoff. The live presenter can skip over density; the reader cannot conjure context that was never written down.
 
 ## Summary Checklist
 

@@ -65,7 +65,7 @@ Effective slide design enhances comprehension, maintains audience attention, and
 
 | Good Enough | Excellent |
 |-------------|-----------|
-| Readable fonts (18pt+) | Large fonts (24pt+ body, 36pt+ titles) with high contrast (7:1) |
+| Reading-floor fonts (body ≥18pt, axis ≥14pt) | Projection-floor fonts (body ≥24pt, headline ≥32pt, axis ≥18pt) with AAA contrast (7:1) |
 | Consistent template | Intentional design system with visual variety in layouts |
 | Includes figures | Figures dominate slides; text annotates visuals |
 | Practiced once | Practiced 3+ times with timing checkpoints; recorded and reviewed |
@@ -84,6 +84,85 @@ Effective slide design enhances comprehension, maintains audience attention, and
 6. Are backup slides ready for the 3-5 most likely questions?
 
 **When In Doubt:** If you can't explain the slide in 60 seconds without reading it, simplify it.
+
+---
+
+## Per-Slide Structure and Assertion-Evidence
+
+### Prefer an assertion headline
+
+Make the slide title a full-sentence declarative **takeaway**, not a topic label.
+
+- ✅ "Compound X shows 12-fold selectivity over the closest off-target at 100 nM"
+- ❌ "Selectivity data"
+
+This is the **assertion-evidence** structure (Alley 2013). Garner and Alley (2013) showed in a controlled 110-student study that assertion-evidence slides produced comprehension scores of ~**59% vs 42%** for topic-subtitle slides (p < 0.01), reduced major misconceptions by about tenfold, lowered perceived cognitive load, and increased delayed recall. Doumont (2009) gives the same prescription in a different vocabulary: slide titles should deliver a message, captions should make an assertion rather than name a figure, and headings, visuals, and verbal delivery should be mutually reinforcing.
+
+**When NOT to mandate assertion-evidence:** reference slides, disclosure and conflict-of-interest slides, acknowledgments, methods overviews setting up three subsequent results slides, and discussion slides whose purpose is to pose an open question to an SAB or journal-club audience. For these, a neutral topic label or interrogative title is correct. **On KOL slide kits**, MLR review often rejects assertion headlines that could be read as promotional claims; follow the MLR-approved wording. **In journal clubs**, the defensible default is "Figure 2: knockout phenotype" with a critical takeaway bullet beneath rather than an embedded assertion.
+
+**The rule to carry into every slide:** if a slide has a takeaway, state it in words somewhere the reader cannot miss.
+
+### Two audit heuristics — the 5-second rule and the Squint Test
+
+**The 5-second rule.** A reader landing on the slide should be able to identify the main takeaway within five seconds. If they cannot, the headline has failed its job.
+
+**The Squint Test.** Blur your vision and look at the slide; the headline's position, weight, and visual dominance should clearly mark it as the primary entry point even when the text is unreadable.
+
+Both heuristics are quick to apply during review and catch headlines that are technically assertions but functionally labels.
+
+### Write for the ear on projected slides
+
+On projected slides shown during a live talk, the audience is **listening**, not reading — and reading and listening compete for the same cognitive channel. A slide packed with paragraph-length prose forces a choice: the audience stops listening so they can read, or they stop reading and miss what the slide was put there to convey. Dense journal-abstract phrasing on a projected slide is the most common form of this failure.
+
+**For projection use:** compose slide text the way you would **speak** it — short phrases, active verbs, terminology the room actually uses — and let the presenter's voice carry the connective tissue. An assertion headline that is genuinely a full sentence is tolerable on a projected slide because the reader can absorb one sentence during an initial glance. What fails is the secondary bullet list of three prose sentences beneath the headline.
+
+**For reading decks**, the opposite constraint applies — the reader is reading, not listening, and the caption that carries the presenter's voice earns its place. This is one of the cleanest examples of where projection-deck and reading-deck rules diverge; dual-purpose decks compose toward the reading-deck side (see `presentation_structure.md`).
+
+### The one-minute budget
+
+A typical scientific content slide should take about **one minute** to discuss during a live talk (Naegle et al. 2021). If you cannot, the slide is doing too much and should be split.
+
+**Secondary sanity checks** on a single content slide:
+- Not more than **two sentences of assertion** (the headline + optional subtitle)
+- Not more than **four distinct visual panels**
+
+Both thresholds are rough proxies for the one-minute test; either one being exceeded is a reason to look hard at whether the slide is doing too much.
+
+**Do not apply Kawasaki's 10/20/30 rule (2005) literally to scientific decks:** 30-point minimum type is too large for figure legends, and 10 slides cannot cover the risk surface a life-science investor or partner underwrites. Use that rule as a reminder to cut fluff, not as a floor.
+
+**Projection vs reading:**
+- **Projection deck** — the one-minute test is a strict budget. If you cannot walk through a slide in about a minute, split it.
+- **Reading deck** — the one-minute test loosens. A reader can dwell on a dense panel for as long as the evidence rewards; splitting a canonical multi-panel figure for pacing actively hurts comprehension.
+
+### When to split a dense slide and when to keep it
+
+**Split when:**
+- Two subplots answer two different questions
+- A reader would need to re-caption to follow the argument
+- The slide carries more than one takeaway worth stating in words
+
+**Keep together when:**
+- Panels are parts of the same comparison that must be seen simultaneously (e.g., a dose-response curve beside a selectivity panel sharing the compound set)
+- The figure is the canonical published version and separation would break a reviewer's mental model
+
+Density is not the enemy. Uninterpretable density is.
+
+**Projection deck** tilts toward splitting. **Reading deck** tilts toward keeping together.
+
+### Animation and progressive disclosure — default position is "none"
+
+The default position on animation for scientific content: **none**.
+
+Animations introduce technical risk (fail to advance, desynchronize with the presenter, render oddly across PowerPoint versions and operating systems), they are an accessibility liability for viewers with photosensitive conditions or who rely on screen readers, and decorative animations ("Fly In," "Bounce," "Fade through black") signal amateurism and slow the pacing regardless of intent.
+
+**The one defensible exception:** progressive reveal of a multi-panel figure in the order the argument depends on — controls first, then the treatment condition, then the key comparison — and only when the presenter has rehearsed the reveals as part of the narrative such that each reveal lands on a specific sentence.
+
+**If you must use a reveal:**
+- Confine to *Appear* and *Fade* with durations at 0.25–0.5 seconds
+- Avoid every emphasis and exit animation on data slides (they break the Tufte data-ink principle)
+- Never use an animation whose sole effect is aesthetic
+
+**Progressive disclosure does NOT survive PDF export.** A PDF flattens to the final animated state, which means a reader receiving the asynchronous deck sees all four panels at once. The reliable dual-purpose workaround: **duplicate the slide** — one slide per build state — so the PDF preserves the progressive structure for the reader and the live deck uses Section Zoom to skip the duplicates during presentation.
 
 ---
 
@@ -200,13 +279,35 @@ Maintain visual consistency throughout the presentation.
 
 ### Font Sizes
 
-**Minimum Readable Sizes**:
-- **Title slide title**: 44-54pt
-- **Section headers**: 36-44pt
-- **Slide titles**: 32-40pt
-- **Body text**: 24-28pt (absolute minimum 18pt)
-- **Figure labels**: 18-24pt
-- **Captions and citations**: 14-16pt (use sparingly)
+**Minimum sizes depend on the variant — projection deck vs reading deck.** The numbers below replace a single generic scale with the two-tier scale that v3 locks in.
+
+**Projection deck minimums** (auditorium / main-stage projection, 200-seat room):
+- **Assertion headline / slide title**: 32 pt
+- **Body and caption text**: **24 pt** (hard floor)
+- **Axis labels and tick labels**: 18 pt
+- **Footnotes and references**: 14 pt
+- **Source / citation footer**: 10–12 pt
+
+A projector in a mid-sized conference room produces effective text sizes *smaller* than the nominal point size because of throw distance, screen size, and ambient lighting. 14 pt axis labels on a dense multi-panel figure become unreadable from the back row even when they look fine on the authoring laptop. If the room is specifically small (a 20-person boardroom or a roundtable), the 24 pt body floor can drop to 20 pt — but the default assumes auditorium or main-stage projection.
+
+**Reading deck minimums** (laptop at 60–80 cm):
+- **Assertion headline / slide title**: 24 pt
+- **Body and caption text**: 18 pt
+- **Axis labels and tick labels**: **14 pt** (hard floor)
+- **Footnotes**: 12 pt
+- **Source / citation footer**: 10 pt
+
+Never go below these floors on a reading deck — 14 pt axis labels are already the lower bound for scannable lookup.
+
+**Dual-purpose deck — the compromise rule:**
+
+The two variants conflict: 24 pt projection body is roughly 33% larger than 18 pt reading body, and a dual-purpose deck cannot honor both exactly. **Compose body text at 18 pt (the reading floor) but enforce the projection floor on headlines, assertion text, and the single most important takeaway line per slide.** This is a deliberate compromise; where the deck is known to serve primarily one use, adopt that variant's floor throughout.
+
+When a figure imported from a journal uses Nature's native 5–8 pt text, it must be scaled up on the slide so that embedded text meets the applicable minimum at the intended viewing distance, or relabeled natively in PowerPoint.
+
+**Presentation-focused headline scale** (title slides, closing slide emphasis):
+- **Title slide title**: 44–54 pt
+- **Section headers**: 36–44 pt
 
 **The Room Test**:
 - Can text be read from the back of the room?
@@ -252,6 +353,29 @@ Caption: 16pt
 - ❌ Avoid italics (hard to read from distance)
 - ❌ Avoid underline (confused with hyperlinks)
 - ❌ AVOID ALL CAPS FOR BODY TEXT (READS AS SHOUTING)
+
+### Equations, subscripts, and chemical structures
+
+For anything more complex than CO₂, H₂SO₄, or x_i, use the **modern equation editor** (`Insert > Equation`, or Alt+=). The current editor is OMML-based, scales with theme, and renders as live text.
+
+**PowerPoint for M365 does not expose the LaTeX conversion button that Word has.** The reliable workflow is: author the equation in Word with LaTeX input, render via `Convert > Professional`, then copy into PowerPoint — it pastes as an editable equation.
+
+For simple sub/superscripts, use plain text with Ctrl+= / Ctrl+Shift+=.
+
+PowerPoint has **no native chemical-structure editor.** Draw in ChemDraw or an equivalent, export to EMF (Windows) or SVG (cross-platform), and insert. Simple benzene rings can be built from hexagon shapes, but anything with stereochemistry should come from a dedicated tool.
+
+### Composition balance — symmetrical and asymmetrical
+
+A slide's composition is usually either:
+
+- **Symmetrical** — elements mirror each other around a central vertical axis. Suits title slides, section dividers, and slides whose content genuinely is a paired comparison (left panel vs right panel with shared caption).
+- **Asymmetrical** — elements balance by **visual weight** rather than by mirror geometry. Suits content slides where one element (typically a data figure) is the dominant focus and the remaining elements (headline, annotation, caption) sit in the counterweight position.
+
+**Failure modes:**
+- **Symmetrical applied by default** — every content slide looks the same and nothing signals where the reader's attention should go.
+- **Asymmetrical with underbuilt counterweight** — an 80%-weight figure on the left with a 20%-weight caption on the right leaves the right side visually empty.
+
+**Build each layout in the Slide Master** with explicit placeholder positions, and put the reader's entry point (assertion headline or dominant figure) in the **upper-left**, matching left-to-right reading order. Avoid centered layouts for content slides unless the composition is genuinely symmetric; centering by default is the usual source of "every slide looks alike" drift.
 
 ### The 6×6 Rule
 
@@ -531,6 +655,30 @@ Use: Multiple related items, comparisons
 - Misaligned elements appear careless
 - Small misalignments are very noticeable
 
+## Tables on Slides
+
+### When a table belongs on a slide
+
+A table belongs on the slide when:
+- **Precise values matter** (target product profile comparisons, pharmacokinetic parameters, assay readouts across compounds)
+- **The reader will look up specific entries**
+- **The data span orders of magnitude** in a way that charts obscure
+
+If the audience's task is to **see a pattern**, a chart or heatmap wins. Schwabish (2021) lands on the same partition in his data visualization chapter.
+
+### Table formatting
+
+Scientific tables should be **minimal-rule**:
+- Horizontal lines above and below the header row, and above any summary/total row
+- No vertical lines unless absolutely necessary
+- Align **numeric columns on the decimal**, text columns left, category labels left or centered depending on scan pattern
+- Pad cells generously (`Table Design > Cell Margins > Wide`, with 0.04" minimum on left/right) so rows breathe
+- **Bold the header row** and flag it as a header in `Table Design > Header Row` so the Accessibility Checker recognizes the structure
+
+**For dense comparisons** (~50 cells or more where the audience's task is pattern-seeking), replace the numeric table with a **heatmap rendering** where cell background encodes magnitude on a sequential palette, keeping numeric values on top. This reads faster for pattern-seeking audiences while preserving the lookup use case.
+
+---
+
 ## Background Design
 
 ### Background Colors
@@ -734,7 +882,7 @@ Use: Multiple related items, comparisons
 
 **Tiny Fonts**:
 - Problem: Unreadable for audience
-- Fix: Minimum 18pt, preferably 24pt+ for body text
+- Fix: ≥24 pt body (projection) / ≥18 pt body (reading); see "Font Sizes" above for full two-tier floors
 
 ### Visual Mistakes
 
@@ -781,10 +929,10 @@ Use: Multiple related items, comparisons
 ### Designing for All Audiences
 
 **Visual Impairments**:
-- High contrast text (minimum 4.5:1, preferably 7:1)
-- Large fonts (minimum 18pt, prefer 24pt+)
-- Simple, clear fonts
-- No reliance on color alone to convey meaning
+- High contrast text (minimum 4.5:1 AA; push toward 7:1 AAA for projection)
+- Large fonts — ≥24 pt body for projection, ≥18 pt body for reading (see "Font Sizes")
+- Simple, clear fonts (humanist or neo-grotesque sans-serif)
+- No reliance on color alone to convey meaning (run the grayscale test)
 
 **Color Blindness**:
 - Avoid red-green combinations
@@ -815,6 +963,60 @@ Use: Multiple related items, comparisons
 - Break into components
 - Use progressive builds
 - Provide interpretive context
+
+### Drafting alt text efficiently
+
+Writing alt text for every figure in a long deck is slow work if done cold. The efficient workflow:
+
+1. **Draft with an LLM, then review and edit.** Prompt: hand the LLM the figure or a short description, plus the slide's assertion headline, and ask for one-to-two-sentence alt text that **states the finding** rather than describing the chart type.
+2. **Review every draft before committing.** LLMs will plausibly hallucinate specific numbers that are not in the figure, and a wrong number in alt text is worse than no alt text.
+3. **For figures already captioned in a manuscript or poster**, the caption is usually better raw material than the LLM draft.
+4. **Never leave placeholder alt text** ("Image," "Figure," the filename). The Accessibility Checker flags *missing* alt text but not *generic* alt text — generic alt text passes the check while failing the actual use.
+
+For code-checkable contrast, use `skills/shared/accessibility/check_contrast(fg, bg)` rather than eyeballing. For CVD simulation across deuteranopia/protanopia/tritanopia, use `skills/shared/accessibility/simulate_colorblindness()`.
+
+### Live delivery accessibility
+
+Accessibility is not only a file-level property; live delivery has its own constraints.
+
+**When presenting a data figure live**, verbally describe the central feature as you introduce it — "the blue line rises twofold after treatment between days 7 and 14" — rather than gesturing and expecting visual-only comprehension. This serves audience members with low vision, those attending remotely with poor video quality, and anyone whose attention was elsewhere when the slide changed.
+
+**When live-captioning is on** (PowerPoint's Live Captions, Zoom auto-captions, or a human captioner):
+- Pace slightly slower than usual
+- Enunciate technical terms
+- Spell out acronyms the first time they appear
+- Avoid pronouns where possible in the narration of figures ("this data" is ambiguous to a captioner; "the CT scan from week four" is not)
+
+Captioning accuracy degrades sharply on rapid speech and on terminology outside the captioner's training corpus, which includes most biomedical jargon.
+
+### Physical accessibility (in-person posters and setups)
+
+For research posters presented in person, physical accessibility matters as much as visual accessibility of the file. Place the most important content — title, central finding, key figure — in the **upper-middle band of the poster, between roughly three and five and a half feet from the floor**. Text and figures placed above that band may be unreadable by shorter attendees or unreachable by wheelchair users; text placed too low forces everyone to crouch. Provide a **QR code to a PDF version** so attendees can access the content on their own device at their own zoom level; this also serves anyone with low vision who needs screen-reader access.
+
+### Digital and interactive accessibility (web / HTML5 / kiosks)
+
+For decks distributed as interactive web artifacts (embedded on a web page, HTML5 exports, kiosks, slide-sharing platforms with navigation controls), additional rules apply:
+
+- **Keyboard-accessible navigation** — a user must be able to advance, go back, pause, and open every interactive element using only Tab and Enter, without a mouse
+- **ARIA labels** on interactive elements so screen readers announce the control's purpose rather than reading the DOM element name
+- **Autoplay of audio or video off by default**
+
+These rules are inherited from general web accessibility practice (WCAG 2.2 and WAI-ARIA) and apply whenever the artifact stops being a static PDF and becomes a thing users interact with. For native PowerPoint playback, these concerns do not apply; they become relevant only at the moment the deck is published to the web.
+
+### Regulated-industry archival (21 CFR Part 11)
+
+For decks that enter FDA regulatory submissions, advisory-committee briefing books, or any process where the deck becomes an electronic record of a regulated activity, **21 CFR Part 11** applies.
+
+The requirements are about the system the record lives in, not the PowerPoint file itself: the storage system must provide audit trails of who viewed and modified the record, e-signatures for approvals, secure access controls, and validation that the system behaves as specified.
+
+**Operationally:**
+- Store a Part 11-destined deck in a validated document management system (Veeva Vault, Documentum, or equivalent) rather than personal OneDrive
+- Export the submission-ready version to **PDF/A** (a long-term-archival PDF variant that is self-contained and reproduces identically across readers)
+- Include a **document control footer** with document number, version, effective date, and approver initials
+- **Disclose the regulatory basis** for the content (e.g., "Prepared for FDA Type B meeting, October 2026")
+- Ensure every data figure traces back to a source study, SAS dataset, or CSR table reference that auditors can follow
+
+For **ICH-GCP sponsor records** (clinical trial documentation), decks used for sponsor-investigator meetings, protocol training, or DSMB review are TMF-eligible records and should be stored with the same rigor as other essential documents. For **IRB submissions**, decks shown to trial participants (consent presentations, site training) are typically appended as supporting materials.
 
 ## Design Workflow
 
@@ -908,10 +1110,12 @@ Review checklist:
 Before finalizing your slide design:
 
 **Typography**:
-- [ ] Font size ≥18pt minimum, preferably 24pt+ for body
+- [ ] Body text ≥24 pt (projection) or ≥18 pt (reading); dual-purpose composes to 18 pt body + 32 pt headline
+- [ ] Axis / tick labels ≥18 pt (projection) or ≥14 pt (reading)
+- [ ] Assertion headline as full-sentence takeaway, not topic label (unless on a reference/disclosure/MLR-regulated slide)
 - [ ] Maximum 6 bullets per slide, 6 words per bullet
-- [ ] Sans-serif fonts used throughout
-- [ ] Consistent font family (1-2 max)
+- [ ] Humanist or neo-grotesque sans-serif throughout body; no more than 2 font families
+- [ ] Equations rendered with the equation editor (not pasted as image)
 
 **Color**:
 - [ ] High contrast text-background (4.5:1 minimum)

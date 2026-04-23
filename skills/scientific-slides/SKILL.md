@@ -1,6 +1,6 @@
 ---
 name: scientific-slides
-version: 2.4.0
+version: 2.5.0
 description: "Build structured research presentations — content organization and scientific storytelling for conference talks, seminars, defenses, and lab meetings. Use when creating a new research presentation. Do NOT use for editing existing PPTX files or raw file manipulation — use document-skills:pptx."
 when_to_use: "Conference presentations, seminar talks, thesis defense slides, grant pitches, journal club presentations, or any scientific talk requiring PDF, PowerPoint, or LaTeX Beamer output."
 allowed-tools: [Read, Write, Edit, Bash]
@@ -10,12 +10,17 @@ allowed-tools: [Read, Write, Edit, Bash]
 
 > **Design foundation:** See [`oligon-brand`](../oligon-brand/SKILL.md)'s `<design_foundation>` block for the cross-format decision flow, audience matrix, and universal anti-patterns. Accessibility utilities live in [`skills/shared/accessibility/`](../shared/accessibility/).
 >
+> **Design entry point:** Read [`references/design_best_practices.md`](references/design_best_practices.md) first for slide-specific principles, tool constraints, decision tables, and pre-flight checklist.
+>
 > **Design checklist (slides):**
-> - Body text ≥24 pt; titles ≥36 pt
-> - Text/background contrast ≥4.5:1 (WCAG AA); validate for projector vs lit room
+> - **Assertion-evidence headlines** by default — full-sentence takeaways, not topic labels (Alley 2013; Garner & Alley 2013: 59% vs 42% comprehension)
+> - Body text ≥**24 pt projection** / ≥**18 pt reading**; dual-purpose composes to 18 pt body + 32 pt headline
+> - Text/background contrast ≥4.5:1 (WCAG AA); validate via `skills/shared/accessibility/check_contrast()`
+> - **Grayscale test** passed — `View > Grayscale` in PowerPoint; every data series still distinguishable (no color-only encoding)
 > - One idea per slide; ≤6 bullets with ≤6 words each
+> - **One-minute test** — can a colleague with 60s/slide write down the key finding and why it matters?
 > - Dark vs light theme chosen per venue (projection distance, ambient light)
-> - Animations reveal narrative only — never used as decoration
+> - Animations default to none; reveal only when rehearsed as narrative — never decoration
 
 <overview>
 Create effective scientific presentations for conferences, seminars, defenses, and professional talks. This skill provides decision frameworks for selecting presentation format, structured workflows for development, and integration with AI slide generation tools. Supports PDF (via Nano Banana Pro), PowerPoint (via PPTX skill), and LaTeX Beamer outputs.
@@ -598,18 +603,46 @@ See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 <references>
 ## Reference Documents
 
+**Read first for design work:**
+
+| Document | Purpose |
+|----------|---------|
+| `references/design_best_practices.md` | **Phase 2 capstone** — slide-specific principles, tool constraints (python-pptx / Beamer / html2pptx), decision tables (venue → typography, narrative arc selector, table vs chart), code-checkable pre-flight checklist, common mistakes |
+
+**Structure and content:**
+
+| Document | Purpose |
+|----------|---------|
+| `references/presentation_structure.md` | Narrative arcs by audience (SCQA, IMRaD, HCDMT medical, PICO journal club), stakeholder mapping, Iceberg Principle, dual-purpose decks, structure for all talk lengths |
+| `references/talk_types_guide.md` | Specific guidance for conferences, seminars, defenses, grants |
+| `references/output_templates.md` | Slide plan, timing checkpoint, issue tracking templates |
+
+**Design details:**
+
+| Document | Purpose |
+|----------|---------|
+| `references/slide_design_principles.md` | Per-slide structure + assertion-evidence, typography (projection vs reading floors), color theory, layout, composition balance, equations, tables on slides, accessibility (alt text drafting, live delivery, 21 CFR Part 11) |
+| `references/data_visualization_slides.md` | Chart type selection, advanced viz types (connected scatterplots, correlation matrices, Cleveland dot plots, isotypes), vector workflow, iconography, reproducible code-to-deck pipelines (python-pptx, R officer, Quarto), chartjunk reduction, banking-to-45 |
+
+**Implementation by tool:**
+
+| Document | Purpose |
+|----------|---------|
+| `references/powerpoint_implementation_guide.md` | PowerPoint M365 desktop discipline (Slide Master, Maximum-to-Minimum placeholder build, Theme vs Standard Colors, Copilot audit, DLP), html2pptx / PptxGenJS programmatic creation, external image preprocessing, POTX template variant stripping |
+| `references/beamer_guide.md` | Complete LaTeX Beamer documentation |
+
+**Validation and delivery:**
+
+| Document | Purpose |
+|----------|---------|
+| `references/visual_review_workflow.md` | PDF to images, systematic inspection, iteration + metadata/attribution/filename conventions appendix |
+| `assets/timing_guidelines.md` | Timing, pacing, practice strategies + delivery technique (pointer discipline, Q&A, recovery protocols) |
+
+**Legacy / curated:**
+
 | Document | Purpose |
 |----------|---------|
 | `references/expert_guide.md` | Core principles, decision rules, failure modes, quality signals |
-| `references/output_templates.md` | Slide plan, timing checkpoint, issue tracking templates |
-| `references/presentation_structure.md` | Detailed structure for all talk types, timing allocation |
-| `references/slide_design_principles.md` | Typography, color theory, layout, accessibility |
-| `references/data_visualization_slides.md` | Simplifying figures, chart types, progressive disclosure |
-| `references/talk_types_guide.md` | Specific guidance for conferences, seminars, defenses, grants |
-| `references/beamer_guide.md` | Complete LaTeX Beamer documentation |
-| `references/visual_review_workflow.md` | PDF to images, systematic inspection, iteration |
-| `assets/powerpoint_design_guide.md` | PowerPoint design and implementation |
-| `assets/timing_guidelines.md` | Timing, pacing, and practice strategies |
 
 ## Script Reference
 
