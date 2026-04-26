@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-04-26
+
 ### Changed — Visual/Presentation Skills Consolidation
 - **SVG component library moved to visual-design** (shared resource): `research-paper-summarizer/references/svg-component-library.md` and four `components/svg-*.jsx` files relocated to `skills/visual-design/references/svg-components-catalog.md` + `svg-components/` so paperbanana, scientific-schematics, and future summarizers can cite the same 9-component catalog (DonutChart, HorizontalBarChart, StatCallout, TimelineNode, ProcessArrow, HierarchicalTree, MoleculeIcon, CellIcon, DNAHelix); summarizer path refs retargeted to `../visual-design/references/...`
 - **`document-skills/SKILL.md`**: Added explicit delegation contract paragraph under Presentation Pipeline — `scientific-slides` owns narrative/citations/figure-planning; `document-skills:pptx` owns python-pptx rendering; disambiguation via negative keywords in router
