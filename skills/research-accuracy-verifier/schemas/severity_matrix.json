@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "severity_matrix.json",
+  "title": "SeverityMatrix",
+  "description": "Schema constraining the structure of severity_matrix.values.json. The actual cell values live in the .values.json data file; this schema validates that file's shape.",
+  "type": "object",
+  "required": ["matrix"],
+  "properties": {
+    "matrix": {
+      "type": "object",
+      "description": "matrix[document_type][verdict] -> severity",
+      "required": ["grant", "manuscript", "lit_review", "slides", "report", "memo", "other"],
+      "properties": {
+        "grant":      { "$ref": "#/definitions/VerdictRow" },
+        "manuscript": { "$ref": "#/definitions/VerdictRow" },
+        "lit_review": { "$ref": "#/definitions/VerdictRow" },
+        "slides":     { "$ref": "#/definitions/VerdictRow" },
+        "report":     { "$ref": "#/definitions/VerdictRow" },
+        "memo":       { "$ref": "#/definitions/VerdictRow" },
+        "other":      { "$ref": "#/definitions/VerdictRow" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "VerdictRow": {
+      "type": "object",
+      "required": [
+        "VERIFIED",
+        "METADATA_MISMATCH",
+        "UNSUPPORTED",
+        "OVERGENERALIZED",
+        "CONTRADICTED",
+        "MISATTRIBUTED",
+        "QUOTE_VERIFIED",
+        "QUOTE_PARAPHRASED",
+        "QUOTE_FABRICATED",
+        "UNVERIFIED"
+      ],
+      "properties": {
+        "VERIFIED":          { "$ref": "#/definitions/Severity" },
+        "METADATA_MISMATCH": { "$ref": "#/definitions/Severity" },
+        "UNSUPPORTED":       { "$ref": "#/definitions/Severity" },
+        "OVERGENERALIZED":   { "$ref": "#/definitions/Severity" },
+        "CONTRADICTED":      { "$ref": "#/definitions/Severity" },
+        "MISATTRIBUTED":     { "$ref": "#/definitions/Severity" },
+        "QUOTE_VERIFIED":    { "$ref": "#/definitions/Severity" },
+        "QUOTE_PARAPHRASED": { "$ref": "#/definitions/Severity" },
+        "QUOTE_FABRICATED":  { "$ref": "#/definitions/Severity" },
+        "UNVERIFIED":        { "$ref": "#/definitions/Severity" }
+      },
+      "additionalProperties": false
+    },
+    "Severity": {
+      "type": "string",
+      "enum": ["CRITICAL", "MAJOR", "MINOR", "INFORMATIONAL"]
+    }
+  }
+}

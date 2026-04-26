@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "intake.json",
+  "title": "Intake",
+  "description": "Five-question intake elicited from the user before audit begins. Drives stage routing, severity weighting, and tool selection.",
+  "type": "object",
+  "required": ["document_type", "sources_available", "verification_tier", "domain", "flag_threshold"],
+  "properties": {
+    "document_type": {
+      "type": "string",
+      "enum": ["grant", "manuscript", "lit_review", "slides", "report", "memo", "other"],
+      "description": "Document type drives parsing strategy and severity weighting."
+    },
+    "document_type_other": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Free-text label; required when document_type == 'other'. Business rule enforced in validate_intake.py."
+    },
+    "sources_available": {
+      "type": "string",
+      "enum": ["uploaded_files", "bibliography_only", "none"],
+      "description": "Determines whether Stage 3 alignment can be performed and which Stage 4 routing path applies."
+    },
+    "verification_tier": {
+      "type": "string",
+      "enum": ["1", "2", "3", "custom"],
+      "description": "Tier 1 = citation existence only; Tier 2 = + alignment; Tier 3 = full audit; custom = user-specified checks_enabled."
+    },
+    "checks_enabled": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "citation_existence",
+          "claim_alignment",
+          "uncited_claims",
+          "exact_quotes",
+          "numerical_sanity",
+          "named_entities",
+          "internal_consistency"
+        ]
+      },
+      "uniqueItems": true,
+      "description": "Required when verification_tier == 'custom'. Computed from tier otherwise. Business rule enforced in validate_intake.py."
+    },
+    "domain": {
+      "type": "string",
+      "enum": ["biomedical", "general", "mixed"],
+      "description": "Selects connector priority list (PubMed-first vs Crossref-first)."
+    },
+    "flag_threshold": {
+      "type": "string",
+      "enum": ["conservative", "standard", "strict"],
+      "description": "Conservative: only verified disagreements; standard: per matrix; strict: also flag single-source weak claims."
+    }
+  },
+  "additionalProperties": false
+}

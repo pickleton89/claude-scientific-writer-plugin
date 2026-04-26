@@ -1,0 +1,26 @@
+{
+  "_comment": "Offline cache of journal start years and approximate volume-per-year for journal-volume-year impossibility checks (Stage 2). Source: Crossref ISSN registry + journal websites. Hand-curated minimal seed; v1.3 will add a live Crossref lookup fallback.",
+  "journals": {
+    "Nature Cancer":          {"issn": "2662-1347", "start_year": 2020, "vol_per_year": 1, "first_volume": 1},
+    "Nature":                 {"issn": "0028-0836", "start_year": 1869, "vol_per_year": 4, "first_volume": 1},
+    "Science":                {"issn": "0036-8075", "start_year": 1880, "vol_per_year": 1, "first_volume": 1},
+    "Cell":                   {"issn": "0092-8674", "start_year": 1974, "vol_per_year": 4, "first_volume": 1},
+    "Nature Methods":         {"issn": "1548-7091", "start_year": 2004, "vol_per_year": 1, "first_volume": 1},
+    "Nature Cell Biology":    {"issn": "1465-7392", "start_year": 1999, "vol_per_year": 1, "first_volume": 1},
+    "Nature Medicine":        {"issn": "1078-8956", "start_year": 1995, "vol_per_year": 1, "first_volume": 1},
+    "Nature Biotechnology":   {"issn": "1087-0156", "start_year": 1996, "vol_per_year": 1, "first_volume": 14},
+    "Nature Communications":  {"issn": "2041-1723", "start_year": 2010, "vol_per_year": 1, "first_volume": 1},
+    "Cancer Cell":            {"issn": "1535-6108", "start_year": 2002, "vol_per_year": 1, "first_volume": 1},
+    "Cancer Research":        {"issn": "0008-5472", "start_year": 1941, "vol_per_year": 1, "first_volume": 1},
+    "PNAS":                   {"issn": "0027-8424", "start_year": 1915, "vol_per_year": 1, "first_volume": 1},
+    "PLOS Biology":           {"issn": "1545-7885", "start_year": 2003, "vol_per_year": 1, "first_volume": 1},
+    "PLOS ONE":               {"issn": "1932-6203", "start_year": 2006, "vol_per_year": 1, "first_volume": 1},
+    "JAMA":                   {"issn": "0098-7484", "start_year": 1883, "vol_per_year": 1, "first_volume": 1},
+    "NEJM":                   {"issn": "0028-4793", "start_year": 1812, "vol_per_year": 2, "first_volume": 1},
+    "Lancet":                 {"issn": "0140-6736", "start_year": 1823, "vol_per_year": 2, "first_volume": 1},
+    "Bioinformatics":         {"issn": "1367-4803", "start_year": 1998, "vol_per_year": 1, "first_volume": 14},
+    "Genome Research":        {"issn": "1088-9051", "start_year": 1995, "vol_per_year": 1, "first_volume": 1},
+    "Molecular Cell":         {"issn": "1097-2765", "start_year": 1997, "vol_per_year": 1, "first_volume": 1},
+    "Cell Reports":           {"issn": "2211-1247", "start_year": 2012, "vol_per_year": 1, "first_volume": 1}
+  }
+}

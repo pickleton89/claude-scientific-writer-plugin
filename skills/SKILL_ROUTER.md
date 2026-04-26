@@ -295,13 +295,32 @@ User needs research/information support
 │                  ├─ Scite Index < 0.5 → flag as contested
 │                  └─ editorialNotices → flag retractions/corrections
 │
-└─ Need to ANALYZE arguments or evidence?
+├─ Need to ANALYZE arguments or evidence?
+│  │
+│  └─ YES → peer-review (use Critical Analysis Framework section)
+│            │
+│            ├─ Bias identification
+│            ├─ Evidence quality hierarchy (GRADE)
+│            └─ Logical fallacy detection
+│
+└─ Need to AUDIT an existing document for factual / citation accuracy?
    │
-   └─ YES → peer-review (use Critical Analysis Framework section)
+   └─ YES → research-accuracy-verifier
              │
-             ├─ Bias identification
-             ├─ Evidence quality hierarchy (GRADE)
-             └─ Logical fallacy detection
+             ├─ Hallucinated / fabricated citations?
+             │  └─ Stage 2: Citation existence (DOI/PMID/journal-volume sanity)
+             │
+             ├─ Real paper, wrong claim attribution?
+             │  └─ Stage 3: Claim-citation alignment (PMC fetch + Scite context)
+             │
+             ├─ Quotes that may not match source?
+             │  └─ Stage 5: Exact-string verification (verify_exact_quote.py)
+             │
+             ├─ Numbers / named entities to sanity-check?
+             │  └─ Stage 6: Numerical heuristics + entity-resolution delegate
+             │
+             └─ Internal consistency (refs ↔ inline cites, acronym drift)?
+                └─ Stage 7: reconcile_references.py + scan_acronyms.py
 ```
 
 ### Research Task Routing
@@ -323,6 +342,11 @@ User needs research/information support
 | "Check citation sentiment for references" | peer-review | Reference Reception Check (Scite MCP) |
 | "Has this finding been supported or contradicted?" | deep-research (fact-check) | Claim verification via Scite citation context |
 | "How has this work been received?" | deep-research | Evidence reception assessment via Scite tallies |
+| "Fact-check this lit review" | research-accuracy-verifier | Audit existing document for hallucinated citations / wrong claims |
+| "Verify the citations in this draft" | research-accuracy-verifier | Citation existence + claim-source alignment audit |
+| "Audit this grant for accuracy" | research-accuracy-verifier | Tier-3 audit with severity matrix; deterministic Verdict enum |
+| "Did the AI make these references up?" | research-accuracy-verifier | Hallucination check on AI-generated content |
+| "Check this draft for hallucinated references" | research-accuracy-verifier | Same — strong document-audit signals |
 
 ---
 

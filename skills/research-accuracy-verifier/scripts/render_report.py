@@ -1,0 +1,159 @@
+#!/usr/bin/env python3
+"""Render an AuditReport (validated against schemas/audit_report.json) to markdown.
+
+Pattern model: skills/peer-review/scripts/calculate_scores.py generate_report().
+Public API: generate_report(report: dict) -> str
+
+Usage:
+    uv run python render_report.py report.json
+    uv run python render_report.py report.json --out report.md
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+from typing import Any
+
+SEVERITY_ORDER = ["CRITICAL", "MAJOR", "MINOR", "INFORMATIONAL"]
+
+
+def _section_header(report: dict[str, Any]) -> str:
+    h = report["header"]
+    lines = [
+        f"# Accuracy Audit — {h['document_title']}",
+        "",
+        f"- **Document type:** {h['document_type']}",
+        f"- **Date checked:** {h['date_checked']}",
+        f"- **Verification tier:** {h['verification_tier']}",
+        f"- **Sources consulted:** {', '.join(h['sources_consulted']) or '(none recorded)'}",
+        f"- **Overall confidence:** {h['overall_confidence']}",
+        "",
+        f"> {h['confidence_justification']}",
+        "",
+    ]
+    if h.get("coverage_caveats"):
+        lines.append("**Coverage caveats:**")
+        lines.extend(f"- {c}" for c in h["coverage_caveats"])
+        lines.append("")
+    return "\n".join(lines)
+
+
+def _section_executive_summary(report: dict[str, Any]) -> str:
+    return f"## Executive Summary\n\n{report['executive_summary']}\n"
+
+
+def _finding_table(f: dict[str, Any]) -> str:
+    loc = f["location"]
+    loc_str = f"{loc['section']}, paragraph {loc['paragraph']}"
+    if loc.get("line"):
+        loc_str += f" (line {loc['line']})"
+
+    vp_lines = []
+    for i, vp in enumerate(f["verification_path"], 1):
+        vp_lines.append(f"({i}) `{vp['method']}` via {vp['tool']}: {vp['result_summary']}")
+    vp_str = " ".join(vp_lines)
+
+    ev_lines = [f"{ev['source']} — {ev['url']}" for ev in f["evidence"]]
+    ev_str = "; ".join(ev_lines)
+
+    rows = [
+        ("Location", loc_str),
+        ("Claim (verbatim)", f"\"{f['claim_verbatim']}\""),
+        ("Verification path", vp_str),
+        ("Evidence", ev_str),
+        ("Verdict", f"`{f['verdict']}`"),
+        ("Severity", f["severity"]),
+        ("Recommended action", f["recommended_action"]),
+        ("Confidence", f["confidence"]),
+    ]
+    if f.get("reason"):
+        rows.append(("Reason (UNVERIFIED)", f["reason"]))
+
+    out = ["| Field | Content |", "|---|---|"]
+    for k, v in rows:
+        # Escape pipes in cell content
+        v_safe = str(v).replace("|", "\\|")
+        out.append(f"| {k} | {v_safe} |")
+    return "\n".join(out)
+
+
+def _section_findings(report: dict[str, Any]) -> str:
+    findings = report.get("findings", [])
+    if not findings:
+        return "## Findings\n\nNo findings emitted.\n"
+
+    by_sev: dict[str, list[dict[str, Any]]] = {s: [] for s in SEVERITY_ORDER}
+    for f in findings:
+        by_sev.setdefault(f["severity"], []).append(f)
+
+    parts = ["## Findings\n"]
+    for sev in SEVERITY_ORDER:
+        items = by_sev.get(sev, [])
+        if not items:
+            continue
+        parts.append(f"### {sev} ({len(items)})\n")
+        for f in items:
+            parts.append(f"#### {f['id']} — {f['claim_type']}\n")
+            parts.append(_finding_table(f))
+            parts.append("")
+    return "\n".join(parts)
+
+
+def _section_matrix(report: dict[str, Any]) -> str:
+    rows = report.get("verification_matrix", [])
+    if not rows:
+        return "## Verification Matrix\n\n(empty)\n"
+    out = [
+        "## Verification Matrix",
+        "",
+        "| Claim ID | Stage | Verdict | Severity |",
+        "|---|---|---|---|",
+    ]
+    for r in rows:
+        out.append(f"| {r['claim_id']} | {r['stage']} | `{r['verdict']}` | {r['severity']} |")
+    out.append("")
+    return "\n".join(out)
+
+
+def _section_methodology(report: dict[str, Any]) -> str:
+    return f"## Methodology\n\n{report['methodology_note']}\n"
+
+
+def generate_report(report: dict[str, Any]) -> str:
+    """Render an AuditReport dict to markdown."""
+    return "\n".join(
+        [
+            _section_header(report),
+            _section_executive_summary(report),
+            _section_findings(report),
+            _section_matrix(report),
+            _section_methodology(report),
+        ]
+    )
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Render AuditReport JSON to markdown")
+    parser.add_argument("report_file", help="Path to audit report JSON")
+    parser.add_argument("--out", help="Write to file instead of stdout")
+    args = parser.parse_args()
+
+    p = Path(args.report_file)
+    if not p.exists():
+        print(f"Error: file not found: {args.report_file}", file=sys.stderr)
+        sys.exit(1)
+
+    report = json.loads(p.read_text())
+    md = generate_report(report)
+    if args.out:
+        Path(args.out).write_text(md, encoding="utf-8")
+        print(f"Wrote {args.out}")
+    else:
+        print(md)
+
+
+if __name__ == "__main__":
+    main()

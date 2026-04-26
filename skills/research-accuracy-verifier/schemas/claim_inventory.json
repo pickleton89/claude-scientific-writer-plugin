@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "claim_inventory.json",
+  "title": "ClaimInventory",
+  "description": "Stage-1 output: full inventory of claims extracted from the document. Consumed by Stages 2-7.",
+  "type": "object",
+  "required": ["items"],
+  "properties": {
+    "items": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/ClaimInventoryItem" },
+      "description": "Every claim in the document. Stage 8 verifies that every item appears in either findings[] or verification_matrix[]."
+    }
+  },
+  "definitions": {
+    "ClaimInventoryItem": {
+      "type": "object",
+      "required": ["id", "location", "claim_text", "claim_type"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable identifier (UUID or 'C001' sequential)."
+        },
+        "location": {
+          "type": "object",
+          "required": ["section", "paragraph"],
+          "properties": {
+            "section": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Section heading or canonical section name (e.g., 'Significance', 'Results')."
+            },
+            "paragraph": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "line": {
+              "type": ["integer", "null"],
+              "minimum": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "claim_text": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Verbatim from document. Quoted exactly so the user can locate the passage."
+        },
+        "claim_type": {
+          "type": "string",
+          "enum": [
+            "citation_bearing",
+            "direct_quote",
+            "numerical",
+            "named_entity",
+            "mechanistic",
+            "attribution",
+            "uncited"
+          ]
+        },
+        "citations": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/CitationRef" },
+          "description": "Inline citations attached to this claim. Empty for uncited / direct_quote / numerical / named_entity claim_types."
+        }
+      },
+      "additionalProperties": false
+    },
+    "CitationRef": {
+      "type": "object",
+      "required": ["key", "raw_text"],
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Citation key as it appears inline ('Smith2019', '[12]', '(Smith et al., 2019)')."
+        },
+        "doi": {
+          "type": ["string", "null"]
+        },
+        "pmid": {
+          "type": ["string", "null"]
+        },
+        "raw_text": {
+          "type": "string",
+          "description": "Bibliography entry text or inline citation text (whichever was provided)."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

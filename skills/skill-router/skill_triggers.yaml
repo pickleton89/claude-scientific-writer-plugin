@@ -637,6 +637,92 @@ skills:
       - scoping review
       - narrative review
 
+  research-accuracy-verifier:
+    description: Verify factual, citation, quote, and numerical accuracy of LLM-generated or AI-assisted research documents — produces a deterministic audit with canonical Verdict enum and Verdict×DocumentType severity matrix
+    category: research
+    keywords:
+      - fact-check
+      - fact check
+      - factcheck
+      - verify citations
+      - verify the citations
+      - check citations
+      - audit
+      - audit lit review
+      - audit grant
+      - audit manuscript
+      - accuracy check
+      - accuracy audit
+      - check for accuracy
+      - hallucinated
+      - hallucinated citation
+      - hallucinated reference
+      - made up
+      - made up citation
+      - made it up
+      - did the AI make this up
+      - did claude make this up
+      - did chatgpt make this up
+      - cross-reference
+      - validate citations
+      - check the references
+      - verify quotes
+      - check the quotes
+      - quote verification
+      - misattributed
+      - misattributed quote
+      - real paper wrong claim
+      - source supports
+      - source does not support
+      - claim alignment
+      - citation alignment
+      - misalignment
+    triggers:
+      - "fact[-\\s]?check"
+      - "verify.*(?:the|all|these)?.*citations?"
+      - "audit.*(?:lit(?:erature)?|grant|manuscript|review|paper|draft)"
+      - "check.*(?:this|that|the).*(?:for accuracy|accuracy)"
+      - "did.*(?:ai|claude|chatgpt|gpt|model|llm).*make.*this.*up"
+      - "see if.*hallucinated"
+      - "any.*(?:hallucinated|fabricated|made.up).*(?:citations?|references?|quotes?)"
+      - "(?:hallucinated|fabricated|fake).*(?:citation|reference|quote|paper)"
+      - "verify.*(?:quotes?|attribution)"
+      - "cross[-\\s]?reference.*(?:claims?|citations?|sources?)"
+      - "check.*(?:sources?|references?).*(?:exist|real|valid)"
+      - "(?:claims?|citations?).*aligned?.*(?:with|to).*sources?"
+      - "source.*(?:supports?|does\\s+not\\s+support).*claim"
+    output_formats: [md, html]
+    negative_keywords:
+      - edit for style
+      - edit for clarity
+      - improve writing
+      - rewrite
+      - summarize this paper
+      - paper summary
+      - executive summary
+      - novelty assessment
+      - significance assessment
+      - peer review
+      - reviewer comments
+      - referee report
+      - methodology assessment
+      - statistical analysis
+      - reporting guidelines
+      - consort
+      - strobe
+      - prisma
+      - target validation
+      - druggability
+      - find papers
+      - search papers
+      - literature review
+      - systematic review
+      - claim about              # "fact-check this claim about X" → deep-research (single-claim research)
+      - this claim about
+      - one claim
+      - single claim
+    priority: 1  # Tiebreaker over peer-review when "verify" or "audit" appears with AI-content signals
+
   research-paper-summarizer:
     description: Structured academic summarization of a single research paper (PDF, DOI, PubMed) with quantitative preservation — not executive/stakeholder summaries
     category: research
@@ -1144,6 +1230,12 @@ routing_config:
         no_skill: executive-summary
 
     research:
+      - question: "Do you have an existing document and want to verify its accuracy / check for hallucinated citations?"
+        yes_skill: research-accuracy-verifier
+        no_followup: "Do you want a peer review of methodology, statistics, or reporting standards?"
+      - question: "Do you want a peer review of methodology, statistics, or reporting standards?"
+        yes_skill: peer-review
+        no_followup: "Do you need research, literature review, or hypothesis generation?"
       - question: "Do you need research, literature review, or hypothesis generation?"
         yes_skill: deep-research
         no_followup: "Is this about managing citations/references?"

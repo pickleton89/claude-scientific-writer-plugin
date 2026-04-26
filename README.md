@@ -2,11 +2,11 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A comprehensive Claude Code plugin with 26 specialized skills for end-to-end scientific research workflows — from biomedical target intelligence and literature analysis to publication-ready documents, presentations, and figures.
+A comprehensive Claude Code plugin with 30 specialized skills for end-to-end scientific research workflows — from biomedical target intelligence and literature analysis to accuracy verification, publication-ready documents, presentations, and figures.
 
 ## Background
 
-Built on [K-Dense-AI/claude-scientific-writer](https://github.com/K-Dense-AI/claude-scientific-writer), this project has diverged significantly to focus on biomedical research intelligence. Key additions include a 4-skill bio-intelligence pipeline, integration with 2,400+ scientific database tools via ToolUniverse, a deterministic skill routing engine with 169 test cases, and formal T1-T4 evidence grading across all research outputs.
+Built on [K-Dense-AI/claude-scientific-writer](https://github.com/K-Dense-AI/claude-scientific-writer), this project has diverged significantly to focus on biomedical research intelligence. Key additions include a 4-skill bio-intelligence pipeline, integration with 2,400+ scientific database tools via ToolUniverse, a deterministic skill routing engine with 178 test cases, formal T1-T4 evidence grading across all research outputs, and a deterministic accuracy-verification audit pipeline (canonical Verdict enum + 70-cell severity matrix).
 
 ## Features
 
@@ -79,13 +79,14 @@ claude --plugin-dir /path/to/claude-scientific-writer-plugin
 | `markdown-to-pdf` | Branded PDF generation |
 | `document-skills` | Adapter routing to anthropic-agent-skills for DOCX, PDF, PPTX, XLSX |
 
-### Research Workflow (4 skills)
+### Research Workflow (5 skills)
 | Skill | Description |
 |-------|-------------|
 | `deep-research` | Multi-mode research pipeline — literature review, systematic review, hypothesis generation, fact-checking (8 modes, 7 agents) |
 | `citation-management` | BibTeX citations and bibliography management |
 | `peer-review` | Manuscript review with database claim verification |
 | `research-paper-summarizer` | Multi-format summaries with entity enrichment |
+| `research-accuracy-verifier` | Audits AI-generated research documents for hallucinated citations, misattributed claims, fabricated quotes, and numerical errors. Canonical 10-value Verdict enum, 70-cell Verdict×DocumentType severity matrix, 5 hard predicates enforced by `validate_finding.py`, and Stages 5/7 promoted from prose to deterministic Python (`verify_exact_quote.py`, `reconcile_references.py`, `scan_acronyms.py`). |
 
 ### Analysis & Code (3 skills)
 | Skill | Description |
@@ -113,7 +114,7 @@ claude --plugin-dir /path/to/claude-scientific-writer-plugin
 | `drug-intelligence` | 10-section drug dossier (chemistry, ADMET, safety, PGx, regulatory) |
 | `target-validation` | Quantitative 0-100 GO/NO-GO scoring with T1-T4 evidence grading |
 
-> **Skill count**: 26 unique skills (29 routing targets with `document-skills` expanding to 4 sub-skills). 6 skills are enhanced with ToolUniverse data feeds: scientific-schematics, plotting-libraries, peer-review, research-paper-summarizer, scientific-writing, and statistical-analysis.
+> **Skill count**: 27 unique skills (30 routing targets with `document-skills` expanding to 4 sub-skills). 6 skills are enhanced with ToolUniverse data feeds: scientific-schematics, plotting-libraries, peer-review, research-paper-summarizer, scientific-writing, and statistical-analysis.
 
 ## Bio-Intelligence Pipeline
 
@@ -177,7 +178,7 @@ For the full integration architecture, see [`docs/TOOLUNIVERSE_INTEGRATION_DESIG
 
 The skill router uses deterministic keyword + regex matching to select skills without LLM overhead for clear-cut tasks.
 
-- **146 canonical test cases** across 29 routing targets with 135 passing (11 pre-existing edge cases)
+- **178 canonical test cases** across 30 routing targets, all passing (100%)
 - **10 decision trees and 8 multi-skill workflows** covering single-skill, multi-skill, and bio-pipeline routing
 - **Confidence scoring**: 0.7+ routes directly, 0.3-0.69 routes with clarification, <0.3 triggers disambiguation
 - **Bio routing**: Biological research queries route through a disambiguation tree (entity-resolution → target-intelligence / drug-intelligence → target-validation)

@@ -528,3 +528,60 @@ database_versions:
       - tool: EnsemblArchive_get_id_history
         notes: "Returns Ensembl releases where an ID appears; useful for version tracking"
     fallback: []
+
+# ─── ACCURACY VERIFICATION ───────────────────────────────────────────────────
+# Capability keys consumed by skills/research-accuracy-verifier/ (v1.2.0).
+# Live MCP wiring lands in v1.3; v1.2 declares the contract so capability keys
+# are stable and downstream code can target them.
+
+verification:
+  citation_existence:
+    description: "Verify a citation exists; resolve DOI/PMID/PMCID; check journal-volume-year impossibility"
+    primary:
+      - tool: pubmed_search
+        notes: "PubMed MCP — biomedical primary; returns abstract + metadata"
+    fallback:
+      - tool: crossref_lookup
+        notes: "Crossref REST via WebFetch — DOI resolution + journal ISSN start year for volume-year sanity"
+      - tool: openalex_search
+        notes: "OpenAlex API — broad coverage when topic crosses disciplines"
+    local:
+      - tool: resolve_citation.py
+        notes: "skills/research-accuracy-verifier/scripts/ — offline shape + plausibility checks before live lookup"
+
+  claim_alignment:
+    description: "Verify cited source actually supports the claim attributed to it (Stage 3)"
+    primary:
+      - tool: pmc_fetch
+        notes: "PMC open-access full text retrieval via WebFetch"
+    fallback:
+      - tool: scite_query
+        notes: "Scite MCP — citation context (supporting / disputing / mentioning)"
+      - tool: pubmed_abstract
+        notes: "Abstract-only check when full text unavailable; mark UNVERIFIED for full-text-required claims"
+
+  exact_quote:
+    description: "Exact-string + whitespace-normalized match of a quoted passage in source text (Stage 5)"
+    local:
+      - tool: verify_exact_quote.py
+        notes: "skills/research-accuracy-verifier/scripts/ — deterministic; returns QUOTE_VERIFIED|QUOTE_PARAPHRASED|QUOTE_FABRICATED"
+    fallback:
+      - tool: web_search
+        notes: "Quoted-phrase web search when no source provided"
+
+  entity_sanity:
+    description: "Stage 6 named-entity sanity (gene/protein/drug/cell-line/strain) — delegates to entity-resolution"
+    delegate:
+      - skill: entity-resolution
+        notes: "Canonical resolver; HGNC/UniProt/Cellosaurus/Jackson via MCP tools"
+    local:
+      - tool: resolve_entity.py
+        notes: "skills/research-accuracy-verifier/scripts/ — offline shape + known-collision check before delegation"
+
+  internal_consistency:
+    description: "Stage 7 internal consistency (refs ↔ inline citations, acronym definition order)"
+    local:
+      - tool: reconcile_references.py
+        notes: "skills/research-accuracy-verifier/scripts/ — bibliography ↔ inline cite set diff"
+      - tool: scan_acronyms.py
+        notes: "skills/research-accuracy-verifier/scripts/ — undefined-first-use + expansion drift"

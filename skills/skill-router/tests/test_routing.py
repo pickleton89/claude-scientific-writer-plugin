@@ -165,6 +165,7 @@ def run_all_tests(verbose: bool = True) -> tuple[int, int, dict[str, list[TestRe
         "deep_research_cases",
         "citation_management_cases",
         "peer_review_cases",
+        "research_accuracy_verifier_cases",
         "statistical_analysis_cases",
         "reproducible_research_cases",
         "code_documentation_cases",

@@ -1,0 +1,88 @@
+{
+  "matrix": {
+    "grant": {
+      "VERIFIED":          "INFORMATIONAL",
+      "METADATA_MISMATCH": "MAJOR",
+      "UNSUPPORTED":       "CRITICAL",
+      "OVERGENERALIZED":   "MAJOR",
+      "CONTRADICTED":      "CRITICAL",
+      "MISATTRIBUTED":     "CRITICAL",
+      "QUOTE_VERIFIED":    "INFORMATIONAL",
+      "QUOTE_PARAPHRASED": "MAJOR",
+      "QUOTE_FABRICATED":  "CRITICAL",
+      "UNVERIFIED":        "INFORMATIONAL"
+    },
+    "manuscript": {
+      "VERIFIED":          "INFORMATIONAL",
+      "METADATA_MISMATCH": "MAJOR",
+      "UNSUPPORTED":       "CRITICAL",
+      "OVERGENERALIZED":   "MAJOR",
+      "CONTRADICTED":      "CRITICAL",
+      "MISATTRIBUTED":     "CRITICAL",
+      "QUOTE_VERIFIED":    "INFORMATIONAL",
+      "QUOTE_PARAPHRASED": "MAJOR",
+      "QUOTE_FABRICATED":  "CRITICAL",
+      "UNVERIFIED":        "INFORMATIONAL"
+    },
+    "lit_review": {
+      "VERIFIED":          "INFORMATIONAL",
+      "METADATA_MISMATCH": "MAJOR",
+      "UNSUPPORTED":       "CRITICAL",
+      "OVERGENERALIZED":   "MAJOR",
+      "CONTRADICTED":      "CRITICAL",
+      "MISATTRIBUTED":     "CRITICAL",
+      "QUOTE_VERIFIED":    "INFORMATIONAL",
+      "QUOTE_PARAPHRASED": "MAJOR",
+      "QUOTE_FABRICATED":  "CRITICAL",
+      "UNVERIFIED":        "INFORMATIONAL"
+    },
+    "slides": {
+      "VERIFIED":          "INFORMATIONAL",
+      "METADATA_MISMATCH": "MINOR",
+      "UNSUPPORTED":       "MAJOR",
+      "OVERGENERALIZED":   "MAJOR",
+      "CONTRADICTED":      "CRITICAL",
+      "MISATTRIBUTED":     "MAJOR",
+      "QUOTE_VERIFIED":    "INFORMATIONAL",
+      "QUOTE_PARAPHRASED": "MINOR",
+      "QUOTE_FABRICATED":  "MAJOR",
+      "UNVERIFIED":        "INFORMATIONAL"
+    },
+    "report": {
+      "VERIFIED":          "INFORMATIONAL",
+      "METADATA_MISMATCH": "MINOR",
+      "UNSUPPORTED":       "MAJOR",
+      "OVERGENERALIZED":   "MINOR",
+      "CONTRADICTED":      "MAJOR",
+      "MISATTRIBUTED":     "MAJOR",
+      "QUOTE_VERIFIED":    "INFORMATIONAL",
+      "QUOTE_PARAPHRASED": "MINOR",
+      "QUOTE_FABRICATED":  "MAJOR",
+      "UNVERIFIED":        "INFORMATIONAL"
+    },
+    "memo": {
+      "VERIFIED":          "INFORMATIONAL",
+      "METADATA_MISMATCH": "MINOR",
+      "UNSUPPORTED":       "MINOR",
+      "OVERGENERALIZED":   "MINOR",
+      "CONTRADICTED":      "MAJOR",
+      "MISATTRIBUTED":     "MINOR",
+      "QUOTE_VERIFIED":    "INFORMATIONAL",
+      "QUOTE_PARAPHRASED": "MINOR",
+      "QUOTE_FABRICATED":  "MAJOR",
+      "UNVERIFIED":        "INFORMATIONAL"
+    },
+    "other": {
+      "VERIFIED":          "INFORMATIONAL",
+      "METADATA_MISMATCH": "MINOR",
+      "UNSUPPORTED":       "MAJOR",
+      "OVERGENERALIZED":   "MAJOR",
+      "CONTRADICTED":      "CRITICAL",
+      "MISATTRIBUTED":     "MAJOR",
+      "QUOTE_VERIFIED":    "INFORMATIONAL",
+      "QUOTE_PARAPHRASED": "MINOR",
+      "QUOTE_FABRICATED":  "CRITICAL",
+      "UNVERIFIED":        "INFORMATIONAL"
+    }
+  }
+}

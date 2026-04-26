@@ -20,6 +20,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added — brand-interface README
 - **`skills/brand-interface/README.md`**: New disambiguation doc clarifying that `brand-interface/` is support tooling (schemas, type stubs, 173 tests, validators), not a callable skill paralleling `oligon-brand/`; documents validation commands using `uv run` per project standard
 
+## [1.2.0] - 2026-04-26
+
+### Added — research-accuracy-verifier skill
+- **New skill** `skills/research-accuracy-verifier/` (29 → 30 skills): verifies factual, citation, quote, and numerical accuracy of LLM-generated or AI-assisted research documents (lit reviews, grants, manuscripts, slides). Eight-stage pipeline (parse → citation existence → claim alignment → uncited search → exact-quote → numerical / entity sanity → internal consistency → synthesis) with deterministic verdict and severity assignment.
+- **Locked contracts** (`CONTRACTS.md`): single 10-value canonical Verdict enum (`VERIFIED | METADATA_MISMATCH | UNSUPPORTED | OVERGENERALIZED | CONTRADICTED | MISATTRIBUTED | QUOTE_VERIFIED | QUOTE_PARAPHRASED | QUOTE_FABRICATED | UNVERIFIED`) replacing four overlapping per-stage vocabularies; 10×7 Verdict×DocumentType → Severity matrix (70 cells) computed not assigned; intake / ClaimInventory / Finding / AuditReport schemas all locked at draft-07.
+- **JSON schemas** (`schemas/`): `intake.json`, `claim_inventory.json`, `finding.json`, `audit_report.json`, `severity_matrix.json` + machine-readable `severity_matrix.values.json` data file. All Draft-07 conformant.
+- **Scripts** (`scripts/`, 10 modules, all `uv run` + argparse + importable class):
+  - `validate_intake.py` / `validate_finding.py` — two-stage validators (schema then business rules; continue past schema failure per the post-Apr-22 SlidePlanValidator fix pattern). `validate_finding.py` enforces 5 hard predicates P1–P5 from CONTRACTS.md (UNVERIFIED never CRITICAL; CRITICAL requires ≥2 verification paths; ≥1 evidence with resolvable URL; QUOTE verdicts only on direct_quote claim type; severity computed via matrix lookup).
+  - `verify_exact_quote.py` (Stage 5 promoted from prose to code) — exact + whitespace + unicode-normalized match with paraphrase overlap heuristic.
+  - `reconcile_references.py` (Stage 7 promoted) — bibliography ↔ inline citation set diff; orphan refs / orphan inline / author-year drift.
+  - `scan_acronyms.py` (Stage 7 promoted) — undefined-on-first-use + expansion drift; matches both `Expansion (ACRONYM)` and `ACRONYM (Expansion)` patterns.
+  - `check_journal_volume.py` (Stage 2 — promoted from prose to code) — offline journal-volume-year impossibility checker backed by `references/known_journals.json` (21-journal seed cache with start year, vol/year, first volume); makes the worked CRITICAL example's evidence trail honest. Live Crossref ISSN fallback deferred to v1.3.
+  - `output_contract.py` — Stage-1 freeze + Stage-8 validate (deep-research-style frozen contract pattern); document SHA-256 + expected-stages enforcement; coverage-caveats required when UNVERIFIED with paywall/timeout reasons.
+  - `render_report.py` — `generate_report(audit_report_dict) → str` (peer-review `calculate_scores.py` pattern); markdown rendering grouped by severity.
+  - `resolve_citation.py` / `resolve_entity.py` — thin delegation wrappers; resolve_citation does offline DOI/PMID shape checks before delegating to `verification.citation_existence`; resolve_entity does collision-risk check before delegating to `entity-resolution` skill via `verification.entity_sanity`.
+- **Schemas self-contained**: `audit_report.json` inlines the Finding schema in a local `definitions` block (no external `$ref` resolver needed); `severity_matrix.values.json` validates against `severity_matrix.json` (70-cell coverage verified).
+- **Tests** (`tests/`, 52 tests, all passing): `test_validation.py` (24 tests covering all P1–P5 + 2-stage continue-on-failure pattern + 70-cell matrix coverage), `test_quote_verifier.py` (7 tests), `test_reconcile_references.py` + acronym tests (10 tests), `test_render_report.py` (6 tests + schema validation, no `$ref` workaround), `test_check_journal_volume.py` (10 tests including the canonical *Nature Cancer* vol-5-in-2019 hallucination).
+- **Wire-in** (additive, no breaking changes elsewhere):
+  - `skill-router/skill_triggers.yaml`: new `research-accuracy-verifier` block (45 keywords, 13 triggers, 28 negative_keywords); priority 1 to disambiguate from peer-review on overlapping "verify" / "audit" terms; "claim about" added as negative keyword to keep single-claim research routing to deep-research.
+  - `skill-router/skill_triggers.yaml`: research decision tree extended — verification branch added before peer-review branch.
+  - `skill-router/tests/canonical_routes.yaml`: 4 positive routing cases + 1 negative regression ("Summarize this paper" MUST NOT route to research-accuracy-verifier). **178/178 routing tests passing** (up from 173/173). README test-count line refreshed to match.
+  - `skill-router/tests/test_routing.py`: `research_accuracy_verifier_cases` added to `standard_categories`.
+  - `SKILL_ROUTER.md`: research-workflow decision tree extended with verification branch; quick-reference matrix gained 5 new rows.
+  - `shared/tool-lookup.yaml`: new `verification:` section with 5 capability keys (`citation_existence`, `claim_alignment`, `exact_quote`, `entity_sanity`, `internal_consistency`); live MCP wiring deferred to v1.3 — capability keys declared so downstream code targets stable contracts.
+- **Determinism gains** vs. prose-only audit pattern: single canonical verdict vocabulary (was 4 per-stage variants); severity computed not assigned (was implicit); 5 hard predicates programmatically enforced (was prose principles); Stage 5 (exact-quote) and Stage 7 (ref-reconcile, acronym scan) moved from LLM judgment to deterministic Python; full report rendered from JSON (was free-form markdown).
+
+### Notes
+- `.claude-plugin/plugin.json`: bumped 1.1.0 → 1.2.0 (correct semver minor bump from master); description updated 29 → 30 skills with "accuracy verification" added; new keywords `fact-checking`, `accuracy-verification`.
+- Live MCP wiring for Stages 4 (uncited claim search) and 5 (exact-quote web search) deferred to v1.3; capability keys are stable.
+- Oligon-brand HTML rendering and annotated-PDF output deferred to v1.3 (markdown only in v1.2).
+
 ## [1.1.0] - 2026-04-15
 
 ### Added — Research Ideation Integration into Deep-Research

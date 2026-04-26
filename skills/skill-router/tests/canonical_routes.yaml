@@ -543,6 +543,34 @@ peer_review_cases:
     notes: "Contested findings flag from Scite tallies"
 
 # ============================================================
+# RESEARCH WORKFLOW - research-accuracy-verifier
+# ============================================================
+
+research_accuracy_verifier_cases:
+  - request: "Fact-check this lit review for hallucinated citations"
+    expected_skill: research-accuracy-verifier
+    min_confidence: 0.6
+    category: research
+    notes: "Multiple positive triggers: fact-check + lit review + hallucinated"
+
+  - request: "Verify the citations in this AI-generated draft"
+    expected_skill: research-accuracy-verifier
+    min_confidence: 0.5
+    category: research
+
+  - request: "Audit this grant proposal for accuracy"
+    expected_skill: research-accuracy-verifier
+    min_confidence: 0.5
+    category: research
+    notes: "audit + grant + accuracy"
+
+  - request: "Check this draft for hallucinated references"
+    expected_skill: research-accuracy-verifier
+    min_confidence: 0.5
+    category: research
+    notes: "draft + hallucinated references — strong document-audit signals"
+
+# ============================================================
 # ANALYSIS - statistical-analysis
 # ============================================================
 
@@ -952,6 +980,12 @@ negative_cases:
     not_expected: citation-management
     min_confidence: 0.2
     notes: "Contrasting citations goes to peer-review, NOT citation-management (trigger-only match, low conf is expected)"
+
+  - request: "Summarize this paper for me"
+    expected_skill: research-paper-summarizer
+    not_expected: research-accuracy-verifier
+    min_confidence: 0.3
+    notes: "Plain summarization MUST NOT trigger accuracy-verifier (regression guard for the new skill)"
 
 # ============================================================
 # RESEARCH WORKFLOW - research-paper-summarizer
