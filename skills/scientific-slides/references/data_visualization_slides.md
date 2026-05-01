@@ -124,6 +124,8 @@ For slides specifically, this question matters even more than for articles — a
 
 ## Chart Types and When to Use Them
 
+> **Companion catalog:** For a flat by-chart-type lookup of 35 chart types (with use cases, strengths, weaknesses, and data-shape requirements), see `../../shared/references/chart_types_catalog.md`. The entries below cover **presentation-specific optimisation** (font sizes, line widths, simplification, progressive disclosure) that the catalog does not address.
+
 ### Bar Charts
 
 **Best For**:

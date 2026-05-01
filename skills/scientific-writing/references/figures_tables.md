@@ -171,6 +171,8 @@ Result: Same data, 50% less visual clutter, faster comprehension
 
 ## Figure Types and When to Use Them
 
+> **Companion catalog:** For a flat by-chart-type lookup of 35 chart types (with use cases, strengths, weaknesses, and data-shape requirements), see `../../shared/references/chart_types_catalog.md`. The entries below cover **scientific-writing-specific design rules** (caption structure, error-bar conventions, statistical annotation) in greater depth than the catalog provides.
+
 ### Bar Graphs
 
 **Best for:**

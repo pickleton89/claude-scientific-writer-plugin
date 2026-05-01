@@ -6,6 +6,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Chart Types Catalog (35-chart flat lookup)
+- **`skills/shared/references/chart_types_catalog.md`**: New cross-skill flat lookup of 35 chart types grouped by primary purpose (Comparison / Trends / Distribution / Relationship / Composition / Flow / Geospatial / Reference). Each entry has consistent shape: use, when-to / when-not-to, strengths, weaknesses, mechanism, data types, cross-refs to deeper treatments. Includes explicit conflict-resolution policy that defers to scholarly biomedical guidance — Weissgerber 2015 (bars/continuous), Fujii 2023 (bars/risk-ratios), Cleveland-McGill 1984 (pie >3 categories), Crameri 2020 (rainbow palettes for sequential data).
+- **Cross-link callouts** added to five skills as companion-lookup pointers: `plotting-libraries/SKILL.md` Reference Guides list, `plotting-libraries/references/plot_selection_guide.md` (bumped 1.0.0 → 1.1.0), `scientific-writing/references/figures_tables.md` chart-types section, `scientific-slides/references/data_visualization_slides.md` chart-types section, `research-posters/SKILL.md` Reference Documents table. Existing intent-driven decision tree in `plot_selection_guide.md` remains the canonical entry point when starting from a research question; the catalog is the entry point when the chart family is already known.
+
+### Added — Fujii (2026) figure-design framework integration
+- **5 new shared cross-skill references** under `skills/shared/references/`:
+  - `figure_vs_table_decision.md` — Q0 decision aid (figure / table / both / text) per Fujii 2026 §"Ask whether you really need a figure"; Midway 2020; Tufte 2001
+  - `communication_context_matrix.md` — Audience × time × interaction → figure complexity (Fujii 2026; Shneiderman 1996; Heer & Bostock 2010)
+  - `pre_submission_checklist.md` — 15-point unified quality gate; Q0 cross-links figure_vs_table_decision; #13 = Weissgerber bar-chart anti-pattern; #14 = Fujii risk-ratio recipe
+  - `iconography-licensing.md` — Icon-library licensing summary (BioRender, NIH BIOART, SciDraw, Servier, Noun Project); re-verify at submission
+- **`skills/venue-templates/references/figure_specs.md`** — Cross-cutting font embedding, color spaces, graphical-abstract specs, alt-text formula
+- **`skills/plotting-libraries/references/plot_selection_guide.md`** — Intent-driven decision tree (Description / Difference / Association); Weissgerber 2015 + Fujii 2023 anti-pattern recipes with Python and ggplot2 examples; direct-labelling guidance
+- **`skills/plotting-libraries/scripts/plotting_params.py`** (+399 lines) — Intent classifier, plot/palette recommender, journal figure spec dataclass, mm-to-inches helpers, named palette catalog (Oligon, Okabe-Ito, viridis, Crameri, volcano, heatmap_diverging)
+- **`skills/plotting-libraries/scripts/validate_data.py`** (+195 lines) — Anti-pattern detectors: `check_continuous_as_bars` (Weissgerber 2015), `check_riskratio_as_bars` (Fujii 2023); validators for volcano and heatmap data shapes
+- **`skills/plotting-libraries/scripts/tests/test_plot_selector.py`** — Test coverage for intent classification
+
+### Changed — visual-design deprecation completed across visual skills
+- **`extends: visual-design`** removed from `generate-image`, `paperbanana`, `plotting-libraries`, `research-posters`, `scientific-schematics`, `scientific-slides` skill frontmatter; body callouts to `visual-design/` cleaned up
+- **Cross-skill design foundation** now lives in `oligon-brand/SKILL.md <design_foundation>` block (Cleveland-McGill 1984, Crameri 2020, Wilke 2019, Fujii 2026, Weissgerber 2015 citations) and the new `skills/shared/references/` directory
+- **`oligon-brand/SKILL.md`** — Added `<design_foundation>` cross-format cognitive citations block; pointers to voice/copy and medium playbooks
+- **`paperbanana/SKILL.md`**, **`scientific-schematics/SKILL.md`**, **`scientific-slides/SKILL.md`**, **`scientific-writing/SKILL.md`** — Cross-references re-pointed at oligon-brand foundation + shared decision aids
+
+### Fixed
+- **`plotting_params.py`** numpy dtype type-inference error in continuous-data detection
+
 ## [1.3.0] - 2026-04-26
 
 ### Changed — Visual/Presentation Skills Consolidation

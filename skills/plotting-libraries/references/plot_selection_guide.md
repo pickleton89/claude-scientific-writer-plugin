@@ -1,9 +1,11 @@
 # Plot Selection Guide — Intent-Driven Chart Choice
 
 > Decision tree for choosing the right plot based on figure intent (Description / Difference / Association) and data structure. Encodes Weissgerber 2015 bar-chart anti-pattern, Fujii 2023 risk-ratio recipe, and direct-labelling guidance from the cognitive-foundation citations.
-> Version: 1.0.0
+> Version: 1.1.0
 >
 > Programmatic counterpart: `../scripts/plotting_params.py::classify_figure_intent`, `recommend_chart`, `recommend_palette`.
+>
+> **Companion lookup:** Once you know which chart family you want, see `../../shared/references/chart_types_catalog.md` for a flat by-chart-type catalog of 35 chart types with strengths, weaknesses, and data-shape requirements. Use *this* guide when starting from a research question; use the *catalog* when you already know the chart family.
 
 ---
 

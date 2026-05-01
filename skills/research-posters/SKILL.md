@@ -631,6 +631,7 @@ See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 | `../shared/references/pre_submission_checklist.md` | 15-point unified quality gate (also applies to posters) |
 | `../shared/references/communication_context_matrix.md` | Audience × time × interaction → poster complexity (Fujii 2026); poster row covers 3-5 minute viewer scenarios |
 | `../shared/references/figure_vs_table_decision.md` | Decision aid for figure vs table on a poster (Fujii 2026; Midway 2020) |
+| `../shared/references/chart_types_catalog.md` | Flat by-chart-type catalog of 35 chart types — use when planning a poster's data figures (companion to `plot_selection_guide.md`) |
 | `../oligon-brand/SKILL.md` `<design_foundation>` | Cognitive-foundation citations (Cleveland-McGill, Wagemans Gestalt grouping for direct labelling on posters, Crameri, Fujii 2026) |
 
 ## Templates
