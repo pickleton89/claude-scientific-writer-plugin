@@ -1,6 +1,6 @@
 ---
 name: research-posters
-version: 1.0.0
+version: 1.0.1
 extends: visual-design
 description: "Design research posters from scratch in LaTeX or PowerPoint with custom layout, brand-compliant styling, and print-ready export. Use when the user wants to create a poster manually. Do NOT use when auto-generating a poster from an existing paper PDF — use paper-2-web (Paper2Poster)."
 when_to_use: "Conference posters, academic poster sessions, thesis defense posters, research symposia — designed from scratch, not converted from an existing paper"
@@ -9,7 +9,7 @@ allowed-tools: [Read, Write, Edit, Bash, Glob]
 
 # Research Posters
 
-> **Design Foundation**: This skill extends [`visual-design`](../visual-design/SKILL.md) for typography, color, composition, and accessibility standards.
+> **Design Foundation**: This skill extends [`visual-design`](../visual-design/SKILL.md) for typography, color, composition, and accessibility standards. Cognitive-foundation citations (Cleveland-McGill 1984, Wagemans 2012 Gestalt grouping for direct labelling on posters, Crameri 2020, Fujii 2026 communication context) and cross-skill quality gates also live in [`oligon-brand`](../oligon-brand/SKILL.md) `<design_foundation>` and [`shared/references/`](../shared/references/) (`pre_submission_checklist.md`, `communication_context_matrix.md`, `figure_vs_table_decision.md`).
 
 <overview>
 Create publication-quality research posters in either LaTeX (beamerposter, tikzposter, baposter) or PowerPoint format. This skill provides unified workflows for poster design with format-specific implementation paths. Posters are primarily visual media—text-heavy posters fail to communicate effectively.
@@ -587,6 +587,17 @@ Accessibility:
 - Use alignment tools religiously
 - Create consistent section templates
 
+### Figure Legends Far From the Data on a Poster
+
+**Anti-pattern:**
+- Placing a colour-coded legend in a corner of a poster figure with viewers expected to shift their eyes back and forth between legend and data marks at 3-foot reading distance.
+- Relying on small-font legends that are unreadable at 6-foot scanning distance.
+
+**Solution:**
+- **Direct-label** every line, group, and key data element next to the data it describes. The legend, if present, becomes a redundant aid not the primary key.
+- Use the figure caption to introduce variables (`Treatment shown in blue, control in grey`), but place the colour-name strings *adjacent to* the visual elements they label, not in a separate legend block.
+- For posters specifically: small distant legends are illegible at scanning distance and force readers to abandon the figure (Fujii 2026 §"Reduce cognitive load"; Wagemans 2012 Gestalt grouping).
+
 </anti_patterns>
 
 <cross_references>
@@ -616,6 +627,11 @@ See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 | `{baseDir}/references/poster_layout_design.md` | Layout principles, grid systems, visual flow |
 | `{baseDir}/references/latex_packages.md` | LaTeX package comparison (beamerposter, tikzposter, baposter) |
 | `{baseDir}/references/pptx_workflows.md` | PowerPoint templates and workflows |
+| `../shared/references/iconography-licensing.md` | Icon-library licensing (BioRender, NIH BIOART, SciDraw, Servier, Noun Project) — re-verify at submission |
+| `../shared/references/pre_submission_checklist.md` | 15-point unified quality gate (also applies to posters) |
+| `../shared/references/communication_context_matrix.md` | Audience × time × interaction → poster complexity (Fujii 2026); poster row covers 3-5 minute viewer scenarios |
+| `../shared/references/figure_vs_table_decision.md` | Decision aid for figure vs table on a poster (Fujii 2026; Midway 2020) |
+| `../oligon-brand/SKILL.md` `<design_foundation>` | Cognitive-foundation citations (Cleveland-McGill, Wagemans Gestalt grouping for direct labelling on posters, Crameri, Fujii 2026) |
 
 ## Templates
 

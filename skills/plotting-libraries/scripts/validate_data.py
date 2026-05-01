@@ -8,10 +8,13 @@ Usage:
     from scripts.validate_data import (
         validate_volcano_data,
         validate_heatmap_data,
+        check_continuous_as_bars,
+        check_riskratio_as_bars,
         print_validation,
     )
 """
 
+import re
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -409,3 +412,195 @@ if __name__ == "__main__":
 
     print("\nAll tests passed!")
     sys.exit(0)
+
+
+# =============================================================================
+# CHART-DESIGN VALIDATORS (Fujii 2026, Weissgerber 2015, Fujii 2023)
+# =============================================================================
+#
+# These validators check semantic plot-design choices, not file properties.
+# They flag known anti-patterns:
+#
+#   check_continuous_as_bars  -- Weissgerber 2015 PLoS Biol: bar charts of
+#                                continuous data hide the underlying distribution.
+#   check_riskratio_as_bars   -- Fujii 2023 J Epidemiol: risk ratios / odds
+#                                ratios / hazard ratios should be drawn as
+#                                points + 95% CI, not as bars.
+#
+# Both functions are pure / side-effect-free; they return ValidationResult and
+# never raise. Wire them into figure pre-flight before saving.
+
+
+def _is_continuous_data(data: object) -> bool:
+    """Heuristic: is `data` a continuous numerical sample (per group), not a discrete count?
+
+    Accepts: numpy arrays, pandas Series, lists/tuples of numbers, or a dict /
+    DataFrame keyed by group name with numerical values per group.
+
+    Returns True if the underlying values are real-valued and have variance
+    that suggests an empirical distribution rather than a single count per group.
+    """
+    if isinstance(data, pd.DataFrame):
+        # Treat each non-grouping column as a candidate continuous sample
+        numeric_cols = data.select_dtypes(include=[np.number])
+        if numeric_cols.empty:
+            return False
+        # If any numeric column has more than one unique value per group-block,
+        # treat as continuous.
+        for col in numeric_cols.columns:
+            values = numeric_cols[col].dropna().to_numpy()
+            if len(values) > 5 and len(np.unique(values)) > 3:
+                return True
+        return False
+
+    if isinstance(data, dict):
+        for group_values in data.values():
+            if _is_continuous_data(group_values):
+                return True
+        return False
+
+    if isinstance(data, (list, tuple, np.ndarray, pd.Series)):
+        try:
+            arr = np.asarray(data, dtype=float)
+        except (TypeError, ValueError):
+            return False
+        finite = arr[np.isfinite(arr)]
+        if len(finite) <= 5:
+            return False
+        # Continuous if it has more than ~3 unique values
+        return len(np.unique(finite)) > 3
+
+    return False
+
+
+def check_continuous_as_bars(
+    data: object,
+    plot_type: str,
+) -> ValidationResult:
+    """
+    Check whether continuous data is being drawn as a bar chart (Weissgerber 2015 anti-pattern).
+
+    Bar charts of continuous data hide the underlying distribution. Two datasets
+    with identical means but radically different distributions produce identical-
+    looking bars. Use box+jitter, violin+jitter, or strip plots instead.
+
+    Parameters
+    ----------
+    data : array-like, dict, or DataFrame
+        The data to be plotted. If a dict / DataFrame, each value / column
+        per group is checked for continuity.
+    plot_type : str
+        The intended plot type. Bar / barplot / column trigger the warning.
+
+    Returns
+    -------
+    ValidationResult
+        `valid=True` always (this is advisory, not blocking).
+        `warnings` populated if a bar chart is being applied to continuous data.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> data = {"control": np.random.normal(0, 1, 50), "treated": np.random.normal(1, 1, 50)}
+    >>> r = check_continuous_as_bars(data, "bar")
+    >>> bool(r.warnings)
+    True
+    >>> r = check_continuous_as_bars({"a": [10], "b": [12]}, "bar")  # discrete counts
+    >>> bool(r.warnings)
+    False
+    """
+    result = ValidationResult(valid=True)
+
+    plot_type_lower = (plot_type or "").lower().strip()
+    bar_aliases = {"bar", "barplot", "bar chart", "barchart", "column"}
+
+    if plot_type_lower not in bar_aliases:
+        return result
+
+    if not _is_continuous_data(data):
+        return result
+
+    result.add_warning(
+        "check_continuous_as_bars: bar chart applied to continuous data. "
+        "Bar charts hide the underlying distribution; identical-looking bars "
+        "can come from radically different distributions. "
+        "Use box+jitter, violin+jitter, or strip plot instead "
+        "(Weissgerber et al. 2015 PLoS Biol, doi:10.1371/journal.pbio.1002128). "
+        "See plotting-libraries/references/plot_selection_guide.md for code recipes."
+    )
+    return result
+
+
+_RISKRATIO_PATTERNS = (
+    r"\bodds[\s_-]?ratio",
+    r"\brisk[\s_-]?ratio",
+    r"\bhazard[\s_-]?ratio",
+    r"\brate[\s_-]?ratio",
+    r"\bincidence[\s_-]?rate[\s_-]?ratio",
+    r"\bincidence[\s_-]?ratio",
+    r"\brelative[\s_-]?risk",
+    r"\b(or)\b\s*\(",  # "OR (95% CI..."
+    r"\b(rr)\b\s*\(",
+    r"\b(hr)\b\s*\(",
+)
+
+
+def check_riskratio_as_bars(
+    plot_type: str,
+    data_label: str,
+) -> ValidationResult:
+    """
+    Check whether a risk ratio / odds ratio / hazard ratio is being drawn as bars (Fujii 2023 anti-pattern).
+
+    Bars exaggerate the visual weight of the point estimate at the expense of
+    the confidence interval; a wide-CI estimate looks deceptively confident as
+    a bar. Use `pointrange` (point + horizontal CI line) or a forest plot.
+
+    Parameters
+    ----------
+    plot_type : str
+        The intended plot type. Bar / barplot / column trigger the check.
+    data_label : str
+        The y-axis label or data description string. Patterns like
+        "Odds ratio (95% CI)", "Hazard ratio", "OR (95% CI)" trigger the warning.
+
+    Returns
+    -------
+    ValidationResult
+        `valid=True` always (advisory).
+        `warnings` populated if bar chart + ratio-with-CI label match.
+
+    Examples
+    --------
+    >>> r = check_riskratio_as_bars("bar", "Odds ratio (95% CI)")
+    >>> bool(r.warnings)
+    True
+    >>> r = check_riskratio_as_bars("bar", "Sample size")
+    >>> bool(r.warnings)
+    False
+    >>> r = check_riskratio_as_bars("pointrange", "Hazard ratio (95% CI)")
+    >>> bool(r.warnings)
+    False
+    """
+    result = ValidationResult(valid=True)
+
+    plot_type_lower = (plot_type or "").lower().strip()
+    bar_aliases = {"bar", "barplot", "bar chart", "barchart", "column"}
+
+    if plot_type_lower not in bar_aliases:
+        return result
+
+    label_lower = (data_label or "").lower()
+    matched = any(re.search(pattern, label_lower) for pattern in _RISKRATIO_PATTERNS)
+    if not matched:
+        return result
+
+    result.add_warning(
+        "check_riskratio_as_bars: bar chart applied to a ratio-with-CI estimate. "
+        "Bars exaggerate the point estimate at the expense of the CI; "
+        "wide-CI estimates look deceptively confident as bars. "
+        "Use pointrange (point + horizontal CI line) or a forest plot "
+        "(Fujii 2023 J Epidemiol 33:487-488). "
+        "See plotting-libraries/references/plot_selection_guide.md §Risk-ratio recipe."
+    )
+    return result

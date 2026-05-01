@@ -8,6 +8,8 @@ A recent Nature Cell Biology checklist (2025) emphasizes that creating clear and
 
 ## When to Use Tables vs. Figures
 
+> **See also:** the cross-skill decision aid `../../shared/references/figure_vs_table_decision.md` (Fujii 2026 §"Ask whether you really need a figure"; Midway 2020 *Patterns*) — that file is the canonical source used across plotting-libraries, scientific-slides, scientific-schematics, paperbanana, research-posters, and scientific-writing. The guidance below is the prose-writing subset.
+
 ### Use Tables When:
 - Presenting precise numerical values that readers need to reference
 - Comparing exact measurements across multiple variables

@@ -1,6 +1,6 @@
 ---
 name: plotting-libraries
-version: 1.5.0
+version: 1.5.1
 description: "Data visualization for scientific research using Python (matplotlib, seaborn) or R (ggplot2, Bioconductor)"
 when_to_use: "Creating plots, charts, figures, visualizations, heatmaps, volcano plots, survival curves, genome tracks, PCA/UMAP, correlation matrices, forest plots, or any scientific figure for publication"
 extends: visual-design
@@ -9,7 +9,7 @@ quantification-reference: "../QUANTIFICATION_THRESHOLDS.md"
 
 > **Quantified Thresholds:** This skill references shared thresholds from [`QUANTIFICATION_THRESHOLDS.md`](../QUANTIFICATION_THRESHOLDS.md) §2 (Visual Quality), §7.2 (Figure Quality Rubric), and §9 (Figure & Plot Quality).
 
-> **Design Foundation:** This skill extends `visual-design` for design philosophy, typography principles, color theory, and publication specifications. See [visual-design](../visual-design/SKILL.md) for the foundational design layer.
+> **Design Foundation:** This skill extends `visual-design` for design philosophy, typography principles, color theory, and publication specifications. See [visual-design](../visual-design/SKILL.md) for the foundational design layer. Cognitive-foundation citations (Cleveland-McGill 1984, Wagemans 2012, Crameri 2020, Fujii 2026, Weissgerber 2015) and cross-skill quality gates also live in [`oligon-brand`](../oligon-brand/SKILL.md) `<design_foundation>` and [`shared/references/`](../shared/references/) (`pre_submission_checklist.md`, `communication_context_matrix.md`, `figure_vs_table_decision.md`). For chart selection by intent (Description / Difference / Association), see `references/plot_selection_guide.md`.
 
 <objective>
 Guide effective use of data visualization libraries for creating publication-quality scientific figures. This skill provides decision frameworks for choosing between Python and R libraries, common patterns for bioinformatics visualizations, and links to detailed reference documentation.
@@ -528,6 +528,15 @@ See `oligon-brand` skill for complete brand implementation patterns.
 - **[{baseDir}/references/heatmaps.md]({baseDir}/references/heatmaps.md)**: Expression heatmaps with clustering (Python + R)
 - **[{baseDir}/references/survival_curves.md]({baseDir}/references/survival_curves.md)**: Kaplan-Meier and survival analysis (Python lifelines + R survminer)
 - **[{baseDir}/references/genome_tracks.md]({baseDir}/references/genome_tracks.md)**: Genome visualization (pyGenomeTracks + Gviz)
+
+### Cross-Skill Design References
+- **[../shared/references/iconography-licensing.md](../shared/references/iconography-licensing.md)**: Icon-library licensing (BioRender, NIH BIOART, SciDraw, Servier, Noun Project) — re-verify at submission
+- **[../shared/references/pre_submission_checklist.md](../shared/references/pre_submission_checklist.md)**: 15-point unified quality gate (Q0 = "should this be a table?")
+- **[../shared/references/communication_context_matrix.md](../shared/references/communication_context_matrix.md)**: Audience × time × interaction → figure complexity (Fujii 2026)
+- **[../shared/references/figure_vs_table_decision.md](../shared/references/figure_vs_table_decision.md)**: Decision aid for figure vs table vs both (Fujii 2026; Midway 2020)
+- **[{baseDir}/references/plot_selection_guide.md]({baseDir}/references/plot_selection_guide.md)**: Description / Difference / Association decision tree; Weissgerber 2015 bar-chart anti-pattern; Fujii 2023 risk-ratio recipe; direct labelling examples
+- **[../oligon-brand/SKILL.md](../oligon-brand/SKILL.md) `<design_foundation>`**: Cognitive-foundation citations (Cleveland-McGill channel ranking, Crameri color, Wilke fundamentals, Fujii 2026 communication context, Weissgerber 2015 bar-chart critique)
+- **[../venue-templates/references/figure_specs.md](../venue-templates/references/figure_specs.md)**: Cross-cutting font embedding, color spaces, graphical-abstract specs, alt-text formula
 </reference_guides>
 
 <cross_references>
@@ -535,8 +544,9 @@ See `oligon-brand` skill for complete brand implementation patterns.
 
 **Skill Selection:** See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 
-- **[oligon-brand](../oligon-brand/SKILL.md)**: Brand colors and tokens—load before plotting for Oligon-branded figures. See `<styling_integration>` above for usage patterns.
+- **[oligon-brand](../oligon-brand/SKILL.md)**: Brand colors and tokens—load before plotting for Oligon-branded figures. See `<styling_integration>` above for usage patterns. The `<design_foundation>` block holds cross-format cognitive-foundation citations (Cleveland-McGill, Crameri, Wilke, Fujii 2026).
 - **[visual-design](../visual-design/SKILL.md)**: Design principles and publication specifications
+- **[venue-templates](../venue-templates/SKILL.md)**: Per-journal column widths, DPI floors; cross-cutting font embedding and graphical-abstract specs in `references/figure_specs.md`
 - **[statistical-analysis](../statistical-analysis/SKILL.md)**: Statistics underlying visualizations—see `<statistical_visualization>` above for implementation patterns
 - **[scientific-writing](../scientific-writing/SKILL.md)**: Figure legends and methods descriptions
 - **[reproducible-research](../reproducible-research/SKILL.md)**: Environment management for reproducible figures

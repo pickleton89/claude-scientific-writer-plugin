@@ -1,6 +1,6 @@
 ---
 name: scientific-schematics
-version: 2.5.0
+version: 2.5.1
 extends: visual-design
 description: "Create structured scientific diagrams with explicit layout control — flowcharts, biological pathways, network diagrams, mechanism illustrations, and system architectures. Uses Mermaid for simple diagrams and AI for complex ones. Use when the user specifies diagram type, components, or relationships. Do NOT use when the user provides prose text and wants an AI-generated figure — use paperbanana."
 allowed-tools: [Read, Write, Edit, Bash]
@@ -9,7 +9,7 @@ shared-thresholds: "../QUANTIFICATION_THRESHOLDS.md"
 
 # Scientific Schematics and Diagrams
 
-> **Design Foundation**: This skill extends [`visual-design`](../visual-design/SKILL.md) for typography, color, composition, and accessibility standards.
+> **Design Foundation**: This skill extends [`visual-design`](../visual-design/SKILL.md) for typography, color, composition, and accessibility standards. Cognitive-foundation citations (Cleveland-McGill 1984, Wagemans 2012 Gestalt grouping, Crameri 2020, Fujii 2026 communication context) and cross-skill quality gates also live in [`oligon-brand`](../oligon-brand/SKILL.md) `<design_foundation>` and [`shared/references/`](../shared/references/) (`pre_submission_checklist.md`, `communication_context_matrix.md`, `figure_vs_table_decision.md`).
 
 > **Quantified Thresholds:** This skill references shared thresholds from [`QUANTIFICATION_THRESHOLDS.md`](../QUANTIFICATION_THRESHOLDS.md) §7 (Quality Rubrics) and §8 (Iteration & Stopping Criteria).
 
@@ -729,6 +729,18 @@ Limit complexity per diagram type:
 - Use hierarchical views with zoom levels
 - Create figure panels (a, b, c) for related components
 
+### Trusting GenAI Diagram Output Without a Communication-Context Review
+
+**Anti-pattern:** Accepting Nano Banana Pro / Gemini diagram output as final without reviewing against the diagram's intended viewing context (lab meeting / poster / oral talk / article / online).
+
+**Solution:** Per Fujii 2026 §"Choose the right graph and colour", GenAI text-to-figure tools tend to map content 1:1 to a default visualisation without considering message, audience, or interaction context. The data-driven diagram pattern (querying ToolUniverse for verified components before generation) reduces *content* hallucination, but does not by itself guarantee *complexity* fits the context. After generation, review against:
+
+1. **Stated key message** — does the diagram convey the single takeaway?
+2. **Audience and viewing context** — see `../shared/references/communication_context_matrix.md`. A 12-node pathway diagram fits an article methods section but fails a 1-minute oral slide.
+3. **Figure-design canon** — Cleveland-McGill channel ranking, Wagemans Gestalt grouping (direct-label, do not rely on far legends), Crameri CVD-safe colour. See `../oligon-brand/SKILL.md` `<design_foundation>`.
+
+Iterate via the Gemini quality-review loop if any check fails.
+
 </anti_patterns>
 
 <error_handling>
@@ -870,6 +882,7 @@ Vertical top-to-bottom layout.
 |-------|-------------|
 | `plotting-libraries` | Use for data visualizations (plots, charts); schematics for diagrams |
 | `visual-design` | Consult for design principles before creating schematics |
+| `oligon-brand` | Consult `<design_foundation>` for cognitive-foundation citations (Cleveland, Wagemans, Crameri, Fujii 2026) — complementary to visual-design |
 | `generate-image` | Use for photorealistic images; schematics for diagrams |
 | `paperbanana` | Use for text-to-visual (graphical abstracts, visual summaries); schematics for specified diagrams |
 | `scientific-slides` | Schematics integrates into slide presentations |
@@ -898,6 +911,11 @@ See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 | `{baseDir}/references/diagram_types.md` | Catalog of scientific diagram types with prompt keywords |
 | `{baseDir}/references/best_practices.md` | Publication standards and accessibility guidelines |
 | `{baseDir}/references/quick_reference.md` | Quick start guide and common examples |
+| `../shared/references/iconography-licensing.md` | Icon-library licensing (BioRender, NIH BIOART, SciDraw, Servier, Noun Project) — re-verify at submission |
+| `../shared/references/pre_submission_checklist.md` | 15-point unified quality gate (Q0 = "should this be a table?") |
+| `../shared/references/communication_context_matrix.md` | Audience × time × interaction → diagram complexity (Fujii 2026) |
+| `../shared/references/figure_vs_table_decision.md` | Decision aid for figure vs table vs both (Fujii 2026; Midway 2020) |
+| `../oligon-brand/SKILL.md` `<design_foundation>` | Cognitive-foundation citations (Cleveland-McGill channel ranking, Wagemans Gestalt grouping, Crameri color, Fujii 2026 communication context) |
 
 ### External Resources
 

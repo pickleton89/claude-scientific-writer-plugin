@@ -1,6 +1,6 @@
 ---
 name: scientific-slides
-version: 2.3.0
+version: 2.3.1
 extends: visual-design
 description: "Build structured research presentations — content organization and scientific storytelling for conference talks, seminars, defenses, and lab meetings. Use when creating a new research presentation. Do NOT use for editing existing PPTX files or raw file manipulation — use document-skills:pptx."
 when_to_use: "Conference presentations, seminar talks, thesis defense slides, grant pitches, journal club presentations, or any scientific talk requiring PDF, PowerPoint, or LaTeX Beamer output."
@@ -9,7 +9,7 @@ allowed-tools: [Read, Write, Edit, Bash]
 
 # Scientific Slides
 
-> **Design Foundation**: This skill extends [`visual-design`](../visual-design/SKILL.md) for typography, color, composition, and accessibility standards.
+> **Design Foundation**: This skill extends [`visual-design`](../visual-design/SKILL.md) for typography, color, composition, and accessibility standards. Cognitive-foundation citations (Cleveland-McGill 1984, Cowan 2010 working-memory limit, Wagemans 2012, Crameri 2020, Fujii 2026 communication context) and cross-skill quality gates also live in [`oligon-brand`](../oligon-brand/SKILL.md) `<design_foundation>` and [`shared/references/`](../shared/references/) (`pre_submission_checklist.md`, `communication_context_matrix.md`, `figure_vs_table_decision.md`).
 
 <overview>
 Create effective scientific presentations for conferences, seminars, defenses, and professional talks. This skill provides decision frameworks for selecting presentation format, structured workflows for development, and integration with AI slide generation tools. Supports PDF (via Nano Banana Pro), PowerPoint (via PPTX skill), and LaTeX Beamer outputs.
@@ -170,6 +170,8 @@ Choose output format
 | 30 min        | 15%   | 20%     | 40%     | 20%        | 5%         |
 | 45 min        | 10%   | 20%     | 45%     | 20%        | 5%         |
 | 60 min        | 10%   | 20%     | 45%     | 20%        | 5%         |
+
+> **Note:** This matrix allocates *talk time* to slide-deck sections. For *figure complexity per viewing context* (lab meeting / poster / oral / article / online), see the cross-skill `../shared/references/communication_context_matrix.md` (Fujii 2026). The two are complementary: this matrix scopes the deck; the context matrix scopes individual figures within it.
 
 </decision_framework>
 
@@ -604,6 +606,10 @@ See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 | `references/visual_review_workflow.md` | PDF to images, systematic inspection, iteration |
 | `assets/powerpoint_design_guide.md` | PowerPoint design and implementation |
 | `assets/timing_guidelines.md` | Timing, pacing, and practice strategies |
+| `../shared/references/communication_context_matrix.md` | Audience × time × interaction → figure complexity (Fujii 2026); the **oral / public talk** row of this matrix is the canonical figure-complexity guide for slides |
+| `../shared/references/figure_vs_table_decision.md` | Decide whether a slide should show a figure or a table (Fujii 2026; Midway 2020) |
+| `../shared/references/pre_submission_checklist.md` | 15-point quality gate; applies to slides exported as PDF for permanent record |
+| `../oligon-brand/SKILL.md` `<design_foundation>` | Cognitive-foundation citations (Cleveland-McGill, Cowan working memory limit, Crameri color, Fujii 2026 communication context) |
 
 ## Script Reference
 

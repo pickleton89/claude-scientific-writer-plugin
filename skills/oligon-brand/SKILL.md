@@ -1,7 +1,7 @@
 ---
 name: oligon-brand
-version: 4.0.1
-description: "Oligon scientific brand implementation for figures, presentations, and documents. Provides color palettes, typography standards, and format-specific adapters for matplotlib, ggplot2, ReportLab, python-docx, python-pptx, and HTML/CSS."
+version: 4.1.0
+description: "Oligon scientific brand implementation for figures, presentations, and documents. Provides color palettes, typography standards, format-specific adapters for matplotlib, ggplot2, ReportLab, python-docx, python-pptx, and HTML/CSS, and a cognitive-foundation reference block for cross-format design decisions."
 allowed-tools: [Read, Glob]
 brand-type: organizational
 tokens-file: tokens/brand-tokens.json
@@ -16,6 +16,44 @@ Brand implementation skill providing Oligon-specific colors, typography, and sty
 
 Most data should be grayscale. Brand Blue (`#2DB2E8`) highlights the most important element (1-2 per panel max).
 </overview>
+
+<design_foundation>
+## Cognitive Foundation
+
+Brand decisions sit on top of perception and cognitive-science findings that apply regardless of brand. Each citation below carries a one-line application rule for Oligon figures.
+
+### Perception and visual encoding
+
+- **Cleveland & McGill 1984** *J Am Stat Assoc* **79**, 531–554 — channel ranking: position > length > angle > area > saturation > hue. *Apply:* prefer position-encoded charts (scatter, dot plots, box+jitter) over area- or hue-encoded ones (pie charts, heatmaps as primary). Bank trends to 45° when comparing slopes.
+- **Treisman & Gelade 1980** *Cognitive Psychol* **12**, 97–136 — feature search is parallel; conjunction search is serial. *Apply:* never rely on hue alone to distinguish series — pair color with marker shape, line style, or direct labels.
+- **Wagemans et al. 2012** *Psychol Bull* **138**, 1172–1217 — Gestalt grouping (proximity, similarity, common fate). *Apply:* place labels adjacent to the data they describe; group panels of a multi-panel figure by shared background or close spacing.
+- **Cowan 2010** *Curr Dir Psychol Sci* **19**, 51–57 — working memory holds ~4 chunks. *Apply:* keep simultaneous encoded dimensions ≤4 per panel; if you need more, facet into small multiples.
+- **Franconeri, Padilla, Shah, Zacks, Hullman 2021** *Psychol Sci Public Interest* **22**, 110–161 — readers see ensembles in parallel but compare items serially. *Apply:* annotate the key comparison directly on the figure rather than asking the reader to compare across panels by eye.
+
+### Color and accessibility
+
+- **Crameri, Shephard, Heron 2020** *Nat Commun* **11**, 5444 — rainbow / jet maps actively distort scientific data; Scientific Colour Maps are perceptually uniform and CVD-safe. *Apply:* never use jet / rainbow / Spectral for sequential data. Defaults: `viridis`, `cividis`, `okabe_ito`, or Crameri's `batlow` / `roma`. Cross-link: https://www.fabiocrameri.ch/colourmaps/
+
+### Practitioner canon and recent reviews
+
+- **Tufte 2001** *The Visual Display of Quantitative Information* (2nd ed., Graphics Press) — data-to-ink ratio: every drop of ink should represent data. *Apply:* remove gridlines, decorative backgrounds, redundant tick marks unless they carry signal. (See `<anti_patterns>` §4 for the modern signal-to-noise reframing.)
+- **Wilke 2019** *Fundamentals of Data Visualization* (O'Reilly) — canonical practitioner reference for plot-type selection, color, and proportional encoding. *Apply:* default reference for chart-type questions outside the cognitive-foundation primary sources above.
+- **Heer & Bostock 2010** *CHI* — crowd-sourced graphical perception: position-on-aligned-scale wins for comparison; angle and area lose. *Apply:* corroborates Cleveland-McGill; cite when justifying axis choices in a Methods or response-to-reviewer.
+- **O'Donoghue et al. 2018** *Annu Rev Biomed Data Sci* **1**, 275–304 — figures shape interpretation; readers often look at figures before text. *Apply:* design the figure so the takeaway message is recognisable from the figure alone, before reading the caption.
+
+### Recent guidance specific to scientific figures
+
+- **Fujii 2026** *Nat Hum Behav* doi:10.1038/s41562-026-02466-9 — communication-context framework (audience × time × interaction); modern signal-to-noise reframing of data-to-ink; figure-vs-table decision step. *Apply:* see Q0 of `../shared/references/pre_submission_checklist.md` ("should this be a table?") and `../shared/references/communication_context_matrix.md` (matches figure complexity to viewing context).
+- **Fujii 2023** *J Epidemiol* **33**, 487–488 — risk ratios / odds ratios / hazard ratios should be drawn as points + 95% CI (`pointrange`), not as bars. *Apply:* see `plotting-libraries/scripts/validate_figure.py::check_riskratio_as_bars`.
+- **Weissgerber et al. 2015** *PLoS Biol* **13**, e1002128 — bar charts of continuous data hide distributions; show individual data points with box+jitter, violin+jitter, or strip. *Apply:* see `plotting-libraries/scripts/validate_figure.py::check_continuous_as_bars` and `plotting-libraries/references/plot_selection_guide.md`.
+- **Jambor 2025** *Nat Cell Biol* **27**, 879–883 — figure accessibility: alt text, contrast, multi-modal redundant encoding. *Apply:* alt-text formula in `../venue-templates/references/figure_specs.md` §4.
+- **Midway 2020** *Patterns* **1**, 100141 — table-vs-figure principles. *Apply:* see `../shared/references/figure_vs_table_decision.md`.
+
+### Font embedding
+
+For figure file format requirements, see `../venue-templates/references/figure_specs.md` §3 (Type 42 / TrueType embedding for matplotlib, ggplot2, Illustrator). Do not duplicate those commands here.
+
+</design_foundation>
 
 <default_behavior>
 ## Default-On Brand Application
@@ -282,6 +320,16 @@ grayscale.save('output_figure_grayscale.png')
 ### 6. Logo on Publication Figures
 **Problem:** Including Oligon logo on journal figures.
 **Solution:** Journals prohibit branding. Use logos only on presentations, posters, and internal documents.
+
+### 7. Optimising for Data-to-Ink Ratio Alone (Signal-to-Noise Reframing)
+
+**Problem:** Following Tufte's data-to-ink ratio mechanically — keeping every drop of ink that "represents data" — even when some of that ink does not support the figure's takeaway message.
+
+**Solution:** Apply Fujii's (2026) modern reframing: the question is not "does this ink represent data?" but "does this ink support the takeaway message?" If removing a gridline, label, panel, or colour stop would not change the reader's interpretation, remove it. The principle scales with viewing context (`../shared/references/communication_context_matrix.md`):
+- At oral-talk pace, signal-to-noise must be high enough that a reader grasps the message in seconds — strip aggressively.
+- At article pace, more elements may be useful provided each carries signal.
+
+**Cross-references:** `../shared/references/pre_submission_checklist.md` (#12 direct labelling); `../oligon-brand/SKILL.md` `<design_foundation>` (Tufte 2001 + Fujii 2026 citations).
 </anti_patterns>
 
 <error_handling>
@@ -334,19 +382,22 @@ See individual adapter files for detailed API documentation.
 
 | Skill | Relationship |
 |-------|-------------|
-| `visual-design` | **Design philosophy** — provides universal principles; oligon-brand provides Oligon-specific implementation |
+| `visual-design` | **Design philosophy** — provides universal principles; oligon-brand provides Oligon-specific implementation. The new oligon-brand `<design_foundation>` block adds primary-source cognitive-foundation citations (Cleveland-McGill, Wagemans, Crameri, Fujii 2026, etc.) as a complementary layer. |
 | `plotting-libraries` | **Code implementation** — use plotting-libraries for matplotlib/ggplot2 code patterns; load oligon-brand first for brand colors |
 | `scientific-slides` | **Presentations** — apply oligon-brand colors to slide designs |
 | `research-posters` | **Posters** — apply oligon-brand colors and logo placement |
+| `venue-templates` | **Journal formatting** — figure_specs.md provides cross-cutting font embedding, color space, and graphical-abstract specs |
 | `markdown-to-pdf` | **PDF reports** — uses brand colors for styled output |
 | `document-skills:docx` | **Word documents** — use docx_adapter for branded styling |
 
 **Skill Selection:** See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 
 **Typical Workflow:**
-1. `oligon-brand` → load tokens and set style
-2. `plotting-libraries` → implement figure code
-3. `visual-design` → review for design quality
+1. `oligon-brand` `<design_foundation>` → consult cognitive-foundation citations for design decisions
+2. `oligon-brand` → load tokens and set style
+3. `plotting-libraries` → implement figure code
+4. `visual-design` → review for design quality
+5. Pre-submission gate → run `../shared/references/pre_submission_checklist.md`
 
 **For brand-skill authors:** This skill is the reference implementation of the contract in [`../BRAND_SKILL_INTERFACE.md`](../BRAND_SKILL_INTERFACE.md). To create an alternative brand skill, mirror this directory's structure and validate with the tooling in [`../brand-interface/`](../brand-interface/README.md) (JSON Schema, type stubs, WCAG checker, and 173 tests).
 </cross_references>

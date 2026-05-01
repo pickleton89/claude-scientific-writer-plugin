@@ -1,6 +1,6 @@
 ---
 name: generate-image
-version: 2.3.0
+version: 2.3.1
 extends: visual-design
 description: "Generate and edit images using Gemini 3 Pro via OpenRouter. For photorealistic images, artistic illustrations, and creative visual assets. Do NOT use for publication-quality academic figures from text — use paperbanana. Do NOT use for technical diagrams — use scientific-schematics."
 allowed-tools: [Read, Write, Edit, Bash]
@@ -9,7 +9,7 @@ quantification-reference: "../QUANTIFICATION_THRESHOLDS.md"
 
 # Generate Image
 
-> **Design Foundation**: This skill extends [`visual-design`](../visual-design/SKILL.md) for typography, color, composition, and accessibility standards.
+> **Design Foundation**: This skill extends [`visual-design`](../visual-design/SKILL.md) for typography, color, composition, and accessibility standards. Cognitive-foundation citations (Cleveland-McGill 1984, Wagemans 2012, Crameri 2020, Fujii 2026, Weissgerber 2015) and cross-skill quality gates also live in [`oligon-brand`](../oligon-brand/SKILL.md) `<design_foundation>` and [`shared/references/`](../shared/references/) (`pre_submission_checklist.md`, `communication_context_matrix.md`, `figure_vs_table_decision.md`).
 
 <overview>
 Generate and edit high-quality images using Google's Gemini 3 Pro model via OpenRouter. Produces photos, illustrations, artwork, and visual assets for scientific documents, presentations, and publications. Supports image generation, editing, and inpainting in a single unified model. For technical diagrams (flowcharts, circuits, pathways), use `scientific-schematics` instead.
@@ -482,6 +482,7 @@ done
 | `scientific-slides` | Combine for visually rich presentations |
 | `research-posters` | Combine for poster visuals and hero images |
 | `visual-design` | Consult for design principles and accessibility |
+| `oligon-brand` | Consult `<design_foundation>` for cognitive-foundation citations (complementary to visual-design) |
 
 **Skill Selection:**
 See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.

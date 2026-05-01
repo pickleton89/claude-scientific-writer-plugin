@@ -116,6 +116,12 @@ Instead of showing complete figure at once:
 - Beamer: Use `\pause` or overlays
 - Static: Create sequence of slides building the figure
 
+## Before choosing a chart: should this be a table?
+
+Per Fujii 2026 §"Ask whether you really need a figure": before selecting a chart type, ask whether the result would be clearer in a table. Tables are usually better when readers will quote exact values (baseline characteristics, model coefficients with CIs, lists). Figures are better when patterns (distributions, trends, correlations) are the point. See the shared decision aid: `../../shared/references/figure_vs_table_decision.md`.
+
+For slides specifically, this question matters even more than for articles — a slide table of three numbers is often clearer than a three-bar bar chart. If the answer is "table," use a clean table layout (see `slide_design_principles.md` for typography) rather than forcing a figure.
+
 ## Chart Types and When to Use Them
 
 ### Bar Charts

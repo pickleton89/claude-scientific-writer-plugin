@@ -1,6 +1,6 @@
 ---
 name: paperbanana
-version: 1.0.0
+version: 1.0.1
 extends: visual-design
 description: "Generate publication-quality academic figures from unstructured text/prose using PaperBanana's multi-agent AI pipeline. Specialized in graphical abstracts, visual summaries, and methodology overviews. Use when the user provides text and wants a polished figure without specifying exact layout or nodes. Do NOT use when user specifies diagram type, nodes, or relationships — use scientific-schematics."
 allowed-tools: [Read, Write, Edit, Bash]
@@ -9,7 +9,7 @@ shared-thresholds: "../QUANTIFICATION_THRESHOLDS.md"
 
 # PaperBanana — Text-to-Visual Figure Generation
 
-> **Design Foundation**: This skill extends [`visual-design`](../visual-design/SKILL.md) for typography, color, composition, and accessibility standards.
+> **Design Foundation**: This skill extends [`visual-design`](../visual-design/SKILL.md) for typography, color, composition, and accessibility standards. Cognitive-foundation citations (Cleveland-McGill 1984, Wagemans 2012 Gestalt grouping, Crameri 2020 colour, Fujii 2026 communication context, Weissgerber 2015 if continuous data) and cross-skill quality gates also live in [`oligon-brand`](../oligon-brand/SKILL.md) `<design_foundation>` and [`shared/references/`](../shared/references/) (`pre_submission_checklist.md`, `communication_context_matrix.md`, `figure_vs_table_decision.md`).
 
 > **Quantified Thresholds:** This skill references shared thresholds from [`QUANTIFICATION_THRESHOLDS.md`](../QUANTIFICATION_THRESHOLDS.md) §2 (Visual Quality), §7 (Quality Rubrics) and §8 (Iteration & Stopping Criteria).
 
@@ -155,12 +155,17 @@ Figure/Visual request
 **Steps:**
 1. Identify source text (paper excerpt, methodology, executive summary)
 2. Determine communicative intent (what should the figure convey?)
-3. Select document type for quality threshold
-4. Check for explicit style preferences
+3. **Tag the communication context** (Fujii 2026 — see `../shared/references/communication_context_matrix.md`):
+   - `audience: lay | specialist`
+   - `setting: oral | article | poster | online`
+   - `time: brief | moderate | extended`
+4. Select document type for quality threshold
+5. Check for explicit style preferences
 
 **Exit Criteria:**
 - [ ] Source text identified and extracted
 - [ ] Communicative intent stated (figure caption / purpose)
+- [ ] Communication-context tag set (audience / setting / time)
 - [ ] Document type selected for quality threshold
 
 ---
@@ -277,9 +282,10 @@ The compiled revision prompt can be used as `--caption` input for a focused refi
 
 **Steps:**
 1. PaperBanana Critic evaluates on 4 dimensions (Faithfulness, Readability, Conciseness, Aesthetics)
-2. Quality bridge maps 4-dim scores → 5-point rubric (10 points total)
-3. Compare against document type threshold
-4. If below threshold and iterations remain, pipeline refines automatically
+2. **Communication-context fit check (Fujii 2026):** confirm the figure's complexity matches the Stage 1 context tag (audience / setting / time). E.g., an `oral / brief / lay` figure with 4 panels and 12 colours fails this check; a single-message annotated figure passes. Cross-reference `../shared/references/communication_context_matrix.md`.
+3. Quality bridge maps 4-dim scores → 5-point rubric (10 points total)
+4. Compare against document type threshold
+5. If below threshold and iterations remain, pipeline refines automatically
 
 **Quality Scoring (mapped from PaperBanana 4-dim to 5-point rubric):**
 
@@ -289,10 +295,12 @@ The compiled revision prompt can be used as `--caption` input for a focused refi
 | Readability | Clarity & Readability + Label Quality | 0-2 each |
 | Conciseness | Layout & Composition | 0-2 |
 | Aesthetics | Professional Appearance | 0-2 |
+| **Communication-context fit (added)** | Reviewer-mediated check against Stage 1 context tag | gating, not scored |
 
 **Exit Criteria:**
 - [ ] Quality score meets document type threshold
 - [ ] Review log includes per-dimension scores
+- [ ] **Figure complexity matches Stage 1 communication-context tag** (Fujii 2026)
 - [ ] No critical issues flagged
 
 ---
@@ -401,6 +409,18 @@ python {baseDir}/scripts/generate_figure.py --input paper.txt \
 - `--doc-type presentation` for slides (6.5 threshold)
 - `--doc-type poster` for posters (7.0 threshold)
 - `--doc-type journal` only for publication (8.5 threshold)
+
+### 6. Trusting GenAI Output Without a Communication-Context Review
+
+**Anti-pattern:** Treating Imagen / Gemini output as final without reviewing it against the figure's actual viewing context.
+
+**Solution:** Per Fujii 2026 §"Choose the right graph and colour", GenAI text-to-figure tools tend to map data 1:1 to a default visualisation without considering message, audience, or interaction context. After every generation, run the post-generation review:
+
+1. **Key message check:** does the figure convey the single takeaway from the caption / Stage 1 input?
+2. **Communication-context tag check:** does the complexity match the Stage 1 audience / setting / time tag? See `../shared/references/communication_context_matrix.md`.
+3. **Figure-design canon check:** does the output respect Cleveland-McGill 1984 channel ranking, Crameri 2020 colour, Wagemans 2012 direct-labelling, and (if continuous data is involved) Weissgerber 2015? See `../oligon-brand/SKILL.md` `<design_foundation>`.
+
+If any check fails, iterate via the Critic loop or refine the caption with more specific intent. Do not accept the first generation as final for journal-grade output.
 
 </anti_patterns>
 
@@ -579,6 +599,7 @@ python {baseDir}/scripts/evaluate_figure.py \
 | `scientific-schematics` | Use for specified diagrams; paperbanana for prose-to-figure |
 | `generate-image` | Use for photorealistic images; paperbanana for academic figures |
 | `visual-design` | Consult for design principles before creating figures |
+| `oligon-brand` | Consult `<design_foundation>` for cognitive-foundation citations (Cleveland, Crameri, Fujii 2026) — complementary to visual-design |
 | `executive-summary` | Pair with paperbanana for visual executive summaries |
 | `scientific-writing` | Paperbanana provides methodology figures for papers |
 
@@ -599,6 +620,11 @@ See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 |----------|---------|
 | `{baseDir}/references/integration_notes.md` | Architecture decisions and PaperBanana version notes |
 | `{baseDir}/data/guidelines/oligon_style.yaml` | Oligon aesthetic guidelines for Stylist agent |
+| `../shared/references/iconography-licensing.md` | Icon-library licensing (BioRender, NIH BIOART, SciDraw, Servier, Noun Project) — re-verify at submission |
+| `../shared/references/pre_submission_checklist.md` | 15-point unified quality gate (Q0 = "should this be a table?") |
+| `../shared/references/communication_context_matrix.md` | Audience × time × interaction → figure complexity (Fujii 2026) |
+| `../shared/references/figure_vs_table_decision.md` | Decision aid for figure vs table vs both (Fujii 2026; Midway 2020) |
+| `../oligon-brand/SKILL.md` `<design_foundation>` | Cognitive-foundation citations (Cleveland-McGill, Crameri, Wilke, Fujii 2026, Weissgerber 2015 for plots, etc.) |
 
 ### External Resources
 

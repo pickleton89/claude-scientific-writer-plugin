@@ -429,6 +429,9 @@ Run three tests before submission:
 - `references/writing_principles.md` - Clarity, conciseness, style
 - `references/field_terminology.md` - Discipline-specific language guides
 - `references/writing_process.md` - Outline-to-prose conversion examples
+- `../shared/references/figure_vs_table_decision.md` - When a result belongs in a figure, a table, or both (Fujii 2026; Midway 2020) — apply before drafting the figure or table caption
+- `../shared/references/communication_context_matrix.md` - Audience × time × interaction → figure complexity (Fujii 2026); the **research article** row covers manuscript figures
+- `../shared/references/pre_submission_checklist.md` - 15-point quality gate before submission
 
 **Validation Scripts** (run for quality assurance):
 - `scripts/validate_writing_quality.py` - Sentence/paragraph length, passive voice

@@ -197,8 +197,8 @@ def mm_to_inches(mm: float) -> float:
 
     Examples
     --------
-    >>> mm_to_inches(89)  # Nature single-column
-    3.503937007874016
+    >>> round(mm_to_inches(89), 4)  # Nature single-column
+    3.5039
     """
     return mm / 25.4
 
@@ -225,8 +225,9 @@ def get_figsize_for_journal(
 
     Examples
     --------
-    >>> get_figsize_for_journal("nature", "single")
-    (3.503937007874016, 2.1653543307086616)
+    >>> w, h = get_figsize_for_journal("nature", "single")
+    >>> round(w, 4), round(h, 4)
+    (3.5039, 2.1656)
     """
     spec = get_journal_spec(journal)
 
@@ -294,6 +295,23 @@ PALETTES: dict[str, ColorPalette] = {
         colors=("#2166AC", "#F7F7F7", "#B2182B"),  # Blue-White-Red
         colorblind_safe=True,
         description="Diverging colormap for z-scored data",
+    ),
+    # Sequential — viridis 7-stop sample (perceptually uniform, CVD-safe)
+    # Use as discrete fallback; for continuous heatmaps prefer matplotlib's
+    # 'viridis' / 'cividis' / Crameri 'batlow' colormaps directly.
+    "viridis_7": ColorPalette(
+        name="Viridis (7-stop)",
+        colors=(
+            "#440154",  # dark purple
+            "#443983",
+            "#31688E",
+            "#21908C",
+            "#35B779",
+            "#8FD744",
+            "#FDE725",  # bright yellow
+        ),
+        colorblind_safe=True,
+        description="Perceptually uniform sequential palette (viridis sampled at 7 stops). Crameri 2020 / Smith & van der Walt 2015.",
     ),
     "categorical_8": ColorPalette(
         name="Categorical 8",
@@ -521,6 +539,379 @@ def classify_plot_type(user_request: str) -> str:
     if scores:
         return max(scores, key=lambda k: scores[k])
     return "general"
+
+
+# =============================================================================
+# FIGURE INTENT CLASSIFIER (Fujii 2026 §"Identify the key message")
+# =============================================================================
+#
+# Classifies the user's described intent into one of three Fujii categories:
+#   description  -- showing distribution, overview, "what does the data look like"
+#   difference   -- comparing groups (treated vs control, before vs after)
+#   association  -- relationship between variables (predicts, correlates, scales with)
+#
+# This is the figure-design pre-step: Fujii (2026) argues intent should be
+# identified BEFORE plot type, so that plot type follows from intent.
+
+INTENT_KEYWORDS: dict[str, tuple[str, ...]] = {
+    "description": (
+        "show",
+        "distribution",
+        "overview",
+        "what does the data look like",
+        "describe",
+        "summarize",
+        "summarise",
+        "characterize",
+        "characterise",
+        "spread",
+        "range of",
+        "histogram of",
+    ),
+    "difference": (
+        "compare",
+        "comparison",
+        "difference between",
+        "differ between",
+        "vs ",
+        "vs.",
+        "versus",
+        "before and after",
+        "treated vs control",
+        "treatment vs",
+        "case vs control",
+        "knockout vs",
+        "different",
+        "differ",
+    ),
+    "association": (
+        "predict",
+        "correlate",
+        "correlation",
+        "scales with",
+        "depends on",
+        "relationship between",
+        "association",
+        "regression",
+        "linked to",
+        "varies with",
+        "as a function of",
+    ),
+}
+
+
+def classify_figure_intent(user_request: str) -> str:
+    """
+    Classify the figure's communicative intent (Fujii 2026).
+
+    Returns one of: "description", "difference", "association", or "general".
+
+    Parameters
+    ----------
+    user_request : str
+        Natural language description of what the figure should show.
+
+    Returns
+    -------
+    str
+        Intent category. "general" if no keywords matched.
+
+    Examples
+    --------
+    >>> classify_figure_intent("compare gene expression between treated and control")
+    'difference'
+    >>> classify_figure_intent("show the distribution of patient ages")
+    'description'
+    >>> classify_figure_intent("does dose predict response?")
+    'association'
+    >>> classify_figure_intent("make a chart")
+    'general'
+    """
+    request_lower = user_request.lower()
+
+    scores: dict[str, int] = {}
+    for intent, keywords in INTENT_KEYWORDS.items():
+        score = sum(1 for kw in keywords if kw in request_lower)
+        if score > 0:
+            scores[intent] = score
+
+    if scores:
+        return max(scores, key=lambda k: scores[k])
+    return "general"
+
+
+# =============================================================================
+# CHART RECOMMENDATIONS (intent + data shape -> ranked plot types)
+# =============================================================================
+
+
+@dataclass(frozen=True)
+class ChartRecommendation:
+    """A recommended (or discouraged) chart type with rationale and citation.
+
+    Attributes
+    ----------
+    plot_type : str
+        Plot identifier (e.g., "box+jitter", "scatter", "bar").
+    rationale : str
+        One-line rationale explaining why this is preferred / discouraged.
+    discouraged : bool
+        If True, the plot type is technically possible but actively discouraged
+        (e.g., bar chart for continuous data per Weissgerber 2015).
+    citation : Optional[str]
+        Primary literature citation supporting the recommendation, when applicable.
+    """
+
+    plot_type: str
+    rationale: str
+    discouraged: bool = False
+    citation: Optional[str] = None
+
+
+def recommend_chart(
+    intent: str,
+    x_type: Optional[str] = None,
+    y_type: Optional[str] = None,
+    n_groups: Optional[int] = None,
+    paired: bool = False,
+) -> list[ChartRecommendation]:
+    """
+    Recommend ranked plot types for a given intent and data shape.
+
+    Encodes Fujii (2026) §"Choose the right graph and colour" + Weissgerber 2015
+    bar-chart anti-pattern + Fujii 2023 risk-ratio recommendation.
+
+    Parameters
+    ----------
+    intent : str
+        Figure intent: "description", "difference", or "association".
+        Other strings return a permissive default list.
+    x_type : str, optional
+        "continuous", "categorical", or None.
+    y_type : str, optional
+        "continuous", "categorical", "point_estimate_ci", or None.
+        "point_estimate_ci" indicates risk ratios / odds ratios / hazard ratios
+        with confidence intervals (Fujii 2023).
+    n_groups : int, optional
+        Number of groups (for categorical comparisons).
+    paired : bool
+        Whether observations are paired across groups.
+
+    Returns
+    -------
+    list[ChartRecommendation]
+        Recommendations ordered with preferred plots first, discouraged last.
+
+    Examples
+    --------
+    >>> recs = recommend_chart("difference", x_type="categorical", y_type="continuous", n_groups=2)
+    >>> recs[0].plot_type
+    'box+jitter'
+    >>> any(r.plot_type == 'bar' and r.discouraged for r in recs)
+    True
+    """
+    if intent == "description":
+        if y_type == "continuous" or x_type == "continuous":
+            return [
+                ChartRecommendation(
+                    "histogram",
+                    "Shows distribution shape; minimal cognitive load.",
+                ),
+                ChartRecommendation(
+                    "kde",
+                    "Smooth distribution; useful when sample size > ~30.",
+                ),
+                ChartRecommendation(
+                    "ecdf",
+                    "No binning artefacts; preserves every data point.",
+                ),
+            ]
+        if x_type == "categorical" or y_type == "categorical":
+            return [
+                ChartRecommendation(
+                    "count_bar",
+                    "Counts per category — bar chart is acceptable here (data are inherently discrete).",
+                ),
+                ChartRecommendation(
+                    "pie",
+                    "Acceptable for ≤3 categories; discouraged for more (Cleveland-McGill 1984: angle is a weak channel).",
+                    discouraged=(n_groups is not None and n_groups > 3),
+                    citation="Cleveland & McGill 1984",
+                ),
+            ]
+
+    if intent == "difference":
+        if y_type == "point_estimate_ci":
+            return [
+                ChartRecommendation(
+                    "pointrange",
+                    "Points with horizontal 95% CI lines; correct for risk ratios / odds ratios / hazard ratios.",
+                    citation="Fujii 2023",
+                ),
+                ChartRecommendation(
+                    "forest_plot",
+                    "Multi-row pointrange variant; standard for meta-analyses and subgroup forest plots.",
+                    citation="Fujii 2023",
+                ),
+                ChartRecommendation(
+                    "bar",
+                    "Bars exaggerate the point estimate at the expense of the CI; a wide-CI estimate looks deceptively confident.",
+                    discouraged=True,
+                    citation="Fujii 2023",
+                ),
+            ]
+        if x_type == "categorical" and y_type == "continuous":
+            if paired:
+                return [
+                    ChartRecommendation(
+                        "paired_points_lines",
+                        "Paired points connected by lines; preserves within-subject change (Fujii 2026 Fig. 1 §3.i).",
+                        citation="Fujii 2026",
+                    ),
+                    ChartRecommendation(
+                        "parallel_coordinates",
+                        "Multi-condition extension of paired points.",
+                        citation="Fujii 2026",
+                    ),
+                    ChartRecommendation(
+                        "bar",
+                        "Bars hide individual responses and the pairing structure.",
+                        discouraged=True,
+                        citation="Weissgerber 2015",
+                    ),
+                ]
+            return [
+                ChartRecommendation(
+                    "box+jitter",
+                    "Box summary + individual data points; preserves distribution.",
+                    citation="Weissgerber 2015",
+                ),
+                ChartRecommendation(
+                    "violin+jitter",
+                    "Density estimate + individual points; useful when n is large.",
+                    citation="Weissgerber 2015",
+                ),
+                ChartRecommendation(
+                    "strip",
+                    "Plain individual points; minimal ink.",
+                    citation="Weissgerber 2015",
+                ),
+                ChartRecommendation(
+                    "bar",
+                    "Bar charts of continuous data hide the underlying distribution; identical-looking bars can come from radically different distributions.",
+                    discouraged=True,
+                    citation="Weissgerber 2015",
+                ),
+            ]
+
+    if intent == "association":
+        if x_type == "continuous" and y_type == "continuous":
+            return [
+                ChartRecommendation(
+                    "scatter",
+                    "Each point shows the (x, y) pair; relationship visible directly.",
+                ),
+                ChartRecommendation(
+                    "scatter_with_regression",
+                    "Scatter + regression line with CI band; useful when association is the main message.",
+                ),
+                ChartRecommendation(
+                    "hexbin",
+                    "For high-density scatter where overplotting obscures pattern.",
+                ),
+            ]
+
+    # Permissive default
+    return [
+        ChartRecommendation(
+            "general",
+            "No specific recommendation; consult plot_selection_guide.md.",
+        ),
+    ]
+
+
+# =============================================================================
+# PALETTE RECOMMENDATIONS BY SCALE TYPE
+# =============================================================================
+
+
+def recommend_palette(
+    scale_type: str,
+    n_levels: Optional[int] = None,
+) -> ColorPalette:
+    """
+    Recommend a palette matched to the data's scale type.
+
+    Fujii (2026) §"Choose the right graph and colour":
+    - categorical -> distinguish groups
+    - sequential  -> increasing magnitude (low to high)
+    - diverging   -> deviation from a reference point (negative / zero / positive)
+
+    For categorical data with n_levels > 8, emits a `logging.warning` per Cowan
+    2010 working-memory limit (~4 chunks; 8 is a soft upper bound for figure
+    legibility). For sequential data with n_levels > 7, warns that the discrete
+    viridis sample is exceeded and recommends the continuous matplotlib colormap.
+
+    Parameters
+    ----------
+    scale_type : str
+        One of: "categorical", "sequential", "diverging".
+    n_levels : int, optional
+        Number of distinct levels in the data. Only used for warnings.
+
+    Returns
+    -------
+    ColorPalette
+        Recommended palette from PALETTES.
+
+    Examples
+    --------
+    >>> p = recommend_palette("categorical", n_levels=4)
+    >>> p.name
+    'Okabe-Ito'
+    >>> p = recommend_palette("sequential", n_levels=5)
+    >>> p.name
+    'Viridis (7-stop)'
+    >>> p = recommend_palette("diverging")
+    >>> p.name
+    'Heatmap Diverging'
+    """
+    import logging
+
+    scale_type = scale_type.lower().strip()
+
+    if scale_type == "categorical":
+        if n_levels is not None and n_levels > 8:
+            logging.warning(
+                "recommend_palette: %d categorical levels exceeds the 8-level "
+                "soft upper bound (Cowan 2010 working-memory ~4 chunks). "
+                "Consider faceting / small multiples or collapsing categories.",
+                n_levels,
+            )
+        if n_levels is not None and n_levels <= 7:
+            return PALETTES["okabe_ito"]
+        return PALETTES["categorical_8"]
+
+    if scale_type == "sequential":
+        # Discrete viridis sample. For continuous heatmaps, callers should use
+        # matplotlib's 'viridis' / 'cividis' / Crameri colormaps directly via
+        # cmap=, not this discrete palette.
+        if n_levels is not None and n_levels > 7:
+            logging.warning(
+                "recommend_palette: %d sequential levels exceeds the 7-stop "
+                "discrete viridis sample. For finer granularity use a continuous "
+                "matplotlib colormap (cmap='viridis' / 'cividis' / Crameri 'batlow').",
+                n_levels,
+            )
+        return PALETTES["viridis_7"]
+
+    if scale_type == "diverging":
+        return PALETTES["heatmap_diverging"]
+
+    raise ValueError(
+        f"recommend_palette: unknown scale_type {scale_type!r}; "
+        "expected 'categorical', 'sequential', or 'diverging'."
+    )
 
 
 # =============================================================================
