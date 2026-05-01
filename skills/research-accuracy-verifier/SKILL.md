@@ -155,6 +155,14 @@ For each claim-citation pair, verify the cited source actually supports the clai
 - source does not address the claim → `MISATTRIBUTED`
 - access blocked → `UNVERIFIED` with `reason`
 
+**Logic-failure subtypes to detect within Stage 3** — each maps to an existing verdict (no new vocabulary). These distinguish *how to repair* a flagged claim:
+
+- **Correlation presented as causation** — premise cite is correct but claim language asserts causality the source does not support → `OVERGENERALIZED` if a weaker associative version is supported, otherwise `CONTRADICTED`. Recommended action: soften causal language (e.g., "drives" / "causes" → "is associated with").
+- **Overgeneralization** — narrow finding extrapolated to a broader population, setting, or time window → `OVERGENERALIZED`.
+- **Non-sequitur** — premises true and individually verifiable, but the conclusion does not follow from them → `MISATTRIBUTED` if the cited source is silent on the conclusion, or `UNSUPPORTED` if no source at all connects premises to conclusion.
+
+Cherry-picking — where the cite-claim pair itself is verified but the document selectively suppressed contradicting literature — is **not** a Stage 3 concern (the cited source genuinely supports the claim) and is handled in Stage 4.
+
 ### Stage 4 — Uncited claim verification
 
 For substantive uncited claims (depth permitting), search for support.
@@ -166,6 +174,8 @@ For substantive uncited claims (depth permitting), search for support.
 Capability keys: `verification.citation_existence`, `verification.claim_alignment`. Live MCP tool wiring deferred to v1.3; in v1.2 the LLM performs the search and records the result in `verification_path[]`.
 
 Verdict assignments: same as Stage 3.
+
+**Cherry-picking detection** (Tier 3 only): for already-`VERIFIED` cite-claim pairs from Stage 3, additionally query Scite's citation-context tally for the cited paper. If the supporting/contradicting smart-citation ratio is heavily skewed against the document's framing — i.e., the cited paper supports the narrow claim but a substantial body of literature contradicts the broader position the document is using it to advance — emit a separate finding with verdict `OVERGENERALIZED`. The "claim" being overgeneralized here is the implicit consensus framing, not the narrow cite-claim pair (which remains `VERIFIED` in the matrix). Recommended action: add a contrasting citation or scope-limit the claim.
 
 ### Stage 5 — Quotation verification
 
@@ -189,6 +199,8 @@ Direct quotes require exact-string verification. Paraphrase-presented-as-verbati
 - effect sizes outside biologically plausible ranges
 - sample sizes inconsistent with described study design or stats
 - dates that conflict with cited paper publication years
+- **anachronistic temporal claims** — explicit recency phrases ("as of last year", "current data", "recent studies") anchored to a year that no longer qualifies as recent (≥18 months before `date_checked`) → `OVERGENERALIZED` (the claim asserts currency the source does not support). Per matrix, MAJOR for grant / manuscript / lit_review. Recommended action: replace the recency phrase with an explicit cutoff date.
+- **anachronistic evidence base** (no specific recency claim, but the latest cited reference year lags `date_checked` by ≥18 months in a fast-moving field) → emit a `header.coverage_caveats[]` entry rather than a `findings[]` entry; this is a coverage gap, not a misstatement. Recommended action: refresh the evidence base or scope-limit the document.
 
 **Named entities** — delegate to `scripts/resolve_entity.py` (which delegates to the `entity-resolution` skill):
 - Gene / protein symbols: verify official symbol via HGNC / UniProt; flag aliases that may obscure entity confusion
@@ -330,6 +342,16 @@ For each finding render this table (one per finding):
 | **Recommended action** | Replace with a verified source. Selby et al. 2013 (PMID:23300641) reports CT26 anti-PD-1 response data; or Mosely et al. 2017 (PMID:29097623) for syngeneic-model checkpoint response benchmarks. The 47% number itself is unsupported and **MUST** be re-verified against whichever source is substituted. |
 | **Confidence** | high |
 
+#### Optional remediation prompts in `recommended_action`
+
+For findings where the original drafter is still in the loop (e.g., the user is iterating with an LLM), `recommended_action` MAY suffix one stress-test prompt the user can send back to the drafter. These are author-facing suggestions, not validator-enforced text:
+
+- `CONTRADICTED` → Re-prompt the drafter: *Using the same source, argue the opposite conclusion. If you can construct an equally strong argument, this claim needs revision.*
+- `OVERGENERALIZED` → Re-prompt the drafter: *What evidence would need to exist for this conclusion to be false? List the specific assumptions you've made.*
+- Cherry-picking flagged in Stage 4 → Re-prompt the drafter: *Give me the strongest counterargument before I accept this — including any contradicting studies you may have omitted.*
+
+These prompts are useful when the document is still in active drafting; omit them when auditing a frozen submission.
+
 ### Verification matrix (appendix)
 
 A complete table mapping every claim → verification source(s) → verdict, including unflagged items, so the user has a full audit trail.
@@ -378,6 +400,17 @@ Before delivering the report, `scripts/validate_finding.py --batch findings.json
 5. Coverage caveats are populated whenever a tier-3 check was requested but blocked.
 
 Validator failure forces Stage-8 loop-back. The skill **MUST NOT** deliver a report whose findings have not passed the validator.
+
+## Background reading
+
+The following references in `references/` provide non-technical conceptual grounding for the verification frameworks operationalized by this skill. They are useful for understanding *why* the pipeline is structured the way it is, but the skill itself never reads them at runtime — they are for human reference only.
+
+- `Fact-Checking AI - How to spot Errors and Reduce Hallucinations.md` — full course transcript (Birss, Gen AI Academy, 2026); covers the three error flavors (phantom statistic, dead citation, reasoning error in true data), six pre-verification red flags, four logic-failure types, and a three-step verification workflow (risk triage → verify by type → second opinion)
+- `Fact-Check AI - Course Workbook.pdf` — pocket-reference summary of the same frameworks
+
+What this skill **does** implement from Birss's frameworks: three-error-flavor detection (Stage 2), verify-by-type ordering (Stages 2 → 3 → 6), risk triage (verification_tier × flag_threshold × severity matrix), and the four logic-failure subtypes (Stages 3 and 4).
+
+What this skill **does not** implement: pre-verification red-flag triage (no Stage 1 priority signals; deferred), second-LLM critique as a workflow step (the existing Stage 8 self-audit is schema validation via `validate_finding.py`, not a second-model critique), and Birss's "six honesty prompts" / "autonomy ladder" — these target document drafting and agent-action governance, which are separate concerns from post-hoc document audit (this skill's sole responsibility — see `## Out of scope`).
 
 ## Out of scope
 
