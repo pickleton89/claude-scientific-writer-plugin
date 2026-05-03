@@ -256,6 +256,32 @@ Plus a separate `severity_matrix.values.json` data file containing the actual ce
 
 ---
 
+## Resume artifacts (stage-boundary checkpoints)
+
+Long Tier-3 audits can exhaust the context window mid-pipeline. To make audits resumable across sessions, every stage persists its output to a deterministic per-document directory:
+
+```
+research/audits/<slug>/
+  claim_inventory.json     # Stage 1 output ({"items": [ClaimInventoryItem, ...]})
+  02_existence.json        # Stage 2: { stage, findings[], matrix_delta[], written_at, ... }
+  03_alignment.json        # Stage 3
+  04_uncited.json          # Stage 4
+  05_quotes.json           # Stage 5
+  06_sanity.json           # Stage 6
+  07_consistency.json      # Stage 7
+  audit_report.json        # Final assembled report (Stage 8)
+```
+
+`<slug>` is `slugify(document_title)` per `scripts/checkpoint.py`: lowercase alnum + single hyphens, trimmed, max 60 chars, falls back to `untitled`.
+
+**No new schemas.** Stages 2–7 artifacts contain `findings[]` (validated against `finding.json` via `FindingValidator` before write) and `matrix_delta[]` (entries with the same shape as `audit_report.json`'s `verification_matrix[]` items). Stage 1's artifact matches the locked `schemas/claim_inventory.json` wrapper shape `{"items": [ClaimInventoryItem, ...]}` — `checkpoint.write_stage_artifact()` rejects anything else.
+
+Stage 0 (resume detection) reads this directory contiguously: the first missing `0N_<stage>.json` stops the scan and becomes `next_stage`. A gap forces re-running the missing stage. Deleting the directory restarts a fresh audit.
+
+The final `audit_report.json` is also written here, replacing the historical "anywhere on disk" assumption — Stage 8 still validates against `audit_report.json` schema.
+
+---
+
 ## What is NOT in Phase-1 contracts (intentionally deferred)
 
 - Per-domain (biomedical vs general) routing rules — live in SKILL.md prose + `shared/tool-lookup.yaml` capability keys

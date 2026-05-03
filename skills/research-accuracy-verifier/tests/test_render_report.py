@@ -8,7 +8,7 @@ from typing import Any
 
 from jsonschema import validate
 
-from render_report import generate_report
+from render_report import SCITE_BIAS_CAVEAT, generate_report
 
 SCHEMAS_DIR = Path(__file__).parent.parent / "schemas"
 
@@ -84,3 +84,41 @@ class TestRenderReport:
         rep["findings"][0]["recommended_action"] = "Do A | then B"
         md = generate_report(rep)
         assert "Do A \\| then B" in md
+
+    def test_render_no_scite_caveat_without_scite_context(
+        self, sample_audit_report: dict[str, Any]
+    ) -> None:
+        # Sample report has no scite_context in any verification_path → caveat absent
+        md = generate_report(sample_audit_report)
+        assert SCITE_BIAS_CAVEAT not in md
+
+    def test_render_injects_scite_caveat_when_scite_context_present(
+        self, sample_audit_report: dict[str, Any]
+    ) -> None:
+        rep = json.loads(json.dumps(sample_audit_report))  # deep copy
+        rep["findings"][0]["verification_path"].append(
+            {
+                "method": "scite_context",
+                "tool": "Scite MCP (search_literature)",
+                "result_summary": (
+                    "Tally: 4 supporting / 12 contrasting / 8 mentioning; "
+                    "USI=0.25, contested per Scite classification."
+                ),
+            }
+        )
+        md = generate_report(rep)
+        assert SCITE_BIAS_CAVEAT in md
+        # original caveat preserved
+        assert "1 paywalled full text" in md
+
+    def test_render_scite_caveat_idempotent(
+        self, sample_audit_report: dict[str, Any]
+    ) -> None:
+        # If the caveat is already in coverage_caveats, don't duplicate it
+        rep = json.loads(json.dumps(sample_audit_report))
+        rep["header"]["coverage_caveats"].append(SCITE_BIAS_CAVEAT)
+        rep["findings"][0]["verification_path"].append(
+            {"method": "scite_context", "tool": "Scite", "result_summary": "..."}
+        )
+        md = generate_report(rep)
+        assert md.count(SCITE_BIAS_CAVEAT) == 1

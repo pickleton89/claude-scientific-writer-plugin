@@ -19,9 +19,27 @@ from typing import Any
 
 SEVERITY_ORDER = ["CRITICAL", "MAJOR", "MINOR", "INFORMATIONAL"]
 
+SCITE_BIAS_CAVEAT = (
+    "Scite-derived sentiment classifications are reported per Scite classification "
+    "(Scite has documented bias toward 'mentioning' classification; see tool-lookup.yaml "
+    "literature.citation_context notes)."
+)
+
+
+def _scite_used(report: dict[str, Any]) -> bool:
+    for f in report.get("findings", []):
+        for vp in f.get("verification_path", []):
+            if vp.get("method") == "scite_context":
+                return True
+    return False
+
 
 def _section_header(report: dict[str, Any]) -> str:
     h = report["header"]
+    caveats = list(h.get("coverage_caveats", []))
+    if _scite_used(report) and SCITE_BIAS_CAVEAT not in caveats:
+        caveats.append(SCITE_BIAS_CAVEAT)
+
     lines = [
         f"# Accuracy Audit — {h['document_title']}",
         "",
@@ -34,9 +52,9 @@ def _section_header(report: dict[str, Any]) -> str:
         f"> {h['confidence_justification']}",
         "",
     ]
-    if h.get("coverage_caveats"):
+    if caveats:
         lines.append("**Coverage caveats:**")
-        lines.extend(f"- {c}" for c in h["coverage_caveats"])
+        lines.extend(f"- {c}" for c in caveats)
         lines.append("")
     return "\n".join(lines)
 

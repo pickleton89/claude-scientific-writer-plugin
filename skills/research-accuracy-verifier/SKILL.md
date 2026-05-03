@@ -98,6 +98,17 @@ flowchart TD
     K -->|Yes| L[Deliver report]
 ```
 
+### Stage 0 — Resume detection (always runs first)
+
+Long Tier-3 audits can exhaust the context window mid-pipeline. To make audits resumable across sessions, every stage persists its output to `research/audits/<slug>/` (slug = `slugify(document_title)` from intake — see `scripts/checkpoint.py`).
+
+Before Stage 1, call `scripts/checkpoint.py resume --slug <slug>`. The returned `next_stage` says where to begin:
+
+- `next_stage == 1` (fresh or empty dir) → run the full pipeline
+- `next_stage == N > 1` → load `claim_inventory.json` and any `0K_<stage>.json` for K in `completed_stages` into working memory, then begin at stage N
+
+A gap in stage artifacts (e.g., 1 and 2 present, 3 missing, 4 present) means the audit must rerun stage 3; the loader stops at the first missing stage. To force a fresh audit, the user deletes `research/audits/<slug>/` before triggering the skill.
+
 ### Stage 1 — Document parsing and claim extraction
 
 Build a `ClaimInventory` validated against [`schemas/claim_inventory.json`](./schemas/claim_inventory.json). For each item record `id`, `location {section, paragraph, line}`, `claim_text` (verbatim), `claim_type`, and `citations[]`. Categories:
@@ -112,6 +123,8 @@ Build a `ClaimInventory` validated against [`schemas/claim_inventory.json`](./sc
 
 Build a claim ↔ citation bipartite map: each claim links to zero, one, or many citations; each citation links to all claims it nominally supports.
 
+**On stage completion:** call `checkpoint.py write --slug <slug> --stage 1 --claim-inventory <path> --document-type <type>` to persist the inventory.
+
 ### Stage 2 — Citation existence verification
 
 For every cited reference, attempt at least two independent identifier paths before assigning a verdict that downgrades the citation. A single failed lookup is not sufficient — APIs fail intermittently and bad metadata can hide a real paper.
@@ -121,10 +134,12 @@ For every cited reference, attempt at least two independent identifier paths bef
 - If no identifier provided, search by author + year + title fragment + journal
 - Verify all metadata fields agree: authors (at least first and last), year, journal, volume, pages, DOI
 - For journal-volume-year impossibility (e.g., volume X did not exist in year Y), call `scripts/check_journal_volume.py` (capability key: `verification.citation_existence`)
+- **Retraction / correction check**: after identifier resolution succeeds, call `mcp__scite__search_literature` with `dois=[<resolved DOI>]` (no `term`) and inspect the `editorialNotices` field. A clean DOI resolution does NOT exempt the citation from this check — retracted papers resolve cleanly. If Scite returns no record for the DOI (e.g., older paper or niche journal not indexed), treat as "no notices found" and let the verdict fall through to the standard assignments below; record the empty result in `verification_path[]` so the audit trail is complete. Capability key: `verification.citation_existence`. Canonical call shape: `tool-lookup.yaml` `literature.citation_tallies`.
 
 **Verdict assignments** (canonical — see § Canonical Verdicts):
 - record exists, all metadata matches → `VERIFIED`
 - record exists, ≥1 field disagrees → `METADATA_MISMATCH`
+- record exists, `editorialNotices` non-empty (retraction / correction / expression of concern) → `METADATA_MISMATCH`; `result_summary` MUST name the notice type and reason. The cited paper exists, but its retracted/corrected status materially disagrees with the document's implicit framing of it as a sound source.
 - no record found via any identifier path → `UNSUPPORTED`
 - access blocked (paywall, timeout) → `UNVERIFIED` with `reason`
 
@@ -137,6 +152,8 @@ For every cited reference, attempt at least two independent identifier paths bef
 - Page ranges inconsistent with journal volume
 - Impossible dates (citation predates the cited finding)
 
+**On stage completion:** call `checkpoint.py write --slug <slug> --stage 2 --findings <path> --matrix <path> --document-type <type>`. Findings are validated against `schemas/finding.json` before write; on validation failure, fix the offending finding and retry.
+
 ### Stage 3 — Claim-citation alignment
 
 For each claim-citation pair, verify the cited source actually supports the claim attributed to it. This is where most LLM citation errors live: real paper, wrong claim.
@@ -145,7 +162,7 @@ For each claim-citation pair, verify the cited source actually supports the clai
 - User-provided source: extract relevant passage; exact-string match for direct quotes (delegate to `scripts/verify_exact_quote.py`); semantic match for paraphrased claims
 - No source, abstract available via PubMed: check whether abstract supports, contradicts, or is silent on the claim
 - Need full text: attempt PMC fetch; if open access, retrieve and search; if paywalled, assign `UNVERIFIED` with `reason: paywalled_full_text`
-- Citation context: query Scite for the cited paper's tally of supporting / contradicting / mentioning citations
+- Citation context: call `mcp__scite__search_literature` with `dois=[<DOI>]` + `term=<key claim phrase>` to retrieve sentiment-classified citing snippets. Use **supporting** snippets as evidence for `VERIFIED`; use **contrasting** snippets as evidence for `CONTRADICTED` or `OVERGENERALIZED`. Capability key: `verification.claim_alignment` (fallback). The `result_summary` and any sentiment-attributed claim in the report **MUST** be tagged "per Scite classification" — Scite has documented bias toward 'mentioning' classification (see `tool-lookup.yaml` `literature.citation_context` notes).
 - Claim too specific for abstract-only check and full text unavailable: `UNVERIFIED`, **MUST NOT** flag as `CONTRADICTED`
 
 **Verdict assignments** (canonical):
@@ -163,6 +180,8 @@ For each claim-citation pair, verify the cited source actually supports the clai
 
 Cherry-picking — where the cite-claim pair itself is verified but the document selectively suppressed contradicting literature — is **not** a Stage 3 concern (the cited source genuinely supports the claim) and is handled in Stage 4.
 
+**On stage completion:** persist via `checkpoint.py write --stage 3` (same shape as Stage 2).
+
 ### Stage 4 — Uncited claim verification
 
 For substantive uncited claims (depth permitting), search for support.
@@ -171,11 +190,13 @@ For substantive uncited claims (depth permitting), search for support.
 - Biomedical: PubMed → bioRxiv (preprints) → Open Targets (target / disease / drug claims) → Consensus (routing aid only) → Scite (citation context) → web
 - General scientific: Crossref / OpenAlex → Exa semantic search → web
 
-Capability keys: `verification.citation_existence`, `verification.claim_alignment`. Live MCP tool wiring deferred to v1.3; in v1.2 the LLM performs the search and records the result in `verification_path[]`.
+Capability keys: `verification.citation_existence`, `verification.claim_alignment`. The LLM invokes the corresponding MCP tools (PubMed, Scite, etc.) directly per the call patterns documented in `tool-lookup.yaml`, and records each call as a `verification_path[]` entry.
 
 Verdict assignments: same as Stage 3.
 
-**Cherry-picking detection** (Tier 3 only): for already-`VERIFIED` cite-claim pairs from Stage 3, additionally query Scite's citation-context tally for the cited paper. If the supporting/contradicting smart-citation ratio is heavily skewed against the document's framing — i.e., the cited paper supports the narrow claim but a substantial body of literature contradicts the broader position the document is using it to advance — emit a separate finding with verdict `OVERGENERALIZED`. The "claim" being overgeneralized here is the implicit consensus framing, not the narrow cite-claim pair (which remains `VERIFIED` in the matrix). Recommended action: add a contrasting citation or scope-limit the claim.
+**Cherry-picking detection** (Tier 3 only): for already-`VERIFIED` cite-claim pairs from Stage 3, additionally call `mcp__scite__search_literature` with `dois=[<cited DOI>]` (no `term`) to fetch the citation tally. Compute `USI = supporting / (supporting + contrasting)`. If `USI < 0.5` (matches deep-research's `[CONTESTED]` threshold), emit a separate finding with verdict `OVERGENERALIZED`. The "claim" being overgeneralized here is the implicit consensus framing, not the narrow cite-claim pair (which remains `VERIFIED` in the matrix). The `evidence[]` entry MUST cite the USI value, supporting count, and contrasting count; the `result_summary` MUST be tagged "per Scite classification". Recommended action: add a contrasting citation or scope-limit the claim. Capability key: `verification.cherry_picking`.
+
+**On stage completion:** persist via `checkpoint.py write --stage 4`.
 
 ### Stage 5 — Quotation verification
 
@@ -191,6 +212,8 @@ Direct quotes require exact-string verification. Paraphrase-presented-as-verbati
 - exact match → `QUOTE_VERIFIED`
 - text differs from source → `QUOTE_PARAPHRASED`
 - no matching text in claimed source → `QUOTE_FABRICATED`
+
+**On stage completion:** persist via `checkpoint.py write --stage 5`.
 
 ### Stage 6 — Numerical and named-entity sanity checks
 
@@ -211,6 +234,8 @@ Direct quotes require exact-string verification. Paraphrase-presented-as-verbati
 
 Verdict assignments: `VERIFIED | METADATA_MISMATCH | CONTRADICTED | MISATTRIBUTED | UNVERIFIED`.
 
+**On stage completion:** persist via `checkpoint.py write --stage 6`.
+
 ### Stage 7 — Internal consistency
 
 Cross-check the document against itself. Stage 7 work is largely deterministic and is delegated to scripts:
@@ -224,11 +249,13 @@ The LLM still adjudicates:
 - Definitions that drift across sections → `METADATA_MISMATCH`
 - Author / year mismatches between inline citations and bibliography → `METADATA_MISMATCH`
 
+**On stage completion:** persist via `checkpoint.py write --stage 7`.
+
 ### Stage 8 — Synthesis and reporting
 
 Assemble the report per `schemas/audit_report.json`. **MUST** call `scripts/validate_finding.py` on every finding before assembling the report; on validation failure, loop back to the offending stage rather than deliver an incomplete report.
 
-Render the markdown report via `scripts/render_report.py` (`generate_report(audit_report_dict) → str`).
+Render the markdown report via `scripts/render_report.py` (`generate_report(audit_report_dict) → str`). When resuming from a partial audit, merge `findings[]` and `verification_matrix[]` from all loaded `0N_<stage>.json` artifacts before assembly. Write the final `audit_report.json` to `research/audits/<slug>/audit_report.json` alongside the per-stage artifacts.
 
 ## Canonical verdicts
 
@@ -286,6 +313,7 @@ These are not guidelines — they are enforced by `validate_finding.py`. Finding
 - **MUST** treat Consensus syntheses as routing aids, not primary evidence. Cite the underlying paper, not the synthesis.
 - **MUST** quote the original document verbatim when reproducing a claim in the report (so the user can locate the passage); paraphrase external sources per copyright norms.
 - **MUST** state coverage gaps prominently in `header.coverage_caveats[]` when full-text access blocks a tier-3 check.
+- **MUST** suffix every Scite-derived sentiment claim with "per Scite classification" in the finding's `result_summary`, and emit a coverage caveat noting Scite's documented bias toward 'mentioning' classification in `header.coverage_caveats[]` whenever any finding's `verification_path[]` includes `method == "scite_context"`. The caveat is auto-propagated by `scripts/render_report.py`; the per-finding tag is the LLM's responsibility.
 
 ## Output format
 
@@ -368,10 +396,10 @@ In priority order, for biomedical documents (capability keys in `skills/shared/t
 2. **User-provided source materials** — ground truth
 3. **bioRxiv MCP** — preprint coverage
 4. **Open Targets MCP** — target / disease / drug claims
-5. **Crossref / OpenAlex** via web fetch (`verification.citation_existence` fallback) — DOI resolution and metadata
-6. **PMC** via web fetch (`verification.claim_alignment` primary) — open-access full text for alignment
-7. **Consensus MCP** — claim-level synthesis as routing aid only
-8. **Scite** via web (`verification.claim_alignment` fallback) — citation context
+5. **Scite MCP** (`verification.citation_existence` primary, `verification.claim_alignment` fallback, `verification.cherry_picking` primary) — `editorialNotices` for retraction / correction detection (Stage 2), sentiment-classified citing snippets for claim alignment (Stage 3), citation tallies + Scite Index for cherry-picking detection (Stage 4 Tier 3). All sentiment outputs reported "per Scite classification" — bias caveat documented at `tool-lookup.yaml` `literature.citation_context`.
+6. **Crossref / OpenAlex** via web fetch (`verification.citation_existence` fallback) — DOI resolution and metadata
+7. **PMC** via web fetch (`verification.claim_alignment` primary) — open-access full text for alignment
+8. **Consensus MCP** — claim-level synthesis as routing aid only
 9. **Exa** via web — semantic search when keyword search fails
 10. **Web search** (`verification.exact_quote` primary) — fallback for everything else; primary path for exact-quote verification
 11. **`entity-resolution` skill** (`verification.entity_sanity` delegate) — gene / drug / disease ID resolution

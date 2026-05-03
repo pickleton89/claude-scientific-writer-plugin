@@ -530,16 +530,23 @@ database_versions:
     fallback: []
 
 # ─── ACCURACY VERIFICATION ───────────────────────────────────────────────────
-# Capability keys consumed by skills/research-accuracy-verifier/ (v1.2.0).
-# Live MCP wiring lands in v1.3; v1.2 declares the contract so capability keys
-# are stable and downstream code can target them.
+# Capability keys consumed by skills/research-accuracy-verifier/.
+# Live MCP wiring (Scite, PubMed, PMC) is now active.
 
 verification:
   citation_existence:
-    description: "Verify a citation exists; resolve DOI/PMID/PMCID; check journal-volume-year impossibility"
+    description: "Verify a citation exists; resolve DOI/PMID/PMCID; check journal-volume-year impossibility; flag retracted / corrected papers"
     primary:
       - tool: pubmed_search
         notes: "PubMed MCP — biomedical primary; returns abstract + metadata"
+      - tool: search_literature  # Scite MCP (mcp__scite__search_literature)
+        notes: >
+          After identifier resolution succeeds, call with `dois=[<resolved DOI>]`
+          (no `term`) to retrieve `editorialNotices` (retractions, corrections,
+          expressions of concern). A clean DOI resolution does NOT exempt the
+          citation from this check — retracted papers resolve cleanly. A non-empty
+          `editorialNotices` field maps to verdict METADATA_MISMATCH (Stage 2).
+          Canonical call shape documented at literature.citation_tallies.
     fallback:
       - tool: crossref_lookup
         notes: "Crossref REST via WebFetch — DOI resolution + journal ISSN start year for volume-year sanity"
@@ -555,10 +562,29 @@ verification:
       - tool: pmc_fetch
         notes: "PMC open-access full text retrieval via WebFetch"
     fallback:
-      - tool: scite_query
-        notes: "Scite MCP — citation context (supporting / disputing / mentioning)"
+      - tool: search_literature  # Scite MCP (mcp__scite__search_literature)
+        notes: >
+          Call with `dois=[<DOI>] + term=<key claim phrase>` for sentiment-classified
+          citing snippets (supporting / contrasting / mentioning). Use supporting
+          snippets as evidence for VERIFIED; contrasting snippets as evidence for
+          CONTRADICTED or OVERGENERALIZED. Bias caveat: tag all sentiment results
+          "per Scite classification" — see literature.citation_context notes
+          for the documented bias toward 'mentioning'.
       - tool: pubmed_abstract
         notes: "Abstract-only check when full text unavailable; mark UNVERIFIED for full-text-required claims"
+
+  cherry_picking:
+    description: "Stage 4 Tier-3 cherry-picking detection — flag VERIFIED cite-claim pairs whose cited paper has a heavily contested citation tally"
+    primary:
+      - tool: search_literature  # Scite MCP (mcp__scite__search_literature)
+        notes: >
+          Call with `dois=[<cited DOI>]` (no `term`) to fetch tallies; compute
+          USI = supporting / (supporting + contrasting). USI < 0.5 (matches
+          deep-research's CONTESTED threshold) → emit OVERGENERALIZED finding
+          flagging the implicit consensus framing (the narrow cite-claim pair
+          remains VERIFIED). See literature.citation_tallies for canonical
+          parameters and return shape.
+    fallback: []
 
   exact_quote:
     description: "Exact-string + whitespace-normalized match of a quoted passage in source text (Stage 5)"
