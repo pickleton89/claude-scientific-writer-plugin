@@ -514,6 +514,35 @@ python {baseDir}/scripts/review_variants.py \
   --open
 ```
 
+### JSON Spec Mode (experimental)
+
+Pass a structured `scientific_figure` JSON spec instead of prose. The spec is validated, optionally patched, and deterministically translated into the prose `source_context` + `communicative_intent` that PaperBanana already consumes — backend and pipeline are unchanged. Purpose: enable scoped re-rolls (change one element without rewriting everything).
+
+- Schema: `{baseDir}/references/scientific_figure.schema.json`
+- Worked example: `{baseDir}/references/examples/spec_egfr_inhibition.json`
+- Patches use [RFC 6902 JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902) (replace / add / remove)
+
+```bash
+# Generate v1 from a spec, save the effective spec for later re-patching
+python {baseDir}/scripts/generate_figure.py \
+  --spec {baseDir}/references/examples/spec_egfr_inhibition.json \
+  --save-spec figures/egfr_v1.spec.json \
+  --output figures/egfr_v1.png
+
+# Re-roll only the aesthetic via a JSON Patch (components + brand stay locked)
+cat > /tmp/patch_aesthetic.json <<'JSON'
+[{"op": "replace", "path": "/scientific_figure/style/aesthetic", "value": "infographic"}]
+JSON
+
+python {baseDir}/scripts/generate_figure.py \
+  --spec figures/egfr_v1.spec.json \
+  --patch /tmp/patch_aesthetic.json \
+  --save-spec figures/egfr_v2.spec.json \
+  --output figures/egfr_v2.png
+```
+
+Spike status: this mode is gated on a 9-figure iteration-cost benchmark (3 base specs × 3 scoped patches each). Ship-criterion: ≥6/9 patches produce visually scoped changes. Below that, the mode does not generalise to other skills and gets removed.
+
 ### Standalone Evaluation
 
 ```bash
@@ -619,6 +648,8 @@ See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 | Document | Purpose |
 |----------|---------|
 | `{baseDir}/references/integration_notes.md` | Architecture decisions and PaperBanana version notes |
+| `{baseDir}/references/scientific_figure.schema.json` | JSON Schema for `--spec` mode (graphical abstracts, methodology, mechanism diagrams) |
+| `{baseDir}/references/examples/spec_egfr_inhibition.json` | Worked example for JSON spec mode |
 | `{baseDir}/data/guidelines/oligon_style.yaml` | Oligon aesthetic guidelines for Stylist agent |
 | `../shared/references/iconography-licensing.md` | Icon-library licensing (BioRender, NIH BIOART, SciDraw, Servier, Noun Project) — re-verify at submission |
 | `../shared/references/pre_submission_checklist.md` | 15-point unified quality gate (Q0 = "should this be a table?") |

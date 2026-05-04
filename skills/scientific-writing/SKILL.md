@@ -337,7 +337,52 @@ Common failure scenarios and how to resolve them:
 2. Run `python {baseDir}/scripts/count_citations.py section.md`
 3. Address any FAIL or LOW status before proceeding
 
+### 12. Plan Mode (Socratic Pre-Drafting)
+
+Optional Stage 0 protocol that elicits the user's argument before drafting
+prose. Activates on phrases like "plan my paper", "think through my draft",
+"before I write", "outline my thesis", "chapter plan".
+
+**When to invoke:**
+- User has data and a research question but is unsure of thesis, structure,
+  or argument.
+- User wants to anticipate reviewer concerns before writing.
+- User is starting a literature-review paper and needs help framing the
+  synthesis.
+
+**When NOT to invoke (and what to do instead):**
+- User is still defining the research question → use `deep-research`
+  (socratic mode) first.
+- User has a finished draft and wants critique → use `peer-review`.
+- User asks for direct drafting → skip Plan Mode and go to §Workflow Stage 1.
+
+**Protocol:** see `references/socratic_planning_protocol.md` for the full
+specification:
+- Step 0 — Research Readiness Check (3 diagnostic questions)
+- Step 1 — Thesis Crystallization (1–3 rounds of probing)
+- Step 2 — Section-by-section negotiation: 6 commitment questions + 5
+  mandatory probes per section (3 for Conclusion); ≥2 rounds of dialogue
+  per section
+- Step 3 — Argument Stress Test
+- Convergence signals (C1–C4) and auto-end rules (8+ rounds in one section
+  → offer skip / accept / pause)
+
+**Output:** a Chapter Plan markdown document — Thesis + per-section summaries
++ stress-test results. The user pastes this back when invoking the skill's
+draft capabilities (§Workflow Stage 1+ below). It replaces ad-hoc drafting
+prompts with structured scaffolding.
+
+**LR variants:** the Lit-Review commitment question has two variants —
+original-research (coverage-thinness framing) and lit-review-paper
+(tension-resolution framing). Use the latter when the user is writing a
+review article rather than original research.
+
 ## Workflow for Manuscript Development
+
+**Stage 0 (optional): Socratic Planning** — Invoke Plan Mode when the user is
+unsure of thesis, structure, or argument. Produces a Chapter Plan that feeds
+Stage 1 outline creation. See §Core Capability 12 above and
+`references/socratic_planning_protocol.md`.
 
 **Stage 1: Planning** — Identify journal, determine reporting guideline, outline IMRAD structure, plan figures/tables.
 
@@ -410,6 +455,7 @@ Run three tests before submission:
 | `reproducible-research` | Data Availability statements, environment documentation, FAIR compliance |
 | `code-documentation` | Documenting analysis code referenced in Methods sections |
 | `tool-lookup.yaml` | Capability key reference for `database_versions.*` queries in Methods sections |
+| `deep-research` (socratic mode) | Use *upstream* of Plan Mode when the user is still defining the research question. Plan Mode (this skill, §Capability 12) picks up after the RQ is fixed; `deep-research` socratic targets research-strategy clarification, Plan Mode targets writing-strategy clarification. |
 
 ### Workflow Guidance
 
@@ -429,6 +475,7 @@ Run three tests before submission:
 - `references/writing_principles.md` - Clarity, conciseness, style
 - `references/field_terminology.md` - Discipline-specific language guides
 - `references/writing_process.md` - Outline-to-prose conversion examples
+- `references/socratic_planning_protocol.md` - Plan Mode protocol (Capability 12 / Workflow Stage 0): commitment questions, mandatory probes, convergence signals, Chapter Plan output
 - `../shared/references/figure_vs_table_decision.md` - When a result belongs in a figure, a table, or both (Fujii 2026; Midway 2020) — apply before drafting the figure or table caption
 - `../shared/references/communication_context_matrix.md` - Audience × time × interaction → figure complexity (Fujii 2026); the **research article** row covers manuscript figures
 - `../shared/references/pre_submission_checklist.md` - 15-point quality gate before submission

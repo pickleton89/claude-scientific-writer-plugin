@@ -1,0 +1,83 @@
+{
+  "scientific_figure": {
+    "meta": {
+      "spec_version": "0.1.0",
+      "title": "Erlotinib competitive inhibition of EGFR",
+      "doc_type": "graphical_abstract"
+    },
+    "subject": {
+      "concept": "Competitive inhibition of EGFR tyrosine kinase by erlotinib at the ATP-binding pocket",
+      "domain": "pharmacology",
+      "audience": "specialist"
+    },
+    "components": [
+      {
+        "id": "node_atp",
+        "label": "ATP",
+        "role": "small_molecule",
+        "emphasis": "secondary",
+        "notes": "Native substrate; competes with erlotinib for binding"
+      },
+      {
+        "id": "node_drug",
+        "label": "Erlotinib",
+        "role": "small_molecule",
+        "emphasis": "primary"
+      },
+      {
+        "id": "node_outcome",
+        "label": "Reduced downstream MAPK signaling",
+        "role": "outcome",
+        "emphasis": "secondary"
+      },
+      {
+        "id": "node_target",
+        "label": "EGFR kinase domain",
+        "role": "protein",
+        "emphasis": "primary",
+        "notes": "Tyrosine kinase; ATP-binding pocket is the site of competitive inhibition"
+      }
+    ],
+    "relationships": [
+      {
+        "from": "node_drug",
+        "to": "node_target",
+        "type": "binds",
+        "label": "competitive (ATP pocket)"
+      },
+      {
+        "from": "node_atp",
+        "to": "node_target",
+        "type": "binds",
+        "label": "native substrate"
+      },
+      {
+        "from": "node_drug",
+        "to": "node_outcome",
+        "type": "leads_to",
+        "label": "via kinase blockade"
+      }
+    ],
+    "narrative": {
+      "key_message": "Erlotinib competitively occupies the EGFR ATP-binding pocket, blocking phosphorylation and downstream MAPK signaling.",
+      "flow_direction": "left_to_right",
+      "supporting_details": [
+        "ATP-binding pocket is the canonical kinase site",
+        "Competitive inhibition is reversible and concentration-dependent",
+        "Downstream effect: attenuated proliferation signaling"
+      ]
+    },
+    "style": {
+      "aesthetic": "diagrammatic",
+      "density": "moderate"
+    },
+    "brand": {
+      "use_oligon": true
+    },
+    "controls": {
+      "lock_components": true,
+      "lock_brand": true,
+      "allow_layout_variation": "minor"
+    }
+  }
+}

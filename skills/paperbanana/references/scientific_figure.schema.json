@@ -1,0 +1,206 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oligon.local/schemas/paperbanana/scientific_figure.schema.json",
+  "title": "scientific_figure",
+  "description": "Structured input spec for PaperBanana graphical abstracts and scientific figures. Translated to prose for PaperBanana's GenerationInput at the CLI layer.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["scientific_figure"],
+  "properties": {
+    "scientific_figure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["meta", "subject", "components", "narrative"],
+      "properties": {
+        "meta": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["spec_version", "title", "doc_type"],
+          "properties": {
+            "spec_version": {
+              "type": "string",
+              "pattern": "^\\d+\\.\\d+\\.\\d+$"
+            },
+            "title": { "type": "string", "minLength": 1 },
+            "doc_type": {
+              "type": "string",
+              "enum": [
+                "graphical_abstract",
+                "methodology",
+                "mechanism",
+                "pathway",
+                "system_overview",
+                "results_summary"
+              ]
+            }
+          }
+        },
+        "subject": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["concept", "domain", "audience"],
+          "properties": {
+            "concept": { "type": "string", "minLength": 1 },
+            "domain": {
+              "type": "string",
+              "enum": [
+                "biology",
+                "chemistry",
+                "biochemistry",
+                "pharmacology",
+                "structural_biology",
+                "genetics",
+                "physics",
+                "computer_science",
+                "general"
+              ]
+            },
+            "audience": {
+              "type": "string",
+              "enum": ["specialist", "interdisciplinary", "general"]
+            }
+          }
+        },
+        "components": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "label", "role"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "label": { "type": "string", "minLength": 1 },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "protein",
+                  "small_molecule",
+                  "gene",
+                  "rna",
+                  "cell",
+                  "tissue",
+                  "process",
+                  "pathway",
+                  "data",
+                  "instrument",
+                  "concept",
+                  "outcome"
+                ]
+              },
+              "emphasis": {
+                "type": "string",
+                "enum": ["primary", "secondary", "background"],
+                "default": "secondary"
+              },
+              "notes": { "type": "string" }
+            }
+          }
+        },
+        "relationships": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["from", "to", "type"],
+            "properties": {
+              "from": { "type": "string" },
+              "to": { "type": "string" },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "activates",
+                  "inhibits",
+                  "binds",
+                  "produces",
+                  "consumes",
+                  "transforms",
+                  "regulates",
+                  "leads_to",
+                  "feeds_back",
+                  "associates_with"
+                ]
+              },
+              "label": { "type": "string" }
+            }
+          },
+          "default": []
+        },
+        "narrative": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["key_message"],
+          "properties": {
+            "key_message": { "type": "string", "minLength": 1 },
+            "flow_direction": {
+              "type": "string",
+              "enum": [
+                "left_to_right",
+                "top_to_bottom",
+                "radial",
+                "circular",
+                "none"
+              ],
+              "default": "left_to_right"
+            },
+            "supporting_details": {
+              "type": "array",
+              "items": { "type": "string" },
+              "default": []
+            }
+          }
+        },
+        "style": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "aesthetic": {
+              "type": "string",
+              "enum": ["diagrammatic", "infographic", "schematic", "illustrative"],
+              "default": "diagrammatic"
+            },
+            "density": {
+              "type": "string",
+              "enum": ["minimal", "moderate", "rich"],
+              "default": "moderate"
+            }
+          },
+          "default": {}
+        },
+        "brand": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "use_oligon": { "type": "boolean", "default": true },
+            "primary_color": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{6}$"
+            },
+            "contrast_color": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{6}$"
+            }
+          },
+          "default": { "use_oligon": true }
+        },
+        "controls": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "lock_components": { "type": "boolean", "default": true },
+            "lock_brand": { "type": "boolean", "default": true },
+            "allow_layout_variation": {
+              "type": "string",
+              "enum": ["none", "minor", "moderate", "major"],
+              "default": "minor"
+            }
+          },
+          "default": {}
+        }
+      }
+    }
+  }
+}

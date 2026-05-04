@@ -265,7 +265,7 @@ skills:
   # ============================================================
 
   scientific-writing:
-    description: Research papers, manuscripts, IMRAD structure, academic writing
+    description: Research papers, manuscripts, IMRAD structure, academic writing, Socratic Plan Mode for pre-drafting
     category: document
     keywords:
       - paper
@@ -283,6 +283,16 @@ skills:
       - journal article
       - thesis
       - dissertation
+      - plan my paper
+      - plan my thesis
+      - plan my dissertation
+      - think through my draft
+      - think through my manuscript
+      - before I write
+      - before I draft
+      - outline my thesis
+      - chapter plan
+      - argument plan
     triggers:
       - "write.*paper"
       - "draft.*manuscript"
@@ -290,6 +300,10 @@ skills:
       - "research.*paper"
       - "academic.*writing"
       - "journal.*article"
+      - "plan.*(paper|thesis|dissertation|manuscript|chapter)"
+      - "think.*through.*(?:draft|paper|thesis|dissertation|manuscript|chapter)"
+      - "before.*(?:I|we).*(?:start.*)?writ"
+      - "socratic.*(?:plan|writ)"
     output_formats: [md, docx, pdf]
     negative_keywords:
       - slide
@@ -536,6 +550,15 @@ skills:
       - peer review
       - referee report
       - reviewer comments
+      - plan my paper
+      - plan my thesis
+      - plan my dissertation
+      - chapter plan
+      - argument plan
+      - before I write
+      - before I draft
+      - think through my draft
+      - think through my manuscript
 
   citation-management:
     description: BibTeX formatting, citation styles, reference management

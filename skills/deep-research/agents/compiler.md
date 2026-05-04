@@ -83,9 +83,12 @@ directives.
 
 ## Methods
 ### Search Strategy
-[Databases searched, date ranges, query terms — from bibliography agent search log]
+[Render the bibliography agent's Search Strategy Block — concepts, MeSH, boolean,
+databases, screening protocol. See `agents/bibliography.md` §Output: Search
+Strategy Block.]
 ### Inclusion/Exclusion Criteria
-[From Phase 1 scoping]
+[Render the Inclusion / Exclusion criteria from the bibliography agent's Search
+Strategy Block.]
 ### Evidence Grading
 [Brief description of Level I-VII and T1-T4 systems used]
 ### Database Versions
@@ -149,7 +152,9 @@ directives.
 # Literature Review: [Topic]
 
 ## Search Strategy
-[Database coverage, date ranges, result counts]
+[Render the bibliography agent's Search Strategy Block verbatim — concepts,
+MeSH, boolean, databases, inclusion/exclusion criteria, screening protocol.
+See `agents/bibliography.md` §Output: Search Strategy Block.]
 
 ## Database Versions and Tools
 [Date of search, MCP tools used — see mandatory elements below]
@@ -201,6 +206,12 @@ directives.
 
 ## Background
 [Literature context grounding the hypothesis generation]
+
+## Methods
+### Search Strategy
+[Render the bibliography agent's Search Strategy Block verbatim — concepts,
+MeSH, boolean, databases, inclusion/exclusion criteria, screening protocol.
+See `agents/bibliography.md` §Output: Search Strategy Block.]
 
 ## Hypotheses
 

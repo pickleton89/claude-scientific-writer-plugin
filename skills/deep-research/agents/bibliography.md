@@ -63,7 +63,38 @@ Results may be incomplete. Re-run when services are restored.
 
 ## Search Strategy Construction
 
+The five-step design framework lives in `references/search_strategy_design.md`
+(concepts → databases → boolean → criteria → screening). Steps 0–4b below are
+the agent's execution-side procedure; the framework reference is the design-side
+authority.
+
+### Step 0: Define Inclusion/Exclusion Criteria
+
+Before query execution, draft inclusion/exclusion criteria. Use the default
+biomed scaffold in `references/search_strategy_design.md` §Step 4 and adjust
+per topic. Criteria must be defined here, not deferred to screening — they
+gate query construction (date filters, study-design qualifiers, language
+restrictions).
+
+Default criteria template (override per RQ):
+
+| Criterion | Include | Exclude |
+|---|---|---|
+| Publication type | Peer-reviewed primary research, systematic reviews, registered preprints | Editorials, news, retracted papers |
+| Study design | Matches RQ (RCT/cohort/case-control/mechanistic) | Designs that cannot answer the RQ |
+| Date range | Per `references/biomedical_research.md` §Currency Rules; foundational works exempt | Older than threshold unless seminal |
+| Language | English | Other (note as gap if key source) |
+| Source quality | Indexed journals, bioRxiv/medRxiv | Predatory journals (per verification agent) |
+
+Add population / intervention / outcome rows for clinical RQs. These criteria
+are emitted verbatim in the Search Strategy Block (see §Output: Search Strategy
+Block below) and consumed by the compiler's `Methods → Inclusion/Exclusion
+Criteria` section.
+
 ### Step 1: Build Query
+
+> Pre-requisite: Step 0 criteria are drafted. Date-range, study-design, and
+> language criteria from Step 0 become Boolean filter clauses below.
 
 From the research question, extract:
 - **Core concepts** (2-4 key terms)
@@ -167,6 +198,73 @@ After deduplication (Step 4) and before screening, assess evidence reception:
 - Use ToolUniverse `EuropePMC_get_fulltext_snippets` for targeted sections
 - Verify key claims against full text
 - Confirm inclusion/exclusion
+
+## Output: Search Strategy Block
+
+Emitted **before** the Annotated Bibliography. Documents the search design
+(Steps 0-3) and screening protocol (Step 5 of `references/search_strategy_design.md`).
+The compiler renders this block into mode-specific report sections (see below).
+
+**Mode gating** (modes where bibliography agent runs; see
+`references/search_strategy_design.md` §Mode Gating for the full mode matrix
+including `socratic` / `review` which skip the bibliography phase entirely):
+
+| Mode | Strategy Block | Notes |
+|------|----------------|-------|
+| `full` | Required | → Methods §Search Strategy + §Inclusion/Exclusion Criteria |
+| `lit-review` | Required | → top-level §Search Strategy |
+| `systematic-review` | Required | → PRISMA Methods §Search Strategy + PRISMA flow |
+| `hypothesis` | Required | → Methods block above competing hypotheses |
+| `quick` | Skipped | Emit one line: `_Search strategy not documented in quick mode._` |
+| `fact-check` | Skipped | Verification report does not require strategy |
+
+**Block template:**
+
+> Canonical source: `references/search_strategy_design.md` §Strategy Block
+> Output Template. Keep this template and that one in sync — update the design
+> doc first, then mirror here.
+
+```markdown
+## Search Strategy
+
+**Concepts:**
+- Primary: [concept 1], [concept 2], [concept 3]
+- Secondary / synonyms: [terms]
+- MeSH headings: [MeSH terms with [MeSH] tag]
+
+**Boolean structure:**
+("concept1" OR "synonym1a" OR "synonym1b")
+  AND ("concept2" OR "synonym2a")
+  AND ("concept3")
+  [NOT "collision_term"]                # only if entity-resolution flagged HIGH
+  Filters: [date range], [language], [study design]
+
+**Databases:** [primary] (primary), [secondary] (secondary), [tertiary] (tertiary)
+  Reception assessment: Scite (post-search; skipped in quick / fact-check)
+
+**Inclusion criteria:**
+- Publication type: [list]
+- Study design: [list]
+- Date range: [range]; foundational works unrestricted
+- Population: [if applicable]
+- Intervention / exposure: [if applicable]
+- Outcome: [if applicable]
+- Language: English
+
+**Exclusion criteria:**
+- [list]
+- Predatory journals (per verification agent)
+- Retracted (per Scite editorial notices)
+
+**Screening protocol:**
+1. Title screening (≤15 s/paper): direct relevance to RQ
+2. Abstract screening (≤2 min/paper): inclusion criteria match; relevance tier (High/Medium/Low)
+3. Full-text assessment for High and Medium tiers
+```
+
+The Search Log table (§Search Documentation below) is the **execution log** —
+which queries actually ran, with hit counts and dedup results. It complements
+but does not replace the Strategy Block.
 
 ## Output: Annotated Bibliography
 

@@ -44,13 +44,25 @@ Examples:
     )
     parser.add_argument(
         "--input",
-        required=True,
-        help="Source text file or quoted string to visualize",
+        help="Source text file or quoted string to visualize (mutually exclusive with --spec)",
     )
     parser.add_argument(
         "--caption",
         default="",
-        help="Communicative intent / figure caption",
+        help="Communicative intent / figure caption (prose mode only)",
+    )
+    parser.add_argument(
+        "--spec",
+        help="Path to a scientific_figure JSON spec (mutually exclusive with --input)",
+    )
+    parser.add_argument(
+        "--patch",
+        help="Path to an RFC 6902 JSON Patch applied to --spec before translation",
+    )
+    parser.add_argument(
+        "--save-spec",
+        metavar="PATH",
+        help="Write the effective (post-patch) spec to PATH for later re-patching",
     )
     parser.add_argument(
         "--output",
@@ -129,6 +141,16 @@ def load_input_text(input_arg: str) -> str:
 def main() -> None:
     args = parse_args()
 
+    if not args.input and not args.spec:
+        print("Error: one of --input or --spec is required.", file=sys.stderr)
+        sys.exit(1)
+    if args.input and args.spec:
+        print("Error: --input and --spec are mutually exclusive.", file=sys.stderr)
+        sys.exit(1)
+    if args.patch and not args.spec:
+        print("Error: --patch requires --spec.", file=sys.stderr)
+        sys.exit(1)
+
     # Lazy imports after arg parsing for fast --help
     from api_utils import load_api_key
 
@@ -153,8 +175,31 @@ def main() -> None:
         )
         sys.exit(1)
 
-    # Load source text
-    source_text = load_input_text(args.input)
+    # Resolve source/intent: prose mode vs spec mode
+    spec_source_context: str | None = None
+    spec_communicative_intent: str | None = None
+
+    if args.spec:
+        from spec_patch import apply_patch
+        from spec_translator import translate_spec
+
+        spec = json.loads(Path(args.spec).read_text(encoding="utf-8"))
+        if args.patch:
+            patch = json.loads(Path(args.patch).read_text(encoding="utf-8"))
+            spec = apply_patch(spec, patch)
+        if args.save_spec:
+            save_path = Path(args.save_spec)
+            save_path.parent.mkdir(parents=True, exist_ok=True)
+            save_path.write_text(json.dumps(spec, indent=2), encoding="utf-8")
+            if args.verbose:
+                print(f"Effective spec saved: {save_path}")
+        spec_source_context, spec_communicative_intent = translate_spec(spec)
+        source_text = spec_source_context
+        if not args.caption:
+            args.caption = spec_communicative_intent
+    else:
+        source_text = load_input_text(args.input)
+
     if not source_text.strip():
         print("Error: Input text is empty.", file=sys.stderr)
         sys.exit(1)
@@ -194,9 +239,13 @@ def main() -> None:
     )
 
     # Prepare generation input
+    if spec_communicative_intent is not None:
+        intent = spec_communicative_intent
+    else:
+        intent = args.caption or "Visual summary of the provided text"
     gen_input = GenerationInput(
         source_context=source_text,
-        communicative_intent=args.caption or "Visual summary of the provided text",
+        communicative_intent=intent,
         diagram_type=DiagramType.METHODOLOGY,
     )
 

@@ -219,6 +219,36 @@ scientific_writing_cases:
     min_confidence: 0.4
     category: document
 
+  - request: "Plan my paper before I draft"
+    expected_skill: scientific-writing
+    min_confidence: 0.5
+    category: document
+    notes: "Plan Mode (Capability 12) — Socratic pre-drafting"
+
+  - request: "Think through my dissertation chapter by chapter"
+    expected_skill: scientific-writing
+    min_confidence: 0.5
+    category: document
+    notes: "Plan Mode trigger via 'think through' + 'chapter' phrasing"
+
+  - request: "I want a chapter plan for my methods section before I write"
+    expected_skill: scientific-writing
+    min_confidence: 0.5
+    category: document
+    notes: "Plan Mode trigger via 'chapter plan' + 'before I write'"
+
+  - request: "Plan my paper on EGFR inhibitor resistance before I draft the literature review section"
+    expected_skill: scientific-writing
+    min_confidence: 0.5
+    category: document
+    notes: "Plan Mode vs deep-research disambiguation: 'plan my paper' + 'before I draft' wins over 'literature review' (which here refers to a manuscript section, not the deep-research mode). Negative-keyword guard in deep-research backstops."
+
+  - request: "Help me think through the discussion section before I draft it"
+    expected_skill: scientific-writing
+    min_confidence: 0.5
+    category: document
+    notes: "Plan Mode disambiguation: 'think through' + 'before I draft' + 'section' all align with Plan Mode, not deep-research."
+
 # ============================================================
 # DOCUMENT CREATION - executive-summary
 # ============================================================
