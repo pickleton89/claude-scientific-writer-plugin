@@ -37,8 +37,17 @@ The 3-tier preference system from `tool-lookup.yaml`:
 | Cross-domain search | Consensus MCP | `search` | AI-synthesized evidence across papers |
 | Citation context | Scite MCP | `search_literature` | Smart Citations: supporting/contrasting/mentioning classification |
 | Citation tallies | Scite MCP | `search_literature` | Per-paper reception breakdown + Scite Index (USI) + editorial notices |
+| Corpus full-text search | Paperclip CLI | `paperclip search` | Full-text across PMC + bioRxiv + medRxiv + arXiv (4 sources); add `-s abstracts` to widen |
+| Corpus map/reduce | Paperclip CLI | `paperclip map` / `paperclip reduce` | Per-paper LLM reader; recommended at 3–10 papers; `m_xxx` map handles |
+| Corpus regex | Paperclip CLI | `paperclip bash 'search ... \| grep ...'` | Sub-second corpus-wide regex; pipes only (no `for`/`while`/`xargs`) |
 | Target-disease | Open Targets MCP | `query_open_targets_graphql` | Disease associations, druggability |
 | Entity search | Open Targets MCP | `search_entities` | Target/disease/drug lookup |
+
+**Paperclip caveats:** Invoked via Bash, not MCP. Requires `paperclip install` + `paperclip login`
+(per machine; vendor SKILL.md auto-installed at `.claude/skills/paperclip/SKILL.md`). The 4-source
+corpus does NOT cover full MEDLINE — PubMed MCP remains the primary metadata source. Skip Paperclip
+silently when the binary is absent (CI / sandboxed environments). Capability keys:
+`literature.corpus_search`, `literature.corpus_grep`.
 
 ### Tier 2: ToolUniverse (fallback, via `grep_tools` → `execute_tool`)
 

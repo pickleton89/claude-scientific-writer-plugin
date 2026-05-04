@@ -36,3 +36,6 @@ outputs/
 Markdown_Files/
 diagrams/
 scratch/
+
+# Paperclip CLI scratch (writable virtual-shell scratch maps to local .gxl/)
+.gxl/

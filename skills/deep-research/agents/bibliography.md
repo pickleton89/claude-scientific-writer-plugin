@@ -29,6 +29,10 @@ search strategy.
 | `get_preprint` | bioRxiv MCP | Get preprint details by DOI | `doi` |
 | `search` | Consensus MCP | Cross-domain evidence synthesis | `query` |
 | `search_literature` | Scite MCP | Citation-aware full-text search; post-search reception assessment | `term`, `dois` |
+| `paperclip search` | Paperclip CLI | Full-text discovery across PMC + bioRxiv + medRxiv + arXiv | `query`, `-n`, `-s`, `--year`, `--journal` |
+| `paperclip map` | Paperclip CLI | Per-paper LLM reader across 3–10 search hits | `--from <s_id>`, `"<question>"` |
+
+**Paperclip is invoked via Bash, not MCP** — requires `paperclip install` + `paperclip login` (per machine). Vendor-managed `SKILL.md` lives at `.claude/skills/paperclip/SKILL.md`. Skip Paperclip silently when the binary is absent (CI / sandboxed environments) — bibliography proceeds with the other databases. Capability keys: `literature.corpus_search`, `literature.corpus_grep`.
 
 ### Fallback Tools (ToolUniverse, use when primary unavailable)
 
@@ -48,6 +52,7 @@ search strategy.
 | Consensus MCP rate-limit | 429 or "rate limit" in response | Wait 30s, retry once | 1 |
 | ToolUniverse session expired | "session" or "auth" error from `execute_tool` | Retry `execute_tool` once | 1 |
 | Scite MCP error/timeout | Error response or timeout from `search_literature` | Skip Step 4b reception assessment; no equivalent fallback | 0 |
+| Paperclip CLI error | Non-zero exit / `paperclip: command not found` / OAuth expired | Skip Paperclip channel; proceed with PubMed + bioRxiv MCP + Consensus | 1 |
 | All tools fail for a database | Fallback also fails | Document gap, proceed with remaining databases | 0 |
 
 **Degraded-mode rule:** If ≥2 databases are unreachable, add to output:
@@ -128,6 +133,13 @@ Select ≥3 databases based on domain (from `references/biomedical_research.md`)
 
 **Note:** Scite is NOT a 4th discovery database. It is a post-search enrichment step applied
 after the bibliography is assembled (see Step 4b below).
+
+**Paperclip channel (optional):** When `paperclip --version` succeeds, run `paperclip search`
+in parallel with the primary databases as a full-text discovery channel covering PMC + bioRxiv
++ medRxiv + arXiv. Modes: `full`, `lit-review`, `systematic-review`, `hypothesis`. Skip for
+`quick`, `fact-check`, `socratic`. Dedupe Paperclip hits by DOI against the other databases.
+Record in the Search Log alongside the other channels (see §Search Log below). For multi-paper
+synthesis, follow with `paperclip map --from <s_id>` (3–10 papers).
 
 ### Consensus Search Optimization
 
@@ -291,14 +303,21 @@ Record for each database searched:
 
 ```markdown
 ## Search Log
-| Database | Date | Query (verbatim) | Filters | Results | After Dedup |
-|----------|------|-------------------|---------|---------|-------------|
-| PubMed | 2026-03-26 | "(EGFR OR ErbB1) AND resistance" | 5yr, English | 342 | 342 |
-| bioRxiv | 2026-03-26 | "EGFR resistance mechanisms" | biology | 28 | 19 |
-| Consensus | 2026-03-26 | "EGFR resistance mechanisms in NSCLC" | — | 15 | 8 |
-| **Total** | | | | **385** | **369** |
-| **Saturation** | Iteration 2 yielded 2.1% new papers (< 5% threshold) | | | |
+| Database | Date | Query (verbatim) | Filters | Results | After Dedup | Trace ID |
+|----------|------|-------------------|---------|---------|-------------|----------|
+| PubMed | 2026-03-26 | "(EGFR OR ErbB1) AND resistance" | 5yr, English | 342 | 342 | — |
+| bioRxiv | 2026-03-26 | "EGFR resistance mechanisms" | biology | 28 | 19 | — |
+| Consensus | 2026-03-26 | "EGFR resistance mechanisms in NSCLC" | — | 15 | 8 | — |
+| Paperclip | 2026-03-26 | `search "EGFR resistance NSCLC" -n 50` | PMC+bioRxiv+medRxiv+arXiv | 47 | 31 | s_a3f1b210 (session-local) |
+| **Total** | | | | **432** | **400** | |
+| **Saturation** | Iteration 2 yielded 2.1% new papers (< 5% threshold) | | | | |
 ```
+
+**Trace ID semantics:** Paperclip's `s_xxxxxxxx` IDs are session-local handles (consumable
+by `paperclip results <ID>` and `paperclip map --from <ID>` on the same machine). They are
+NOT globally reproducible audit IDs. For durable per-citation reproducibility, record the
+Paperclip citation URL alongside each retained paper in the bibliography itself:
+`https://citations.gxl.ai/papers/<doc_id>#L<n1>-L<n2>`.
 
 ## Quantitative Thresholds
 

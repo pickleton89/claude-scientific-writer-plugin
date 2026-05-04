@@ -1,5 +1,5 @@
 # tool-lookup.yaml — Capability-to-Tool Mapping
-# Version: 1.4.0
+# Version: 1.5.0
 #
 # Skills reference capability KEYS (e.g., "disambiguation.gene_to_ensembl"),
 # not raw tool names. This lookup resolves capabilities to tools with
@@ -351,6 +351,50 @@ literature:
     tooluniverse: []
     fallback: []  # No equivalent exists elsewhere — gracefully omit if unavailable
 
+  corpus_search:
+    description: "Full-text discovery + LLM map/reduce across the Paperclip corpus (PMC + bioRxiv + medRxiv + arXiv)"
+    primary:
+      - tool: paperclip search  # Paperclip CLI (invoke via Bash)
+        notes: >
+          Full-text search across PMC + bioRxiv + medRxiv + arXiv (4 sources). Returns
+          a session-local search ID `s_xxxxxxxx` (consumable by `paperclip results <ID>`
+          and `paperclip map --from <ID>`). Search IDs are local trace handles, not
+          globally reproducible — record citation URLs (`https://citations.gxl.ai/papers/<doc_id>#L<n>`)
+          for durable audit trails. Add `-s abstracts` to widen to abstract-only corpus
+          when full-text hits are sparse. Pair with PubMed MCP — Paperclip does NOT cover
+          full MEDLINE.
+      - tool: paperclip map  # Paperclip CLI
+        notes: >
+          `paperclip map --from <s_id> "<question>"` runs a per-paper LLM reader and emits
+          a map result ID `m_xxxxxxxx`. Recommended at 3–10 papers (`-n 5` or `-n 10` on
+          search). Follow with `paperclip reduce --from <m_id> --strategy {summarize|table|themes|consensus|bullet_points|extract}`.
+    tooluniverse: []
+    fallback:
+      - tool: search_preprints  # bioRxiv MCP
+        notes: "If Paperclip CLI is absent, use bioRxiv MCP `search_preprints` (preprints) and PubMed MCP `search_articles` + `get_full_text_article` (PMC OA). arXiv full text has no MCP equivalent — falls back to direct WebFetch on arxiv.org."
+      - tool: search_articles  # PubMed MCP
+        notes: "PubMed search across MEDLINE; pair with `get_full_text_article` for PMC OA full text. Does not cover preprints — combine with `search_preprints`."
+
+  corpus_grep:
+    description: "Sub-second regex search across the Paperclip corpus (full text), or within a single paper"
+    primary:
+      - tool: paperclip grep  # Paperclip CLI (invoke via Bash)
+        notes: >
+          Canonical full-text exact-phrase search across the entire indexed corpus:
+          `paperclip grep -F "<exact passage>" /papers/`. Returns paper IDs and per-paper
+          match counts with file paths and line numbers (`/papers/<id>/sections/<file>:L<n>`),
+          which form the citation URL: `https://citations.gxl.ai/papers/<doc_id>#L<n>`.
+          Within-paper grep: `paperclip grep -F "<pattern>" /papers/<id>/content.lines`.
+          Use `bash 'search ... | grep ...'` ONLY to narrow search-result snippets (title +
+          abstract preview), NOT to find exact passages in full text — that requires
+          `paperclip grep` over `/papers/`. Sandbox (vsh) blocks `for`/`while`/`xargs` —
+          use multiple tool calls instead of loops. SQL surface (`paperclip sql`) capped
+          at 200 rows.
+    tooluniverse: []
+    fallback:
+      - tool: web_search
+        notes: "Quoted-phrase web search when Paperclip unavailable or claim is non-biomedical."
+
 # ─── ML PREDICTIONS ──────────────────────────────────────────────────────────
 
 prediction:
@@ -562,6 +606,15 @@ verification:
       - tool: pmc_fetch
         notes: "PMC open-access full text retrieval via WebFetch"
     fallback:
+      - tool: paperclip search  # Paperclip CLI
+        notes: >
+          When PMC fetch returns paywall / 404, attempt OA full-text retrieval via
+          `paperclip lookup doi <DOI>` (preferred when DOI is known) or
+          `paperclip search "<title>" -n 1`. Read the relevant section files under
+          `/papers/<id>/sections/` or grep `content.lines` for the claim phrase.
+          Higher-fidelity than Scite snippets for claim-alignment because full
+          context is available. Skip if cited paper is not in Paperclip's 4-source
+          corpus (PMC + bioRxiv + medRxiv + arXiv). See literature.corpus_search.
       - tool: search_literature  # Scite MCP (mcp__scite__search_literature)
         notes: >
           Call with `dois=[<DOI>] + term=<key claim phrase>` for sentiment-classified
@@ -588,12 +641,28 @@ verification:
 
   exact_quote:
     description: "Exact-string + whitespace-normalized match of a quoted passage in source text (Stage 5)"
+    # Routing within this capability (precedence): if the source is provided, run `local`
+    # (verify_exact_quote.py) first. If sources_available == "none" or the local script
+    # returns QUOTE_FABRICATED in biomedical context, escalate to `primary` (Paperclip
+    # corpus grep) before falling back to `fallback` (web search).
+    primary:
+      - tool: paperclip grep  # Paperclip CLI
+        notes: >
+          When `sources_available == "none"` (biomedical context), or when verify_exact_quote.py
+          returns QUOTE_FABRICATED for a quote that may simply be misattributed to the wrong
+          paper, run a corpus-wide exact-phrase grep over full text: `paperclip grep -F
+          "<exact passage>" /papers/`. Returns paper IDs and line refs across the entire
+          indexed corpus — the discovered true source is recorded via the citation URL
+          `https://citations.gxl.ai/papers/<doc_id>#L<n>` in the finding's `evidence[]`.
+          Verdict stays `QUOTE_FABRICATED`; remediation guidance changes to "re-attribute
+          to <discovered source>." See literature.corpus_grep for full CLI surface. Skip
+          if non-biomedical or Paperclip absent.
     local:
       - tool: verify_exact_quote.py
-        notes: "skills/research-accuracy-verifier/scripts/ — deterministic; returns QUOTE_VERIFIED|QUOTE_PARAPHRASED|QUOTE_FABRICATED"
+        notes: "skills/research-accuracy-verifier/scripts/ — deterministic; returns QUOTE_VERIFIED|QUOTE_PARAPHRASED|QUOTE_FABRICATED. Run first when source is provided."
     fallback:
       - tool: web_search
-        notes: "Quoted-phrase web search when no source provided"
+        notes: "Quoted-phrase web search when no source provided and Paperclip unavailable / non-biomedical context."
 
   entity_sanity:
     description: "Stage 6 named-entity sanity (gene/protein/drug/cell-line/strain) — delegates to entity-resolution"

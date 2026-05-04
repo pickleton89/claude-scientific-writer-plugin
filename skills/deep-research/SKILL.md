@@ -190,6 +190,7 @@ and advocate assessment to the user.
    - PubMed MCP → `search_articles` (primary for biomedical)
    - bioRxiv MCP → `search_preprints` (cutting-edge)
    - Consensus MCP → `search` (cross-domain synthesis)
+   - Paperclip CLI → `paperclip search` (full-text across PMC + bioRxiv + medRxiv + arXiv; optional, skipped silently if binary absent; mode-gated to `full` / `lit-review` / `systematic-review` / `hypothesis`)
    - ToolUniverse fallbacks → EuropePMC, SemanticScholar (via `grep_tools`/`execute_tool`)
    - Apply collision-aware negative filters if HIGH collision risk
 2. DOI-based deduplication across all sources
