@@ -1,5 +1,9 @@
 # Scientific Writing Principles
 
+> **Canonical home for universal voice/style/revision rules: `../../shared/references/prose_standards.md`** (consumed by all 14 writing skills + peer-review + research-accuracy-verifier).
+>
+> This file is the **scientific-writing-specific deepening** of those universal rules. Where this file and `prose_standards.md` overlap, treat `prose_standards.md` as the source of truth. This file remains useful for examples, IMRAD-anchored worked-through guidance, and historical continuity.
+
 ## Overview
 
 Effective scientific writing requires mastering fundamental principles that ensure clarity, precision, and impact. Unlike creative or narrative writing, scientific writing prioritizes accuracy, conciseness, and objectivity. This guide covers the core principles that distinguish good scientific writing from poor writing and provides practical strategies for improvement.

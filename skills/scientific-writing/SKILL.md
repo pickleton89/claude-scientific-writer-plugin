@@ -19,6 +19,10 @@ when_to_use: |
 
 # Scientific Writing
 
+> **Prose Standards (canonical):** Universal voice/style/revision rules — including the 50+ numbered rules across Voice, Sentence Mechanics, Paragraph Architecture, Word Choice, Hedging, Quantitative Language, AI-Tells, Tensions, Revision, and Anti-Patterns — live in [`../shared/references/prose_standards.md`](../shared/references/prose_standards.md). Machine-readable thresholds for `validate_writing_quality.py` live in [`../shared/references/prose_standards_thresholds.yaml`](../shared/references/prose_standards_thresholds.yaml). The references in this skill (`references/imrad_structure.md`, `references/citation_styles.md`, `references/figures_tables.md`, `references/writing_process.md`) deepen those standards with IMRAD- and document-type-specific guidance.
+>
+> **Document-type guides:** Specialized formats (currently `grant_specific_aims.md`) live in [`references/document_types/`](references/document_types/_index.md).
+
 ## Overview
 
 **This is the core skill for the deep research and writing tool**—combining AI-driven deep research with well-formatted written outputs. Every document produced is backed by comprehensive literature search and verified citations through the `deep-research` and `citation-management` skills.
@@ -388,7 +392,14 @@ Stage 1 outline creation. See §Core Capability 12 above and
 
 **Stage 2: Drafting** — Start with figures/tables, then write sections using two-stage process (outline → prose). Order: Methods → Results → Discussion → Introduction → Abstract → Title.
 
-**Stage 3: Revision** — Check flow, consistency, figure clarity, guideline adherence, citations, word counts, proofread.
+**Stage 3: Revision** — Check flow, consistency, figure clarity, guideline adherence, citations, word counts, proofread. Apply the **revision hierarchy** (Structure → Paragraphs → Sentences → Words) per `../shared/references/prose_standards.md` §10.1, then run the **Five Pre-Submission Tests** (R1–R5) per §10.3.
+
+**Optional Stage 3 hook — humanizer pass.** If the draft contains AI-assisted writing (any LLM-generated paragraphs, including those produced upstream by `deep-research`, `research-paper-summarizer`, or external tools), invoke the `humanizer` skill to remove AI-writing tells. The canonical blacklist of AI tells is `prose_standards.md` §8 (rules AI1–AI8); `humanizer` is the executor. Trigger conditions:
+
+- User explicitly requests it ("run the humanizer pass," "scrub AI patterns").
+- Stage-3 self-check or `validate_writing_quality.py` returns ≥1 STYLE_AI_TELL finding (per `prose_standards_thresholds.yaml` Pass 9).
+
+`humanizer` is **off by default** for human-authored drafts — running it on prose that is already clean wastes effort and risks over-flattening voice (see `prose_standards.md` §9.5 Sterile vs. Controlled Messiness).
 
 **Stage 4: Final Preparation** — Format for journal, prepare supplementary materials, write cover letter, complete checklists.
 
@@ -408,12 +419,17 @@ Document changes in `revision_notes.md` with date and summary of modifications.
 
 ### Pre-Submission Diagnostic Tests
 
-Run three tests before submission:
-1. **Elevator Pitch**: Can someone grasp the main finding from Title + Abstract alone?
-2. **Independence**: Do figures/captions tell the complete story without main text?
-3. **So What?**: Does Discussion explicitly state why findings matter?
+Run the **Five Pre-Submission Tests (R1–R5)** in `../shared/references/prose_standards.md` §10.3 before submission:
 
-**Quick checks**: Acronyms defined, citations consistent, figures legible (fonts ≥8pt).
+1. **R1 Elevator Pitch** — Can someone grasp the main finding from Title + Abstract alone?
+2. **R2 Replication** — Are Methods detailed enough for an expert peer to replicate?
+3. **R3 Independence** — Do figures/captions tell the complete story without main text?
+4. **R4 "So What?"** — Does Discussion explicitly state significance and future directions?
+5. **R5 Numerical Consistency** — Numbers in Abstract = Results = Tables = Figure legends?
+
+Each is a CRITICAL block on submission. Run `scripts/validate_writing_quality.py` to automate the auditable subset against the canonical thresholds in `../shared/references/prose_standards_thresholds.yaml`.
+
+**Quick checks**: Acronyms defined (rule W4), citations consistent (rule C4), figures legible (fonts ≥8pt).
 
 ---
 

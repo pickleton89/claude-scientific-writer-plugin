@@ -20,6 +20,8 @@ Generate concise, persuasive executive summaries that enable decision-makers to 
 
 **Why this matters:** Decision-makers typically have 2-3 minutes to evaluate a document. A well-structured executive summary captures attention, builds confidence in findings, and drives action—while a poorly structured one gets ignored.
 
+> **Prose Standards:** Universal voice/style/revision rules in [`../shared/references/prose_standards.md`](../shared/references/prose_standards.md) apply (active voice, Banana Rule, AI-tells blacklist, R5 numerical consistency). Deliberate divergence: executive summaries follow the **Pyramid Principle** — lead with the conclusion, not the IMRAD funnel. See `prose_standards.md` §9.6 Register by Venue.
+
 ---
 
 ## Quick Start

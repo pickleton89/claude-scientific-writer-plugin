@@ -34,6 +34,8 @@ do_not_trigger:
 A 6-phase research pipeline with 7 specialized agents, 8 operational modes, and
 6 mandatory user checkpoints. Every phase requires user approval before proceeding.
 
+> **Prose Standards:** Synthesis output (literature reviews, hypothesis narratives, fact-check reports) conforms to [`../shared/references/prose_standards.md`](../shared/references/prose_standards.md). Citation integrity rules **C1–C5** apply to every cited source — see [`../scientific-writing/references/citation_styles.md`](../scientific-writing/references/citation_styles.md). The AI-tells blacklist (`prose_standards.md` §8) applies to all generated prose.
+
 ## Mode Selection
 
 Determine the mode from the user's request:

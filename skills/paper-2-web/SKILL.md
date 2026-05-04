@@ -17,6 +17,8 @@ Transform academic papers (LaTeX or PDF) into three promotional formats using th
 The pipeline uses LLM-powered content extraction and iterative refinement to create high-quality outputs for conferences, journals, and academic promotion.
 </overview>
 
+> **Prose Standards:** Web prose, video narration scripts, and poster captions conform to [`../shared/references/prose_standards.md`](../shared/references/prose_standards.md). LLM-generated promotional formats are particularly susceptible to the AI-tells blacklist (§8) — explicitly audit for *groundbreaking, pivotal, transformative, underscoring, highlighting* and similar markers before publishing.
+
 <prerequisites>
 ## Prerequisites
 

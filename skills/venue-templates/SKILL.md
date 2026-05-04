@@ -14,6 +14,8 @@ Access comprehensive LaTeX templates, formatting requirements, and submission gu
 
 Use this skill when preparing manuscripts for journal submission, conference papers, research posters, or grant proposals and need venue-specific formatting requirements and templates.
 
+> **Prose Standards:** Venue-specific *format* (margins, fonts, citation style, page limits) lives here. Universal *prose* rules (voice, sentence mechanics, AI-tells, revision tests) live in [`../shared/references/prose_standards.md`](../shared/references/prose_standards.md). The Register-by-Venue table in `prose_standards.md` §9.6 calibrates voice to audience (Nature, JAMA, NeurIPS, NIH grant) — consult both files when preparing a submission.
+
 ## Prerequisites
 
 Before using this skill, ensure the following are installed:

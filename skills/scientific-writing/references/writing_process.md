@@ -2,6 +2,8 @@
 
 > Detailed guide for the two-stage scientific writing process
 > Load this file when drafting manuscript sections
+>
+> **See also:** Universal voice and revision standards live in `../../shared/references/prose_standards.md`. This file covers the *process* of converting outlines to publishable prose; the universal voice/style rules apply to whatever you draft.
 
 ## Critical Rule
 
@@ -130,3 +132,66 @@ This two-stage process ensures you:
 - Create logical structure before writing
 - Produce polished, publication-ready prose
 - Maintain focus on the narrative flow
+
+---
+
+## The Three-Phase Writing Cycle
+
+The two-stage outline → prose conversion above sits inside a larger three-phase cycle. Treat each phase as a strictly separate cognitive task to avoid creative paralysis.
+
+### Phase 1 — Prewriting (largest time investment)
+
+- Gather information; organize ideas into a sequential roadmap.
+- Brainstorm away from the keyboard (commute, exercise, walks).
+- Establish the central thesis in one sentence (consider Plan Mode — see `socratic_planning_protocol.md`).
+- Choose the venue and confirm format requirements.
+
+Most writing problems are upstream: an unclear thesis or weak structure cannot be fixed at the sentence level. Time spent here saves time downstream.
+
+### Phase 2 — Drafting (silence the inner critic)
+
+- Goal: get ideas down in logical order using complete sentences.
+- Do **not** revise while drafting. No polishing, no rearranging, no fact-checking interruptions.
+- Apply the two-stage outline → prose conversion documented above in this file.
+- Use the writing order in §"Section-Writing Order" below.
+
+### Phase 3 — Revision (more time than drafting)
+
+Apply the **revision hierarchy** (top-down) from `../../shared/references/prose_standards.md` §10.1:
+
+1. Structure — does the logical flow hold?
+2. Paragraphs — single idea each? C-C-C intact?
+3. Sentences — concise? Voice appropriate? Nominalizations gone?
+4. Words — terminology consistent (Banana Rule)? Numbers checked? Hedging calibrated?
+
+Then run the **Five Pre-Submission Tests** (R1–R5) before submission. See `prose_standards.md` §10.3.
+
+Sources: Sainani 4.2, 4.4, 4.5; D2 §VIII; D4 pass 5.
+
+---
+
+## Section-Writing Order
+
+Do not write the manuscript top-to-bottom. Establish the figures and tables first; let the data dictate the story; then build the surrounding prose around the established narrative.
+
+| Order | What to write | Why |
+|---|---|---|
+| 1 | **Figures and Tables** | These are the primary evidence and constrain everything that follows. Designing them first reveals what the story actually is. |
+| 2 | **Results** | Now that the figures are stable, narrate them in the order of the Introduction's objectives (not in the order data were collected). |
+| 3 | **Methods** | With the Results fixed, document precisely how each result was produced. Methods written before Results often miss critical steps revealed only during analysis. |
+| 4 | **Introduction** | Frame the gap *after* the story is fully clear. Otherwise the Introduction sets up a story the data cannot tell. |
+| 5 | **Discussion** | Interpretation, comparison to prior work, limitations, and implications — all easier when the full Results and Introduction are stable. |
+| 6 | **Abstract** | Compress the finished story; an abstract drafted earlier almost always misrepresents the final paper. |
+| 7 | **Title** | Distill the central finding into 10–15 words after the abstract crystallizes the message. |
+
+Sources: Sainani 5.1; D2 §II; D4 pass 5.
+
+---
+
+## Cross-References
+
+- Universal voice/style/revision standards: `../../shared/references/prose_standards.md`
+- Pre-drafting Socratic protocol (Plan Mode): `socratic_planning_protocol.md`
+- IMRAD architecture per section: `imrad_structure.md`
+- Citation hygiene during drafting: `citation_styles.md`
+- Figure-first design: `figures_tables.md`

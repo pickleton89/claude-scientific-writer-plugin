@@ -13,6 +13,8 @@ brand-reference: "../oligon-brand/"
 
 Create rigorous, quantitative summaries of scientific research papers in multiple output formats while preserving all numerical data, statistical details, and domain terminology.
 
+> **Prose Standards:** Summary prose conforms to [`../shared/references/prose_standards.md`](../shared/references/prose_standards.md) (universal voice/style rules). Numerical preservation is rule **Q5/R5** in that spec — every number in the summary must match the source paper exactly.
+
 ## Quick Start
 
 ### Basic Usage

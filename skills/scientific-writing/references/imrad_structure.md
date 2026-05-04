@@ -1,5 +1,7 @@
 # IMRAD Structure Guide
 
+> **See also:** Universal voice, sentence, paragraph, and revision standards live in `../../shared/references/prose_standards.md`. This file covers IMRAD-specific *architecture*; consult `prose_standards.md` for the prose-quality rules that apply across every section.
+
 ## Overview
 
 IMRAD (Introduction, Methods, Results, And Discussion) is the predominant organizational structure for scientific journal articles of original research. Adopted as the majority format since the 1970s, it is now the standard in medical, health, biological, chemical, engineering, and computer sciences.
@@ -686,3 +688,88 @@ crisis in higher education.
 - [ ] Baselines comprehensive
 - [ ] Hyperparameters/seeds reported
 - [ ] Code availability statement
+
+---
+
+## Narrative Frameworks: OCAR and ABT
+
+Two complementary frameworks structure the IMRAD narrative arc. They are **architectural overlays**, not replacements for IMRAD.
+
+### OCAR (Schimel 2012)
+
+OCAR organizes the *story* the IMRAD architecture tells:
+
+- **Opening** — establishes the characters (your study system) and the setting (the field).
+- **Challenge** — identifies the conflict (the gap in current knowledge).
+- **Action** — describes what you did (the experimental approach).
+- **Resolution** — previews the outcome (your findings and their implication).
+
+Maps onto IMRAD as: Opening + Challenge → Introduction; Action → Methods + Results; Resolution → Discussion.
+
+### ABT (Olson 2015)
+
+ABT is the most widely adopted narrative tool in scientific-writing workshops. It compresses the entire paper into a three-clause logical spine:
+
+- **And** — context (what we already know).
+- **But** — the problem or knowledge gap.
+- **Therefore** — the solution or finding.
+
+Use ABT to test whether the manuscript's central claim is logically coherent. If you cannot fill in all three clauses in one sentence, the argument is incomplete.
+
+> *Narrative guides the structure of the paper; precision guides sentence-level word choice.* The two are not in tension — they operate on different layers (Bauman 2023). For the sentence-level precision rules, see `../../shared/references/prose_standards.md`.
+
+---
+
+## Argument & Evidence (TWS A1–A5)
+
+Every claim in a scientific document must be addressable to specific data. Beyond the structural rules above, the *argument* itself must satisfy these requirements:
+
+| ID | Rule | Where it appears in IMRAD |
+|---|---|---|
+| **A1** | **Explicit statement of novelty.** State the main novel contribution (Idea, Theorem, Algorithm, or Tool) clearly in the Introduction. | Introduction (final paragraph) |
+| **A2** | **Introduction–Results alignment.** Every claim made in the Introduction must be supported by corresponding evidence in the Results. No "bait and switch." | Cross-section consistency check |
+| **A3** | **Address controversy head-on.** Do not omit conflicting findings; address field controversies or contradictory conclusions in the Introduction or Discussion. | Introduction (paragraph 2–3) and/or Discussion |
+| **A4** | **Argument for correctness.** Provide a specific logical argument (or proof) for the correctness of any new algorithm, method, or analytical step. | Methods (or supplementary) |
+| **A5** | **State the "So What?".** Explicitly define the strategic significance and broader implications of the findings. | Discussion (final paragraph or dedicated subsection) |
+
+Sources: D1 §5; Medvedev (2020); Nature Cancer (2023). For the Pre-Submission "So What?" test, see `prose_standards.md` §10.3 R4.
+
+---
+
+## Methods Placement: A Resolved Tension
+
+The placement of the Methods section is one of the few principled disagreements between contemporary editorial conventions:
+
+- **Nature Cancer (2023)** suggests placing Methods in a supplement or separate editorial to maintain narrative flow.
+- **Standard IMRAD architecture** insists Methods remain in the main text as a core part of the manuscript "sandwich."
+
+**Default position adopted by this skill:** Methods remain in the main text to ensure immediate technical scrutiny and reproducibility. Move to supplement *only* when the target venue (e.g., *Nature*, *Science*, *Cell*) explicitly requires it. The funder/editor decision is venue-specific; the default is reproducibility-first.
+
+See `../../shared/references/prose_standards.md` §9.6 (Register by Venue) for the broader voice-calibration table that includes Methods placement per venue.
+
+---
+
+## Discoverability Paradox (for Title and Abstract)
+
+Standard advice dictates ruthless brevity in all things. Empirical analysis (Weinberger et al. 2015) reveals an apparent paradox: shorter, overly simplified abstracts actually receive *fewer* citations. Abstracts rich in specific adjectives, adverbs, and robust technical detail achieve higher citation impact — likely because terminology-dense prose performs better in academic search engine algorithms.
+
+**Resolution:**
+
+- Write the **main body** with uncompromising conciseness for human readability.
+- Allow the **title and abstract** to remain dense with specific, descriptive keywords for machine discoverability.
+- Brevity in the body; **density in the metadata.**
+
+This is one of the principles in tension catalogued in `prose_standards.md` §9.3.
+
+---
+
+## Pre-Submission Tests for IMRAD-Specific Coverage
+
+In addition to the universal Five Pre-Submission Tests in `prose_standards.md` §10.3 (R1–R5), confirm the IMRAD-specific items:
+
+- [ ] Introduction follows the four-paragraph funnel: Big Picture → Prior Research → Gap → This Study.
+- [ ] Methods are detailed enough that an *expert peer* could replicate the work exactly (R2).
+- [ ] Results present findings in the order of the objectives stated in the Introduction (not in the order data were collected).
+- [ ] Each finding includes observed result, direction and magnitude of effect, and statistical significance.
+- [ ] Discussion answers both "So What?" (significance, A5) and "What Next?" (future directions).
+- [ ] The argument from Introduction → Results → Discussion satisfies A1–A5.

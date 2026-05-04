@@ -1,5 +1,7 @@
 # Citation Styles Guide
 
+> **See also:** Universal voice and revision standards live in `../../shared/references/prose_standards.md`. This file covers citation *style and format*; the universal rules for citation integrity (§7 Citations & References below, plus the auditable cross-reference checks in `prose_standards_thresholds.yaml` Pass 7) are summarized here and enforced by `validate_writing_quality.py`.
+
 ## Overview
 
 Citation styles provide standardized formats for acknowledging sources in scientific writing. Different disciplines prefer different styles, and journals typically specify which style to use. The five most common citation styles in science are AMA, Vancouver, APA, Chicago, and IEEE.
@@ -718,3 +720,47 @@ Some journals use modified versions of standard styles:
 - Journal Citation Reports (Clarivate): Lists journal citation styles
 - EndNote style repository: >7000 journal-specific styles
 - Zotero Style Repository: https://www.zotero.org/styles
+
+---
+
+## Citation Integrity Rules (TWS C1–C5)
+
+Beyond format, citations must be used **strategically**. These rules are universal across styles and are enforced auditably (see `../../shared/references/prose_standards_thresholds.yaml` Pass 7).
+
+| ID | Rule | Severity | Applies in |
+|---|---|---|---|
+| **C1** | **Citation-free abstracts.** Citations are prohibited in the Abstract. | MAJOR | Abstract |
+| **C2** | **Prioritize primary research.** Selectively cite primary sources that directly support the work; avoid citing every paper in the general field. | MAJOR | Throughout |
+| **C3** | **Citations as procedural proxies.** Use citations in the Methods to point to standard procedures rather than re-describing established techniques. | MINOR | Methods |
+| **C4** | **Cross-reference integrity.** Every citation in the text must appear in the reference list, and every reference list entry must be cited at least once. | CRITICAL | Throughout |
+| **C5** | **Disclose source conflicts.** Note conflicts between cited sources if they impact the interpretation of results. | MAJOR | Introduction, Discussion |
+
+Sources: D1 §7; Nature Cancer (2023); IMRAD Guide.
+
+---
+
+## Citation Hygiene: Avoiding "References to Nowhere"
+
+Two failure modes cause systematic citation problems and should be audited before submission:
+
+### 1. References to Nowhere
+
+A "reference to nowhere" is a citation that points to a paper that does not actually support the claim being made. Causes:
+
+- **Citation copied from a secondary source** without verifying the original.
+- **Citation memory error** — author remembered the author or topic incorrectly.
+- **AI-generated citation** — fabricated or hallucinated references (see `prose_standards.md` §8.8 and the `research-accuracy-verifier` skill).
+
+**Defense:** every citation must be verified against the original paper. Tools: `research-accuracy-verifier` Stage 3 (claim-citation alignment); `citation-management` skill validation pass.
+
+### 2. Citation Propagation (the Telephone Game)
+
+Citation propagation occurs when an author cites a secondary review that itself cites the primary source. Over generations of citation, the original claim drifts:
+
+- Generation 1: Primary paper reports "X reduced symptoms by 12% (p = 0.04)."
+- Generation 2: Review summarizes "X significantly reduces symptoms."
+- Generation 3: Citing paper writes "X is established as a treatment for symptom Y."
+
+The original quantitative finding has degraded into an unsupported claim. **Always cite the primary source for any specific empirical claim.** Cite reviews only when the claim is itself a synthesis or framing claim. Sources: Sainani 4.6; D4 pass 6.
+
+For systematic verification of citation accuracy in AI-assisted drafts, route to the `research-accuracy-verifier` skill.

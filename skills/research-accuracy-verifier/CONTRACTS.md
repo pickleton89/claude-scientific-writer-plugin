@@ -292,6 +292,73 @@ The final `audit_report.json` is also written here, replacing the historical "an
 
 ---
 
+## STYLE_NONCONFORMING verdict family (added v1.3, prose-standards integration)
+
+A separate verdict family for prose-quality violations. **Operates on a parallel pipeline** to the citation/claim verdicts above — does NOT enter the 10-value Verdict enum or the 70-cell Severity matrix; uses its own `style_findings[]` array in the AuditReport when the verifier is run with `checks_enabled` including `prose_quality_audit` (Tier 3 + custom only).
+
+**Source of truth for thresholds:** `../shared/references/prose_standards_thresholds.yaml`. The verifier loads this YAML at startup and uses its severity tags directly (no separate severity matrix — a YAML-tagged CRITICAL is CRITICAL regardless of document type, because prose-standard violations are not document-type-conditional in the way citation errors are).
+
+### Verdict subtypes (10 values, mirrored from YAML rule IDs)
+
+| Verdict | Source rule | Severity (default) | Meaning |
+|---|---|---|---|
+| `STYLE_PASSIVE_OVERUSE` | V1 (Pass 2) | MAJOR | Passive-voice ratio >25% outside Methods (>50% inside Methods) |
+| `STYLE_NOMINALIZATION` | S4 (Pass 2) | MAJOR | Nominalization patterns ("perform an X of," "conduct an X of") detected |
+| `STYLE_BURIED_PREDICATE` | S6 (Pass 3) | MAJOR | Subject-to-main-verb gap >12 words |
+| `STYLE_LONG_SENTENCE` | S2 (Pass 3) | MAJOR | Sentence >25 words |
+| `STYLE_BANANA_VIOLATION` | W6 (Pass 5) | CRITICAL | Synonym substitution for an established term-of-art |
+| `STYLE_TORTURED_PHRASE` | AI8 (Pass 5) | CRITICAL | Algorithmic synonym substitution producing unfamiliar substitute for term-of-art |
+| `STYLE_AI_TELL` | AI1–AI7 (Pass 9) | MAJOR (AI8 → CRITICAL) | One of the AI-writing-tells blacklist patterns matched |
+| `STYLE_NUMERICAL_INCONSISTENCY` | Q5 / R5 (Pass 6, Pass 10) | CRITICAL | Numbers in Abstract ≠ Results ≠ Tables ≠ Figure legends |
+| `STYLE_THROAT_CLEARING` | S1 / AI5 (Pass 1) | MAJOR | One of the throat-clearing patterns matched |
+| `STYLE_ORPHAN_STATISTIC` | Q2b (Pass 6) | MAJOR | *p*-value with no effect size, CI, or direction-of-effect |
+
+### StyleFinding shape (separate from Finding)
+
+```jsonc
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "style_finding.json",
+  "required": ["id","location","original_text","verdict","severity","rule_id","suggested_revision","source_section"],
+  "properties": {
+    "id":                  { "type": "string" },                          // "S001" sequential
+    "location":            { /* same shape as ClaimInventoryItem.location */ },
+    "original_text":       { "type": "string", "minLength": 1 },
+    "verdict":             { "enum": ["STYLE_PASSIVE_OVERUSE","STYLE_NOMINALIZATION","STYLE_BURIED_PREDICATE",
+                                       "STYLE_LONG_SENTENCE","STYLE_BANANA_VIOLATION","STYLE_TORTURED_PHRASE",
+                                       "STYLE_AI_TELL","STYLE_NUMERICAL_INCONSISTENCY","STYLE_THROAT_CLEARING",
+                                       "STYLE_ORPHAN_STATISTIC"] },
+    "severity":            { "enum": ["CRITICAL","MAJOR","MINOR","INFORMATIONAL"] },
+    "rule_id":             { "type": "string" },                          // "V1", "S6", "W6", "AI8", "Q5"
+    "suggested_revision":  { "type": "string" },
+    "source_section":      { "type": "string" },                          // "Abstract", "Introduction", etc.
+    "blacklist_match":     { "type": "string" }                           // optional: which keyword/regex matched (for AI-tells)
+  }
+}
+```
+
+### AuditReport extension
+
+`audit_report.json` gains an optional `style_findings[]` array (alongside `findings[]` for citation-claim verdicts). Empty array if `prose_quality_audit` is not in `checks_enabled`. The `executive_summary` includes a one-line style summary if any STYLE_* verdict is CRITICAL.
+
+### Output format (mirrors prose_standards.md §12)
+
+Every style finding MUST report: original_text, suggested_revision, rule_id, severity. **No silent rewrites** — verifier surfaces every change as a finding for author review.
+
+### Hard predicates for style findings
+
+S-P1. `severity == CRITICAL ⟹ rule_id ∈ {W6, AI8, Q5, R5}` (only the canonical CRITICAL rules can produce CRITICAL style findings)
+S-P2. `verdict matches its rule_id family` (e.g., `STYLE_BANANA_VIOLATION` only with `rule_id == "W6"`)
+S-P3. `style findings load thresholds from prose_standards_thresholds.yaml` — verifier MUST refuse to run prose_quality_audit if YAML is missing or schema-invalid
+
+### What is intentionally OUT of style_findings
+
+- Subjective stylistic critique not tied to a numbered rule in `prose_standards.md` — those belong in human peer review (`peer-review` skill), not a deterministic verifier.
+- Voice/tone judgments below MAJOR severity — keep verifier output actionable.
+- Banana-rule false positives where the substitution is explicitly defined in the document (e.g., "the obese group (BMI ≥ 30, hereafter Group A)") — verifier must respect explicit synonym definitions.
+
+---
+
 ## Validator pattern reminder
 
 All validators in `scripts/validate_*.py` MUST use the **2-stage continue-on-failure** pattern:

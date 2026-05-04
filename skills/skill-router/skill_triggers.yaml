@@ -293,6 +293,17 @@ skills:
       - outline my thesis
       - chapter plan
       - argument plan
+      - specific aims
+      - aims page
+      - grant specific aims
+      - R01
+      - R21
+      - R03
+      - K-series
+      - F-series
+      - NIH grant
+      - grant proposal
+      - research strategy
     triggers:
       - "write.*paper"
       - "draft.*manuscript"
@@ -304,6 +315,9 @@ skills:
       - "think.*through.*(?:draft|paper|thesis|dissertation|manuscript|chapter)"
       - "before.*(?:I|we).*(?:start.*)?writ"
       - "socratic.*(?:plan|writ)"
+      - "(specific.aims|aims.page)"
+      - "(R01|R21|R03|K-?series|F-?series).*(grant|proposal|application)"
+      - "(NIH|NSF).*grant.*(?:write|draft|prepare)"
     output_formats: [md, docx, pdf]
     negative_keywords:
       - slide

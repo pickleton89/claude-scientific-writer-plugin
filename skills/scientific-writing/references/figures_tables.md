@@ -1,5 +1,7 @@
 # Figures and Tables Best Practices
 
+> **See also:** Universal voice and revision standards live in `../../shared/references/prose_standards.md`. This file covers figure/table content and integration with prose; for visual-design specifications (color, typography, dimensions, accessibility) consult `oligon-brand`, `plotting-libraries`, and `../../shared/references/pre_submission_checklist.md`.
+
 ## Overview
 
 Figures and tables are essential components of scientific papers, serving to display data patterns, summarize results, and provide evidence for conclusions. Effective visual displays enhance comprehension and can sustain reader interest while illustrating trends, patterns, and relationships not easily conveyed through text alone.
@@ -849,3 +851,75 @@ Figure 1. Architecture of proposed model. (a) Encoder with 12 transformer layers
 - [ ] All display items necessary (each tells important part of story)?
 - [ ] Visual style matches target journal?
 - [ ] Quality comparable to published examples in journal?
+
+---
+
+## Figure & Caption Rules (TWS F1–F5)
+
+Visual elements and legends must function as standalone units of information, conveying the study's message without reference to the main text. These rules are enforced auditably (see `../../shared/references/prose_standards_thresholds.yaml` Pass 8).
+
+| ID | Rule | Severity |
+|---|---|---|
+| **F1** | **Standalone captions.** Captions define all abbreviations, statistical symbols, and error bars used within the figure. | MAJOR |
+| **F2** | **Strategic element selection.** Use Figures for trends and patterns; use Tables for precise numerical values and demographic characteristics. | MAJOR |
+| **F3** | **Numerical mention order.** Mention every Figure and Table in the text in chronological numerical order (Figure 1 before Figure 2, etc.). | MAJOR |
+| **F4** | **Logic visualization.** For software or algorithms, include a workflow diagram or pseudocode in the main text. | MAJOR |
+| **F5** | **Explicit sample sizes.** Report the sample size (n) for every experimental group within the figure legend. | MAJOR |
+
+Sources: D1 §8; IMRAD Guide; Medvedev Rule 9; Writing Principles.
+
+---
+
+## The Independence Test
+
+Every figure must pass the **Independence Test**: a reader should be able to understand the key finding by looking at the figure and reading the caption alone, without consulting the main text. Each figure should communicate a clear, one-sentence message.
+
+Captions must include:
+- Definition of all abbreviations used in the figure.
+- Sample size (*n*) per group (F5).
+- Statistical test used.
+- Type of error bar (SE, SD, 95% CI).
+- Units of measurement.
+
+If the figure fails the Independence Test, **rewrite the caption before touching the main text.** This is one of the Five Pre-Submission Tests in `prose_standards.md` §10.3 (R3).
+
+---
+
+## Integration with Prose
+
+The main text must not serve as an audio tour reading every data point in a table line by line. Redundant text dulls the reader's attention. Instead, use the text to **guide interpretation**, **highlight significant trends**, and **provide complementary comparisons**.
+
+> **Redundant:** The control group scored 30 and the treatment group scored 60.
+>
+> **Interpretive:** The treatment group doubled the performance of the control group (Figure 2).
+
+Use **specific callouts** that tell the reader what to see and why it matters:
+
+> **Empty:** Figure 1 shows the results.
+>
+> **Specific:** Figure 1 shows that phosphorylation peaked at 30 minutes and declined to baseline by 2 hours.
+
+The "Empty Callout" anti-pattern is catalogued in `prose_standards.md` §11.
+
+---
+
+## Data-Ink Ratio
+
+Maximize the ratio of *data ink* to *non-data ink* (Tufte). Remove three-dimensional effects, background gradients, unnecessary gridlines, and decorative elements that distract from the scientific message. Every visual element should encode data or provide essential context — nothing more.
+
+For tables specifically: use **only three horizontal lines** (top, header-separator, bottom) and eliminate all internal vertical gridlines. Internal gridlines visually signal an unprofessional manuscript to reviewers (Sainani 5.1).
+
+---
+
+## Chart-Type Selection (cross-skill catalog)
+
+For the comprehensive 35-chart-type lookup with use cases, strengths, weaknesses, and data shapes, see `../../shared/references/chart_types_catalog.md`. Quick rules of thumb:
+
+- **Line graphs** — trends over time or a continuous variable.
+- **Bar graphs** — compare groups across categorical variables.
+- **Scatter plots** — relationships between two continuous variables; transparently display *all* individual data points.
+- **Box plots** — distribution shape, median, quartiles, outliers; preferred over bar+SE for small-n group comparisons.
+- **Violin plots** — full distribution shape; use when n is large enough to estimate a density.
+- **Heatmaps** — patterns across two categorical or ordered axes.
+
+For the prose-side decision (table vs. figure vs. both vs. text-only), see `../../shared/references/figure_vs_table_decision.md` (Fujii 2026; Midway 2020).

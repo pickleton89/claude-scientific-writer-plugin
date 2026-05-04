@@ -10,6 +10,8 @@ allowed-tools: [Read, Write, Edit, Bash]
 # Scientific Slides
 
 > **Design Foundation**: This skill extends [`visual-design`](../visual-design/SKILL.md) for typography, color, composition, and accessibility standards. Cognitive-foundation citations (Cleveland-McGill 1984, Cowan 2010 working-memory limit, Wagemans 2012, Crameri 2020, Fujii 2026 communication context) and cross-skill quality gates also live in [`oligon-brand`](../oligon-brand/SKILL.md) `<design_foundation>` and [`shared/references/`](../shared/references/) (`pre_submission_checklist.md`, `communication_context_matrix.md`, `figure_vs_table_decision.md`).
+>
+> **Prose Standards**: Speaker notes and on-slide text conform to [`../shared/references/prose_standards.md`](../shared/references/prose_standards.md) (active voice, S2 sentence length, no AI-tells). Slide text further compresses per the spoken-word context — see `prose_standards.md` §9.6 Register by Venue.
 
 <overview>
 Create effective scientific presentations for conferences, seminars, defenses, and professional talks. This skill provides decision frameworks for selecting presentation format, structured workflows for development, and integration with AI slide generation tools. Supports PDF (via Nano Banana Pro), PowerPoint (via PPTX skill), and LaTeX Beamer outputs.

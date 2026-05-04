@@ -3,10 +3,16 @@
 """
 Validate scientific writing quality against defined thresholds.
 
+Hard maxima are mirrored from the canonical specification:
+    skills/shared/references/prose_standards_thresholds.yaml
+The YAML is the single source of truth shared with peer-review and
+research-accuracy-verifier (STYLE_NONCONFORMING verdicts). Pedagogical
+sub-thresholds (target/excellent) remain locally defined here.
+
 Checks:
-- Sentence length (target: 15-20 words, max: 25)
-- Paragraph length (target: 100-150 words, max: 200)
-- Passive voice usage (target: <=25%, max: 40%)
+- Sentence length (rule S2; YAML max: 25 words)
+- Paragraph length (rule P4; YAML target 3-7 sentences, hard max 10)
+- Passive voice usage (rule V1; YAML max ratio 0.25 outside Methods)
 
 Usage:
     python validate_writing_quality.py <input_file> [--section SECTION]
@@ -22,24 +28,97 @@ import sys
 from pathlib import Path
 
 
-# Quality thresholds from SKILL.md
+# Path to the canonical YAML threshold spec (shared across writing skills).
+# Resolved relative to this script's location so it works regardless of CWD.
+_CANONICAL_YAML = (
+    Path(__file__).resolve().parents[2]
+    / "shared"
+    / "references"
+    / "prose_standards_thresholds.yaml"
+)
+
+
+def _load_canonical_maxes() -> dict:
+    """
+    Read hard maxima from the canonical YAML so the validator and the verifier
+    cannot drift apart. Returns a dict with keys: sentence_max_words,
+    paragraph_hard_max_sentences, passive_max_ratio_outside_methods.
+
+    Falls back to bundled defaults (matching YAML at v1.0.0) if PyYAML is
+    missing or the file cannot be read. The fallback emits a stderr warning
+    so drift is loud, not silent.
+    """
+    fallback = {
+        "sentence_max_words": 25,
+        "paragraph_hard_max_sentences": 10,
+        "passive_max_ratio_outside_methods": 0.25,
+        "_source": "fallback (YAML not loaded)",
+    }
+    try:
+        import yaml  # PyYAML; optional dep
+    except ImportError:
+        print(
+            "warning: PyYAML not installed; using bundled threshold defaults. "
+            "Install with `uv pip install pyyaml` for canonical thresholds.",
+            file=sys.stderr,
+        )
+        return fallback
+    if not _CANONICAL_YAML.exists():
+        print(
+            f"warning: canonical thresholds YAML not found at {_CANONICAL_YAML}; "
+            "using bundled defaults.",
+            file=sys.stderr,
+        )
+        return fallback
+    try:
+        spec = yaml.safe_load(_CANONICAL_YAML.read_text(encoding="utf-8"))
+        return {
+            "sentence_max_words": spec["pass_3_sentence"]["sentence_length"][
+                "threshold"
+            ]["max_words"],
+            "paragraph_hard_max_sentences": spec["pass_4_paragraph"][
+                "paragraph_length"
+            ]["threshold"]["hard_max_sentences"],
+            "passive_max_ratio_outside_methods": spec["pass_2_voice"][
+                "passive_voice_ratio"
+            ]["threshold"]["max_ratio_outside_methods"],
+            "_source": f"{_CANONICAL_YAML}",
+        }
+    except (KeyError, TypeError) as e:
+        print(
+            f"warning: canonical YAML schema unexpected ({e}); using bundled defaults.",
+            file=sys.stderr,
+        )
+        return fallback
+
+
+_CANONICAL = _load_canonical_maxes()
+
+# Quality thresholds. Hard maxima ('maximum') are sourced from the canonical
+# YAML (above). Pedagogical sub-thresholds (target/excellent) are local to
+# this validator's tiered output.
 THRESHOLDS = {
     "sentence_length": {
         "target_min": 15,
         "target_max": 20,
-        "maximum": 25,
+        "maximum": _CANONICAL["sentence_max_words"],  # canonical: rule S2
         "excellent_max": 18,
     },
     "paragraph_length": {
+        # Words-per-paragraph remain locally defined; canonical rule P4 is
+        # sentences-per-paragraph (3-7 target, hard max 10) — see prose_standards.md §4.
         "target_min": 100,
         "target_max": 150,
         "maximum": 200,
         "excellent_max": 120,
+        "canonical_max_sentences": _CANONICAL["paragraph_hard_max_sentences"],
     },
     "passive_voice": {
-        "target_max": 0.25,  # 25%
-        "maximum": 0.40,  # 40%
-        "excellent_max": 0.15,  # 15%
+        "target_max": _CANONICAL[
+            "passive_max_ratio_outside_methods"
+        ],  # canonical: rule V1
+        "maximum": 0.40,  # higher tolerance bound for ACCEPTABLE tier
+        "excellent_max": 0.15,
     },
 }
 
@@ -112,8 +191,8 @@ def analyze_text(text: str) -> dict:
     max_sentence_length = max(sentence_lengths) if sentence_lengths else 0
     long_sentences = [
         s
-        for s, l in zip(sentences, sentence_lengths)
-        if l > THRESHOLDS["sentence_length"]["maximum"]
+        for s, length in zip(sentences, sentence_lengths)
+        if length > THRESHOLDS["sentence_length"]["maximum"]
     ]
 
     # Paragraph analysis
@@ -123,7 +202,9 @@ def analyze_text(text: str) -> dict:
     )
     max_paragraph_length = max(paragraph_lengths) if paragraph_lengths else 0
     long_paragraphs = sum(
-        1 for l in paragraph_lengths if l > THRESHOLDS["paragraph_length"]["maximum"]
+        1
+        for length in paragraph_lengths
+        if length > THRESHOLDS["paragraph_length"]["maximum"]
     )
 
     # Passive voice analysis

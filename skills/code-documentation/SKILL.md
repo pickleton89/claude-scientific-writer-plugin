@@ -21,6 +21,8 @@ Generate clear, consistent documentation for scientific code that serves both hu
 - Documentation translation or localization
 </scope>
 
+> **Prose Standards:** Notebook narrative cells, README prose, and long-form docstrings conform to [`../shared/references/prose_standards.md`](../shared/references/prose_standards.md) (active voice, S2 sentence length, no AI-tells). Code-internal comments are exempt from prose rules — terse and technical is correct there.
+
 <setup>
 ## Dependencies
 

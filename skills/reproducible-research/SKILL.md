@@ -7,6 +7,8 @@ shared-thresholds: "{baseDir}/../QUANTIFICATION_THRESHOLDS.md"
 ---
 
 > **Quantified Thresholds:** This skill references shared thresholds from [`QUANTIFICATION_THRESHOLDS.md`]({baseDir}/../QUANTIFICATION_THRESHOLDS.md) §5 (Documentation Completeness) and §8 (Iteration & Stopping Criteria).
+>
+> **Prose Standards:** Methods-section prose, Data Availability statements, and Code Availability statements conform to [`../shared/references/prose_standards.md`](../shared/references/prose_standards.md). Methods sections are the one place where passive voice is permitted by default (rule V3).
 
 <objective>
 Guide users through documenting and structuring reproducible scientific computing projects. Achieve ≥75% reproducibility checklist compliance for publication-ready projects. Focus on what to document and where to deposit data—making analyses reproducible by others.

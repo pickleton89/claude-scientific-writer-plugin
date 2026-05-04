@@ -11,6 +11,8 @@ allowed-tools: [Read, Write, Edit, Bash, WebSearch, WebFetch]
 Systematic citation management throughout the research and writing workflow. Extract accurate metadata from multiple sources (CrossRef, PubMed, arXiv), validate citation information, and generate properly formatted BibTeX entries. Critical for maintaining citation accuracy and ensuring reproducible research.
 
 > **For paper discovery:** Use the `deep-research` skill to find papers across multiple databases (PubMed, bioRxiv, Semantic Scholar, Google Scholar). This skill focuses on managing citations after papers have been identified.
+
+> **Prose Standards:** Citation integrity rules **C1–C5** (no citations in abstract, primary-research priority, citations as procedural proxies, cross-reference integrity, source-conflict disclosure) are documented in [`../scientific-writing/references/citation_styles.md`](../scientific-writing/references/citation_styles.md) — see *Citation Integrity Rules* section. The auditable subset (C1, C4) is enforced via [`../shared/references/prose_standards_thresholds.yaml`](../shared/references/prose_standards_thresholds.yaml) Pass 7. Universal voice/style rules are in [`../shared/references/prose_standards.md`](../shared/references/prose_standards.md).
 </overview>
 
 <setup>

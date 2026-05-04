@@ -25,6 +25,21 @@ This skill should be used when:
 
 **Related Resource:** The **venue-templates** skill provides `reviewer_expectations.md` with detailed guidance on what reviewers look for at different venues (Nature/Science, Cell Press, medical journals, ML conferences). Use this to calibrate your review standards to the target venue.
 
+## Writing-Quality Criteria
+
+Beyond methodology and statistics, peer review must evaluate prose quality against the same canonical standards drafters work from. The single source of truth is:
+
+- `../shared/references/prose_standards.md` — universal voice/style/revision rules (13 sections, ~50 numbered rules, severity-tagged CRITICAL/MAJOR/MINOR).
+- `../shared/references/prose_standards_thresholds.yaml` — machine-readable thresholds (10 audit passes consumed by `validate_writing_quality.py` and `research-accuracy-verifier`).
+
+**Reviewer obligation:** flag any rule violation in the manuscript that is severity CRITICAL or MAJOR. Use the rule IDs (e.g., S2, V1, W6, AI8, R5) when citing the violation in your review, so the author can look up the canonical specification. Examples:
+
+- "Several sentences exceed 25 words (rule S2 in `shared/references/prose_standards.md`); please bifurcate into distinct functional units."
+- "Terminology drift: 'obese group' (Methods) becomes 'heavier cohort' (Results) — rule W6 (Banana Rule) violation. Adopt one canonical term."
+- "Numbers in Abstract (n=47) do not match Table 1 (n=49) — rule R5 / Q5 violation. Critical pre-submission failure."
+
+**Mode selection.** Use the **Full** review mode for invited journal reviews; **Section** mode for thesis-chapter feedback; **Targeted** mode when the author requests a specific check (e.g., "audit only my passive-voice usage"); **Interactive** mode for late-stage revision sessions where the author wants paragraph-by-paragraph approval. See `prose_standards.md` §10.4 for mode definitions.
+
 ## Prerequisites
 
 **Required for all reviews:**

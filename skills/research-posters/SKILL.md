@@ -10,6 +10,8 @@ allowed-tools: [Read, Write, Edit, Bash, Glob]
 # Research Posters
 
 > **Design Foundation**: This skill extends [`visual-design`](../visual-design/SKILL.md) for typography, color, composition, and accessibility standards. Cognitive-foundation citations (Cleveland-McGill 1984, Wagemans 2012 Gestalt grouping for direct labelling on posters, Crameri 2020, Fujii 2026 communication context) and cross-skill quality gates also live in [`oligon-brand`](../oligon-brand/SKILL.md) `<design_foundation>` and [`shared/references/`](../shared/references/) (`pre_submission_checklist.md`, `communication_context_matrix.md`, `figure_vs_table_decision.md`).
+>
+> **Prose Standards**: Title text, callouts, and methodology captions conform to [`../shared/references/prose_standards.md`](../shared/references/prose_standards.md). Posters demand even tighter compression than slides (300–800 words total) — apply the AI-tells blacklist (§8) ruthlessly to recover words.
 
 <overview>
 Create publication-quality research posters in either LaTeX (beamerposter, tikzposter, baposter) or PowerPoint format. This skill provides unified workflows for poster design with format-specific implementation paths. Posters are primarily visual media—text-heavy posters fail to communicate effectively.

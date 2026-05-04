@@ -1,0 +1,388 @@
+# Prose Standards — Machine-Readable Thresholds
+# Sibling to prose_standards.md (this directory). The two MUST stay in lockstep.
+# Consumed by:
+#   - skills/scientific-writing/scripts/validate_writing_quality.py
+#   - skills/research-accuracy-verifier (STYLE_NONCONFORMING verdict family)
+#   - skills/peer-review (writing-quality criteria)
+#
+# Severity legend:
+#   CRITICAL  — actively misleads reader; block submission
+#   MAJOR     — significantly impairs clarity; require revision
+#   MINOR     — stylistic optimization; suggest revision
+
+version: "1.0.0"
+canonical_spec: "prose_standards.md"
+
+# ----------------------------------------------------------------------------
+# Pass 1 — Clutter Extraction
+# ----------------------------------------------------------------------------
+pass_1_clutter:
+  throat_clearing_phrases:
+    rule_id: S1
+    severity: MAJOR
+    sources: ["Sainani 4.4", "Writing Principles", "D4 pass 2"]
+    patterns:
+      - "it is important to note that"
+      - "it is worth mentioning that"
+      - "it is worth noting that"
+      - "it has been shown that"
+      - "it has been widely recognized that"
+      - "it should be emphasized that"
+      - "as it is well known"
+      - "as is well known"
+      - "there is"
+      - "there are"
+    case_sensitive: false
+
+  negative_constructions:
+    rule_id: S1b
+    severity: MINOR
+    sources: ["Sainani 1.5"]
+    transformations:
+      - { from: "did not succeed", to: "failed" }
+      - { from: "is not different from", to: "matches" }
+      - { from: "did not find", to: "found no" }
+      - { from: "is not significant", to: "is nonsignificant" }
+
+# ----------------------------------------------------------------------------
+# Pass 2 — Voice & Verb Vitality
+# ----------------------------------------------------------------------------
+pass_2_voice:
+  passive_voice_ratio:
+    rule_id: V1
+    severity: MAJOR
+    sources: ["Sainani 2.3", "UCR", "Rodrigues 2020", "Amdur et al. 2010"]
+    threshold:
+      max_ratio_outside_methods: 0.25
+      max_ratio_in_methods: 0.50  # passive permitted in Methods
+    detection: "auxiliary BE + past_participle (NLP-tagged)"
+
+  nominalization_patterns:
+    rule_id: S4
+    severity: MAJOR
+    sources: ["Sword 2012", "Williams & Bizup 2017", "UCR"]
+    patterns:
+      - "perform(ed|s)? an? \\w+ of"
+      - "conduct(ed|s)? an? \\w+ of"
+      - "make(s|made)? an? \\w+ to"
+      - "provide(s|d)? an? \\w+ of"
+      - "carry out an? \\w+ of"
+      - "achieve(s|d)? an? \\w+ of"
+    common_substitutions:
+      - { from: "provides a confirmation of", to: "confirms" }
+      - { from: "conduct an assessment of", to: "assess" }
+      - { from: "make an adjustment to", to: "adjust" }
+      - { from: "perform a measurement of", to: "measure" }
+      - { from: "performs an analysis of", to: "analyzes" }
+      - { from: "achieves a reduction in", to: "reduces" }
+
+  weak_verbs:
+    rule_id: W5
+    severity: MINOR
+    sources: ["Sainani 4.4", "SciWrite Demo 3"]
+    patterns:
+      - "\\bobtained\\b"
+      - "\\bdid\\b"
+      - "\\bperformed\\b"
+      - "\\bgot\\b"
+      - "\\bmade\\b"
+    suggestion: "Replace with specific action verb (sequenced, titrated, measured, calcined, sliced, phosphorylated, fractionated)"
+
+# ----------------------------------------------------------------------------
+# Pass 3 — Sentence Architecture
+# ----------------------------------------------------------------------------
+pass_3_sentence:
+  sentence_length:
+    rule_id: S2
+    severity: MAJOR
+    sources: ["Writing Principles"]
+    threshold:
+      max_words: 25
+      action_over_threshold: "bifurcate into distinct functional units"
+
+  buried_predicate:
+    rule_id: S6
+    severity: MAJOR
+    sources: ["Williams & Bizup 2017", "D4 pass 3"]
+    threshold:
+      max_subject_to_verb_word_gap: 12
+    detection: "syntactic parse; flag sentences where >12 tokens separate subject head from main verb"
+
+  dangling_modifier:
+    rule_id: S3
+    severity: MAJOR
+    sources: ["UCR"]
+    pattern: "introductory participial/infinitive phrase whose implicit subject differs from main clause subject"
+    example_violation: "To examine cells, the microscope was used."
+    example_correct: "To examine cells, we used the microscope."
+
+  parallel_structure:
+    rule_id: S5
+    severity: MAJOR
+    sources: ["Writing Principles", "SciWrite Demo 4"]
+    detection: "items in coordinated lists must share grammatical form (all noun phrases, all verb phrases, all gerunds, etc.)"
+
+# ----------------------------------------------------------------------------
+# Pass 4 — Paragraph Structure
+# ----------------------------------------------------------------------------
+pass_4_paragraph:
+  paragraph_length:
+    rule_id: P4
+    severity_short: MINOR
+    severity_long: MAJOR
+    sources: ["Sainani 3.4", "Writing Principles"]
+    threshold:
+      target_min_sentences: 3
+      target_max_sentences: 7
+      hard_max_sentences: 10  # > triggers MAJOR
+      hard_min_sentences: 2   # < triggers MINOR
+
+  single_idea:
+    rule_id: P3
+    severity: MAJOR
+    sources: ["Sainani 3.4"]
+    detection: "topic-sentence/conclusion-sentence semantic divergence (heuristic: cosine distance between embedding of first sentence vs. last sentence within a single paragraph)"
+
+  punchline_late:
+    rule_id: P5
+    severity: MINOR
+    sources: ["Sainani 3.4", "SciWrite Demo 3"]
+    detection: "first-sentence-importance-score < last-sentence-importance-score across paragraph (inverted-pyramid violation)"
+
+# ----------------------------------------------------------------------------
+# Pass 5 — Keyword Consistency (Banana Rule)
+# ----------------------------------------------------------------------------
+pass_5_keyword_consistency:
+  banana_rule:
+    rule_id: W6
+    severity: CRITICAL
+    sources: ["Sainani 3.6", "D2 §IV"]
+    procedure:
+      - "Extract canonical terms from Methods section (variables, group names, instrument names, intervention labels)"
+      - "Build allowed-synonym set from explicit definitions (e.g., 'the obese group (BMI ≥ 30, hereafter Group A)')"
+      - "Flag any later-section term referring to the same concept that does not appear in the allowed-synonym set"
+
+  tortured_phrase:
+    rule_id: AI8
+    severity: CRITICAL
+    sources: ["Cabanac et al. 2021"]
+    known_substitutions:
+      - { tortured: "counterfeit consciousness", canonical: "artificial intelligence" }
+      - { tortured: "enormous information", canonical: "big data" }
+      - { tortured: "bosom peril", canonical: "breast cancer" }
+      - { tortured: "irregular backwoods", canonical: "random forest" }
+      - { tortured: "profound learning", canonical: "deep learning" }
+      - { tortured: "haze figuring", canonical: "cloud computing" }
+    detection: "regex match on known list + heuristic flag for any noun phrase pattern matching a known term-of-art structure but not the canonical token"
+
+# ----------------------------------------------------------------------------
+# Pass 6 — Quantitative Integrity
+# ----------------------------------------------------------------------------
+pass_6_quantitative:
+  p_value_reporting:
+    rule_id: Q2
+    severity: CRITICAL
+    sources: ["IMRAD Guide", "ICMJE", "APA Statistical Reporting"]
+    rules:
+      - "Report exact p-value when p ≥ 0.001 (e.g., p = 0.023, not p < 0.05)"
+      - "Use 'p < 0.001' only when p is truly less than 0.001"
+      - "Every primary-outcome p-value must be accompanied by an effect size and 95% CI"
+
+  numerical_consistency:
+    rule_id: Q5
+    severity: CRITICAL
+    sources: ["Writing Principles", "D2 §VIII"]
+    procedure:
+      - "Extract every numeric value from Abstract, Results prose, Tables, Figure legends"
+      - "Match values across sections (sample sizes, percentages, p-values, means, CIs)"
+      - "Flag any discrepancy as CRITICAL"
+
+  orphan_statistic:
+    rule_id: Q2b
+    severity: MAJOR
+    sources: ["IMRAD Guide"]
+    detection: "p-value reported without accompanying effect size, CI, or direction of effect within the same sentence or adjacent sentence"
+
+  vague_quantifiers:
+    rule_id: Q1
+    severity: MAJOR
+    sources: ["Writing Principles"]
+    patterns:
+      - "\\bmany\\b"
+      - "\\bseveral\\b"
+      - "\\bvarious\\b"
+      - "\\bnumerous\\b"
+      - "\\boften\\b"
+      - "\\brecently\\b"
+      - "\\ba lot of\\b"
+    suggestion: "Replace with specific count, percentage, or timeframe"
+
+# ----------------------------------------------------------------------------
+# Pass 7 — Citation & Reference Integrity
+# ----------------------------------------------------------------------------
+pass_7_citations:
+  no_citations_in_abstract:
+    rule_id: C1
+    severity: MAJOR
+    sources: ["IMRAD Guide", "Most journal style guides"]
+    detection: "any citation marker (numeric superscript, parenthetical author-year, [n]) within abstract section"
+
+  cross_reference_integrity:
+    rule_id: C4
+    severity: CRITICAL
+    sources: ["IMRAD Guide"]
+    procedure:
+      - "Every in-text citation appears in the reference list"
+      - "Every reference list entry is cited at least once in the text"
+      - "Bidirectional check"
+
+# ----------------------------------------------------------------------------
+# Pass 8 — Figure & Table Integrity
+# ----------------------------------------------------------------------------
+pass_8_figures_tables:
+  chronological_mention_order:
+    rule_id: F3
+    severity: MAJOR
+    sources: ["IMRAD Guide"]
+    detection: "first mention of Figure N or Table N appears in numerical order; flag out-of-order references"
+
+  sample_size_in_legend:
+    rule_id: F5
+    severity: MAJOR
+    sources: ["IMRAD Guide", "ARRIVE", "CONSORT"]
+    detection: "every figure legend contains explicit n value(s) for each experimental group"
+
+  standalone_caption:
+    rule_id: F1
+    severity: MAJOR
+    sources: ["Writing Principles", "IMRAD Guide"]
+    detection: "caption defines all abbreviations used in figure, identifies statistical tests, and specifies error bar type"
+
+  empty_callout:
+    rule_id: F-EMPTY
+    severity: MINOR
+    sources: ["D2 Appendix", "Sainani 5.2"]
+    patterns:
+      - "Figure \\d+ shows the results"
+      - "Figure \\d+ shows our results"
+      - "Table \\d+ summarizes the results"
+      - "see Figure \\d+"
+    suggestion: "Specify what the figure shows and why it matters"
+
+# ----------------------------------------------------------------------------
+# Pass 9 — AI-Tells Blacklist
+# ----------------------------------------------------------------------------
+pass_9_ai_tells:
+  promotional_bloat:
+    rule_id: AI1
+    severity: MAJOR
+    sources: ["D4 pass 2", "humanizer"]
+    keywords:
+      - "groundbreaking"
+      - "vibrant"
+      - "pivotal"
+      - "transformative"
+      - "robust"  # context-dependent; flag as MINOR if accompanied by quantitative justification
+      - "serves as a testament to"
+      - "stands as a beacon of"
+      - "plays a pivotal role in"
+      - "underscores the importance of"
+      - "highlights the critical nature of"
+
+  trailing_ing_phrases:
+    rule_id: AI2
+    severity: MAJOR
+    sources: ["D4 pass 2", "humanizer"]
+    patterns:
+      - ", underscoring [^.]+\\."
+      - ", highlighting [^.]+\\."
+      - ", reflecting [^.]+\\."
+      - ", emphasizing [^.]+\\."
+      - ", illustrating [^.]+\\."
+    suggestion: "Remove or rewrite as a complete sentence"
+
+  dramatic_binary_contrast:
+    rule_id: AI3
+    severity: MAJOR
+    sources: ["D4 pass 2"]
+    patterns:
+      - "Not because [^.]+\\. Because"
+      - "It's not [^.]+\\. It's"
+      - "This isn't [^.]+\\. This is"
+
+  vague_attribution:
+    rule_id: AI4
+    severity: MAJOR
+    sources: ["humanizer"]
+    patterns:
+      - "experts (argue|believe|say|claim)"
+      - "researchers (have found|have shown|believe)"
+      - "studies (have shown|suggest|indicate)"  # without citation marker
+    suggestion: "Replace with specific source citation"
+
+  em_dash_overuse:
+    rule_id: AI6
+    severity: MINOR
+    sources: ["humanizer"]
+    threshold:
+      max_em_dashes_per_paragraph: 2
+
+  hyperbolic_adjectives:
+    rule_id: AI7
+    severity: MAJOR
+    sources: ["Lendvai 2025", "D4 pass 2"]
+    keywords:
+      - "unprecedented"
+      - "revolutionary"
+      - "paradigm-shifting"
+      - "game-changing"
+      - "cutting-edge"
+      - "state-of-the-art"  # only flag if not directly comparing to a benchmark
+    suggestion: "Remove or replace with specific quantitative comparison"
+
+# ----------------------------------------------------------------------------
+# Pass 10 — Pre-Submission Diagnostic
+# ----------------------------------------------------------------------------
+pass_10_pre_submission:
+  elevator_pitch:
+    rule_id: R1
+    severity: CRITICAL
+    sources: ["Writing Principles"]
+    test: "Main finding identifiable from Title + Abstract alone (no main-text required)"
+
+  replication:
+    rule_id: R2
+    severity: CRITICAL
+    sources: ["IMRAD Guide", "Nature Cancer 2023"]
+    test: "Methods detailed enough for expert peer to replicate"
+
+  independence:
+    rule_id: R3
+    severity: CRITICAL
+    sources: ["Writing Principles"]
+    test: "Every figure and table understandable without main text"
+
+  so_what:
+    rule_id: R4
+    severity: CRITICAL
+    sources: ["IMRAD Guide", "Writing Principles"]
+    test: "Discussion explicitly answers 'So What?' (significance) and 'What Next?' (future directions)"
+
+  numerical_consistency_full:
+    rule_id: R5
+    severity: CRITICAL
+    sources: ["Writing Principles", "D2 §VIII"]
+    test: "Numbers in Abstract = Results = Tables = Figure legends (full reconciliation)"
+
+# ----------------------------------------------------------------------------
+# Output format requirement (consumers of this YAML must enforce)
+# ----------------------------------------------------------------------------
+output_format:
+  required_fields:
+    - original_text
+    - suggested_revision
+    - rule_id
+    - severity
+    - source_section  # which document section the violation appears in
+  forbidden:
+    - silent_rewrites  # never modify text without surfacing the change

@@ -16,6 +16,8 @@ This skill bridges the template infrastructure and PDF component system to provi
 - `oligon_reports.ReportGenerator` - PDF orchestration
 </overview>
 
+> **Prose Standards:** Markdown source content conforms to [`../shared/references/prose_standards.md`](../shared/references/prose_standards.md) (universal voice/style rules). This skill is format-only — it does not edit prose. Run `scientific-writing/scripts/validate_writing_quality.py` on markdown source before generating the PDF.
+
 <brand_application>
 ## Brand Application (Default)
 
