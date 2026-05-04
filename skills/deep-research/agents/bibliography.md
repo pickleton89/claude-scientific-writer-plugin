@@ -19,6 +19,11 @@ search strategy.
 
 ### Primary Tools (use first)
 
+> Paperclip rows in this table are CLI-only (invoked via Bash); they require a
+> one-time `paperclip install --dir <plugin>` + `paperclip login`. If
+> `paperclip --version` fails, the agent skips Paperclip silently and
+> proceeds with the MCP tools above (see Circuit Breakers).
+
 | Tool | MCP Server | When to Use | Key Parameters |
 |------|-----------|-------------|----------------|
 | `search_articles` | PubMed MCP | Primary for all biomedical topics | `query`, `max_results` (default 20) |
@@ -29,6 +34,8 @@ search strategy.
 | `get_preprint` | bioRxiv MCP | Get preprint details by DOI | `doi` |
 | `search` | Consensus MCP | Cross-domain evidence synthesis | `query` |
 | `search_literature` | Scite MCP | Citation-aware full-text search; post-search reception assessment | `term`, `dois` |
+| `paperclip search` | Paperclip CLI | Full-text discovery across bioRxiv+medRxiv+PMC; complements PubMed/bioRxiv abstracts | `query`, `--tag`, `--limit` |
+| `paperclip map` | Paperclip CLI | Per-paper extraction across 3-10 retrieved papers; emits `m_xxx` IDs | `--ids`, `--prompt` |
 
 ### Fallback Tools (ToolUniverse, use when primary unavailable)
 
@@ -48,6 +55,7 @@ search strategy.
 | Consensus MCP rate-limit | 429 or "rate limit" in response | Wait 30s, retry once | 1 |
 | ToolUniverse session expired | "session" or "auth" error from `execute_tool` | Retry `execute_tool` once | 1 |
 | Scite MCP error/timeout | Error response or timeout from `search_literature` | Skip Step 4b reception assessment; no equivalent fallback | 0 |
+| Paperclip CLI unavailable | Non-zero exit / `paperclip: command not found` / OAuth expired | Skip Paperclip discovery; proceed with PubMed + bioRxiv MCP + Consensus | 1 |
 | All tools fail for a database | Fallback also fails | Document gap, proceed with remaining databases | 0 |
 
 **Degraded-mode rule:** If ≥2 databases are unreachable, add to output:
@@ -128,6 +136,14 @@ Select ≥3 databases based on domain (from `references/biomedical_research.md`)
 
 **Note:** Scite is NOT a 4th discovery database. It is a post-search enrichment step applied
 after the bibliography is assembled (see Step 4b below).
+
+**Paperclip note:** When installed, Paperclip parallels bioRxiv as a full-text
+discovery channel — it covers bioRxiv + medRxiv + PMC and returns deterministic
+search-result IDs (`s_xxx`) that go into the Search Log verbatim. Results dedupe
+by DOI against the other databases. Paperclip is not a substitute for PubMed
+(no full MEDLINE coverage) or Scite (no `editorialNotices` for retractions).
+Mode-gated: runs in `full` / `lit-review` / `systematic-review` / `hypothesis`;
+skipped in `quick` / `fact-check` / `socratic`.
 
 ### Consensus Search Optimization
 
@@ -296,7 +312,8 @@ Record for each database searched:
 | PubMed | 2026-03-26 | "(EGFR OR ErbB1) AND resistance" | 5yr, English | 342 | 342 |
 | bioRxiv | 2026-03-26 | "EGFR resistance mechanisms" | biology | 28 | 19 |
 | Consensus | 2026-03-26 | "EGFR resistance mechanisms in NSCLC" | — | 15 | 8 |
-| **Total** | | | | **385** | **369** |
+| Paperclip | 2026-03-26 | search "EGFR resistance NSCLC" --tag biorxiv (id s_a3f1) | full text | 47 | 31 |
+| **Total** | | | | **432** | **400** |
 | **Saturation** | Iteration 2 yielded 2.1% new papers (< 5% threshold) | | | |
 ```
 

@@ -161,7 +161,7 @@ For each claim-citation pair, verify the cited source actually supports the clai
 **Routing**:
 - User-provided source: extract relevant passage; exact-string match for direct quotes (delegate to `scripts/verify_exact_quote.py`); semantic match for paraphrased claims
 - No source, abstract available via PubMed: check whether abstract supports, contradicts, or is silent on the claim
-- Need full text: attempt PMC fetch; if open access, retrieve and search; if paywalled, assign `UNVERIFIED` with `reason: paywalled_full_text`
+- Need full text: attempt PMC fetch; if open access, retrieve and search; if PMC fetch returns paywall / 404, attempt `paperclip search "<title>" --limit 1` to retrieve OA full text from bioRxiv / medRxiv / PMC. If not found in Paperclip's 3-source corpus or `paperclip --version` fails, assign `UNVERIFIED` with `reason: paywalled_full_text`. Capability key: `verification.claim_alignment` (fallback). Canonical call shape: `tool-lookup.yaml` `literature.corpus_search`.
 - Citation context: call `mcp__scite__search_literature` with `dois=[<DOI>]` + `term=<key claim phrase>` to retrieve sentiment-classified citing snippets. Use **supporting** snippets as evidence for `VERIFIED`; use **contrasting** snippets as evidence for `CONTRADICTED` or `OVERGENERALIZED`. Capability key: `verification.claim_alignment` (fallback). The `result_summary` and any sentiment-attributed claim in the report **MUST** be tagged "per Scite classification" — Scite has documented bias toward 'mentioning' classification (see `tool-lookup.yaml` `literature.citation_context` notes).
 - Claim too specific for abstract-only check and full text unavailable: `UNVERIFIED`, **MUST NOT** flag as `CONTRADICTED`
 
@@ -204,7 +204,8 @@ Direct quotes require exact-string verification. Paraphrase-presented-as-verbati
 
 **Procedure** — delegate to `scripts/verify_exact_quote.py` (capability key: `verification.exact_quote`):
 - Source provided → exact-string + whitespace-normalized search in source
-- No source → web search for the exact phrase in quotation marks
+- No source, biomedical context → corpus-wide regex via Paperclip: `paperclip bash 'search "<phrase>" | grep -F "<exact passage>"'`. Capability key `verification.exact_quote` (primary). Non-empty hits → `QUOTE_VERIFIED` with the matching paper's `s_xxx` ID populated in the `evidence[]` entry verbatim. Canonical call shape: `tool-lookup.yaml` `literature.corpus_grep`.
+- No source, Paperclip unavailable or non-biomedical → web search for the exact phrase in quotation marks (existing fallback)
 - Verify attribution (right person, right context)
 - Verify date / venue if specified
 
@@ -399,10 +400,11 @@ In priority order, for biomedical documents (capability keys in `skills/shared/t
 5. **Scite MCP** (`verification.citation_existence` primary, `verification.claim_alignment` fallback, `verification.cherry_picking` primary) — `editorialNotices` for retraction / correction detection (Stage 2), sentiment-classified citing snippets for claim alignment (Stage 3), citation tallies + Scite Index for cherry-picking detection (Stage 4 Tier 3). All sentiment outputs reported "per Scite classification" — bias caveat documented at `tool-lookup.yaml` `literature.citation_context`.
 6. **Crossref / OpenAlex** via web fetch (`verification.citation_existence` fallback) — DOI resolution and metadata
 7. **PMC** via web fetch (`verification.claim_alignment` primary) — open-access full text for alignment
-8. **Consensus MCP** — claim-level synthesis as routing aid only
-9. **Exa** via web — semantic search when keyword search fails
-10. **Web search** (`verification.exact_quote` primary) — fallback for everything else; primary path for exact-quote verification
-11. **`entity-resolution` skill** (`verification.entity_sanity` delegate) — gene / drug / disease ID resolution
+8. **Paperclip CLI** (`verification.exact_quote` primary for Stage 5; `verification.claim_alignment` fallback for Stage 3; `literature.corpus_grep` / `literature.corpus_search`) — full-text corpus regex for exact-quote rescue when no source provided; OA full-text retrieval when PMC fetch fails. CLI transport only; degrades silently if `paperclip --version` exits non-zero. Does NOT replace Scite for retraction or cherry-picking — Paperclip has no `editorialNotices`.
+9. **Consensus MCP** — claim-level synthesis as routing aid only
+10. **Exa** via web — semantic search when keyword search fails
+11. **Web search** (`verification.exact_quote` fallback) — last-resort exact-quote rescue when Paperclip unavailable or non-biomedical context
+12. **`entity-resolution` skill** (`verification.entity_sanity` delegate) — gene / drug / disease ID resolution
 
 For general scientific documents, lead with Crossref / OpenAlex; use PubMed only when the topic crosses into life sciences.
 

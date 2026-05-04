@@ -1,5 +1,5 @@
 # tool-lookup.yaml — Capability-to-Tool Mapping
-# Version: 1.4.0
+# Version: 1.5.0
 #
 # Skills reference capability KEYS (e.g., "disambiguation.gene_to_ensembl"),
 # not raw tool names. This lookup resolves capabilities to tools with
@@ -351,6 +351,54 @@ literature:
     tooluniverse: []
     fallback: []  # No equivalent exists elsewhere — gracefully omit if unavailable
 
+  corpus_search:
+    description: "Full-text discovery across the bioRxiv + medRxiv + PMC corpus (~8M papers); complements PubMed/bioRxiv MCPs which expose abstracts/metadata only"
+    primary:
+      - tool: paperclip search  # Paperclip CLI, invoked via Bash
+        notes: >
+          `paperclip search "<query>" --tag <biorxiv|medrxiv|pmc> --limit N` returns
+          deterministic search-result IDs (s_xxx) usable as reproducibility handles
+          in Search Logs. CLI-only (requires `paperclip install --dir <plugin>` +
+          `paperclip login`); skip silently if `paperclip --version` exits non-zero.
+          3-source corpus does NOT cover full MEDLINE — pair with PubMed MCP for
+          coverage of journals not in PMC.
+      - tool: paperclip searches  # multi-term parallel search
+        notes: "Parallel meta-search across multiple terms; deduped by paper ID."
+      - tool: paperclip map
+        notes: >
+          `paperclip map --ids <s_xxx>... --prompt "<question>"` runs a per-paper
+          extraction across 3-10 papers (the recommended map size); returns m_xxx
+          map IDs. Use for structured extraction across a small retrieved set.
+      - tool: paperclip reduce
+        notes: "`paperclip reduce --map-id m_xxx --prompt ...` synthesizes across map outputs."
+    fallback:
+      - tool: search_articles  # PubMed MCP — abstracts only, but broader coverage
+      - tool: search_preprints  # bioRxiv MCP
+
+  corpus_grep:
+    description: "Sub-second corpus-wide regex / exact-string search across the indexed full-text corpus"
+    primary:
+      - tool: paperclip bash  # Paperclip CLI shell wrapper
+        notes: >
+          `paperclip bash 'search "<phrase>" --tag <tag> | grep -F "<exact>"'`
+          chains discovery + filter in one call. Pipe semantics are CLI-only —
+          MCP transport disables them. SQL is SELECT-only (200-row / 15s);
+          export caps at 1000 rows. Returns paper IDs + matched lines.
+    fallback:
+      - tool: EuropePMC_get_fulltext_snippets  # bounded snippet extraction; no regex
+      - tool: web_search  # last resort for exact-phrase rescue
+
+  figure_qa:
+    description: "Figure-level vision QA on indexed papers (read figures, panels, captions)"
+    primary:
+      - tool: paperclip ask-image
+        notes: >
+          `paperclip ask-image --paper <s_xxx> --figure <id> --question ...`
+          performs vision QA on the figure. No equivalent capability in current
+          MCPs. Consumed only when the document under review references figure
+          content (e.g., "Figure 3 shows..."); skip otherwise.
+    fallback: []
+
 # ─── ML PREDICTIONS ──────────────────────────────────────────────────────────
 
 prediction:
@@ -572,6 +620,13 @@ verification:
           for the documented bias toward 'mentioning'.
       - tool: pubmed_abstract
         notes: "Abstract-only check when full text unavailable; mark UNVERIFIED for full-text-required claims"
+      - tool: paperclip search  # Paperclip CLI OA full-text rescue
+        notes: >
+          When PMC fetch fails (paywall / 404 / non-OA), `paperclip search "<title>" --limit 1`
+          followed by section access can retrieve OA full text from bioRxiv/medRxiv/PMC.
+          Skip if cited paper is not in Paperclip's 3-source corpus — proceed to
+          UNVERIFIED with reason:paywalled_full_text. Canonical call shape documented
+          at literature.corpus_search.
 
   cherry_picking:
     description: "Stage 4 Tier-3 cherry-picking detection — flag VERIFIED cite-claim pairs whose cited paper has a heavily contested citation tally"
@@ -588,12 +643,21 @@ verification:
 
   exact_quote:
     description: "Exact-string + whitespace-normalized match of a quoted passage in source text (Stage 5)"
+    primary:
+      - tool: paperclip bash  # Paperclip CLI corpus grep
+        notes: >
+          Corpus-wide rescue when `sources_available == "none"` (biomedical context).
+          Invocation: `paperclip bash 'search "<phrase>" --tag preprint | grep -F "<exact>"'`.
+          Non-empty hits → QUOTE_VERIFIED with source `s_xxx` ID populated; empty hits
+          fall through to local script + web_search fallback. Capability key
+          consumed by skills/research-accuracy-verifier/ Stage 5. Canonical call shape
+          documented at literature.corpus_grep.
     local:
       - tool: verify_exact_quote.py
         notes: "skills/research-accuracy-verifier/scripts/ — deterministic; returns QUOTE_VERIFIED|QUOTE_PARAPHRASED|QUOTE_FABRICATED"
     fallback:
       - tool: web_search
-        notes: "Quoted-phrase web search when no source provided"
+        notes: "Quoted-phrase web search when no source provided and Paperclip unavailable / non-biomedical"
 
   entity_sanity:
     description: "Stage 6 named-entity sanity (gene/protein/drug/cell-line/strain) — delegates to entity-resolution"

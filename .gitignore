@@ -36,3 +36,7 @@ outputs/
 Markdown_Files/
 diagrams/
 scratch/
+
+# Paperclip CLI — local OAuth state and cache (per machine)
+# Vendor-managed skills/paperclip/SKILL.md is committed as a snapshot.
+.paperclip/
