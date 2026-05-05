@@ -17,7 +17,14 @@ search strategy.
 
 ## MCP Tool Mapping
 
-### Primary Tools (use first)
+> **Tier vs priority.** The headings below group tools by *transport*
+> (MCP/CLI vs ToolUniverse fallback), not by priority. The actual
+> primary/secondary/tertiary *priority* per RQ comes from the frozen
+> Search Contract (see §Step 3 below) — PubMed at the top of this table
+> is NOT automatically THE primary; the contract resolves the tier per
+> domain.
+
+### Discovery + Reception MCPs
 
 | Tool | MCP Server | When to Use | Key Parameters |
 |------|-----------|-------------|----------------|
@@ -161,12 +168,23 @@ questions, since Consensus is designed for this query pattern while Scite adds c
 
 ### Step 4: Execute and Iterate
 
-1. Run primary database search
-2. Run secondary and tertiary database searches
-3. Deduplicate by DOI (remove exact DOI matches across sources)
-4. Count unique results
-5. If < minimum threshold (15 for full, 5 for quick): expand keywords, broaden date range, add databases
-6. Check saturation: run one more search iteration
+The frozen Search Contract from Checkpoint 1 is authoritative — every database
+in `required_databases` MUST be called.
+
+1. **Issue tool calls for ALL `required_databases` from the frozen Search
+   Contract in a SINGLE batched message with parallel tool calls.** Do not
+   serialize. Sequential execution ("call PubMed, wait, then call bioRxiv")
+   is forbidden in this step. Per the user's CLAUDE.md preference, batch
+   independent tool calls. Mode-eligible optional channels (Scite Step 4b
+   for non-quick/non-fact-check, Paperclip for full / lit-review /
+   systematic-review / hypothesis) are batched in the same message unless
+   the user struck them at Checkpoint 1.
+2. Deduplicate by DOI (remove exact DOI matches across sources).
+3. Count unique results.
+4. If < minimum threshold (15 for full, 5 for quick): expand keywords, broaden
+   date range, or refine queries — but do NOT add or remove databases without
+   re-opening the contract for user re-approval.
+5. Check saturation: run one more search iteration
    - If <5% new papers found → saturation achieved
    - If ≥5% new papers → refine query and repeat (max 3 iterations)
 
@@ -192,6 +210,26 @@ After deduplication (Step 4) and before screening, assess evidence reception:
 ```
 | Scite MCP | [date] | TOOL_UNAVAILABLE | No reception data | — | — |
 ```
+
+### Step 4c: Search Audit (hard gate before Checkpoint 2)
+
+Before requesting Checkpoint 2, run `scripts/search_audit.py` against the
+frozen Search Contract:
+
+```
+1. Build the searched-databases list from the Search Log table (Database column)
+2. Call audit_search(contract.to_dict(), searched_databases)
+3. Inspect PhaseGateResult:
+   - passed=True → emit the audit verdict in the Checkpoint 2 packet, proceed
+   - passed=False → list missing databases, re-issue tool calls in a parallel
+     batch for the missing channels, update the Search Log, and re-run audit
+```
+
+**Do NOT request Checkpoint 2 with a failing audit.** Phase 3 progression is
+blocked by this gate. If circuit breakers have permanently disabled a
+required channel (e.g., a fallback also failed), document the gap in the
+Search Log per the §Circuit Breakers degraded-mode rule, then re-open the
+Search Contract with the user for re-approval before continuing.
 
 ## Screening Protocol
 
@@ -277,6 +315,27 @@ including `socratic` / `review` which skip the bibliography phase entirely):
 The Search Log table (§Search Documentation below) is the **execution log** —
 which queries actually ran, with hit counts and dedup results. It complements
 but does not replace the Strategy Block.
+
+### Search Contract Compliance sub-block
+
+After Step 4c (audit), emit a compliance sub-block alongside the Strategy
+Block so the user sees contracted-vs-actual at a glance:
+
+```markdown
+## Search Contract Compliance
+
+**Audit verdict:** PASSED / FAILED
+**Required databases (from contract):** PubMed, Consensus, bioRxiv
+**Searched databases (from Search Log):** PubMed, Consensus, bioRxiv
+**Missing:** none / [list]
+**Optional channels invoked:** Scite (reception), Paperclip (corpus)
+**Optional channels skipped:** [list with reasons — mode-ineligible, user-struck, circuit-broken]
+```
+
+If the audit FAILED but the user re-approved a revised contract (e.g., a
+permanently unavailable channel was struck), record the contract revision
+timestamp in this block alongside the original `frozen_at` for audit-trail
+clarity.
 
 ## Output: Annotated Bibliography
 

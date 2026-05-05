@@ -94,6 +94,31 @@ VAGUE_INDICATORS: list[str] = [
     r"^how\s+would\s+I\s+approach",
 ]
 
+# Quick-mode patterns that, on their own, are weak signals — they describe
+# a discovery action ("find papers") without committing to scope. When the
+# only quick match is one of these AND the prompt also contains completeness
+# language, the auto-selection is flagged for user confirmation.
+WEAK_QUICK_PATTERNS: frozenset[str] = frozenset(
+    {
+        r"find\s+papers?\b",
+        r"any\s+papers?\s+on",
+        r"look\s+up\s+(recent\s+)?(papers?|articles?|studies)",
+    }
+)
+
+# Completeness counter-signals — phrases that imply the user wants depth/breadth
+# rather than a quick lookup, regardless of the surface verb they used.
+COMPLETENESS_COUNTER_SIGNALS: list[str] = [
+    r"\bcomplete\s+(report|review|analysis|summary)?\b",
+    r"\bcomprehensive\b",
+    r"\bthorough\b",
+    r"\bfull\s+report\b",
+    r"\bextensive\b",
+    r"\bin[-\s]?depth\b",
+    r"\bdeep\s+dive\b",
+    r"\beverything\s+(known|on)\b",
+]
+
 
 def select_mode(user_input: str, has_provided_text: bool = False) -> ModeSelection:
     """
@@ -125,10 +150,39 @@ def select_mode(user_input: str, has_provided_text: bool = False) -> ModeSelecti
             if re.search(pattern, text, re.IGNORECASE):
                 matched.append(pattern)
         if matched:
+            confidence = "high"
+            notes: list[str] = []
+
+            # Quick-mode weak-signal detection: if the only quick match is a
+            # discovery-verb pattern AND the user's prompt contains
+            # completeness language, downgrade confidence and flag for the
+            # caller (SKILL.md prompts the user to confirm before locking).
+            if mode == "quick":
+                weak_only = all(p in WEAK_QUICK_PATTERNS for p in matched)
+                counter_hits: list[str] = []
+                for p in COMPLETENESS_COUNTER_SIGNALS:
+                    m = re.search(p, text, re.IGNORECASE)
+                    if m:
+                        # Surface the actual phrase the user typed, not the
+                        # raw regex pattern, so the confirmation note reads
+                        # cleanly when shown to the user.
+                        counter_hits.append(m.group(0))
+                if weak_only and counter_hits:
+                    confidence = "medium"
+                    notes.append(
+                        "Quick mode auto-selected from a weak discovery-verb "
+                        "signal (e.g. 'find papers') but the prompt also "
+                        "contains completeness language "
+                        f"({', '.join(counter_hits)}). Confirm with the user "
+                        "before locking the mode — they may want 'full' or "
+                        "'lit-review' instead."
+                    )
+
             return ModeSelection(
                 selected_mode=mode,
-                confidence="high",
+                confidence=confidence,
                 matched_keywords=matched,
+                notes=notes,
             )
 
     # Check "review" mode (requires provided text)

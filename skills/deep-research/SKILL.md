@@ -70,6 +70,17 @@ User Input
 **Deterministic default:** Use `scripts/mode_selector.py` for keyword-based mode
 selection. The LLM may override for ambiguous or context-dependent cases.
 
+**Mode confirmation (mandatory when confidence is not high):** If
+`mode_selector.py` returns `confidence != "high"` — including the new
+weak-quick-signal case where the prompt mixes discovery verbs ("find papers")
+with completeness language ("complete report", "comprehensive", "thorough") —
+emit a one-line confirmation to the user before locking the mode:
+> "I'm planning to run **{mode}** mode based on your phrasing. For a complete
+> report use `full`; for a survey use `lit-review`. Override?"
+Wait for user input before proceeding to Output Contract generation. The
+confirmation is a soft check, not a checkpoint — a one-liner the user can
+acknowledge or override in a single response.
+
 ### Prompt Adapter
 
 When the user's prompt contains output format specifications (`<output_format>`,
@@ -145,25 +156,41 @@ the next phase begins. There are no auto-continue shortcuts.
 4. Define inclusion/exclusion criteria
 5. Select databases (≥3 required; see `references/biomedical_research.md` for mapping)
 
-### Output Contract Generation
+### Contract Bundle Generation (Output + Search)
 
-After scope is defined and mode is selected, generate the output contract:
+After scope is defined and mode is selected, generate the **contract bundle**
+— Output Contract + Search Contract, both presented at Checkpoint 1, both
+frozen on approval:
 
 1. Run `scripts/mode_selector.py` with the user's prompt to determine mode
-   (if not explicitly specified by the user).
+   (if not explicitly specified by the user). Honor the mode-confirmation
+   prompt above when confidence is not high.
 2. Run `scripts/output_contract.py` to produce the structural contract:
    - Loads the canonical section schema for the selected mode
    - Parses the user's prompt for explicit format specifications
    - Maps user-specified sections to canonical template slots
    - Flags any unmapped items as warnings
-3. Present the contract to the user as part of Checkpoint 1:
-   - Selected mode and confidence level
-   - Section structure with any user-label mappings
-   - Word count targets
-   - File specification (always single markdown file)
-   - Any warnings about unmapped format items
-4. The user must approve the contract before Phase 2 begins.
-   The contract is FROZEN after approval — no structural changes in later phases.
+3. Run `scripts/search_contract.py` to produce the **Search Contract** (skip
+   for `socratic` and `review` — those modes do not search):
+   - Inputs: `mode`, `domain` (biomedical / molecular / pharmacology /
+     cross-domain / preprint-heavy), `research_question`
+   - Outputs the required-database list (per `thresholds.MIN_DATABASES` +
+     the domain tier table) plus mode-eligible optional channels (Scite
+     reception, Paperclip full-text)
+   - Mode-skipped channels are surfaced explicitly so the user can see
+     *why* a tool is absent
+4. Present BOTH contracts to the user as part of Checkpoint 1:
+   - Selected mode and confidence level (plus any mode-confirmation note)
+   - Output: section structure with user-label mappings, word counts, file spec
+   - Search: required databases (gated), optional channels (mode-eligible),
+     mode-skipped channels, and the `MIN_DATABASES` / `MIN_SOURCES` floor
+   - Any warnings from either contract
+5. The user can strike specific optional channels from the Search Contract
+   (e.g., "skip Paperclip") via `SearchContract.strike()`. Required channels
+   cannot be struck below `MIN_DATABASES`.
+6. The user must approve the bundle before Phase 2 begins. Both contracts
+   are FROZEN after approval — no structural changes and no database
+   additions/removals in later phases without re-approval.
 
 ### RQ Evaluation Scoring
 
@@ -188,13 +215,22 @@ and advocate assessment to the user.
 **Objective:** Systematic literature search and source verification.
 
 **Process:**
-1. Load `agents/bibliography.md`. Execute multi-database search:
-   - PubMed MCP → `search_articles` (primary for biomedical)
-   - bioRxiv MCP → `search_preprints` (cutting-edge)
-   - Consensus MCP → `search` (cross-domain synthesis)
-   - Paperclip CLI → `paperclip search` (full-text across PMC + bioRxiv + medRxiv + arXiv; optional, skipped silently if binary absent; mode-gated to `full` / `lit-review` / `systematic-review` / `hypothesis`)
-   - ToolUniverse fallbacks → EuropePMC, SemanticScholar (via `grep_tools`/`execute_tool`)
-   - Apply collision-aware negative filters if HIGH collision risk
+1. Load `agents/bibliography.md`. Execute multi-database search **per the
+   frozen Search Contract**:
+   - The Search Contract's `required_databases` list is authoritative — every
+     entry MUST be called.
+   - **Issue all required-database tool calls in a SINGLE batched message
+     using parallel tool calls.** Sequential execution (call PubMed, wait,
+     then call bioRxiv) is forbidden in this step. Per the user's CLAUDE.md
+     preference, batch independent tool calls.
+   - Mode-eligible optional channels (Scite reception in Step 4b, Paperclip
+     in `full` / `lit-review` / `systematic-review` / `hypothesis`) are
+     also called in the same parallel batch unless the user struck them
+     at Checkpoint 1.
+   - ToolUniverse fallbacks → EuropePMC, SemanticScholar (via
+     `grep_tools`/`execute_tool`) only fire when a contract-required MCP
+     trips its circuit breaker.
+   - Apply collision-aware negative filters if HIGH collision risk.
 2. DOI-based deduplication across all sources
 3. Screen results against inclusion/exclusion criteria
 4. Load `agents/verification.md`. Grade each source:
@@ -212,9 +248,18 @@ and advocate assessment to the user.
 - ≥60% papers from last 5 years (unless historical review)
 - All sources graded with evidence level
 
+**Hard gate (Phase 2 → Phase 3):** Run `scripts/search_audit.py` against the
+frozen Search Contract before requesting Checkpoint 2. The audit calls
+`exit_criteria.audit_phase_2_search()` to compare contracted required
+databases against the actual Search Log. If `passed: false`, the Bibliography
+agent MUST loop back, issue parallel tool calls for the missing channels,
+and re-run the audit. Phase 3 is BLOCKED until the audit passes. Do NOT
+request Checkpoint 2 with a failing audit.
+
 **CHECKPOINT 2 — Source Review:**
-Present annotated bibliography with source counts, evidence levels, database coverage,
-and search saturation metric to the user.
+Present annotated bibliography with source counts, evidence levels, database
+coverage, search saturation metric, and the **Search Audit verdict**
+(passed / missing-databases list) to the user.
 **User must approve sources before Phase 3.**
 
 ### Phase 3: ANALYSIS

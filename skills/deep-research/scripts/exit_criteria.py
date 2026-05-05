@@ -1089,6 +1089,84 @@ def generate_exit_report(result: StageCheckResult) -> str:
     return "\n".join(lines)
 
 
+# ---------------------------------------------------------------------------
+# Public wrapper: deep-research Phase 2 search audit
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class PhaseGateResult:
+    """Result of a deep-research phase-progression gate check."""
+
+    passed: bool
+    phase: str
+    required_databases: list[str] = field(default_factory=list)
+    searched_databases: list[str] = field(default_factory=list)
+    missing_databases: list[str] = field(default_factory=list)
+    message: str = ""
+
+    def to_dict(self) -> dict:
+        """Convert to JSON-serialisable dict."""
+        return {
+            "passed": self.passed,
+            "phase": self.phase,
+            "required_databases": list(self.required_databases),
+            "searched_databases": list(self.searched_databases),
+            "missing_databases": list(self.missing_databases),
+            "message": self.message,
+        }
+
+
+def audit_phase_2_search(
+    required_databases: list[str],
+    searched_databases: list[str],
+) -> PhaseGateResult:
+    """
+    Hard gate for Phase 2 → Phase 3 progression in the deep-research pipeline.
+
+    Wraps the existing :func:`_check_all_databases_searched` private helper
+    with a deep-research-tailored input/output shape. The Bibliography agent
+    calls this at the end of Phase 2 against the frozen Search Contract; if
+    ``passed`` is False, the agent MUST loop back and call missing databases
+    before requesting Checkpoint 2.
+
+    Args:
+        required_databases: Database names from the frozen Search Contract's
+            ``required_databases`` block (each item's ``name`` field).
+        searched_databases: Database names that were actually called during
+            Phase 2 — typically extracted from the Search Log table.
+
+    Returns:
+        ``PhaseGateResult`` with ``passed``, missing-databases list, and a
+        human-readable message suitable for surfacing to the user.
+    """
+    data = StageData(
+        stage="search",
+        review_type="systematic",
+        databases_selected=list(required_databases),
+        databases_searched=list(searched_databases),
+    )
+    config = STAGE_CRITERIA["search"]["criteria"]["all_databases_searched"]
+    inner = _check_all_databases_searched(
+        criterion_id="all_databases_searched",
+        config=config,
+        data=data,
+    )
+
+    selected_set = set(required_databases)
+    searched_set = set(searched_databases)
+    missing = sorted(selected_set - searched_set)
+
+    return PhaseGateResult(
+        passed=inner.status == CriterionStatus.PASSED,
+        phase="phase_2_investigation",
+        required_databases=list(required_databases),
+        searched_databases=list(searched_databases),
+        missing_databases=missing,
+        message=inner.message,
+    )
+
+
 def main():
     """Example usage and demonstration."""
     print("Exit Criteria Checker Demo")

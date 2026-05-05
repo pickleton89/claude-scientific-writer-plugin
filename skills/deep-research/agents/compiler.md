@@ -47,6 +47,18 @@ directives found in the user's prompt.**
    may be used as heading text (e.g., "## Risk Assessment Matrix" instead of
    "## Results: Overview"), but the structural position is fixed by the contract.
 
+7. **Refuse to assemble incomplete searches (pre-flight)**: For modes that
+   run a search phase, before assembling output, verify that the Search Log
+   contains at least the contracted `min_databases` distinct databases AND
+   that every entry in the frozen Search Contract's `required_databases`
+   appears in the log. If either check fails, **do NOT assemble the output**.
+   Surface the missing-database list to the user and request remediation
+   (re-open the Search Contract, run additional searches, or re-approve a
+   revised contract). This is a backstop in case Phase 2's Step 4c audit
+   was skipped or bypassed — emitting an incomplete report is worse than
+   surfacing the gap. Modes without a search phase (`socratic`, `review`)
+   are exempt.
+
 ### When no contract exists
 
 If no contract was generated (e.g., legacy invocation without Phase 1 contract
