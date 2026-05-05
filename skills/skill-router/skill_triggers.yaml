@@ -714,6 +714,19 @@ skills:
       - claim alignment
       - citation alignment
       - misalignment
+      # STYLE_NONCONFORMING / prose-quality audit (see /prose-audit slash command)
+      - prose audit
+      - prose-audit
+      - prose quality audit
+      - prose-quality audit
+      - style audit
+      - STYLE_NONCONFORMING audit
+      - check writing quality
+      - audit writing quality
+      - check prose quality
+      - check this against prose standards
+      - audit against prose standards
+      - run prose-quality audit
     triggers:
       - "fact[-\\s]?check"
       - "verify.*(?:the|all|these)?.*citations?"
@@ -728,6 +741,12 @@ skills:
       - "check.*(?:sources?|references?).*(?:exist|real|valid)"
       - "(?:claims?|citations?).*aligned?.*(?:with|to).*sources?"
       - "source.*(?:supports?|does\\s+not\\s+support).*claim"
+      # STYLE_NONCONFORMING / prose-quality audit
+      - "(?:run|do|perform)?\\s*prose[-\\s]?(?:quality\\s*)?audit"
+      - "style[-\\s]?audit"
+      - "STYLE_NONCONFORMING"
+      - "(?:check|audit).*(?:writing|prose).*(?:quality|standards)"
+      - "(?:check|audit).*against.*prose\\s*standards"
     output_formats: [md, html]
     negative_keywords:
       - edit for style

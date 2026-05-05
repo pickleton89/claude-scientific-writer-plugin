@@ -34,8 +34,10 @@ The intake answers are emitted as a JSON object validated against [`schemas/inta
   "sources_available": "uploaded_files" | "bibliography_only" | "none",
   "verification_tier": "1" | "2" | "3" | "custom",
   "checks_enabled":    ["citation_existence","claim_alignment","uncited_claims",
-                        "exact_quotes","numerical_sanity","named_entities","internal_consistency"],
+                        "exact_quotes","numerical_sanity","named_entities","internal_consistency",
+                        "prose_quality_audit"],
                                                                          // required iff verification_tier == "custom"
+                                                                         // prose_quality_audit is Tier 3 + custom only (parallel pipeline → style_findings[])
   "domain":            "biomedical" | "general" | "mixed",
   "flag_threshold":    "conservative" | "standard" | "strict"
 }
@@ -44,7 +46,7 @@ The intake answers are emitted as a JSON object validated against [`schemas/inta
 Tier → `checks_enabled` mapping (computed when tier ≠ `custom`):
 - Tier 1 → `["citation_existence"]`
 - Tier 2 → `["citation_existence", "claim_alignment"]`
-- Tier 3 → all 7 checks
+- Tier 3 → all 7 citation-pipeline checks **plus** `prose_quality_audit` (parallel STYLE_NONCONFORMING pass; see CONTRACTS.md §STYLE_NONCONFORMING)
 
 ### Required input wrappers
 

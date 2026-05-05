@@ -95,8 +95,10 @@ P6 (advisory, not code-enforced). Verdict glyphs (✅⚠️❌❓) MUST NOT appe
     "verification_tier":    { "enum": ["1","2","3","custom"] },
     "checks_enabled":       { "type": "array", "items": { "enum": [
                               "citation_existence","claim_alignment","uncited_claims",
-                              "exact_quotes","numerical_sanity","named_entities","internal_consistency" ] } },
+                              "exact_quotes","numerical_sanity","named_entities","internal_consistency",
+                              "prose_quality_audit" ] } },
                               // required iff verification_tier == "custom"
+                              // prose_quality_audit: Tier 3 + custom only; parallel pipeline (style_findings[])
     "domain":               { "enum": ["biomedical","general","mixed"] },
     "flag_threshold":       { "enum": ["conservative","standard","strict"] }
   }

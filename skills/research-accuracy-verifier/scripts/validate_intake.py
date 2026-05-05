@@ -33,8 +33,13 @@ TIER_CHECKS: dict[str, list[str]] = {
         "numerical_sanity",
         "named_entities",
         "internal_consistency",
+        "prose_quality_audit",
     ],
 }
+
+# prose_quality_audit is restricted to Tier 3 (auto-included) or custom (opt-in).
+# Tiers 1 and 2 have no prose-quality coverage.
+TIER3_OR_CUSTOM_ONLY_CHECKS: set[str] = {"prose_quality_audit"}
 
 
 class IntakeValidator:
@@ -76,6 +81,17 @@ class IntakeValidator:
                 warnings.append(
                     f"checks_enabled supplied for tier {tier} differs from canonical "
                     f"mapping; canonical wins (use tier == 'custom' to override)."
+                )
+
+        # Tier-3-or-custom-only checks (e.g., prose_quality_audit) cannot be requested
+        # at tiers 1 or 2 even via explicit checks_enabled.
+        if tier in {"1", "2"}:
+            user_checks = set(intake.get("checks_enabled") or [])
+            forbidden = user_checks & TIER3_OR_CUSTOM_ONLY_CHECKS
+            if forbidden:
+                errors.append(
+                    f"business rule: {sorted(forbidden)} require verification_tier "
+                    f"'3' or 'custom' (got '{tier}')"
                 )
 
         return len(errors) == 0, errors, warnings

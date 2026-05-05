@@ -35,6 +35,10 @@ CHECK_TO_STAGES: dict[str, list[str]] = {
     "numerical_sanity": ["6"],
     "named_entities": ["6"],
     "internal_consistency": ["7"],
+    # prose_quality_audit runs in a parallel pipeline (writes style_findings[],
+    # not verification_matrix). It declares no citation-pipeline stage; its
+    # presence in checks_enabled signals the prose-quality pass should run.
+    "prose_quality_audit": [],
 }
 
 CAVEAT_REASONS = {"paywalled_full_text", "preprint_not_indexed", "api_timeout"}
