@@ -28,6 +28,7 @@ Sprint 1 pass thresholds (from regression/README.md):
 from __future__ import annotations
 
 import json
+import re
 import statistics
 import sys
 from collections import defaultdict
@@ -71,16 +72,61 @@ def _matches_severity(actual: str, expected: str | None) -> bool:
     return expected is None or actual == expected
 
 
+def _needle_in_haystack(needle: str, haystack: str) -> bool:
+    """Substring match, but with digit-boundary guards for numeric needles.
+
+    Plain `in` would let `"1"` match inside `"187"` or `"187"` inside `"1870"`.
+    For needles that begin with a digit (covers `187`, `47.3`, `0.001`), we
+    require the match not be flanked by digits or decimal points on either
+    side — preventing accidental hits inside larger numbers. Non-numeric
+    needles (`"smith2024_pembro_nsclc"`, `"C-01"`) use plain substring.
+    """
+    if not needle:
+        return True
+    if not needle[0].isdigit():
+        return needle in haystack
+    pattern = rf"(?<![\d.]){re.escape(needle)}(?![\d.])"
+    return re.search(pattern, haystack) is not None
+
+
+def _evidence_pin_satisfied(expected: dict | None, evidence: list) -> bool:
+    """All expected values must co-occur in a single evidence entry.
+
+    A Stage 6 fallback path (re-extract from full text) can produce the right
+    verdict + severity without the cooperation-contract pin (paper_id +
+    claim_id from stats.json). Requiring co-occurrence in one entry — rather
+    than the union — distinguishes cooperation success from fallback success.
+    """
+    if not expected:
+        return True
+    if not isinstance(evidence, list) or not evidence:
+        return False
+    needles = [str(v) for v in expected.values() if v is not None and v != ""]
+    if not needles:
+        return True
+    for entry in evidence:
+        if not isinstance(entry, dict):
+            continue
+        haystack = " ".join(
+            str(entry.get(k, "")) for k in ("source", "url", "snippet")
+        )
+        if all(_needle_in_haystack(n, haystack) for n in needles):
+            return True
+    return False
+
+
 def _finding_matches_expectation(
     expectation: dict, findings: list, style_findings: list
 ) -> bool:
     """One expectation alternative — match against either main or style findings."""
     expected_severity = expectation.get("severity")
+    pin = expectation.get("evidence_must_contain")
     if "verdict" in expectation:
         verdict = expectation["verdict"]
         return any(
             f.get("verdict") == verdict
             and _matches_severity(f.get("severity", ""), expected_severity)
+            and _evidence_pin_satisfied(pin, f.get("evidence", []))
             for f in findings
         )
     if "style_verdict" in expectation:
@@ -90,6 +136,7 @@ def _finding_matches_expectation(
             f.get("verdict") == style_verdict
             and (rule_id is None or f.get("rule_id") == rule_id)
             and _matches_severity(f.get("severity", ""), expected_severity)
+            and _evidence_pin_satisfied(pin, f.get("evidence", []))
             for f in style_findings
         )
     return False

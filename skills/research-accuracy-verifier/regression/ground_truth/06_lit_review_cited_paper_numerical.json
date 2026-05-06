@@ -36,7 +36,7 @@
             "claim_id": "C-01",
             "value_in_source": 187
           },
-          "evidence_must_contain_status": "documented_expectation_not_scored: score.py only checks verdict + severity (and rule_id for style); evidence content checking is a Sprint-4 score.py extension."
+          "evidence_must_contain_status": "scored_since_sprint_4: score.py _evidence_pin_satisfied requires paper_id, claim_id, and value_in_source to co-occur in a single evidence entry. A Stage 6 fallback path that reaches the right verdict+severity by re-extracting from full text — but does not pin to claim_id — no longer satisfies this seeded error."
         }
       ],
       "ground_truth_source": "Direct mismatch between draft claim (n=210) and the cited paper's preserved numerical record stats.json claim_id=C-01 (n=187). Detection requires Stage 6 to consume intake.cited_papers[] and join by paper_id."
@@ -77,5 +77,5 @@
     }
   ],
   "uncited_claims_note": "All numerical claims in §2 are attributed to (Smith 2024). Stage 4 (uncited_claims) should not flag any; if it does, that's a regression unrelated to the cooperation contract.",
-  "measurement_notes": "**Currently scored (score.py as of v1.4.0):** ground-truth recall on this document = 1.0 iff the verifier emits a CONTRADICTED finding for GT-06-1 with severity CRITICAL. **Documented but not currently scored:** the cooperation-contract win is that the finding's evidence[] should pin to paper_id='smith2024_pembro_nsclc' + claim_id='C-01' (see seeded_errors[0].evidence_must_contain). A Stage 6 that re-extracted from full text could in principle still detect the n=210 vs n=187 mismatch but would not pin to claim_id='C-01' (since claim_id is internal to stats.json) — that distinction lets a future score.py extension differentiate cooperation-contract success from fallback-path success. Sprint-4 todo: extend score.py to honor evidence_must_contain when present."
+  "measurement_notes": "**Scored as of Sprint 4 (score.py _evidence_pin_satisfied):** ground-truth recall on this document = 1.0 iff the verifier emits a CONTRADICTED × CRITICAL finding AND its evidence[] contains an entry that co-witnesses paper_id='smith2024_pembro_nsclc', claim_id='C-01', and value_in_source=187. A Stage 6 that re-extracted from full text could still detect the n=210 vs n=187 mismatch — but would not pin to claim_id='C-01' (since claim_id is internal to stats.json) and therefore no longer counts as a hit. This is what differentiates cooperation-contract success from fallback-path success in regression scoring."
 }
