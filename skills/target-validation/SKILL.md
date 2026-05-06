@@ -1,8 +1,12 @@
 ---
 name: target-validation
-version: 1.0.0
+version: 1.1.0
 description: "Quantitative drug target validation (0-100 score) consuming upstream dossiers from entity-resolution, target-intelligence, and drug-intelligence. Produces GO/NO-GO recommendation with scorecard, pathway redundancy analysis, and validation roadmap."
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
+context: fork
+agent: general-purpose
+model: claude-opus-4-7
+effort: high
 ---
 
 # Target Validation
@@ -498,3 +502,42 @@ When user provides modality preference or when assessing all modalities:
 
 **Skill Selection:** See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 </cross_references>
+
+## Fork-return contract
+
+This skill runs in a forked subagent context (`context: fork`). The fork executes all 5 stages internally — dossier intake (target-intelligence + drug-intelligence + entity-resolution), disease-association extraction, druggability scoring, safety synthesis, pathway-redundancy analysis, and the validation-roadmap write — and returns **only a compact summary** to the calling conversation. The full upstream dossier text, intermediate scoring tables, pathway-redundancy intermediate calculations, and gap-fill query transcripts **stay inside the fork**. Pre-fork main-context cost per validation has been observed at 40k–100k+ tokens (full target dossier + drug dossier + entity table + gap-fill MCP responses); the post-fork target is **≤ 1.5k tokens per validation**.
+
+The fork's final message to the caller is a single JSON object capped at ~800 tokens. Emit it verbatim as the last content of the response, fenced as ```json:
+
+```jsonc
+{
+  "validation_id": "<target>_<disease_slug-or-empty>",
+  "validation_dir": "research/validations/<slug>/",
+  "scorecard_path": "<{target}_{disease}_validation.md path>",
+  "target_id": "",
+  "disease": "",
+  "upstream_dossiers": {
+    "target_intelligence_path": "",
+    "drug_intelligence_paths": [],
+    "entity_resolution_path": ""
+  },
+  "score": {
+    "total_0_to_100": 0,
+    "dimensions": {
+      "disease_association": 0, "druggability": 0, "safety": 0,
+      "clinical_precedent": 0, "pathway_redundancy": 0
+    }
+  },
+  "recommendation": "GO | CONDITIONAL_GO | NO_GO | INSUFFICIENT_DATA",
+  "evidence_grading_distribution": { "T1": 0, "T2": 0, "T3": 0, "T4": 0 },
+  "validation_roadmap_steps": 0,
+  "headline": "<≤140 chars: 1-line verdict; e.g. 'BRCA1 / breast cancer — GO (score 78); strong clinical precedent; primary risk: pathway redundancy with PARP'>",
+  "next_actions": [ "<≤2 short suggestions or empty array>" ]
+}
+```
+
+**Required fields:** `validation_id`, `validation_dir`, `scorecard_path`, `target_id`, `upstream_dossiers` (paths the caller passed in for trace), `score.total_0_to_100`, `score.dimensions` (the 5 weighted dimensions producing the total — must sum per the skill's documented weights), `recommendation` (one of the 4 enum values), `headline`. `disease` is empty string for target-only validations (no indication specified). `validation_roadmap_steps` is the count of items in the persisted roadmap; the roadmap content itself stays in the scorecard markdown.
+
+**Forbidden in fork return:** full target/drug dossier section quotes, intermediate scoring tables, pathway-redundancy adjacency matrices, gap-fill MCP query transcripts, disease-association T1-T4 evidence excerpts, validation-roadmap step prose. All of that lives in the persisted artifacts under `validation_dir` and the rendered `{target}_{disease}_validation.md`. The caller follows up with targeted reads — for example, `!\`grep -A 30 "## Validation Roadmap" <scorecard_path>\`` or `!\`jq '.score.dimensions' research/validations/<slug>/audit.json\`` — to surface specific scorecard sections on demand at zero token cost in the main context.
+
+**If validation cannot complete:** still return the JSON shape with whatever dimension scores were computed (others as `null`), `recommendation: "INSUFFICIENT_DATA"`, and a `next_actions` entry explaining what blocked completion (e.g., `"resume after target-intelligence dossier completes Section 9: Druggability"`, `"drug-intelligence dossier missing FAERS section — required for safety dimension"`). Partial state remains in `validation_dir` for follow-up runs.
