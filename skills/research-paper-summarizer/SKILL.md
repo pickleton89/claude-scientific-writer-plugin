@@ -1,10 +1,14 @@
 ---
 name: research-paper-summarizer
-version: 1.2.0
+version: 1.3.0
 description: "Analyze and summarize individual research papers (PDF, DOI, PubMed ID, or text) into structured academic summaries with preserved statistics, extracted figures, and critical analysis. Use when a user provides a specific paper and wants its content extracted. Do NOT use for executive/stakeholder summaries — use executive-summary."
 when_to_use: "When user uploads/provides a research paper (PDF, text, abstract, DOI, PubMed ID, or URL) and wants paper analysis, summarization, figure extraction, infographic creation, or visual output generation"
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion, Task]
 brand-reference: "../oligon-brand/"
+context: fork
+agent: general-purpose
+model: claude-sonnet-4-6
+effort: medium
 ---
 
 # Research Paper Summarizer
@@ -182,11 +186,17 @@ Ask: "What type of article is this?"
 | Output Type | Location | Example |
 |-------------|----------|---------|
 | Markdown summary | Source document directory | `/path/to/paper.pdf` → `/path/to/paper_summary.md` |
+| Stats JSON | Source document directory | `/path/to/paper.pdf` → `/path/to/paper_stats.json` |
+| Source metadata | Source document directory | `/path/to/paper.pdf` → `/path/to/paper_source_meta.json` |
 | HTML report | Source document directory | `/path/to/paper.pdf` → `/path/to/paper_report.html` |
 | SVG infographic | Source document directory | `/path/to/paper.pdf` → `/path/to/paper_infographic.svg` |
 | YAML (for PDF) | Source document directory | `/path/to/paper.pdf` → `/path/to/paper_summary.yaml` |
 | PDF summary | Source document directory | `/path/to/paper.pdf` → `/path/to/paper_summary.pdf` |
 | Extracted figures | Subdirectory in source location | `/path/to/paper.pdf` → `/path/to/paper_figures/` |
+
+> **`{stem}_stats.json`** is the structured numerical record consumed by `research-accuracy-verifier` at Stage 6 (numerical sanity) — see the *Fork-return contract* section. Validated by `scripts/validate_stats.py` (schema + Q5/R5 predicates from `skills/shared/references/prose_standards_thresholds.yaml`).
+>
+> **`{stem}_source_meta.json`** holds paper identifiers (DOI/PMID/PMCID), title, authors (last-name list), year, venue, and the resolved full-text source path. It anchors the cooperation contract: verifier's `evidence` references pair `paper_id` (from this file) with a `claim_id` from `stats.json`.
 
 > **Note:** `{filename}` refers to the PDF's filename without extension (stem), e.g., `smith2024_cancer.pdf` → `smith2024_cancer_figures/`
 
@@ -206,6 +216,8 @@ Outputs created:
 ~/Documents/papers/
 ├── smith2024_cancer.pdf              (original)
 ├── smith2024_cancer_summary.md       (markdown)
+├── smith2024_cancer_stats.json       (numerical record — Q5/R5-validated)
+├── smith2024_cancer_source_meta.json (paper identifiers + provenance)
 ├── smith2024_cancer_report.html      (HTML)
 ├── smith2024_cancer_infographic.svg  (SVG)
 ├── smith2024_cancer_summary.yaml     (YAML)
@@ -247,6 +259,11 @@ pip install weasyprint pyyaml
 - **Chunked Mode**: Use subagent pipeline (see Chunked Mode Workflow below)
 
 **1c. Save markdown file** to same directory as source document
+
+**1d. Emit `stats.json` and `source_meta.json`** to the same directory:
+- Run `extract_statistics.py {paper}.txt --json` (or the equivalent on the markitdown text) to materialize the numerical record, then transform the output into the `schemas/stats.json` shape: assign stable `claim_id` values (`C-01`, `C-02`, …), pin `source_location` to the section/figure/table it appeared in, and set `verbatim: true` for every entry that matches the source character-for-character.
+- Validate with: `uv run python {baseDir}/scripts/validate_stats.py {paper_dir}/{stem}_stats.json`. The script enforces JSON Schema + Q5/R5 predicates from `skills/shared/references/prose_standards_thresholds.yaml`; non-zero exit blocks the fork return.
+- Write `{stem}_source_meta.json` with `paper_id` (matching `stats.json`), title, authors (last-name list), year, venue, DOI/PMID/PMCID where known, and the resolved full-text path. This is the anchor the verifier joins on at Stage 6.
 
 ### Phase 2: Visual Output Generation
 - Ask user which visual format(s) they want
@@ -728,6 +745,58 @@ Before delivering any summary, verify compliance with these rules:
 - [ ] Visual format options were offered after summary completion
 
 </success_criteria>
+
+---
+
+<fork_return_contract>
+
+## Fork-return contract
+
+This skill runs in a forked subagent context (`context: fork`). The fork executes all extraction, summarization, statistics, and visual-output work internally — full PDF text, subagent outputs, intermediate prompt context, and figure-extraction streams **stay inside the fork**. Only a compact JSON summary is returned to the calling conversation. Pre-fork main-context cost per paper has been measured at 30k–80k+ tokens (full PDF + subagent dialog leakage); the post-fork target is **≤ 1.5k tokens per paper**.
+
+The fork's final message to the caller is a single JSON object capped at ~600 tokens. Emit it verbatim as the last content of the response, fenced as ```json:
+
+```jsonc
+{
+  "paper_id": "<doi-or-pmid-or-slug>",
+  "paper_dir": "<absolute_or_repo_relative_dir_holding_the_summary>",
+  "article_type": "general" | "review" | "compbio" | "cellmolbio",
+  "summary_paths": {
+    "markdown": "<…/{stem}_summary.md>",
+    "stats":    "<…/{stem}_stats.json>",
+    "source_meta": "<…/{stem}_source_meta.json>",
+    "figures_dir": "<…/{stem}_figures/>" | null,
+    "html":  "<…/{stem}_report.html>" | null,
+    "pdf":   "<…/{stem}_summary.pdf>"  | null,
+    "svg":   "<…/{stem}_infographic.svg>" | null
+  },
+  "stats_summary": {
+    "preserved_numerics_count": N,
+    "rule_compliance": { "Q5": "pass" | "fail", "R5": "pass" | "fail" }
+  },
+  "section_status": { "complete": M, "pending": 0, "skipped": K },
+  "figures_extracted": F,
+  "next_actions": [ "<≤2 short suggestions or empty array>" ]
+}
+```
+
+**Required fields:** `paper_id`, `paper_dir`, `article_type`, `summary_paths.markdown`, `summary_paths.stats`, `summary_paths.source_meta`, `stats_summary`, `section_status`. Visual-output paths (`html`, `pdf`, `svg`, `figures_dir`) are nullable when the user did not request that format.
+
+**Forbidden in fork return:** raw paper text, abstract or section excerpts, figure captions, reference lists, subagent transcripts, full statistics rows. All of that lives in the persisted artifacts under `paper_dir`. The caller follows up with targeted reads — for example, `!\`jq '.stats[] | select(.claim_id=="C-04")' …/{stem}_stats.json\`` — to surface specific numerical claims on demand at zero token cost in the main context.
+
+**If the summary cannot complete:** still return the JSON shape with `section_status.pending` reflecting work remaining, `stats_summary.rule_compliance` showing `"unknown"` for unverified rules, and a `next_actions` entry explaining what blocked completion (e.g., `"PDF text extraction failed at page 17 — re-run with --ocr"`). Partial state stays in `paper_dir` for resume.
+
+### Cooperation contract with `research-accuracy-verifier`
+
+The `stats.json` artifact is the canonical numerical record for downstream verification. When `research-accuracy-verifier` audits a document that cites a paper this skill has summarized, it consumes `stats.json` at **Stage 6 (numerical sanity)** via `!\`cat\`` substitution rather than re-extracting numbers from the original PDF. The contract:
+
+- Every numerical claim in `stats.json` carries `value`, `unit`, `context`, `source_location`, and `verbatim: true` (Q5: numbers match the source paper exactly).
+- `claim_id` values are stable across re-runs of the same paper, so the verifier's `evidence` references can pin to a `paper_id` + `claim_id` pair and survive re-summarization.
+- The summarizer never rounds or normalizes a number that appears in the source. Unit conversion is performed only when the source already presents both forms; otherwise `unit` matches the source.
+
+This eliminates the verifier's ~10–30k token PDF re-extraction cost per cited paper and removes verdict drift caused by independent re-extraction.
+
+</fork_return_contract>
 
 ---
 

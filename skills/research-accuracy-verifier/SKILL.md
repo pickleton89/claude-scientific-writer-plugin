@@ -227,6 +227,8 @@ Direct quotes require exact-string verification. Paraphrase-presented-as-verbati
 
 ### Stage 6 — Numerical and named-entity sanity checks
 
+**Cooperation with `research-paper-summarizer`:** when the document under audit cites a paper that has already been summarized by `research-paper-summarizer`, the per-paper `{stem}_stats.json` file (schema: [`../research-paper-summarizer/schemas/stats.json`](../research-paper-summarizer/schemas/stats.json)) is the canonical numerical record for that **cited** paper. Read it via `!\`cat <stats_path>\`` substitution **before** re-extracting numbers from the cited paper's full text. Match by `paper_id` from `{stem}_source_meta.json`; emit `evidence` entries that pin to `paper_id` + `claim_id`. This eliminates 10–30k tokens of cited-paper re-extraction per reference and prevents verdict drift from independently re-derived numbers. Only fall back to full-text re-extraction when no `stats.json` exists for the cited paper or the file fails `validate_stats.py`. (This cooperation applies to **cited sources** only — number sanity within the document under audit itself still uses the heuristics below.)
+
 **Numerical claims** (`scripts/check_journal_volume.py` and number sanity heuristics):
 - p-values with implausible precision (≥4 decimal places) or non-standard formatting
 - effect sizes outside biologically plausible ranges
