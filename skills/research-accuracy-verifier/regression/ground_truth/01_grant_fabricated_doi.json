@@ -1,0 +1,57 @@
+{
+  "doc_id": "01_grant_fabricated_doi",
+  "document_type": "grant",
+  "verification_tier": "3",
+  "domain": "biomedical",
+  "flag_threshold": "standard",
+  "sources_available": "none",
+  "intake_notes": "No source PDFs supplied. Stage 2 existence checks run against Crossref/PubMed/scite. Stage 3 alignment will emit UNVERIFIED for sources_available=none claims with reason=source_not_provided; that is expected, not a regression.",
+  "seeded_errors": [
+    {
+      "error_id": "GT-01-1",
+      "kind": "fabricated_doi",
+      "location": {
+        "section": "Specific Aims body, paragraph 2",
+        "claim_anchor": "greater than 75% of post-induction relapse foci"
+      },
+      "claim_text": "Recent single-cell profiling has identified the bone marrow mesenchymal stromal cell (MSC) niche as the primary reservoir for chemoresistant leukemic stem cells (LSCs), accounting for greater than 75% of post-induction relapse foci in patient-derived xenograft models (Garcia-Lopez et al., 2024).",
+      "cited_source": {
+        "doi": "10.99999/regression.demo.fake.001",
+        "title": "Single-cell mapping of the mesenchymal stromal cell niche reveals dominant reservoirs of chemoresistant leukemic stem cells",
+        "authors": "Garcia-Lopez, M., Ortiz, P., & Chen, H.",
+        "year": 2024,
+        "journal": "Nature Cancer"
+      },
+      "expected_findings_any_of": [
+        {
+          "stage": 2,
+          "verdict": "UNSUPPORTED",
+          "severity": "CRITICAL",
+          "severity_rationale": "severity_matrix.values.json: UNSUPPORTED × grant = CRITICAL"
+        },
+        {
+          "stage": 2,
+          "verdict": "UNVERIFIED",
+          "severity": "INFORMATIONAL",
+          "severity_rationale": "severity_matrix.values.json: UNVERIFIED × grant = INFORMATIONAL; valid catch IF the verifier was unable to complete the lookup chain (e.g., transient API error, search hit ambiguity) but recorded a reason that points at the citation being unverifiable."
+        },
+        {
+          "stage": 2,
+          "verdict": "METADATA_MISMATCH",
+          "severity": "MAJOR",
+          "severity_rationale": "severity_matrix.values.json: METADATA_MISMATCH × grant = MAJOR; valid catch IF the verifier surfaced a similarly-titled real paper by similarly-named authors and flagged the metadata divergence (would still indicate the cited DOI is wrong)."
+        }
+      ],
+      "ground_truth_source": "DOI prefix 10.99999/ is unallocated by the DOI Foundation (registrants begin at 10.1 and are sequentially issued). Crossref returns 404 for any 10.99999/* identifier. PubMed/scite likewise have no record. Title 'Single-cell mapping of the mesenchymal stromal cell niche reveals dominant reservoirs of chemoresistant leukemic stem cells' is not present in any indexed corpus as of this writing.",
+      "notes": {
+        "claim_type": "citation_bearing",
+        "verification_path_min": ["doi_lookup", "crossref_search", "pubmed_search"],
+        "preferred_verdict": "UNSUPPORTED",
+        "rationale_for_breadth": "Author surnames Garcia-Lopez / Ortiz / Chen are common in biomedical research and could collide with real-author searches if the verifier's Stage 2 fallback uses author+title search before settling. We accept UNVERIFIED (with reason) and METADATA_MISMATCH as alternative valid catches because all three correctly conclude the cited paper is not real — only the verdict and severity differ. The UNSUPPORTED path is the cleanest test of the regression."
+      }
+    }
+  ],
+  "expected_clean_claims": [],
+  "uncited_claims_note": "Background sentences in paragraph 1 (FLT3/IDH inhibitors, venetoclax–azacitidine, clonal evolution narrative) are uncited general-knowledge framing. Stage 4 (uncited claims) may emit findings against these depending on flag_threshold and tier. They are NOT seeded errors and are NOT measured in ground_truth_recall. If Stage 4 emission rate differs notably between baseline and post-fork on this document, that is informational signal logged in the score report but does not block the ship decision.",
+  "measurement_notes": "This document contains exactly ONE cited reference, using the unallocated DOI prefix 10.99999/ which returns 404 from Crossref/PubMed/scite. Sprint 1 ground-truth recall = 1.0 iff the verifier emits ANY of the three acceptable verdicts in expected_findings_any_of against the Garcia-Lopez 2024 citation. Preferred path is UNSUPPORTED (cleanest, most informative). UNVERIFIED-with-reason and METADATA_MISMATCH are accepted as alternative valid catches because they each correctly conclude the cited paper is not real, even if the severity differs. No other findings are required for recall on this document; additional findings (e.g., uncited background claims) are tolerated but not credited."
+}

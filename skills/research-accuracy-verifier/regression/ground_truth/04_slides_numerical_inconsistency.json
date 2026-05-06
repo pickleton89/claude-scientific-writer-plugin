@@ -1,0 +1,70 @@
+{
+  "doc_id": "04_slides_numerical_inconsistency",
+  "document_type": "slides",
+  "verification_tier": "3",
+  "domain": "biomedical",
+  "flag_threshold": "standard",
+  "sources_available": "none",
+  "intake_notes": "Internal numerical inconsistencies are detectable without external sources. Stage 7 (internal consistency) and the parallel prose_quality_audit's Q5/R5 numerical-reconciliation pass both run against the document body and bibliography without needing uploaded source PDFs.",
+  "seeded_errors": [
+    {
+      "error_id": "GT-04-1",
+      "kind": "numerical_inconsistency_sample_size",
+      "location": {
+        "section_a": "Slide 4 — Study Design",
+        "claim_a": "We enrolled n = 120 patients with previously untreated PD-L1–high (TPS ≥ 50%) advanced non-squamous NSCLC",
+        "section_b": "Slide 7 — Patients (CONSORT)",
+        "claim_b": "Of the 132 patients enrolled, 124 received at least one cycle of study therapy (intent-to-treat population)."
+      },
+      "fact_at_issue": "total enrollment count for the study",
+      "values_in_conflict": [120, 132],
+      "expected_findings_any_of": [
+        {
+          "stage": 7,
+          "verdict": "CONTRADICTED",
+          "severity": "CRITICAL",
+          "severity_rationale": "severity_matrix.values.json: CONTRADICTED × slides = CRITICAL"
+        },
+        {
+          "pipeline": "prose_quality_audit",
+          "style_verdict": "STYLE_NUMERICAL_INCONSISTENCY",
+          "rule_id": "Q5",
+          "severity": "CRITICAL",
+          "severity_rationale": "CONTRACTS.md S-P1: Q5 is canonical CRITICAL"
+        }
+      ],
+      "ground_truth_source": "Direct textual contradiction within the same document about the same fact (total enrollment). No external verification needed; the document contains both numbers verbatim in distinct sections."
+    },
+    {
+      "error_id": "GT-04-2",
+      "kind": "numerical_inconsistency_p_value",
+      "location": {
+        "section_a": "Slide 8 — Primary Endpoint: 12-Month PFS",
+        "claim_a": "Compared with the historical mPFS of 7.7 months for pembrolizumab monotherapy in this population, the observed difference reached statistical significance (p < 0.001 by one-sample log-rank against the historical control).",
+        "section_b": "Slide 10 — Comparison vs Historical Control",
+        "claim_b": "The PFS improvement over the 7.7-month historical median for pembrolizumab monotherapy was statistically significant (p < 0.01, one-sample log-rank)."
+      },
+      "fact_at_issue": "p-value for the one-sample log-rank comparison of observed mPFS vs historical 7.7-month control",
+      "values_in_conflict": ["p < 0.001", "p < 0.01"],
+      "expected_findings_any_of": [
+        {
+          "stage": 7,
+          "verdict": "CONTRADICTED",
+          "severity": "CRITICAL",
+          "severity_rationale": "severity_matrix.values.json: CONTRADICTED × slides = CRITICAL"
+        },
+        {
+          "pipeline": "prose_quality_audit",
+          "style_verdict": "STYLE_NUMERICAL_INCONSISTENCY",
+          "rule_id": "Q5",
+          "severity": "CRITICAL",
+          "severity_rationale": "CONTRACTS.md S-P1: Q5 is canonical CRITICAL"
+        }
+      ],
+      "ground_truth_source": "Direct textual contradiction within the same document about the same comparison (one-sample log-rank vs 7.7-month historical median). The two slides describe the same statistical test with different reported significance thresholds. No external verification needed."
+    }
+  ],
+  "expected_clean_claims": [],
+  "uncited_claims_note": "Slide 2 background statement about 'mOS of approximately 26 months in registrational trials' is uncited. Stage 4 (uncited claims) may emit findings against this depending on flag_threshold and tier; not seeded, not measured.",
+  "measurement_notes": "Sprint 1 ground-truth recall on this document = 1.0 iff the verifier emits at least one finding (regular OR style_finding) for EACH of GT-04-1 and GT-04-2 with severity CRITICAL. The verifier may detect the contradiction via Stage 7 internal-consistency, the parallel prose_quality_audit Q5 pass, or both — any one path satisfies recall per error_id. Both errors are CRITICAL by canonical severity, so any failure to surface them at CRITICAL is a regression. Style audit findings live in style_findings[] alongside main findings[]; score.py counts both arrays when computing recall."
+}

@@ -1,0 +1,66 @@
+{
+  "$comment": "Registry of regression documents. Each entry maps a doc to its document_type, verification_tier, checks_enabled override (if any), and ground-truth file. score.py iterates this list to drive baseline + post_fork runs.",
+  "version": "1.0",
+  "documents": [
+    {
+      "doc_id": "01_grant_fabricated_doi",
+      "doc_path": "docs/01_grant_fabricated_doi.md",
+      "ground_truth_path": "ground_truth/01_grant_fabricated_doi.json",
+      "document_type": "grant",
+      "verification_tier": "3",
+      "domain": "biomedical",
+      "flag_threshold": "standard",
+      "checks_enabled": null,
+      "primary_seeded_error_kind": "fabricated_doi",
+      "content_status": "authored"
+    },
+    {
+      "doc_id": "02_lit_review_misattributed_quote",
+      "doc_path": "docs/02_lit_review_misattributed_quote.md",
+      "ground_truth_path": "ground_truth/02_lit_review_misattributed_quote.json",
+      "document_type": "lit_review",
+      "verification_tier": "3",
+      "domain": "biomedical",
+      "flag_threshold": "standard",
+      "checks_enabled": null,
+      "primary_seeded_error_kind": "misattributed_quote",
+      "content_status": "deferred_pending_mcp_verification"
+    },
+    {
+      "doc_id": "03_manuscript_retracted_source",
+      "doc_path": "docs/03_manuscript_retracted_source.md",
+      "ground_truth_path": "ground_truth/03_manuscript_retracted_source.json",
+      "document_type": "manuscript",
+      "verification_tier": "3",
+      "domain": "biomedical",
+      "flag_threshold": "standard",
+      "checks_enabled": null,
+      "primary_seeded_error_kind": "retracted_source",
+      "content_status": "deferred_pending_mcp_verification"
+    },
+    {
+      "doc_id": "04_slides_numerical_inconsistency",
+      "doc_path": "docs/04_slides_numerical_inconsistency.md",
+      "ground_truth_path": "ground_truth/04_slides_numerical_inconsistency.json",
+      "document_type": "slides",
+      "verification_tier": "3",
+      "domain": "biomedical",
+      "flag_threshold": "standard",
+      "checks_enabled": null,
+      "primary_seeded_error_kind": "numerical_inconsistency",
+      "content_status": "authored"
+    },
+    {
+      "doc_id": "05_memo_cherry_picked",
+      "doc_path": "docs/05_memo_cherry_picked.md",
+      "ground_truth_path": "ground_truth/05_memo_cherry_picked.json",
+      "document_type": "memo",
+      "verification_tier": "3",
+      "domain": "biomedical",
+      "flag_threshold": "standard",
+      "checks_enabled": null,
+      "primary_seeded_error_kind": "cherry_picked_support",
+      "content_status": "deferred_pending_mcp_verification"
+    }
+  ]
+}

@@ -5,6 +5,10 @@ description: Verify factual, citation, quotation, and numerical accuracy of LLM-
 when_to_use: "When the user provides AI-generated or AI-assisted scholarly content (lit review, grant text, manuscript, slides, report) and asks for fact-checking, citation verification, claim-source alignment, quote checking, or numerical sanity. Triggers on phrases like 'fact-check', 'verify the citations', 'audit this', 'check for accuracy', 'did the AI make this up'."
 allowed-tools: [Read, Write, Bash, WebSearch, WebFetch]
 shared-thresholds: "../QUANTIFICATION_THRESHOLDS.md"
+context: fork
+agent: general-purpose
+model: claude-opus-4-7
+effort: high
 ---
 
 # Research Accuracy Verifier
@@ -457,3 +461,42 @@ What this skill **does not** implement: pre-verification red-flag triage (no Sta
 - HTML / docx / annotated-PDF output (markdown only in v1.2; HTML via oligon-brand deferred to v1.3)
 
 If the user asks for any of these alongside accuracy checking, complete the audit first and offer the additional work as a separate next step.
+
+## Fork-return contract
+
+This skill runs in a forked subagent context (`context: fork`). The fork executes all 8 stages internally — full-text retrieval (Paperclip, PMC, Scite), claim extraction, quote regex, numerical sanity, schema validation — and returns **only a compact summary** to the calling conversation. All evidence stays in `research/audits/<slug>/`.
+
+The fork's final message to the caller is a single JSON object capped at ~800 tokens. Emit it verbatim as the last content of the response, fenced as ```json:
+
+```jsonc
+{
+  "audit_id": "<slug>",
+  "audit_dir": "research/audits/<slug>/",
+  "verdict_counts": {
+    "VERIFIED": 0, "METADATA_MISMATCH": 0, "UNSUPPORTED": 0, "OVERGENERALIZED": 0,
+    "CONTRADICTED": 0, "MISATTRIBUTED": 0, "QUOTE_VERIFIED": 0,
+    "QUOTE_PARAPHRASED": 0, "QUOTE_FABRICATED": 0, "UNVERIFIED": 0
+  },
+  "severity_counts": { "CRITICAL": 0, "MAJOR": 0, "MINOR": 0, "INFORMATIONAL": 0 },
+  "style_summary": {
+    "enabled": false,
+    "total": 0,
+    "critical": 0
+  },
+  "top_findings": [
+    { "id": "F-NN", "verdict": "<enum>", "severity": "<enum>", "rationale": "<≤140 chars>" }
+  ],
+  "predicate_audit": { "P1": "pass", "P2": "pass", "P3": "pass", "P4": "pass", "P5": "pass" },
+  "report_paths": {
+    "json": "research/audits/<slug>/audit_report.json",
+    "markdown": "research/audits/<slug>/report.md"
+  },
+  "next_actions": [ "<≤2 short suggestions or empty array>" ]
+}
+```
+
+**Required fields:** `audit_id`, `audit_dir`, `verdict_counts` (one count for each of the 10 canonical Finding verdicts from CONTRACTS.md §Verdict enum, zero if absent — this is `findings[]` only, not `style_findings[]`), `severity_counts`, `style_summary` (set `enabled: false` and zeros for non-Tier-3 audits where `prose_quality_audit` is not in `checks_enabled`; otherwise `total` is `len(style_findings)` and `critical` counts the four canonical CRITICAL style rules W6/AI8/Q5/R5), `predicate_audit` (P1–P5 from CONTRACTS.md), `report_paths`. `top_findings` MUST be the up to three highest-severity findings ordered by severity descending, drawing from `findings[]` only (style findings surface separately via `style_summary`); rationales must be ≤140 characters and contain no quoted excerpts or full claim text.
+
+**Forbidden in fork return:** raw claim text, quoted source excerpts, full-text snippets, MCP tool responses, paperclip output, intermediate stage findings (those live in `research/audits/<slug>/stage*.json`). The caller follows up with targeted reads — for example, `!\`jq '.findings[] | select(.id=="F-NN")' research/audits/<slug>/audit_report.json\`` — to surface specific finding details on demand at zero token cost in the main context.
+
+**If the audit cannot complete:** still return the JSON shape with `verdict_counts` reflecting findings produced so far, `predicate_audit` showing which predicates passed before the abort, and a `next_actions` entry explaining what blocked completion (e.g., `"resume after providing source PDFs"`). Partial state remains in `research/audits/<slug>/` for `checkpoint.py resume --slug <slug>` to pick up.
