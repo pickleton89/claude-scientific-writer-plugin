@@ -1,8 +1,12 @@
 ---
 name: target-intelligence
-version: 1.0.0
+version: 1.1.0
 description: "Generate comprehensive target dossiers for genes/proteins using resolved IDs from entity-resolution. Covers structure, function, expression, variants, disease associations, and druggability across 6 stages."
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
+context: fork
+agent: general-purpose
+model: claude-sonnet-4-6
+effort: medium
 ---
 
 # Target Intelligence
@@ -420,3 +424,38 @@ GTEx often requires versioned Ensembl IDs.
 - **tool-lookup.yaml**: Capability-to-tool mapping for all database queries
 - **known_param_corrections.md**: Parameter quirks that cause silent failures
 </cross_references>
+
+## Fork-return contract
+
+This skill runs in a forked subagent context (`context: fork`). The fork executes all 6 stages internally — Open Targets Foundation queries, ToolUniverse calls for structure/domains/expression/variants/safety/druggability, evidence grading, and the 12-section dossier write — and returns **only a compact summary** to the calling conversation. Raw API responses, intermediate JSON blobs, GraphQL payloads, and tool routing transcripts **stay inside the fork**. Pre-fork main-context cost per dossier has been observed at 30k–80k+ tokens (multi-stage MCP responses + per-section enrichment); the post-fork target is **≤ 1.5k tokens per dossier**.
+
+The fork's final message to the caller is a single JSON object capped at ~600 tokens. Emit it verbatim as the last content of the response, fenced as ```json:
+
+```jsonc
+{
+  "target_id": "<HGNC-symbol>",
+  "report_path": "<{SYMBOL}_target_report.md path>",
+  "report_dir": "research/targets/<symbol_slug>/",
+  "resolved_ids": {
+    "hgnc_symbol": "", "ensembl_gene_id": "", "uniprot_id": "", "chembl_target_id": ""
+  },
+  "section_status": {
+    "identity": "complete", "structure": "complete", "function": "complete",
+    "interactions": "complete", "expression": "complete", "variants_disease": "complete",
+    "druggability": "complete", "safety": "complete", "publications": "complete"
+  },
+  "completeness_audit": {
+    "data_minimums_met": true,
+    "missing_fields": [],
+    "evidence_grading_distribution": { "T1": 0, "T2": 0, "T3": 0, "T4": 0 }
+  },
+  "headline": "<≤140 chars: 1-line target summary; e.g. 'BRCA1 — DNA repair tumor suppressor; 5 approved drugs target BRCA pathway; high tractability'>",
+  "next_actions": [ "<≤2 short suggestions or empty array>" ]
+}
+```
+
+**Required fields:** `target_id`, `report_path`, `report_dir`, `resolved_ids` (the upstream entity-resolution identity table — these are the only IDs downstream consumers like target-validation should join on), `section_status` (one of `complete | partial | skipped` per section), `completeness_audit.data_minimums_met` (boolean from the Stage 6 audit), `headline`. `evidence_grading_distribution` counts disease-association claims by tier (T1 high-confidence → T4 weak); empty if no disease section was generated.
+
+**Forbidden in fork return:** raw Open Targets GraphQL responses, ToolUniverse tool stdout, full PDB structure metadata, expression-atlas tables, variant lists, full reference lists. All of that lives in the persisted artifacts under `report_dir` and the rendered `{SYMBOL}_target_report.md`. The caller follows up with targeted reads — for example, `!\`grep -A 30 "## Section 9: Druggability" <report_path>\`` or `!\`jq '.evidence_grading' research/targets/<slug>/audit.json\`` — to surface specific dossier sections on demand at zero token cost in the main context.
+
+**If the dossier cannot complete:** still return the JSON shape with `section_status` reflecting which sections finished, `completeness_audit.data_minimums_met: false` with the missing fields enumerated, and a `next_actions` entry explaining what blocked completion (e.g., `"resume after Open Targets API responds"`, `"entity-resolution did not provide ChEMBL target ID — required for druggability section"`). Partial state remains in `report_dir` for follow-up runs.
