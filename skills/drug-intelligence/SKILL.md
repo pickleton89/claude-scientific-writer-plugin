@@ -1,8 +1,12 @@
 ---
 name: drug-intelligence
-version: 1.0.0
+version: 1.1.0
 description: "Generate comprehensive drug dossiers using resolved IDs from entity-resolution. Covers chemistry, mechanism, ADMET, safety (FAERS), pharmacogenomics, and regulatory status across 6 stages."
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
+context: fork
+agent: general-purpose
+model: claude-sonnet-4-6
+effort: medium
 ---
 
 # Drug Intelligence
@@ -442,3 +446,44 @@ Parsed section tools require setid, not drug name.
 - **tool-lookup.yaml**: Capability-to-tool mapping for all database queries
 - **known_param_corrections.md**: Parameter quirks that cause silent failures
 </cross_references>
+
+## Fork-return contract
+
+This skill runs in a forked subagent context (`context: fork`). The fork executes all 6 stages internally — DailyMed label retrieval, ChEMBL chemistry, mechanism/targets, ADMET-AI, FAERS safety queries, PGx, regulatory checks, and the 10-section dossier write — and returns **only a compact summary** to the calling conversation. Raw API responses, full DailyMed labels, FAERS adverse-event tables, and tool routing transcripts **stay inside the fork**. Pre-fork main-context cost per dossier has been observed at 30k–80k+ tokens (DailyMed full label + ChEMBL bioactivities + FAERS reports + ADMET predictions); the post-fork target is **≤ 1.5k tokens per dossier**.
+
+The fork's final message to the caller is a single JSON object capped at ~600 tokens. Emit it verbatim as the last content of the response, fenced as ```json:
+
+```jsonc
+{
+  "drug_id": "<INN-name>",
+  "report_path": "<{DRUG}_drug_report.md path>",
+  "report_dir": "research/drugs/<drug_slug>/",
+  "resolved_ids": {
+    "inn": "", "chembl_id": "", "pubchem_cid": "", "drugbank_id": "", "rxnorm_cui": "",
+    "smiles": "", "inchikey": ""
+  },
+  "section_status": {
+    "identity": "complete", "chemistry": "complete", "mechanism_targets": "complete",
+    "admet": "complete", "clinical": "complete", "safety_faers": "complete",
+    "pgx": "complete", "regulatory": "complete"
+  },
+  "regulatory_status": {
+    "fda_approval": "approved | investigational | withdrawn | unknown",
+    "first_approval_year": null,
+    "boxed_warning": false
+  },
+  "completeness_audit": {
+    "data_minimums_met": true,
+    "missing_fields": [],
+    "faers_signal_count": 0
+  },
+  "headline": "<≤140 chars: 1-line drug summary; e.g. 'pembrolizumab — anti-PD-1 mAb; FDA-approved 2014; 30+ indications; FAERS top signal: pneumonitis'>",
+  "next_actions": [ "<≤2 short suggestions or empty array>" ]
+}
+```
+
+**Required fields:** `drug_id`, `report_path`, `report_dir`, `resolved_ids` (the upstream entity-resolution identity table — these are the only IDs downstream consumers like target-validation should join on), `section_status` (one of `complete | partial | skipped` per section), `regulatory_status` (parsed from DailyMed + FDA — `boxed_warning` boolean is non-negotiable since it gates safety-critical downstream use), `completeness_audit.data_minimums_met` (boolean from the Stage 6 audit), `headline`. `faers_signal_count` is the number of disproportionality signals exceeding the skill's PRR/ROR thresholds; zero if the FAERS section was skipped.
+
+**Forbidden in fork return:** raw DailyMed label text, full FAERS adverse-event tables, ChEMBL bioactivity lists, ADMET-AI per-endpoint predictions, full mechanism prose, citation/reference lists. All of that lives in the persisted artifacts under `report_dir` and the rendered `{DRUG}_drug_report.md`. The caller follows up with targeted reads — for example, `!\`grep -A 30 "## Section 6: Safety" <report_path>\`` or `!\`jq '.faers_signals' research/drugs/<slug>/audit.json\`` — to surface specific dossier sections on demand at zero token cost in the main context.
+
+**If the dossier cannot complete:** still return the JSON shape with `section_status` reflecting which sections finished, `completeness_audit.data_minimums_met: false` with the missing fields enumerated, and a `next_actions` entry explaining what blocked completion (e.g., `"resume after DailyMed retrieval succeeds"`, `"entity-resolution did not provide ChEMBL ID — required for chemistry section"`). Partial state remains in `report_dir` for follow-up runs.
