@@ -1,0 +1,39 @@
+# Pembrolizumab Plus Carboplatin/Pemetrexed in PD-L1–High Advanced Non-Squamous NSCLC: A Single-Center Phase II Investigator-Initiated Study
+
+Smith JR, Patel A, Ng S, Williams T, Okafor C, Lee H, et al.
+*Journal of Thoracic Oncology Reports* (synthetic — fixture for verifier regression bed)
+2024; 12(4): 287-301. DOI: 10.0001/jtor.fixture.smith2024
+
+## Abstract
+
+**Background.** PD-L1–high (TPS ≥ 50%) advanced non-squamous non–small cell lung cancer (NSCLC) is currently treated with pembrolizumab monotherapy. The addition of platinum-doublet chemotherapy may extend benefit.
+
+**Methods.** Single-center, single-arm, investigator-initiated phase II trial. We enrolled 187 patients with previously untreated PD-L1–high (TPS ≥ 50%) advanced non-squamous NSCLC between January 2022 and November 2023. Pembrolizumab 200 mg + carboplatin AUC 5 + pemetrexed 500 mg/m² q3w × 4 cycles, followed by pembrolizumab + pemetrexed maintenance.
+
+**Results.** At a median follow-up of 18.4 months, the 12-month progression-free survival rate was 47.3% (95% CI 38.1–55.9%). Median PFS was 11.2 months (95% CI 8.4–14.7). Objective response rate was 51.6% (95% CI 42.4–60.8%). Compared with a historical median PFS of 7.7 months for pembrolizumab monotherapy in this population, the observed benefit reached statistical significance (p < 0.001 by one-sample log-rank against the historical control). Grade ≥ 3 adverse events occurred in 38% of treated patients.
+
+**Conclusions.** Pembrolizumab plus carboplatin/pemetrexed produced a 12-month PFS rate of 47.3% in PD-L1–high non-squamous NSCLC, exceeding the prespecified 40% threshold. These findings support a randomized confirmatory trial.
+
+---
+
+## 1. Introduction
+
+(Synthetic content — short fixture stub. Real paper would have full Introduction, Methods, Results, Discussion sections. The five preserved numerical claims appear in the Abstract and are restated in §3 Results.)
+
+## 3. Results
+
+### 3.1 Patient enrollment
+
+We enrolled 187 patients with previously untreated PD-L1–high (TPS ≥ 50%) advanced non-squamous NSCLC between January 2022 and November 2023. Median age was 67 years (range 41–84); 58% were male.
+
+### 3.2 Primary endpoint
+
+The 12-month PFS rate was 47.3% (95% CI 38.1–55.9%). Median PFS was 11.2 months (95% CI 8.4–14.7). Compared with the historical mPFS of 7.7 months for pembrolizumab monotherapy, this difference reached statistical significance (p < 0.001 by one-sample log-rank).
+
+### 3.3 Secondary endpoints
+
+ORR was 51.6% (95% CI 42.4–60.8%).
+
+## 4. Discussion
+
+(Stub.)

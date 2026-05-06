@@ -6,6 +6,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Stage 6 cooperation-contract handoff (post-1.4.0 follow-up)
+
+Closes the unspecified path-discovery gap surfaced when the Sprint 1-3 smoke test was attempted: the cooperation contract was wired on the producer side (summarizer emits `summary_paths.{stats,source_meta}`) but the consumer side (verifier) had no formal way to learn where stats files lived. The verifier was expected to "discover" them via cat substitution, with no scan path or intake field carrying them. Stage 6 would have silently fallen back to full-text re-extraction in practice. Fix: explicit `intake.cited_papers[]` field; orchestrator lifts paths from each summarizer fork-return into a verifier intake entry.
+
+- **`skills/research-accuracy-verifier/schemas/intake.json`**: new optional `cited_papers[]` array of `CitedPaper` objects (`paper_id`, `stats_path`, `source_meta_path`; optional `doi` / `pmid` / `pmcid`). Inlined under `#/definitions/CitedPaper` per the project convention established by `audit_report.json`'s `Finding` pattern. Absence keeps the existing fallback (full-text re-extraction) intact.
+- **`skills/shared/verifier_kit/schemas/intake.base.json`**: new `citedPaper` def published for reuse across future audit-style skills (peer-review, dossier validators). Keyword normalized from `$defs` to `definitions` to match the verifier's `audit_report.json` convention; no consumers existed at rename time.
+- **`skills/research-accuracy-verifier/SKILL.md`** §Stage 6: cooperation paragraph rewritten into a 3-step protocol — (1) caller populates `cited_papers[]` from summarizer fork-return; (2) Stage 6 iterates entries, `cat`s each `stats_path`, runs `validate_stats.py`, joins to document claims by `paper_id`; (3) emits `evidence` pinning to `paper_id` + `claim_id` from `stats.json`. Documents that path discovery is **explicit via intake**, not heuristic — eliminates the prior ambiguity.
+- **`skills/research-paper-summarizer/SKILL.md`** §cooperation contract: new caller-responsibility table mapping fork-return fields → verifier intake fields (`paper_id` top-level → `cited_papers[i].paper_id`; `summary_paths.stats` → `stats_path`; `summary_paths.source_meta` → `source_meta_path`). Removes the prior implicit assumption that orchestrators would just figure it out.
+- **`skills/research-accuracy-verifier/tests/test_validation.py`**: 8 new schema tests for `cited_papers` — omitted/valid/missing-stats_path/empty-paper_id/additionalProperties-rejected/empty-array/non-array-rejected/multi-entry. Verifier+kit suite 103 → 111. Summarizer suite (53) unchanged.
+
+### Added — `regression/` doc 06 fixture for Stage 6 cooperation
+
+Permanent regression artifact for the cooperation-contract case, registered in `regression/manifest.json`. Sets up Sprint-4 measurement runs without depending on a real-paper extraction or live MCP tools.
+
+- **`regression/sources/smith2024_pembro_nsclc/`** (new): synthetic paper artifacts — `.txt` source (1-page abstract + Methods/Results stubs), `_stats.json` (7 Q5/R5-clean claims spanning sample size, percentages, p-value, medians; `verbatim: true` throughout), `_source_meta.json` (paper identifiers + provenance, `fixture_note` flagging that DOI `10.0001/*` is reserved for examples and does not resolve).
+- **`regression/docs/06_lit_review_cited_paper_numerical.md`** (new): lit-review §2 draft citing the synthetic paper with 4 correct numerical claims (47.3% PFS rate, 11.2-mo mPFS, 7.7-mo historical mPFS, p<0.001) and **1 seeded mismatch** (n=210 vs paper's n=187). The mismatch is the GT-06-1 detection target; the 4 clean claims are the positive-control set.
+- **`regression/ground_truth/06_lit_review_cited_paper_numerical.json`** (new): expects `CONTRADICTED × CRITICAL` (per `severity_matrix.values.json: lit_review.CONTRADICTED = CRITICAL`) for GT-06-1 plus 4 `expected_clean_claims` mapping to `cited_claim_id` C-02/C-03/C-05/C-06. Includes a Sprint-4 todo to extend `score.py` to honor an `evidence_must_contain` ground-truth field that pins to `paper_id` + `claim_id` — currently documented but not scored, since `score.py` only inspects `verdict` + `severity` + (style) `rule_id`.
+- **`regression/manifest.json`**: doc 06 entry carries inline `cited_papers[]` (matching the new intake schema) so the fixture is self-describing for downstream harness work.
+
+### Fixed — Fresh-eyes pass on the cooperation-contract work
+- **GT-06 expected severity** corrected to `CRITICAL` (was `MAJOR`); `severity_matrix.values.json` is authoritative — `score.py`'s exact-string severity match would have produced phantom `recall=0` even on a verifier that behaved exactly to spec. The misread also lived in the `severity_rationale` documentation string.
+- **`paper_id` description** in both `intake.json#/definitions/CitedPaper.paper_id` and `verifier_kit/schemas/intake.base.json#/definitions/citedPaper.properties.paper_id` corrected: `stats.json` has `paper_id` at the file root, not on each claim entry (claims have `claim_id`). Prior wording would have misled adopters.
+- **GT-06 `measurement_notes`** rewritten to distinguish what `score.py` currently scores (verdict + severity) from what the cooperation contract documents as expected behavior (evidence pinning to `paper_id` + `claim_id`); the latter requires a Sprint-4 `score.py` extension to actually become a measurable metric.
+- **Summarizer caller-responsibility note** now explicitly maps `paper_id` (the fork-return root field) alongside the `summary_paths.*` fields. Without that, an orchestrator following the docs would have a `cited_papers[]` entry missing its required `paper_id`.
+- **Doc 06 draft** trimmed: removed a "median follow-up of 18.4 months" mention that had no matching `stats.json` claim — would have produced an `UNVERIFIED` finding the ground truth neither anticipated nor scored.
+
 ## [1.4.0] — 2026-05-06
 
 Skill-chaining pilot — Sprints 1-3 land. The two highest-leakage scientific-writing skills (`research-accuracy-verifier`, `research-paper-summarizer`) migrate to `context: fork`, with a shared `skills/shared/verifier_kit/` extracting the reusable two-stage validator + stage-checkpoint scaffolding. Cooperation contract between the two: verifier consumes summarizer's `stats.json` at Stage 6 instead of re-extracting numbers from cited PDFs.

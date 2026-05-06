@@ -1,0 +1,81 @@
+{
+  "doc_id": "06_lit_review_cited_paper_numerical",
+  "document_type": "lit_review",
+  "verification_tier": "3",
+  "domain": "biomedical",
+  "flag_threshold": "standard",
+  "sources_available": "uploaded_files",
+  "intake_notes": "This fixture exercises the Stage 6 cooperation contract: the document cites a paper for which a per-paper stats.json has been pre-computed (sources/smith2024_pembro_nsclc/). The intake manifest entry MUST populate cited_papers[] with that paper's stats_path and source_meta_path, simulating an upstream research-paper-summarizer fork-return handoff. Stage 6 should consume cited_papers[] before any full-text retrieval and emit evidence pinning to paper_id + claim_id.",
+  "cited_paper_artifacts": {
+    "paper_id": "smith2024_pembro_nsclc",
+    "stats_path": "regression/sources/smith2024_pembro_nsclc/smith2024_pembro_nsclc_stats.json",
+    "source_meta_path": "regression/sources/smith2024_pembro_nsclc/smith2024_pembro_nsclc_source_meta.json",
+    "doi": "10.0001/jtor.fixture.smith2024"
+  },
+  "seeded_errors": [
+    {
+      "error_id": "GT-06-1",
+      "kind": "numerical_mismatch_against_cited_source",
+      "location": {
+        "section": "§2 Single-arm phase II evidence",
+        "claim": "210 patients were enrolled with previously untreated PD-L1–high disease between January 2022 and November 2023"
+      },
+      "fact_at_issue": "Total enrolled patient count attributed to Smith et al. 2024",
+      "claimed_value": 210,
+      "cited_paper_id": "smith2024_pembro_nsclc",
+      "cited_claim_id": "C-01",
+      "cited_source_value": 187,
+      "expected_findings_any_of": [
+        {
+          "stage": 6,
+          "verdict": "CONTRADICTED",
+          "severity": "CRITICAL",
+          "severity_rationale": "severity_matrix.values.json: CONTRADICTED × lit_review = CRITICAL",
+          "evidence_must_contain": {
+            "paper_id": "smith2024_pembro_nsclc",
+            "claim_id": "C-01",
+            "value_in_source": 187
+          },
+          "evidence_must_contain_status": "documented_expectation_not_scored: score.py only checks verdict + severity (and rule_id for style); evidence content checking is a Sprint-4 score.py extension."
+        }
+      ],
+      "ground_truth_source": "Direct mismatch between draft claim (n=210) and the cited paper's preserved numerical record stats.json claim_id=C-01 (n=187). Detection requires Stage 6 to consume intake.cited_papers[] and join by paper_id."
+    }
+  ],
+  "expected_clean_claims": [
+    {
+      "section": "§2 Single-arm phase II evidence",
+      "claim": "12-month progression-free survival rate of 47.3%",
+      "cited_paper_id": "smith2024_pembro_nsclc",
+      "cited_claim_id": "C-03",
+      "expected_verdict": "VERIFIED",
+      "rationale": "Matches stats.json C-03 (47.3%) exactly. This is the positive-control case — the cooperation contract should produce a VERIFIED, not silently skip."
+    },
+    {
+      "section": "§2 Single-arm phase II evidence",
+      "claim": "median PFS of 11.2 months",
+      "cited_paper_id": "smith2024_pembro_nsclc",
+      "cited_claim_id": "C-02",
+      "expected_verdict": "VERIFIED",
+      "rationale": "Matches stats.json C-02 (11.2 months) exactly."
+    },
+    {
+      "section": "§2 Single-arm phase II evidence",
+      "claim": "historical 7.7-month median for pembrolizumab monotherapy",
+      "cited_paper_id": "smith2024_pembro_nsclc",
+      "cited_claim_id": "C-06",
+      "expected_verdict": "VERIFIED",
+      "rationale": "Matches stats.json C-06 (7.7 months) — the historical-control number is itself preserved in the cited paper, so the join still applies."
+    },
+    {
+      "section": "§2 Single-arm phase II evidence",
+      "claim": "p < 0.001 by one-sample log-rank",
+      "cited_paper_id": "smith2024_pembro_nsclc",
+      "cited_claim_id": "C-05",
+      "expected_verdict": "VERIFIED",
+      "rationale": "Matches stats.json C-05 (p<0.001) exactly."
+    }
+  ],
+  "uncited_claims_note": "All numerical claims in §2 are attributed to (Smith 2024). Stage 4 (uncited_claims) should not flag any; if it does, that's a regression unrelated to the cooperation contract.",
+  "measurement_notes": "**Currently scored (score.py as of v1.4.0):** ground-truth recall on this document = 1.0 iff the verifier emits a CONTRADICTED finding for GT-06-1 with severity CRITICAL. **Documented but not currently scored:** the cooperation-contract win is that the finding's evidence[] should pin to paper_id='smith2024_pembro_nsclc' + claim_id='C-01' (see seeded_errors[0].evidence_must_contain). A Stage 6 that re-extracted from full text could in principle still detect the n=210 vs n=187 mismatch but would not pin to claim_id='C-01' (since claim_id is internal to stats.json) — that distinction lets a future score.py extension differentiate cooperation-contract success from fallback-path success. Sprint-4 todo: extend score.py to honor evidence_must_contain when present."
+}

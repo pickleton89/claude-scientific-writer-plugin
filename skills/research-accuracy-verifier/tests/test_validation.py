@@ -83,6 +83,113 @@ class TestIntakeValidator:
         out = IntakeValidator().expand_tier(sample_intake)
         assert out["checks_enabled"] == TIER_CHECKS["2"]
 
+    # ---- cited_papers[] (Stage 6 cooperation handoff) ------------------------
+
+    def test_cited_papers_omitted_passes(self, sample_intake: dict[str, Any]) -> None:
+        """cited_papers is optional — absence is the default fallback path."""
+        intake = dict(sample_intake)
+        intake.pop("cited_papers", None)
+        ok, errors, _ = IntakeValidator().validate(intake)
+        assert ok, errors
+
+    def test_cited_papers_valid_entry_passes(self, sample_intake: dict[str, Any]) -> None:
+        intake = dict(sample_intake)
+        intake["cited_papers"] = [
+            {
+                "paper_id": "smith2024_cancer",
+                "stats_path": "/papers/smith2024_cancer/smith2024_cancer_stats.json",
+                "source_meta_path": "/papers/smith2024_cancer/smith2024_cancer_source_meta.json",
+                "doi": "10.1000/example.001",
+                "pmid": "39000001",
+            }
+        ]
+        ok, errors, _ = IntakeValidator().validate(intake)
+        assert ok, errors
+
+    def test_cited_papers_missing_stats_path_fails(
+        self, sample_intake: dict[str, Any]
+    ) -> None:
+        intake = dict(sample_intake)
+        intake["cited_papers"] = [
+            {
+                "paper_id": "smith2024",
+                # stats_path missing
+                "source_meta_path": "/papers/smith2024_source_meta.json",
+            }
+        ]
+        ok, errors, _ = IntakeValidator().validate(intake)
+        assert not ok
+        assert any("stats_path" in e for e in errors)
+
+    def test_cited_papers_empty_paper_id_fails(
+        self, sample_intake: dict[str, Any]
+    ) -> None:
+        intake = dict(sample_intake)
+        intake["cited_papers"] = [
+            {
+                "paper_id": "",
+                "stats_path": "/p/x_stats.json",
+                "source_meta_path": "/p/x_source_meta.json",
+            }
+        ]
+        ok, errors, _ = IntakeValidator().validate(intake)
+        assert not ok
+        assert any("schema" in e for e in errors)
+
+    def test_cited_papers_additional_props_rejected(
+        self, sample_intake: dict[str, Any]
+    ) -> None:
+        intake = dict(sample_intake)
+        intake["cited_papers"] = [
+            {
+                "paper_id": "smith2024",
+                "stats_path": "/p/smith2024_stats.json",
+                "source_meta_path": "/p/smith2024_source_meta.json",
+                "abstract": "should not be here",  # additionalProperties: false
+            }
+        ]
+        ok, errors, _ = IntakeValidator().validate(intake)
+        assert not ok
+        assert any("schema" in e for e in errors)
+
+    def test_cited_papers_empty_array_passes(
+        self, sample_intake: dict[str, Any]
+    ) -> None:
+        """Empty cited_papers[] is the same as omitting it — fallback path."""
+        intake = dict(sample_intake)
+        intake["cited_papers"] = []
+        ok, errors, _ = IntakeValidator().validate(intake)
+        assert ok, errors
+
+    def test_cited_papers_non_array_fails(
+        self, sample_intake: dict[str, Any]
+    ) -> None:
+        intake = dict(sample_intake)
+        intake["cited_papers"] = "not_an_array"
+        ok, errors, _ = IntakeValidator().validate(intake)
+        assert not ok
+        assert any("schema" in e for e in errors)
+
+    def test_cited_papers_multiple_entries_pass(
+        self, sample_intake: dict[str, Any]
+    ) -> None:
+        intake = dict(sample_intake)
+        intake["cited_papers"] = [
+            {
+                "paper_id": "smith2024",
+                "stats_path": "/p/smith2024_stats.json",
+                "source_meta_path": "/p/smith2024_source_meta.json",
+            },
+            {
+                "paper_id": "jones2023",
+                "stats_path": "/p/jones2023_stats.json",
+                "source_meta_path": "/p/jones2023_source_meta.json",
+                "pmcid": "PMC10000001",
+            },
+        ]
+        ok, errors, _ = IntakeValidator().validate(intake)
+        assert ok, errors
+
 
 # ---------- FindingValidator (P1-P5) ----------------------------------------
 

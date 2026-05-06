@@ -1,0 +1,81 @@
+{
+  "paper_id": "smith2024_pembro_nsclc",
+  "source_path": "regression/sources/smith2024_pembro_nsclc/smith2024_pembro_nsclc.txt",
+  "extracted_at": "2026-05-06T10:30:00Z",
+  "stats": [
+    {
+      "claim_id": "C-01",
+      "value": 187,
+      "unit": "patients",
+      "context": "We enrolled 187 patients with previously untreated PD-L1–high (TPS ≥ 50%) advanced non-squamous NSCLC",
+      "source_location": "Abstract; Results §3.1",
+      "verbatim": true,
+      "stat_type": "sample_size"
+    },
+    {
+      "claim_id": "C-02",
+      "value": 11.2,
+      "unit": "months",
+      "context": "Median PFS was 11.2 months (95% CI 8.4–14.7)",
+      "source_location": "Abstract; Results §3.2",
+      "verbatim": true,
+      "stat_type": "median"
+    },
+    {
+      "claim_id": "C-03",
+      "value": 47.3,
+      "unit": "%",
+      "context": "12-month progression-free survival rate was 47.3% (95% CI 38.1–55.9%)",
+      "source_location": "Abstract; Results §3.2",
+      "verbatim": true,
+      "stat_type": "percentage"
+    },
+    {
+      "claim_id": "C-04",
+      "value": 51.6,
+      "unit": "%",
+      "context": "Objective response rate was 51.6% (95% CI 42.4–60.8%)",
+      "source_location": "Abstract; Results §3.3",
+      "verbatim": true,
+      "stat_type": "percentage"
+    },
+    {
+      "claim_id": "C-05",
+      "value": "<0.001",
+      "unit": "p-value",
+      "context": "the observed benefit reached statistical significance (p < 0.001 by one-sample log-rank against the historical control)",
+      "source_location": "Abstract; Results §3.2",
+      "verbatim": true,
+      "stat_type": "p_value"
+    },
+    {
+      "claim_id": "C-06",
+      "value": 7.7,
+      "unit": "months",
+      "context": "historical median PFS of 7.7 months for pembrolizumab monotherapy in this population",
+      "source_location": "Abstract; Results §3.2",
+      "verbatim": true,
+      "stat_type": "median"
+    },
+    {
+      "claim_id": "C-07",
+      "value": 38,
+      "unit": "%",
+      "context": "Grade ≥ 3 adverse events occurred in 38% of treated patients",
+      "source_location": "Abstract",
+      "verbatim": true,
+      "stat_type": "percentage"
+    }
+  ],
+  "preserved_numerics_count": 7,
+  "rule_compliance": {
+    "Q5": "pass",
+    "R5": "pass"
+  },
+  "extraction_meta": {
+    "extractor_version": "fixture-1.0.0",
+    "article_type": "general",
+    "page_count": 1,
+    "processing_mode": "standard"
+  }
+}

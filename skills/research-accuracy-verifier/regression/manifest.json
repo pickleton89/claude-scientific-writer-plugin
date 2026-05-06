@@ -61,6 +61,26 @@
       "checks_enabled": null,
       "primary_seeded_error_kind": "cherry_picked_support",
       "content_status": "deferred_pending_mcp_verification"
+    },
+    {
+      "doc_id": "06_lit_review_cited_paper_numerical",
+      "doc_path": "docs/06_lit_review_cited_paper_numerical.md",
+      "ground_truth_path": "ground_truth/06_lit_review_cited_paper_numerical.json",
+      "document_type": "lit_review",
+      "verification_tier": "3",
+      "domain": "biomedical",
+      "flag_threshold": "standard",
+      "checks_enabled": null,
+      "primary_seeded_error_kind": "numerical_mismatch_against_cited_source",
+      "content_status": "authored",
+      "cited_papers": [
+        {
+          "paper_id": "smith2024_pembro_nsclc",
+          "stats_path": "regression/sources/smith2024_pembro_nsclc/smith2024_pembro_nsclc_stats.json",
+          "source_meta_path": "regression/sources/smith2024_pembro_nsclc/smith2024_pembro_nsclc_source_meta.json",
+          "doi": "10.0001/jtor.fixture.smith2024"
+        }
+      ]
     }
   ]
 }

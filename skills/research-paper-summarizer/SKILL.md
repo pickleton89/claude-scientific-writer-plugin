@@ -794,6 +794,17 @@ The `stats.json` artifact is the canonical numerical record for downstream verif
 - `claim_id` values are stable across re-runs of the same paper, so the verifier's `evidence` references can pin to a `paper_id` + `claim_id` pair and survive re-summarization.
 - The summarizer never rounds or normalizes a number that appears in the source. Unit conversion is performed only when the source already presents both forms; otherwise `unit` matches the source.
 
+**Caller responsibility — wiring the handoff:** the verifier does not scan the filesystem for `*_stats.json` files. When chaining, the orchestrator (the calling conversation that invoked this skill) must lift three values out of this skill's fork-return JSON and pass them into `research-accuracy-verifier`'s intake as a `cited_papers[]` entry:
+
+| Source (this fork-return) | Destination (verifier intake) |
+|---------------------------|-------------------------------|
+| `paper_id` (top-level) | `cited_papers[i].paper_id` |
+| `summary_paths.stats` | `cited_papers[i].stats_path` |
+| `summary_paths.source_meta` | `cited_papers[i].source_meta_path` |
+| any of the persistent identifiers visible to the orchestrator (DOI/PMID/PMCID) | `cited_papers[i].{doi,pmid,pmcid}` (optional) |
+
+See `research-accuracy-verifier/schemas/intake.json#/properties/cited_papers` for the receiving shape and that skill's `SKILL.md` Stage 6 for consumption details.
+
 This eliminates the verifier's ~10–30k token PDF re-extraction cost per cited paper and removes verdict drift caused by independent re-extraction.
 
 </fork_return_contract>

@@ -53,6 +53,40 @@
       "type": "string",
       "enum": ["conservative", "standard", "strict"],
       "description": "Conservative: only verified disagreements; standard: per matrix; strict: also flag single-source weak claims."
+    },
+    "cited_papers": {
+      "type": "array",
+      "description": "Optional. Pointers to artifacts produced by upstream research-paper-summarizer runs for cited sources. When present, Stage 6 (numerical sanity) joins the document's numerical claims against each entry's stats.json by paper_id, eliminating re-extraction of cited-paper numbers. When absent or when an entry's validate_stats.py fails, Stage 6 falls back to full-text re-extraction. The orchestrator populates this from each summarizer fork-return's summary_paths.{stats,source_meta}; canonical shape mirrored from verifier_kit/schemas/intake.base.json#/$defs/citedPaper (inlined per project convention — see audit_report.json Finding).",
+      "items": { "$ref": "#/definitions/CitedPaper" },
+      "uniqueItems": true
+    }
+  },
+  "definitions": {
+    "CitedPaper": {
+      "type": "object",
+      "description": "Pointer to artifacts emitted by an upstream summarizer (research-paper-summarizer fork-return summary_paths). Mirrors verifier_kit/schemas/intake.base.json#/$defs/citedPaper.",
+      "required": ["paper_id", "stats_path", "source_meta_path"],
+      "properties": {
+        "paper_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable identifier shared by stats.json (top-level paper_id) and source_meta.json (top-level paper_id). Join key for Stage 6 evidence pinning. Note: stats.json claims have claim_id, not paper_id — paper_id lives at the file root."
+        },
+        "stats_path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Path to {stem}_stats.json (validated by research-paper-summarizer/scripts/validate_stats.py)."
+        },
+        "source_meta_path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Path to {stem}_source_meta.json. Anchors title/authors/year/venue/identifiers."
+        },
+        "doi": {"type": "string"},
+        "pmid": {"type": "string"},
+        "pmcid": {"type": "string"}
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": false

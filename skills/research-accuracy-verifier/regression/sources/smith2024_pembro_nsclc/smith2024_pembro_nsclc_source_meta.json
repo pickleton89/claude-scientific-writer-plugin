@@ -1,0 +1,12 @@
+{
+  "paper_id": "smith2024_pembro_nsclc",
+  "title": "Pembrolizumab Plus Carboplatin/Pemetrexed in PD-L1–High Advanced Non-Squamous NSCLC: A Single-Center Phase II Investigator-Initiated Study",
+  "authors": ["Smith", "Patel", "Ng", "Williams", "Okafor", "Lee"],
+  "year": 2024,
+  "venue": "Journal of Thoracic Oncology Reports",
+  "doi": "10.0001/jtor.fixture.smith2024",
+  "pmid": null,
+  "pmcid": null,
+  "source_path": "regression/sources/smith2024_pembro_nsclc/smith2024_pembro_nsclc.txt",
+  "fixture_note": "SYNTHETIC paper. DOI 10.0001/* is reserved for examples and does not resolve. This file exists solely to exercise the Stage 6 cited_papers[] cooperation contract in regression."
+}

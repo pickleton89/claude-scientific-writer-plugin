@@ -2,9 +2,9 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://oligon.local/verifier_kit/intake.base.json",
   "title": "IntakeBase",
-  "description": "Canonical $defs library for intake schemas across audit-style skills. Captures the universal axes (document_type, verification_tier, flag_threshold) that drive routing. Skill-level intake schemas extend these with their own check-set enums and required-when rules.",
+  "description": "Canonical definitions library for intake schemas across audit-style skills. Captures the universal axes (document_type, verification_tier, flag_threshold, sources_available) and the citedPaper handoff shape. Skill-level intake schemas extend these with their own check-set enums and required-when rules. Uses Draft-07 'definitions' keyword (not '$defs') to match the project convention established by audit_report.json.",
   "type": "object",
-  "$defs": {
+  "definitions": {
     "tierEnum": {
       "type": "string",
       "enum": ["1", "2", "3", "custom"],
@@ -24,6 +24,32 @@
       "type": "string",
       "enum": ["uploaded_files", "bibliography_only", "none"],
       "description": "What evidence the user provided. Drives whether alignment-style stages can run."
+    },
+    "citedPaper": {
+      "type": "object",
+      "description": "Pointer to artifacts emitted by an upstream summarizer (e.g., research-paper-summarizer's fork-return summary_paths). Lets a downstream audit consume canonical numerical/identifier records for a cited source instead of re-extracting from full text. Skill-level intake schemas reference this as an array (commonly named cited_papers[]).",
+      "required": ["paper_id", "stats_path", "source_meta_path"],
+      "properties": {
+        "paper_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable identifier shared by stats.json (top-level paper_id) and source_meta.json (top-level paper_id). Join key for evidence pinning. Note: stats.json claims have claim_id, not paper_id — paper_id lives at the file root."
+        },
+        "stats_path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Path to {stem}_stats.json (validated by research-paper-summarizer/scripts/validate_stats.py)."
+        },
+        "source_meta_path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Path to {stem}_source_meta.json. Anchors title/authors/year/venue/identifiers."
+        },
+        "doi": {"type": "string"},
+        "pmid": {"type": "string"},
+        "pmcid": {"type": "string"}
+      },
+      "additionalProperties": false
     }
   }
 }
