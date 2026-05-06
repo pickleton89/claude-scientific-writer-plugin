@@ -120,11 +120,17 @@
 - **Volunteer bias:** Self-selected participants differ
 - **Berkson's bias:** Hospital patients differ from general population
 - **Survivorship bias:** Only examining "survivors"
+- **Healthy worker effect:** Working populations are healthier than the general population (lower mortality, fewer chronic conditions). Common in occupational exposure studies, where it can mask harmful exposure effects when an employed cohort is compared to general-population mortality.
+- **Healthy adherer bias:** Patients who adhere to a treatment regimen tend to be healthier and more health-conscious overall, producing better outcomes even when the treatment is inert (or placebo). In observational studies of medication adherence, screening uptake, or lifestyle interventions, the adherent group often outperforms the non-adherent group on outcomes unrelated to the intervention. Mitigation: intention-to-treat analysis; comparison of adherent groups across different interventions (including placebo).
+- **Healthy survivor / immortal time bias:** When subjects must "survive" or remain event-free long enough to be classified into the exposed group, the exposed group accrues unexposed person-time that is wrongly attributed to the exposure, biasing in favor of the exposure. Common in pharmacoepidemiology with new-user vs prevalent-user designs.
 
 **Detection:**
 - Compare characteristics of participants vs. target population
 - Analyze dropout patterns
 - Consider who is missing from the sample
+- For healthy-worker comparisons: use internal referent groups (other workers) rather than general population
+- For healthy-adherer concerns: check whether outcomes plausibly unrelated to the intervention also differ by adherence (a positive association suggests adherer bias)
+- For immortal-time concerns: check whether exposure was defined at baseline (T0) or based on later events
 
 **Mitigation:**
 - Random sampling

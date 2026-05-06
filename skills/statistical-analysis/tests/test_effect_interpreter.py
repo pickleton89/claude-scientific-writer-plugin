@@ -246,6 +246,7 @@ class TestAllMetrics:
             "log2_fold_change": 1.0,
             "cohens_h": 0.5,
             "number_needed_to_treat": 10,
+            "absolute_risk_reduction": 0.05,
         }
 
         for metric in metrics:

@@ -245,6 +245,19 @@ EFFECT_THRESHOLDS = {
         "direction_positive": "N/A (lower is better)",
         "direction_negative": "N/A",
     },
+    "absolute_risk_reduction": {
+        "name": "Absolute risk reduction (ARR)",
+        "description": "Risk_control - Risk_treated, expressed as a proportion (0-1)",
+        "thresholds": [
+            (0.01, "negligible", "<1 percentage-point reduction; rarely clinically meaningful"),
+            (0.05, "small", "1-5 percentage-point reduction"),
+            (0.10, "medium", "5-10 percentage-point reduction"),
+            (0.20, "large", "10-20 percentage-point reduction"),
+            (float("inf"), "very large", ">20 percentage-point reduction"),
+        ],
+        "direction_positive": "treatment reduces risk (benefit)",
+        "direction_negative": "treatment increases risk (harm)",
+    },
 }
 
 
@@ -269,6 +282,7 @@ EffectMetric = Literal[
     "log2_fold_change",
     "cohens_h",
     "number_needed_to_treat",
+    "absolute_risk_reduction",
 ]
 
 
@@ -417,6 +431,7 @@ def _format_interpretation(
         "log2_fold_change": f"log2FC = {value:.2f} indicates a {magnitude} effect ({context}).",
         "cohens_h": f"Cohen's h = {value:.2f} indicates a {magnitude} effect ({context}).",
         "number_needed_to_treat": f"NNT = {value:.1f} indicates a {magnitude} treatment effect ({context}).",
+        "absolute_risk_reduction": f"ARR = {value*100:.1f}% indicates a {magnitude} effect ({context}).",
     }
 
     return templates.get(
@@ -533,6 +548,65 @@ def convert_r_to_cohens_d(r: float) -> float:
         return float("inf") if r > 0 else float("-inf")
 
     return 2 * r / math.sqrt(1 - r**2)
+
+
+def arr_to_nnt(arr: float) -> float:
+    """
+    Convert absolute risk reduction (ARR) to number needed to treat (NNT).
+
+    Parameters
+    ----------
+    arr : float
+        Absolute risk reduction as a proportion (0-1, e.g., 0.02 for 2%).
+
+    Returns
+    -------
+    float
+        NNT = 1 / ARR. Always reported as a positive integer in clinical
+        practice; sign indicates direction (positive ARR = benefit).
+
+    Notes
+    -----
+    Use to translate relative-risk reductions into clinically interpretable
+    numbers. Example: a treatment reducing event rate from 2% to 1% has
+    RRR = 50% but ARR = 0.01 and NNT = 100 — treat 100 patients to prevent
+    one event. Always pair RRR claims with ARR/NNT.
+    """
+    if arr == 0:
+        raise ValueError("ARR of 0 means no effect; NNT is undefined (infinite)")
+    return 1.0 / arr
+
+
+def risks_to_arr_nnt(risk_control: float, risk_treated: float) -> dict:
+    """
+    Compute ARR, RRR, RR, and NNT from absolute risks in two arms.
+
+    Parameters
+    ----------
+    risk_control : float
+        Event rate in control arm (proportion 0-1).
+    risk_treated : float
+        Event rate in treated arm (proportion 0-1).
+
+    Returns
+    -------
+    dict
+        {"arr": float, "rrr": float, "rr": float, "nnt": float}
+
+    Examples
+    --------
+    >>> risks_to_arr_nnt(0.02, 0.01)
+    {'arr': 0.01, 'rrr': 0.5, 'rr': 0.5, 'nnt': 100.0}
+    """
+    if not (0 <= risk_control <= 1) or not (0 <= risk_treated <= 1):
+        raise ValueError("Risks must be proportions in [0, 1]")
+
+    arr = risk_control - risk_treated
+    rr = risk_treated / risk_control if risk_control > 0 else float("nan")
+    rrr = 1 - rr if risk_control > 0 else float("nan")
+    nnt = 1.0 / arr if arr != 0 else float("inf")
+
+    return {"arr": arr, "rrr": rrr, "rr": rr, "nnt": nnt}
 
 
 def convert_or_to_cohens_d(odds_ratio: float) -> float:

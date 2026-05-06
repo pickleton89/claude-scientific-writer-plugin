@@ -185,3 +185,24 @@ Mechanism claims ← Check: Direct mechanistic evidence?
 □ Are all outcomes reported?
 □ Are negative results included?
 ```
+
+---
+
+## Claim Type → Red Flags Quick Reference
+
+When evaluating claims in a paper, abstract, press release, or news report, this table maps common claim patterns to the appropriate skeptical response and the red flags that signal the claim is overstated or unsupported.
+
+| Claim type | Appropriate response | Red flags requiring skepticism |
+|------------|---------------------|-------------------------------|
+| "Drug X reduces mortality by 50%" | Ask: relative or absolute? What was baseline event rate? Demand ARR and NNT. | Only relative risk reported; no CI; baseline rates not given; press release without methods access |
+| "Observational study shows X causes Y" | Downgrade language to "associated with"; enumerate plausible confounders; check whether DAG-based or propensity-score adjustment was attempted. | Authors use "causes," "leads to," or "drives" without randomization; no sensitivity analysis for unmeasured confounding |
+| "Significant p-value (p < 0.05) proves the effect" | Check effect size and 95% CI; assess clinical/practical importance; check the number of comparisons performed. | p ≈ 0.04 with N = 50,000 and tiny effect; many outcomes tested with no multiple-testing correction; primary outcome differs from registered protocol |
+| "Single RCT is definitive" | Check for replication; assess risk of bias (RoB 2); check funding and conflicts. | Industry-funded with no independent statistician; open-label design for subjective outcome; per-protocol rather than ITT analysis; outcome switched after unblinding |
+| "Preprint shows breakthrough" | Await peer review; check for data/code sharing; look for independent replication. | No data or code; sensational press release; authors with conflicts; method described in too little detail to reproduce |
+| "N-of-1 case report demonstrates treatment" | Note absence of control; treat as hypothesis-generating only. | Used to support clinical practice change without cohort or trial evidence |
+| "Improved [biomarker / imaging metric]" | Verify the biomarker is a *validated* surrogate for the clinical outcome of interest, not merely correlated with it. | Hard outcome (mortality, hospitalization, function) not measured; surrogate has prior history of translation failure |
+| "Worked in mice / cells" | Treat as preclinical signal only. ~85% of preclinical efficacy fails to replicate in humans. | Press coverage frames as a human treatment; species gap not discussed; only one lab; no PK/PD bridging data |
+| "Subgroup analysis shows [drug] works in [population]" | Treat as exploratory unless pre-specified with formal interaction test. | Reported separately within subgroup without interaction p; many subgroups tested; main effect was null |
+| "Adherent patients had better outcomes" | Suspect healthy adherer bias; check for ITT analysis or comparison across treatment arms. | Per-protocol or as-treated analysis only; no comparison of adherent vs non-adherent within placebo arm |
+
+**Reference for absolute-risk derivation:** `skills/statistical-analysis/scripts/effect_interpreter.py` provides `risks_to_arr_nnt(risk_control, risk_treated)` to compute ARR, RRR, RR, and NNT from arm-level event rates.

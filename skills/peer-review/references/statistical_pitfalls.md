@@ -175,6 +175,45 @@
 
 **Consideration:** Context matters more than percentage alone.
 
+### Pitfall 14a: Reporting Only Relative Risk Reduction
+**Problem:** "Drug X reduces risk by 50%!" — without absolute baseline, this is uninterpretable and almost always overstates clinical impact.
+
+**Reality:**
+- A treatment that drops event rate from 2% → 1% has 50% relative risk reduction (RRR), 1% absolute risk reduction (ARR), and number needed to treat (NNT) = 100.
+- The same 50% RRR applied to a 40% → 20% baseline produces ARR = 20% and NNT = 5 — vastly different clinical implications.
+- Marketing materials, press releases, and abstracts disproportionately favor RRR because it sounds larger.
+
+**Detection:** Search the methods/results for `risk in control` and `risk in treated` (or equivalent). If only RR/HR/OR is reported and absolute event rates are not derivable from the table, request them. For binary outcomes, demand ARR and NNT.
+
+**Computation:** `ARR = risk_control − risk_treated`; `NNT = 1 / ARR`. The companion script `skills/statistical-analysis/scripts/effect_interpreter.py` provides `risks_to_arr_nnt()` to compute all four (ARR, RRR, RR, NNT) from the two arm-level risks.
+
+## Outcome and Translation Pitfalls
+
+### Pitfall 14b: Surrogate Endpoint ≠ Clinical Endpoint
+**Problem:** A drug that improves a biomarker (LDL cholesterol, amyloid PET signal, HbA1c, tumor shrinkage on imaging) is interpreted as proven to improve the clinical outcome the biomarker predicts (cardiovascular events, dementia, diabetes complications, survival).
+
+**Reality:**
+- Many surrogate endpoints have failed to translate. Examples: torcetrapib raised HDL but increased mortality; flecainide suppressed PVCs but increased sudden death (CAST trial); aducanumab cleared amyloid plaques without convincing cognitive benefit; bevacizumab improved progression-free survival in metastatic breast cancer without improving overall survival.
+- A surrogate is only valid evidence for a clinical outcome to the extent that prior trials have demonstrated the surrogate-outcome link is causal and quantitatively reliable — not merely correlational.
+
+**Detection:**
+- Identify the primary endpoint. Is it a hard clinical outcome (death, MI, stroke, hospitalization, validated quality-of-life measure) or a surrogate (lab value, imaging measurement, composite biomarker)?
+- For surrogates, check whether the surrogate has been formally validated (Prentice criteria, meta-analytic surrogate validation).
+- Treat unvalidated surrogate results as preliminary; require confirmation in a hard-endpoint trial before changing practice or strong claims.
+
+### Pitfall 14c: Over-Translating Animal and In Vitro Findings
+**Problem:** A finding in cells, organoids, or animal models is reported as if it establishes the mechanism or effect in humans. Press coverage, abstracts, and discussion sections frequently elide the species gap.
+
+**Reality:**
+- Roughly 85-90% of compounds with promising preclinical efficacy fail in human trials, and most attrition occurs at Phase II for efficacy reasons (i.e., the preclinical signal did not translate). See Wong et al. 2019, *Biostatistics*; Hay et al. 2014, *Nat Biotechnol*.
+- Common translation failures: pharmacokinetic differences (clearance, blood-brain barrier penetration), divergent immune systems (especially mouse vs human), short-term vs chronic exposure, oversimplified disease models (e.g., MPTP-mouse for Parkinson's, amyloid-mouse for Alzheimer's).
+- Mechanistic plausibility is necessary but not sufficient for human efficacy.
+
+**Detection:**
+- For any "X causes Y" claim, ask: in which species, in which model, at what dose, over what timeframe?
+- For mouse models, ask whether the model recapitulates the relevant human pathophysiology, not merely a phenotype that resembles the disease name.
+- Discount mechanistic and animal evidence to "hypothesis-generating" unless multiple independent labs have replicated and at least early-phase human data exists.
+
 ## Correlation and Causation
 
 ### Pitfall 15: Correlation Implies Causation
