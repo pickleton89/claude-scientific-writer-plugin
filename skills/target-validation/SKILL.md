@@ -295,12 +295,14 @@ When user provides modality preference or when assessing all modalities:
    - Feasibility (High/Medium/Low)
    - Key enablers (existing structures, chemical matter, accessibility)
    - Key barriers (intracellular, no pocket, delivery challenges)
-4. Recommend optimal modality with rationale
+4. **Contradiction check** — when a "Key barrier" is a structural trade-off ("improving X worsens Y", e.g., increasing selectivity loses potency, brain penetration worsens metabolic stability), consult [`../shared/references/triz_contradictions.md`](../shared/references/triz_contradictions.md) for inventive principles before flagging the modality as Low feasibility. Tag resolvable contradictions `[CONTRADICTION-RESOLVED]` and structural ones `[CONTRADICTION-STRUCTURAL]`.
+5. Recommend optimal modality with rationale
 
 **Exit Criteria:**
 - [ ] Compensation risk assessed (Low/Medium/High) with justification
 - [ ] Paralog analysis documented
 - [ ] Modality feasibility assessed
+- [ ] Trade-offs framed as contradictions checked against TRIZ principles
 - [ ] Optimal modality recommended
 
 ---
@@ -325,7 +327,7 @@ When user provides modality preference or when assessing all modalities:
    - Experiments to close evidence gaps
    - Tool compounds to acquire/synthesize
    - Biomarkers to develop
-   - Risk mitigation strategies
+   - Risk mitigation strategies. For risk items framed as technical contradictions ("improving X worsens Y"), surface the matching TRIZ inventive principle from [`../shared/references/triz_contradictions.md`](../shared/references/triz_contradictions.md) as a candidate mitigation rather than treating the trade-off as fixed.
 5. **Completeness Audit:**
    - List all 12 scoring components with data source status
    - Flag components scored from T3/T4 evidence only
@@ -493,11 +495,13 @@ When user provides modality preference or when assessing all modalities:
 | `target-intelligence` | **Required upstream** — provides target dossier (12 sections) |
 | `drug-intelligence` | **Preferred upstream** — provides drug dossier (10 sections) |
 | `deep-research` | **Optional upstream** — provides systematic evidence with T1-T4 grading |
+| `scientific-brainstorming` | **Optional upstream / contradiction resolver** — provides TRIZ resolution path when Stage 4 modality barriers or Stage 5 risks are technical trade-offs |
 | `scientific-writing` | **Downstream** — write up validation findings for publication |
 | `executive-summary` | **Downstream** — condense scorecard for stakeholder communication |
 
 **Shared References:**
 - `../shared/references/evidence_grading.md` — T1-T4 tier definitions and scoring weights
+- `../shared/references/triz_contradictions.md` — inventive principles for resolving "improving X worsens Y" trade-offs (Stage 4 modality barriers, Stage 5 roadmap risks)
 - `../shared/tool-lookup.yaml` — capability-to-tool mapping for gap-fill queries
 
 **Skill Selection:** See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.

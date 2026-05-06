@@ -1,6 +1,6 @@
 # Skill Trigger Registry
-# Version: 1.5.0
-# Purpose: Deterministic keyword-based routing for the 29-skill scientific writing library
+# Version: 1.6.0
+# Purpose: Deterministic keyword-based routing for the 30-skill scientific writing library
 #
 # Structure:
 #   keywords: Common terms that indicate this skill (weighted equally)
@@ -573,6 +573,14 @@ skills:
       - before I draft
       - think through my draft
       - think through my manuscript
+      - scamper
+      - triz
+      - biomimicry
+      - morphological analysis
+      - brainstorm new ideas
+      - ideation method
+      - challenge assumptions
+      - resolve contradiction
 
   citation-management:
     description: BibTeX formatting, citation styles, reference management
@@ -778,6 +786,69 @@ skills:
       - one claim
       - single claim
     priority: 1  # Tiebreaker over peer-review when "verify" or "audit" appears with AI-content signals
+
+  scientific-brainstorming:
+    description: "Structured ideation methods (SCAMPER, TRIZ, Morphological Analysis, Biomimicry, Six Hats, Provocation, Random Input, Reverse Assumptions, Future Backwards) with a decision tree by challenge type — upstream of deep-research scoping"
+    category: research
+    keywords:
+      - brainstorm
+      - brainstorming
+      - ideation
+      - ideate
+      - scamper
+      - triz
+      - biomimicry
+      - six thinking hats
+      - morphological analysis
+      - provocation
+      - random input
+      - reverse assumptions
+      - future backwards
+      - contradiction
+      - trade-off
+      - tradeoff
+      - creative thinking
+      - lateral thinking
+      - stuck on
+      - new ideas
+      - challenge assumptions
+      - inventive principles
+      - ideal final result
+      - generate ideas
+      - explore design space
+      - cross-domain
+      - cross-disciplinary
+      - improve protocol
+      - improve assay
+      - resolve trade-off
+    triggers:
+      - "brainstorm.{0,15}(idea|research|hypothes|approach|method)"
+      - "\\b(scamper|triz|biomimicry|morphological)\\b"
+      - "(stuck|fixated).{0,30}(idea|approach|method|problem)"
+      - "(improve|extend).{0,15}(protocol|method|assay|approach)"
+      - "(resolve|fix).{0,40}(contradiction|trade.?off)"
+      - "generate.*ideas?"
+      - "(challenge|question).*assumptions?"
+      - "(creative|lateral)\\s+thinking"
+      - "ideation\\s+(session|method)"
+      - "(?:six\\s+thinking\\s+hats|ideal\\s+final\\s+result)"
+    output_formats: [md]
+    negative_keywords:
+      - literature review
+      - systematic review
+      - find papers
+      - search papers
+      - search pubmed
+      - fact-check
+      - fact check
+      - verify citation
+      - hallucinated
+      - summarize paper
+      - paper summary
+      - peer review
+      - target dossier
+      - drug dossier
+      - validation scorecard
 
   research-paper-summarizer:
     description: Structured academic summarization of a single research paper (PDF, DOI, PubMed) with quantitative preservation — not executive/stakeholder summaries
@@ -1291,6 +1362,9 @@ routing_config:
         no_followup: "Do you want a peer review of methodology, statistics, or reporting standards?"
       - question: "Do you want a peer review of methodology, statistics, or reporting standards?"
         yes_skill: peer-review
+        no_followup: "Do you need to generate or explore ideas with structured methods (stuck, contradiction, design space)?"
+      - question: "Do you need to generate or explore ideas with structured methods (stuck, contradiction, design space)?"
+        yes_skill: scientific-brainstorming
         no_followup: "Do you need research, literature review, or hypothesis generation?"
       - question: "Do you need research, literature review, or hypothesis generation?"
         yes_skill: deep-research

@@ -488,6 +488,48 @@ deep_research_cases:
     notes: "Evidence reception keyword routes to deep-research for broad questions"
 
 # ============================================================
+# RESEARCH WORKFLOW - scientific-brainstorming
+# ============================================================
+
+scientific_brainstorming_cases:
+  - request: "I'm stuck brainstorming new CRISPR delivery approaches"
+    expected_skill: scientific-brainstorming
+    min_confidence: 0.5
+    category: research
+
+  - request: "Apply SCAMPER to my qPCR protocol"
+    expected_skill: scientific-brainstorming
+    min_confidence: 0.5
+    category: research
+    notes: "Method-name keyword + trigger"
+
+  - request: "Use TRIZ to fix the brain-penetration vs metabolic-stability trade-off"
+    expected_skill: scientific-brainstorming
+    min_confidence: 0.6
+    category: research
+    notes: "Multiple triggers: TRIZ + fix...trade-off + contradiction frame"
+
+  - request: "I want to generate ideas using morphological analysis for drug delivery"
+    expected_skill: scientific-brainstorming
+    min_confidence: 0.6
+    category: research
+
+  - request: "Use biomimicry to find a way to filter circulating tumor cells"
+    expected_skill: scientific-brainstorming
+    min_confidence: 0.5
+    category: research
+
+  - request: "Help me brainstorm ideas to improve my immunoassay"
+    expected_skill: scientific-brainstorming
+    min_confidence: 0.5
+    category: research
+
+  - request: "Challenge the assumptions in my experimental design with reverse assumptions"
+    expected_skill: scientific-brainstorming
+    min_confidence: 0.5
+    category: research
+
+# ============================================================
 # RESEARCH WORKFLOW - citation-management
 # ============================================================
 

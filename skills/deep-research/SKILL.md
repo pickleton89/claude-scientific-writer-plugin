@@ -398,6 +398,7 @@ Some modes skip phases:
 
 | Skill | Relationship |
 |-------|-------------|
+| `scientific-brainstorming` | **Upstream** — feeds prioritized ideation directions into Phase 1 SCOPING (use when user is stuck, exploring a design space, or facing a contradiction before literature review) |
 | `entity-resolution` | **Upstream** — provides collision filters for bibliography agent search |
 | `target-intelligence` | **Upstream** — dossier consumed by synthesis agent (dossier-first) |
 | `drug-intelligence` | **Upstream** — dossier consumed by synthesis agent (dossier-first) |

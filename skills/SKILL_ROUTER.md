@@ -244,6 +244,21 @@ The `research-posters` skill handles format selection internally. Use the follow
 ```
 User needs research/information support
 │
+├─ Need to GENERATE or EXPLORE ideas (stuck, design space, contradiction)?
+│  │
+│  └─ YES → scientific-brainstorming
+│            │
+│            ├─ Stuck / no new ideas?       → Provocation, Random Input
+│            ├─ Improving an existing method? → SCAMPER (or TRIZ if contradiction)
+│            ├─ Exploring a design space?   → Morphological Analysis, Biomimicry
+│            ├─ Multi-perspective decision? → Six Thinking Hats
+│            ├─ Question fundamental assumptions? → Reverse Assumptions
+│            ├─ Long-term roadmap?          → Future Backwards
+│            └─ "Improving X worsens Y"?    → TRIZ (see shared/references/triz_contradictions.md)
+│            │
+│            → After Stage 3 synthesis, hand off prioritized directions
+│              to deep-research Phase 1 SCOPING
+│
 ├─ Need to FIND or REVIEW literature?
 │  │
 │  └─ YES → deep-research
@@ -327,6 +342,10 @@ User needs research/information support
 
 | Task | Primary Skill | When to Use |
 |------|---------------|-------------|
+| "I'm stuck — brainstorm new approaches" | scientific-brainstorming | Method-driven ideation (SCAMPER, Provocation, Random Input) |
+| "Improve my assay/protocol systematically" | scientific-brainstorming | SCAMPER operators or Morphological Analysis |
+| "Resolve the potency vs. selectivity trade-off" | scientific-brainstorming (TRIZ) | Contradiction resolution via inventive principles |
+| "Generate ideas for X using cross-domain inspiration" | scientific-brainstorming (Biomimicry) | Nature-inspired or random-input forced associations |
 | "Find papers on X" | deep-research (quick) | Quick to medium search, 1-50 papers |
 | "Search PubMed for..." | deep-research (quick) | PubMed MCP primary |
 | "Find preprints on..." | deep-research (quick) | bioRxiv MCP primary |
@@ -736,6 +755,8 @@ User has content ready for final document format
 | Get brand color hex codes | oligon-brand | — |
 | Style matplotlib for brand | oligon-brand | + plotting-libraries |
 | **Research** | | |
+| Brainstorm / generate research ideas | scientific-brainstorming | → deep-research (scoping) |
+| Resolve technical contradiction | scientific-brainstorming (TRIZ) | + target-validation (modality trade-offs) |
 | Find papers | deep-research (quick) | + citation-management |
 | Systematic review | deep-research (systematic-review) | + citation-management |
 | Manage citations | citation-management | — |
@@ -776,6 +797,21 @@ User has content ready for final document format
 ---
 
 ## Multi-Skill Workflows
+
+### Workflow 0: Ideation → Research
+
+```
+1. scientific-brainstorming   → Pick method via decision tree, run it,
+                                 synthesize into 2-3 prioritized directions
+2. deep-research (socratic)   → Refine prioritized direction into a precise RQ
+                                 (5-layer convergence)
+3. deep-research (lit-review  → Evidence gathering + synthesis on the chosen RQ
+   or hypothesis)
+```
+
+Use when the user is stuck, exploring a design space, or facing a contradiction
+*before* a literature review. If the user already has a defined RQ, skip to
+`deep-research`.
 
 ### Workflow 1: Complete Research Paper
 
