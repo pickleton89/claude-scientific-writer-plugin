@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.4.1] — 2026-05-06
+
+Cooperation-contract patch. Closes the Stage 6 path-discovery gap surfaced when the v1.4.0 chain was first smoke-tested: caller now passes summarizer fork-return paths through `intake.cited_papers[]` rather than the verifier guessing them. Also adds the doc 06 regression fixture (synthetic paper + lit-review draft with one seeded numerical mismatch) so Sprint-4 measurement can target the cooperation contract specifically.
+
 ### Added — Stage 6 cooperation-contract handoff (post-1.4.0 follow-up)
 
 Closes the unspecified path-discovery gap surfaced when the Sprint 1-3 smoke test was attempted: the cooperation contract was wired on the producer side (summarizer emits `summary_paths.{stats,source_meta}`) but the consumer side (verifier) had no formal way to learn where stats files lived. The verifier was expected to "discover" them via cat substitution, with no scan path or intake field carrying them. Stage 6 would have silently fallen back to full-text re-extraction in practice. Fix: explicit `intake.cited_papers[]` field; orchestrator lifts paths from each summarizer fork-return into a verifier intake entry.
