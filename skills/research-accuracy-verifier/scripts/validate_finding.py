@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Validate Finding JSON against schema and predicates P1-P5 from CONTRACTS.md.
 
-Two-stage pattern (continue past schema failure so predicate checks also report):
+Two-stage pattern delegated to `verifier_kit.validate.SchemaValidator`:
   Stage 1: JSON Schema (Draft-07) against schemas/finding.json
-  Stage 2: Predicates P1-P5
+  Stage 2: Predicates P1-P5 (this module's `run_predicates`)
     P1. verdict == UNVERIFIED ⟹ reason ∈ enum AND severity != CRITICAL
     P2. severity == CRITICAL ⟹ len(verification_path) >= 2
     P3. len(evidence) >= 1 AND every evidence has resolvable URL/PMID/DOI
@@ -23,7 +23,16 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from jsonschema import Draft7Validator
+# Make `verifier_kit` importable when this script runs either as a CLI
+# from the verifier scripts/ dir or under pytest (which preconfigures
+# scripts/ on sys.path but not skills/shared/). The kit lives at
+# skills/shared/verifier_kit/, so adding skills/shared/ to sys.path makes
+# `from verifier_kit.validate import SchemaValidator` resolve.
+_SHARED_DIR = Path(__file__).resolve().parents[2] / "shared"
+if str(_SHARED_DIR) not in sys.path:
+    sys.path.insert(0, str(_SHARED_DIR))
+
+from verifier_kit.validate import SchemaValidator  # noqa: E402
 
 QUOTE_VERDICTS = {"QUOTE_VERIFIED", "QUOTE_PARAPHRASED", "QUOTE_FABRICATED"}
 UNVERIFIED_REASONS = {
@@ -36,8 +45,15 @@ UNVERIFIED_REASONS = {
 }
 
 
-class FindingValidator:
-    """Validate findings with schema + predicates P1-P5."""
+class FindingValidator(SchemaValidator):
+    """Validate findings with schema + predicates P1-P5.
+
+    Subclasses `verifier_kit.validate.SchemaValidator` to inherit the
+    continue-past-schema-failure two-stage pattern. P1-P5 live in
+    `run_predicates`. Public API (`__init__`, `validate(finding, document_type)`,
+    `expected_severity`) is unchanged from the pre-Sprint-3 implementation
+    so existing callers and tests continue to work.
+    """
 
     def __init__(
         self,
@@ -45,33 +61,36 @@ class FindingValidator:
         matrix_path: str | None = None,
     ) -> None:
         base = Path(__file__).parent.parent / "schemas"
-        self.schema_path = Path(schema_path) if schema_path else base / "finding.json"
-        self.matrix_path = Path(matrix_path) if matrix_path else base / "severity_matrix.values.json"
-        with open(self.schema_path) as f:
-            self.schema: dict[str, Any] = json.load(f)
+        resolved_schema = Path(schema_path) if schema_path else base / "finding.json"
+        super().__init__(resolved_schema)
+        self.schema_path = resolved_schema
+        self.matrix_path = (
+            Path(matrix_path) if matrix_path else base / "severity_matrix.values.json"
+        )
         with open(self.matrix_path) as f:
             self.matrix: dict[str, dict[str, str]] = json.load(f)["matrix"]
 
     def expected_severity(self, document_type: str, verdict: str) -> str | None:
         return self.matrix.get(document_type, {}).get(verdict)
 
-    def validate(
-        self, finding: dict[str, Any], document_type: str
-    ) -> tuple[bool, list[str], list[str]]:
-        errors: list[str] = []
-        warnings: list[str] = []
+    def run_predicates(
+        self,
+        record: dict[str, Any],
+        errors: list[str],
+        warnings: list[str],
+        **ctx: Any,
+    ) -> None:
+        document_type = ctx.get("document_type")
+        if document_type is None:
+            errors.append("internal: run_predicates requires document_type")
+            return
 
-        # Stage 1: schema — continue past failures
-        for err in Draft7Validator(self.schema).iter_errors(finding):
-            errors.append(f"schema: {err.message} at {list(err.absolute_path)}")
-
-        # Stage 2: predicates
-        verdict = finding.get("verdict")
-        severity = finding.get("severity")
-        claim_type = finding.get("claim_type")
-        verification_path = finding.get("verification_path") or []
-        evidence = finding.get("evidence") or []
-        reason = finding.get("reason")
+        verdict = record.get("verdict")
+        severity = record.get("severity")
+        claim_type = record.get("claim_type")
+        verification_path = record.get("verification_path") or []
+        evidence = record.get("evidence") or []
+        reason = record.get("reason")
 
         # P1
         if verdict == "UNVERIFIED":
@@ -118,7 +137,11 @@ class FindingValidator:
                     f"finding has {severity}"
                 )
 
-        return len(errors) == 0, errors, warnings
+    def validate(  # type: ignore[override]
+        self, finding: dict[str, Any], document_type: str
+    ) -> tuple[bool, list[str], list[str]]:
+        """Preserve the pre-Sprint-3 positional signature."""
+        return super().validate(finding, document_type=document_type)
 
 
 def main() -> None:

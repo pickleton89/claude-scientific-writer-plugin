@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://oligon.local/verifier_kit/audit_report.base.json",
+  "title": "AuditReportBase",
+  "description": "Canonical $defs library for audit-report shapes. Provides the report skeleton (header + findings + counts) that any audit-style skill can extend. Skill-level audit reports add their own findings schema (referencing finding.base.json) and verdict-count breakdown.",
+  "type": "object",
+  "$defs": {
+    "severityCounts": {
+      "type": "object",
+      "required": ["CRITICAL", "MAJOR", "MINOR", "INFORMATIONAL"],
+      "properties": {
+        "CRITICAL": { "type": "integer", "minimum": 0 },
+        "MAJOR": { "type": "integer", "minimum": 0 },
+        "MINOR": { "type": "integer", "minimum": 0 },
+        "INFORMATIONAL": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false,
+      "description": "Severity histogram over findings[]. Total equals len(findings)."
+    },
+    "auditMeta": {
+      "type": "object",
+      "description": "Optional self-attested validation status. Consumers may treat missing fields as no-signal rather than as silent passes.",
+      "properties": {
+        "schema_validation_pass": {
+          "type": "boolean",
+          "description": "True iff every finding in findings[] passed its schema validator."
+        },
+        "predicate_audit": {
+          "type": "object",
+          "description": "Map of skill-defined predicate name → 'pass' / 'fail' / 'partial'.",
+          "additionalProperties": {
+            "type": "string",
+            "enum": ["pass", "fail", "partial"]
+          }
+        },
+        "rule_set_version": {
+          "type": ["string", "null"],
+          "description": "Version of the rule set used (e.g. 'CONTRACTS.md@1.0', 'prose_standards@1.0')."
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

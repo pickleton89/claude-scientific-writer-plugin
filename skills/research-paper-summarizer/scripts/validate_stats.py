@@ -31,7 +31,16 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from jsonschema import Draft7Validator
+# Make `verifier_kit` importable. Path layout:
+#   skills/research-paper-summarizer/scripts/validate_stats.py
+#   skills/shared/verifier_kit/
+# parents[2] of this file is the skills/ dir; appending /shared/ gets us
+# the parent of verifier_kit/.
+_SHARED_DIR = Path(__file__).resolve().parents[2] / "shared"
+if str(_SHARED_DIR) not in sys.path:
+    sys.path.insert(0, str(_SHARED_DIR))
+
+from verifier_kit.validate import SchemaValidator  # noqa: E402
 
 try:
     import yaml  # PyYAML
@@ -46,8 +55,13 @@ except ImportError:  # pragma: no cover - bootstrap path
 SHARED_THRESHOLDS_RELPATH = Path("../shared/references/prose_standards_thresholds.yaml")
 
 
-class StatsValidator:
-    """Validate stats.json with schema + rule predicates Q5/R5."""
+class StatsValidator(SchemaValidator):
+    """Validate stats.json with schema + rule predicates Q5/R5.
+
+    Subclasses `verifier_kit.validate.SchemaValidator` to inherit the
+    continue-past-schema-failure two-stage pattern. Q5/R5/X-count predicates
+    plus self-attestation reconciliation live in `run_predicates`.
+    """
 
     def __init__(
         self,
@@ -55,16 +69,16 @@ class StatsValidator:
         thresholds_path: str | None = None,
     ) -> None:
         base = Path(__file__).resolve().parent.parent
-        self.schema_path = (
+        resolved_schema = (
             Path(schema_path) if schema_path else base / "schemas" / "stats.json"
         )
+        super().__init__(resolved_schema)
+        self.schema_path = resolved_schema
         self.thresholds_path = (
             Path(thresholds_path)
             if thresholds_path
             else (base / SHARED_THRESHOLDS_RELPATH).resolve()
         )
-        with open(self.schema_path) as f:
-            self.schema: dict[str, Any] = json.load(f)
         with open(self.thresholds_path) as f:
             self.thresholds: dict[str, Any] = yaml.safe_load(f) or {}
 
@@ -78,16 +92,14 @@ class StatsValidator:
                     return entry
         return {}
 
-    def validate(
-        self, stats_doc: dict[str, Any]
-    ) -> tuple[bool, list[str], list[str]]:
-        errors: list[str] = []
-        warnings: list[str] = []
-
-        # Stage 1: schema — collect all errors, continue.
-        for err in Draft7Validator(self.schema).iter_errors(stats_doc):
-            errors.append(f"schema: {err.message} at {list(err.absolute_path)}")
-
+    def run_predicates(
+        self,
+        record: dict[str, Any],
+        errors: list[str],
+        warnings: list[str],
+        **ctx: Any,
+    ) -> None:
+        stats_doc = record
         stats = stats_doc.get("stats") or []
         rule_compliance = stats_doc.get("rule_compliance") or {}
         preserved = stats_doc.get("preserved_numerics_count")
@@ -163,8 +175,6 @@ class StatsValidator:
             errors.append(
                 f"rule_compliance.R5={attested_r5!r} disagrees with computed {computed_r5!r}"
             )
-
-        return len(errors) == 0, errors, warnings
 
 
 def main() -> None:

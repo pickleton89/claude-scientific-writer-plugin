@@ -6,7 +6,13 @@ audits resumable across sessions, each stage writes its findings + matrix delta
 to `research/audits/<slug>/0N_<stage>.json` on completion. Stage 0 (resume
 detection) reads the directory and tells the LLM which stages to skip.
 
-No new schemas: per-stage artifacts contain `findings[]` (validated against
+Sprint 3 of the skill-chaining pilot extracted the generic state-machine into
+`skills/shared/verifier_kit/checkpoint.py`. This module is now a thin wrapper
+that supplies the verifier's 7-stage map and `FindingValidator` factory while
+preserving the pre-extraction public API (`write_stage_artifact`,
+`load_resume_state`, `ResumeState` with `.claim_inventory`).
+
+Per-stage artifacts contain `findings[]` (validated against
 schemas/finding.json via FindingValidator) and `matrix_delta[]` (entries with
 the same shape as audit_report.json's verification_matrix items). Stage 1
 writes `claim_inventory.json` matching `schemas/claim_inventory.json` —
@@ -22,14 +28,23 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import sys
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from validate_finding import FindingValidator
+# Make `verifier_kit` importable. Path layout:
+#   skills/research-accuracy-verifier/scripts/checkpoint.py
+#   skills/shared/verifier_kit/
+# parents[2] is the skills/ dir.
+_SHARED_DIR = Path(__file__).resolve().parents[2] / "shared"
+if str(_SHARED_DIR) not in sys.path:
+    sys.path.insert(0, str(_SHARED_DIR))
+
+from verifier_kit.checkpoint import Checkpoint as _Checkpoint  # noqa: E402
+from verifier_kit.checkpoint import slugify  # noqa: E402,F401  (re-export)
+
+from validate_finding import FindingValidator  # noqa: E402
 
 STAGE_NAMES: dict[int, str] = {
     1: "claim_inventory",
@@ -44,40 +59,40 @@ STAGE_NAMES: dict[int, str] = {
 DEFAULT_AUDITS_ROOT = Path("research/audits")
 
 
-def slugify(title: str, max_len: int = 60) -> str:
-    """Derive a filesystem-safe slug from a document title.
-
-    Lowercase, alnum + single hyphens, trimmed. Empty input → "untitled".
-    """
-    s = title.strip().lower()
-    s = re.sub(r"[^a-z0-9]+", "-", s)
-    s = s.strip("-")[:max_len].rstrip("-")
-    return s or "untitled"
-
-
 @dataclass
 class ResumeState:
-    """State loaded from an audit directory.
+    """Verifier-specific resume state.
 
-    `completed_stages` is always a contiguous prefix of [1..7]: the loader
-    breaks at the first missing stage artifact. `next_stage == 1` and
-    `completed_stages == []` together mean "no resumable state" (either the
-    audit directory is missing or it exists without a Stage 1 inventory).
+    Mirrors the pre-Sprint-3 fields exactly so existing callers and tests
+    that read `.claim_inventory` continue to work. The underlying state
+    machine is `verifier_kit.checkpoint.Checkpoint`; this wrapper just
+    re-shapes the dataclass.
     """
 
     slug: str
     audit_dir: Path
     completed_stages: list[int] = field(default_factory=list)
     next_stage: int = 1
-    claim_inventory: dict[str, Any] | None = None  # {"items": [...]} per schemas/claim_inventory.json
+    claim_inventory: dict[str, Any] | None = None
     findings: list[dict[str, Any]] = field(default_factory=list)
     verification_matrix: list[dict[str, Any]] = field(default_factory=list)
 
 
-def _stage_path(audit_dir: Path, stage: int) -> Path:
-    if stage == 1:
-        return audit_dir / "claim_inventory.json"
-    return audit_dir / f"{stage:02d}_{STAGE_NAMES[stage]}.json"
+def _make_checkpoint(audits_root: Path = DEFAULT_AUDITS_ROOT) -> _Checkpoint:
+    validator = FindingValidator()
+
+    def validate(
+        finding: dict[str, Any], document_type: str
+    ) -> tuple[bool, list[str], list[str]]:
+        return validator.validate(finding, document_type)
+
+    return _Checkpoint(
+        STAGE_NAMES,
+        audits_root=audits_root,
+        findings_validator=validate,
+        stage_one_alternate_filename="claim_inventory.json",
+        stage_one_payload_key="claim_inventory",
+    )
 
 
 def write_stage_artifact(
@@ -99,43 +114,32 @@ def write_stage_artifact(
     invalid findings raise ValueError so the caller loops back rather than
     persisting unvalidated state.
     """
-    if stage not in STAGE_NAMES:
-        raise ValueError(f"stage must be 1..7, got {stage}")
-    audit_dir = audits_root / slug
-    audit_dir.mkdir(parents=True, exist_ok=True)
-
     if stage == 1:
+        # Preserve the pre-Sprint-3 error message wording for back-compat.
         if claim_inventory is None:
             raise ValueError("stage 1 requires claim_inventory")
         if not isinstance(claim_inventory, dict) or "items" not in claim_inventory:
-            raise ValueError("claim_inventory must be a dict with an 'items' key (per schemas/claim_inventory.json)")
-        path = _stage_path(audit_dir, 1)
-        path.write_text(json.dumps(claim_inventory, indent=2))
-        return path
+            raise ValueError(
+                "claim_inventory must be a dict with an 'items' key "
+                "(per schemas/claim_inventory.json)"
+            )
+    if stage not in STAGE_NAMES:
+        raise ValueError(f"stage must be 1..7, got {stage}")
 
-    validator = FindingValidator()
-    errors: list[str] = []
-    for i, f in enumerate(findings):
-        ok, errs, _ = validator.validate(f, document_type)
-        if not ok:
-            errors.append(f"findings[{i}] (id={f.get('id')}): {'; '.join(errs)}")
-    if errors:
-        raise ValueError(f"Stage {stage} findings failed validation:\n  " + "\n  ".join(errors))
-
-    artifact = {
-        "stage": stage,
-        "stage_name": STAGE_NAMES[stage],
-        "document_type": document_type,
-        "written_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "findings": findings,
-        "matrix_delta": matrix_delta,
-    }
-    path = _stage_path(audit_dir, stage)
-    path.write_text(json.dumps(artifact, indent=2))
-    return path
+    cp = _make_checkpoint(audits_root)
+    return cp.write(
+        slug,
+        stage,
+        findings,
+        matrix_delta,
+        document_type,
+        stage_one_payload=claim_inventory,
+    )
 
 
-def load_resume_state(slug: str, *, audits_root: Path = DEFAULT_AUDITS_ROOT) -> ResumeState:
+def load_resume_state(
+    slug: str, *, audits_root: Path = DEFAULT_AUDITS_ROOT
+) -> ResumeState:
     """Inspect `audits_root/slug/` and return resume state.
 
     Stages are considered complete in contiguous order from 1: the first
@@ -143,31 +147,17 @@ def load_resume_state(slug: str, *, audits_root: Path = DEFAULT_AUDITS_ROOT) -> 
     present but 3 missing) is treated as next_stage = 3 — the audit must
     re-run stage 3 before proceeding.
     """
-    audit_dir = audits_root / slug
-    state = ResumeState(slug=slug, audit_dir=audit_dir)
-    if not audit_dir.exists():
-        return state
-
-    inventory_path = _stage_path(audit_dir, 1)
-    if inventory_path.exists():
-        state.claim_inventory = json.loads(inventory_path.read_text())
-        state.completed_stages.append(1)
-    else:
-        return state
-
-    for stage in range(2, 8):
-        path = _stage_path(audit_dir, stage)
-        if not path.exists():
-            break
-        artifact = json.loads(path.read_text())
-        state.completed_stages.append(stage)
-        state.findings.extend(artifact.get("findings") or [])
-        state.verification_matrix.extend(artifact.get("matrix_delta") or [])
-
-    # completed_stages is always a contiguous prefix (the loop above breaks
-    # at the first missing stage), so the last element is the highest.
-    state.next_stage = (state.completed_stages[-1] + 1) if state.completed_stages else 1
-    return state
+    cp = _make_checkpoint(audits_root)
+    raw = cp.load(slug)
+    return ResumeState(
+        slug=raw.slug,
+        audit_dir=raw.audit_dir,
+        completed_stages=list(raw.completed_stages),
+        next_stage=raw.next_stage,
+        claim_inventory=raw.stage_one_payload,
+        findings=list(raw.findings),
+        verification_matrix=list(raw.verification_matrix),
+    )
 
 
 def main() -> None:
@@ -180,7 +170,10 @@ def main() -> None:
     w.add_argument("--document-type", required=True)
     w.add_argument("--findings", help="Path to findings JSON array (stages 2-7)")
     w.add_argument("--matrix", help="Path to matrix-delta JSON array (stages 2-7)")
-    w.add_argument("--claim-inventory", help="Path to claim_inventory JSON object (stage 1; {\"items\": [...]})")
+    w.add_argument(
+        "--claim-inventory",
+        help='Path to claim_inventory JSON object (stage 1; {"items": [...]})',
+    )
     w.add_argument("--audits-root", default=str(DEFAULT_AUDITS_ROOT))
 
     r = sub.add_parser("resume", help="Print resume state for a slug")
@@ -193,7 +186,9 @@ def main() -> None:
         findings = json.loads(Path(args.findings).read_text()) if args.findings else []
         matrix = json.loads(Path(args.matrix).read_text()) if args.matrix else []
         inventory = (
-            json.loads(Path(args.claim_inventory).read_text()) if args.claim_inventory else None
+            json.loads(Path(args.claim_inventory).read_text())
+            if args.claim_inventory
+            else None
         )
         try:
             path = write_stage_artifact(
