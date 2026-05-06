@@ -1,9 +1,13 @@
 ---
 name: peer-review
-version: 2.3.0
+version: 2.4.0
 description: "Peer review of scientific manuscripts and grant proposals. Evaluates methodology, statistics, reproducibility, ethics, figure integrity, and compliance with reporting standards (CONSORT, STROBE, PRISMA, ARRIVE). Use when critically evaluating a manuscript or grant as a reviewer. Do NOT use for summarizing papers (use research-paper-summarizer), literature reviews (use deep-research), or validating drug targets (use target-validation)."
 when_to_use: "For journal manuscript review, grant proposal evaluation, methodology assessment, statistical analysis review, presentation feedback, or compliance checking against reporting guidelines (CONSORT, STROBE, PRISMA, ARRIVE)."
 allowed-tools: [Read, Write, Edit, Bash]
+context: fork
+agent: general-purpose
+model: claude-opus-4-7
+effort: high
 ---
 
 # Scientific Critical Evaluation and Peer Review
@@ -682,3 +686,49 @@ Before finalizing the review, verify:
 - [ ] Tone is constructive and professional throughout
 - [ ] Review is thorough but proportionate to manuscript scope
 - [ ] Recommendation is consistent with identified issues
+
+## Fork-return contract
+
+This skill runs in a forked subagent context (`context: fork`). The fork executes the full review workflow internally — manuscript reads, statistical evaluation, reporting-guideline checks, ScholarEval scoring (when applicable), and review-document writing — and returns **only a compact summary** to the calling conversation. The manuscript text, intermediate notes, scoring intermediates, and reviewer-prompt context **stay inside the fork**. Pre-fork main-context cost per review has been observed at 20k–60k tokens (full manuscript + reporting-guideline reference reads + intermediate scoring tables); the post-fork target is **≤ 800 tokens per review**.
+
+The fork's final message to the caller is a single JSON object capped at ~800 tokens. Emit it verbatim as the last content of the response, fenced as ```json:
+
+```jsonc
+{
+  "review_id": "<slug>",
+  "review_dir": "research/reviews/<slug>/",
+  "mode": "full | section | targeted | interactive | scoring_only | review_plus_scoring",
+  "venue_class": "<journal-like | conference-like | grant | thesis | preprint | other>",
+  "recommendation": "accept | minor_revisions | major_revisions | reject | not_applicable",
+  "concern_counts": {
+    "major": 0,
+    "minor": 0,
+    "writing": 0,
+    "reporting_compliance": 0
+  },
+  "scoring": {
+    "enabled": false,
+    "framework": "ScholarEval-8d",
+    "dimensions": {
+      "soundness": null, "novelty": null, "significance": null, "clarity": null,
+      "reproducibility": null, "ethics": null, "presentation": null, "literature_grounding": null
+    },
+    "weighted_total": null
+  },
+  "reporting_guidelines_checked": [],
+  "top_concerns": [
+    { "id": "C-NN", "severity": "major | minor | writing", "category": "<methods|stats|reproducibility|ethics|figures|reporting|writing>", "rationale": "<≤140 chars>" }
+  ],
+  "review_paths": {
+    "review": "research/reviews/<slug>/review.md",
+    "scoring_report": "research/reviews/<slug>/scoring_report.md"
+  },
+  "next_actions": [ "<≤2 short suggestions or empty array>" ]
+}
+```
+
+**Required fields:** `review_id`, `review_dir`, `mode`, `recommendation`, `concern_counts`, `review_paths.review`. `scoring.enabled: true` only when the run produced ScholarEval scores; otherwise `dimensions` values stay `null` and `weighted_total: null`. `top_concerns` MUST be the up to three highest-severity concerns ordered major → minor → writing, with rationales ≤140 characters and **no quoted manuscript text**. `reporting_guidelines_checked` lists the guideline acronyms actually applied (`CONSORT`, `STROBE`, `PRISMA`, `ARRIVE`, `MIAME`, `MINSEQE`); empty array if not applicable to the manuscript.
+
+**Forbidden in fork return:** raw manuscript text, quoted excerpts of the manuscript or grant under review, full reviewer narrative paragraphs, intermediate scoring tables, raw `calculate_scores.py` stdout, full reporting-guideline checklists. All of that lives in the persisted artifacts under `review_dir`. The caller follows up with targeted reads — for example, `!\`jq '.dimensions.reproducibility' research/reviews/<slug>/scoring_report.json\`` or `!\`grep -A 5 "## Major Concerns" research/reviews/<slug>/review.md\`` — to surface specific sections on demand at zero token cost in the main context.
+
+**If the review cannot complete:** still return the JSON shape with `concern_counts` reflecting what was assessed before the abort, `recommendation: "not_applicable"`, and a `next_actions` entry explaining what blocked completion (e.g., `"resume after providing supplementary statistical methods"`, `"manuscript section §Results unreadable — request clean copy"`). Partial state remains in `review_dir` for follow-up runs.
