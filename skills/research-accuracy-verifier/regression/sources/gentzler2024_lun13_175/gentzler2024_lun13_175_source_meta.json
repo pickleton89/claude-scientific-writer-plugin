@@ -1,0 +1,12 @@
+{
+  "paper_id": "gentzler2024_lun13_175",
+  "title": "Phase I/II Trial of Carboplatin, Nab-paclitaxel, and Pembrolizumab for Advanced Non–Small Cell Lung Cancer: Hoosier Cancer Research Network LUN13-175",
+  "authors": ["Gentzler", "Mohindra", "Jalal", "Reckamp", "Hall", "Hanna", "Chae", "Koczywas", "Helenowski", "Patel"],
+  "year": 2024,
+  "venue": "The Oncologist",
+  "doi": "10.1093/oncolo/oyad180",
+  "pmid": "37390616",
+  "pmcid": "PMC10769801",
+  "source_path": "regression/sources/gentzler2024_lun13_175/gentzler2024_lun13_175.txt",
+  "fixture_note": "REAL paper. Retrieved from PubMed Central via paperclip CLI on 2026-05-06. Used as the realistic-size companion to smith2024_pembro_nsclc (which is synthetic and ~644 tokens — too small to validate the cooperation contract's 10–30k tokens-eliminated design promise). gentzler2024 full text is ~8000 tokens, large enough to make Stage 1 full-text-pull elision a measurable savings target."
+}

@@ -81,6 +81,28 @@
           "doi": "10.0001/jtor.fixture.smith2024"
         }
       ]
+    },
+    {
+      "doc_id": "07_lit_review_real_paper_numerical",
+      "doc_path": "docs/07_lit_review_real_paper_numerical.md",
+      "ground_truth_path": "ground_truth/07_lit_review_real_paper_numerical.json",
+      "document_type": "lit_review",
+      "verification_tier": "3",
+      "domain": "biomedical",
+      "flag_threshold": "standard",
+      "checks_enabled": null,
+      "primary_seeded_error_kind": "numerical_mismatch_against_cited_source",
+      "content_status": "authored",
+      "cited_papers": [
+        {
+          "paper_id": "gentzler2024_lun13_175",
+          "stats_path": "regression/sources/gentzler2024_lun13_175/gentzler2024_lun13_175_stats.json",
+          "source_meta_path": "regression/sources/gentzler2024_lun13_175/gentzler2024_lun13_175_source_meta.json",
+          "doi": "10.1093/oncolo/oyad180",
+          "pmid": "37390616",
+          "pmcid": "PMC10769801"
+        }
+      ]
     }
   ]
 }

@@ -1,0 +1,91 @@
+{
+  "paper_id": "gentzler2024_lun13_175",
+  "source_path": "regression/sources/gentzler2024_lun13_175/gentzler2024_lun13_175.txt",
+  "extracted_at": "2026-05-06T13:00:00Z",
+  "stats": [
+    {
+      "claim_id": "C-01",
+      "value": 46,
+      "unit": "patients",
+      "context": "Forty-six evaluable patients enrolled, 14 in phase I and 32 in phase II, from June 2015 to July 2018",
+      "source_location": "Abstract Results; Patients and Treatments",
+      "verbatim": true,
+      "stat_type": "sample_size"
+    },
+    {
+      "claim_id": "C-02",
+      "value": 35,
+      "unit": "%",
+      "context": "In the ITT population, the ORR was 35%, median PFS was 5.6 months (95% CI, 4.6-8.2), and median OS was 15.4 months",
+      "source_location": "Abstract Results; Outcomes",
+      "verbatim": true,
+      "stat_type": "percentage"
+    },
+    {
+      "claim_id": "C-03",
+      "value": 5.6,
+      "unit": "months",
+      "context": "median PFS was 5.6 months (95% CI, 4.6-8.2)",
+      "source_location": "Abstract Results; Outcomes",
+      "verbatim": true,
+      "stat_type": "median"
+    },
+    {
+      "claim_id": "C-04",
+      "value": 15.4,
+      "unit": "months",
+      "context": "median OS was 15.4 months (CI, 12.4-28.1)",
+      "source_location": "Abstract Results; Outcomes",
+      "verbatim": true,
+      "stat_type": "median"
+    },
+    {
+      "claim_id": "C-05",
+      "value": 35.4,
+      "unit": "months",
+      "context": "with a median duration of follow-up of 35.4 months",
+      "source_location": "Abstract Results; Patients and Treatments",
+      "verbatim": true,
+      "stat_type": "median"
+    },
+    {
+      "claim_id": "C-06",
+      "value": 23.6,
+      "unit": "%",
+      "context": "At 12 months and 24 months, PFS was 23.6% (95% CI 13.7%-40.5%) and 5.4% (95% CI, 1.4%-20.3%) respectively",
+      "source_location": "Outcomes",
+      "verbatim": true,
+      "stat_type": "percentage"
+    },
+    {
+      "claim_id": "C-07",
+      "value": 82,
+      "unit": "%",
+      "context": "Treatment-related AEs were reported in 82% of all patients enrolled",
+      "source_location": "Safety",
+      "verbatim": true,
+      "stat_type": "percentage"
+    },
+    {
+      "claim_id": "C-08",
+      "value": 73,
+      "unit": "%",
+      "context": "The most common grade 3 or higher AEs occurring in more than 1 patient were neutrophil count decrease (73%), anemia (31%), and platelet count decrease (27%)",
+      "source_location": "Safety",
+      "verbatim": true,
+      "stat_type": "percentage"
+    }
+  ],
+  "preserved_numerics_count": 8,
+  "rule_compliance": {
+    "Q5": "pass",
+    "R5": "pass"
+  },
+  "extraction_meta": {
+    "extractor_version": "fixture-1.0.0",
+    "article_type": "general",
+    "page_count": 9,
+    "processing_mode": "standard",
+    "fetch_provenance": "PMC10769801 retrieved via paperclip CLI"
+  }
+}

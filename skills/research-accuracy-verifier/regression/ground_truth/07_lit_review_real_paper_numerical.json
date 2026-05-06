@@ -1,0 +1,90 @@
+{
+  "doc_id": "07_lit_review_real_paper_numerical",
+  "document_type": "lit_review",
+  "verification_tier": "3",
+  "domain": "biomedical",
+  "flag_threshold": "standard",
+  "sources_available": "uploaded_files",
+  "intake_notes": "Real-paper companion to fixture 06. Same Stage 6 cooperation contract — caller MUST populate intake.cited_papers[] from a (simulated or real) research-paper-summarizer fork-return for gentzler2024_lun13_175. Difference vs doc 06: full text is ~8000 tokens (real PMC paper, gentzler2024_lun13_175.txt) instead of ~644 tokens, so token savings from Stage-1 full-text-pull elision are now measurable. Use this fixture to validate the cooperation contract's '10–30k tokens eliminated' design promise (doc 06 alone cannot — its synthetic full text is too small).",
+  "cited_paper_artifacts": {
+    "paper_id": "gentzler2024_lun13_175",
+    "stats_path": "regression/sources/gentzler2024_lun13_175/gentzler2024_lun13_175_stats.json",
+    "source_meta_path": "regression/sources/gentzler2024_lun13_175/gentzler2024_lun13_175_source_meta.json",
+    "doi": "10.1093/oncolo/oyad180",
+    "pmid": "37390616",
+    "pmcid": "PMC10769801"
+  },
+  "seeded_errors": [
+    {
+      "error_id": "GT-07-1",
+      "kind": "numerical_mismatch_against_cited_source",
+      "location": {
+        "section": "§3 Phase I/II combination evidence for nab-paclitaxel-based regimens",
+        "claim": "Median overall survival reached 19.4 months (95% CI 12.4–28.1)"
+      },
+      "fact_at_issue": "Median overall survival attributed to Gentzler et al. 2024",
+      "claimed_value": 19.4,
+      "cited_paper_id": "gentzler2024_lun13_175",
+      "cited_claim_id": "C-04",
+      "cited_source_value": 15.4,
+      "expected_findings_any_of": [
+        {
+          "stage": 6,
+          "verdict": "CONTRADICTED",
+          "severity": "CRITICAL",
+          "severity_rationale": "severity_matrix.values.json: CONTRADICTED × lit_review = CRITICAL",
+          "evidence_must_contain": {
+            "paper_id": "gentzler2024_lun13_175",
+            "claim_id": "C-04",
+            "value_in_source": 15.4
+          }
+        }
+      ],
+      "ground_truth_source": "Direct mismatch between draft claim (median OS = 19.4 months) and the cited paper's preserved numerical record stats.json claim_id=C-04 (15.4 months). The 95% CI in the draft (12.4–28.1) is the paper's actual CI, which makes this a particularly insidious error — the supporting interval looks correct, but the point estimate has been bumped 4 months upward. Detection requires Stage 6 to consume intake.cited_papers[] and join by paper_id."
+    }
+  ],
+  "expected_clean_claims": [
+    {
+      "section": "§3 Phase I/II combination evidence for nab-paclitaxel-based regimens",
+      "claim": "46 evaluable patients between June 2015 and July 2018",
+      "cited_paper_id": "gentzler2024_lun13_175",
+      "cited_claim_id": "C-01",
+      "expected_verdict": "VERIFIED",
+      "rationale": "Matches stats.json C-01 (46 patients) exactly."
+    },
+    {
+      "section": "§3 Phase I/II combination evidence for nab-paclitaxel-based regimens",
+      "claim": "median duration of 35.4 months",
+      "cited_paper_id": "gentzler2024_lun13_175",
+      "cited_claim_id": "C-05",
+      "expected_verdict": "VERIFIED",
+      "rationale": "Matches stats.json C-05 (35.4 months follow-up) exactly."
+    },
+    {
+      "section": "§3 Phase I/II combination evidence for nab-paclitaxel-based regimens",
+      "claim": "objective response rate of 35%",
+      "cited_paper_id": "gentzler2024_lun13_175",
+      "cited_claim_id": "C-02",
+      "expected_verdict": "VERIFIED",
+      "rationale": "Matches stats.json C-02 (35% ORR) exactly."
+    },
+    {
+      "section": "§3 Phase I/II combination evidence for nab-paclitaxel-based regimens",
+      "claim": "median progression-free survival of 5.6 months (95% CI 4.6–8.2)",
+      "cited_paper_id": "gentzler2024_lun13_175",
+      "cited_claim_id": "C-03",
+      "expected_verdict": "VERIFIED",
+      "rationale": "Matches stats.json C-03 (5.6 months mPFS) exactly. Confidence interval matches paper's reported (4.6–8.2)."
+    },
+    {
+      "section": "§3 Phase I/II combination evidence for nab-paclitaxel-based regimens",
+      "claim": "12-month landmark progression-free survival was 23.6% (95% CI 13.7%–40.5%)",
+      "cited_paper_id": "gentzler2024_lun13_175",
+      "cited_claim_id": "C-06",
+      "expected_verdict": "VERIFIED",
+      "rationale": "Matches stats.json C-06 (12-month PFS = 23.6%) exactly with CI."
+    }
+  ],
+  "uncited_claims_note": "All numerical claims in §3 are attributed to (Gentzler 2024). Stage 4 (uncited_claims) should not flag any.",
+  "measurement_notes": "**Sprint 4 token-savings target:** this is the fixture where the cooperation contract's '10–30k tokens eliminated' design promise can actually be tested. Full text gentzler2024_lun13_175.txt ≈ 8000 tokens; stats.json ≈ 750 tokens. Stage 1 full-text-pull elision (when stats.json covers all numerical claims) would save ~7000+ tokens per paper here. Item 3 regression runs should compare baseline (verifier reads .txt at Stage 1) vs post_fork (verifier reads only stats.json at Stage 6) on this fixture specifically. **Scoring:** evidence_must_contain enforced as of Sprint 4 — recall = 1.0 iff CONTRADICTED × CRITICAL finding pins to paper_id='gentzler2024_lun13_175' + claim_id='C-04' + value_in_source=15.4 in a single evidence entry."
+}
