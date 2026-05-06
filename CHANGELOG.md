@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.4.0] — 2026-05-06
+
+Skill-chaining pilot — Sprints 1-3 land. The two highest-leakage scientific-writing skills (`research-accuracy-verifier`, `research-paper-summarizer`) migrate to `context: fork`, with a shared `skills/shared/verifier_kit/` extracting the reusable two-stage validator + stage-checkpoint scaffolding. Cooperation contract between the two: verifier consumes summarizer's `stats.json` at Stage 6 instead of re-extracting numbers from cited PDFs.
+
 ### Added — `skills/shared/verifier_kit/` extraction (Sprint 3 of skill-chaining pilot)
 - **Solves**: after Sprints 1-2, the verifier and summarizer each owned their own copy of (a) the two-stage JSON-Schema-plus-predicates validator pattern and (b) the stage-checkpoint state machine. Both copies were drifting toward divergent shapes — `validate_finding.py`'s schema-then-predicates loop and `validate_stats.py`'s schema-then-predicates loop were ~80% identical but lived in separate files with separate edge-case handling. Sprint 3 lifts the genuinely shared scaffolding into one place so future skills (`deep-research/bibliography`, `prose-audit`, dossier validators) can adopt the same fork-friendly pattern by composing rather than copy-pasting. The extraction is **pure** — `78/78 verifier tests + 24/24 new kit tests + 38/38 prior shared tests = 140 total pass`, with no behavior change to either consumer skill.
 - **`skills/shared/verifier_kit/__init__.py`** (new): public surface — `SchemaValidator`, `ValidationOutcome`, `Checkpoint`, `ResumeState`, `slugify`, `replay_state`. Each module remains importable on its own; the package gives a single top-level surface for adopters.
