@@ -449,7 +449,7 @@ Parsed section tools require setid, not drug name.
 
 ## Fork-return contract
 
-This skill runs in a forked subagent context (`context: fork`). The fork executes all 6 stages internally — DailyMed label retrieval, ChEMBL chemistry, mechanism/targets, ADMET-AI, FAERS safety queries, PGx, regulatory checks, and the 10-section dossier write — and returns **only a compact summary** to the calling conversation. Raw API responses, full DailyMed labels, FAERS adverse-event tables, and tool routing transcripts **stay inside the fork**. Pre-fork main-context cost per dossier has been observed at 30k–80k+ tokens (DailyMed full label + ChEMBL bioactivities + FAERS reports + ADMET predictions); the post-fork target is **≤ 1.5k tokens per dossier**.
+This skill runs in a forked subagent context (`context: fork`). The fork executes all 6 stages internally — DailyMed label retrieval, ChEMBL chemistry, mechanism/targets, ADMET-AI, FAERS safety queries, PGx, regulatory checks, and the 10-section dossier write — and returns **only a compact summary** to the calling conversation. Raw API responses, full DailyMed labels, FAERS adverse-event tables, and tool routing transcripts **stay inside the fork**. Pre-fork main-context cost per dossier is estimated at 30k–80k+ tokens (DailyMed full label + ChEMBL bioactivities + FAERS reports + ADMET predictions); the post-fork target is **≤ 1.5k tokens per dossier**.
 
 The fork's final message to the caller is a single JSON object capped at ~600 tokens. Emit it verbatim as the last content of the response, fenced as ```json:
 
@@ -463,9 +463,11 @@ The fork's final message to the caller is a single JSON object capped at ~600 to
     "smiles": "", "inchikey": ""
   },
   "section_status": {
-    "identity": "complete", "chemistry": "complete", "mechanism_targets": "complete",
-    "admet": "complete", "clinical": "complete", "safety_faers": "complete",
-    "pgx": "complete", "regulatory": "complete"
+    "compound_identity": "complete", "chemical_properties": "complete",
+    "mechanism_and_targets": "complete", "admet": "complete",
+    "clinical_development": "complete", "safety_profile": "complete",
+    "pharmacogenomics": "complete", "regulatory_and_labeling": "complete",
+    "summary_and_assessment": "complete", "data_sources_and_gaps": "complete"
   },
   "regulatory_status": {
     "fda_approval": "approved | investigational | withdrawn | unknown",

@@ -689,7 +689,7 @@ Before finalizing the review, verify:
 
 ## Fork-return contract
 
-This skill runs in a forked subagent context (`context: fork`). The fork executes the full review workflow internally — manuscript reads, statistical evaluation, reporting-guideline checks, ScholarEval scoring (when applicable), and review-document writing — and returns **only a compact summary** to the calling conversation. The manuscript text, intermediate notes, scoring intermediates, and reviewer-prompt context **stay inside the fork**. Pre-fork main-context cost per review has been observed at 20k–60k tokens (full manuscript + reporting-guideline reference reads + intermediate scoring tables); the post-fork target is **≤ 800 tokens per review**.
+This skill runs in a forked subagent context (`context: fork`). The fork executes the full review workflow internally — manuscript reads, statistical evaluation, reporting-guideline checks, ScholarEval scoring (when applicable), and review-document writing — and returns **only a compact summary** to the calling conversation. The manuscript text, intermediate notes, scoring intermediates, and reviewer-prompt context **stay inside the fork**. Pre-fork main-context cost per review is estimated at 20k–60k tokens (full manuscript + reporting-guideline reference reads + intermediate scoring tables); the post-fork target is **≤ 800 tokens per review**.
 
 The fork's final message to the caller is a single JSON object capped at ~800 tokens. Emit it verbatim as the last content of the response, fenced as ```json:
 

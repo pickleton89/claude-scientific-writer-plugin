@@ -427,7 +427,7 @@ GTEx often requires versioned Ensembl IDs.
 
 ## Fork-return contract
 
-This skill runs in a forked subagent context (`context: fork`). The fork executes all 6 stages internally — Open Targets Foundation queries, ToolUniverse calls for structure/domains/expression/variants/safety/druggability, evidence grading, and the 12-section dossier write — and returns **only a compact summary** to the calling conversation. Raw API responses, intermediate JSON blobs, GraphQL payloads, and tool routing transcripts **stay inside the fork**. Pre-fork main-context cost per dossier has been observed at 30k–80k+ tokens (multi-stage MCP responses + per-section enrichment); the post-fork target is **≤ 1.5k tokens per dossier**.
+This skill runs in a forked subagent context (`context: fork`). The fork executes all 6 stages internally — Open Targets Foundation queries, ToolUniverse calls for structure/domains/expression/variants/safety/druggability, evidence grading, and the 12-section dossier write — and returns **only a compact summary** to the calling conversation. Raw API responses, intermediate JSON blobs, GraphQL payloads, and tool routing transcripts **stay inside the fork**. Pre-fork main-context cost per dossier is estimated at 30k–80k+ tokens (multi-stage MCP responses + per-section enrichment); the post-fork target is **≤ 1.5k tokens per dossier**.
 
 The fork's final message to the caller is a single JSON object capped at ~600 tokens. Emit it verbatim as the last content of the response, fenced as ```json:
 
@@ -440,9 +440,12 @@ The fork's final message to the caller is a single JSON object capped at ~600 to
     "hgnc_symbol": "", "ensembl_gene_id": "", "uniprot_id": "", "chembl_target_id": ""
   },
   "section_status": {
-    "identity": "complete", "structure": "complete", "function": "complete",
-    "interactions": "complete", "expression": "complete", "variants_disease": "complete",
-    "druggability": "complete", "safety": "complete", "publications": "complete"
+    "executive_summary": "complete", "target_identifiers": "complete",
+    "basic_information": "complete", "structural_biology": "complete",
+    "function_and_pathways": "complete", "protein_interactions": "complete",
+    "expression_profile": "complete", "variants_and_disease": "complete",
+    "druggability": "complete", "safety_profile": "complete",
+    "summary_and_recommendations": "complete", "data_sources_and_gaps": "complete"
   },
   "completeness_audit": {
     "data_minimums_met": true,
