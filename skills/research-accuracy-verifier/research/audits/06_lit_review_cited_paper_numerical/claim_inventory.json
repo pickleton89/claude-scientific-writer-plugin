@@ -1,0 +1,127 @@
+{
+  "items": [
+    {
+      "id": "C001",
+      "location": {
+        "section": "2. Single-arm phase II evidence for pembrolizumab + platinum-doublet",
+        "paragraph": 1,
+        "line": null
+      },
+      "claim_text": "Smith et al. reported a 12-month progression-free survival rate of **47.3%** (95% CI 38.1\u201355.9%) in their single-center investigator-initiated trial, exceeding the prespecified 40% threshold (Smith 2024).",
+      "claim_type": "citation_bearing",
+      "citations": [
+        {
+          "key": "Smith 2024",
+          "doi": "10.0001/jtor.fixture.smith2024",
+          "pmid": null,
+          "raw_text": "Smith JR, Patel A, Ng S, Williams T, Okafor C, Lee H, et al. Pembrolizumab plus carboplatin/pemetrexed in PD-L1\u2013high advanced non-squamous NSCLC: a single-center phase II investigator-initiated study. *Journal of Thoracic Oncology Reports* 2024; 12(4): 287-301. DOI: 10.0001/jtor.fixture.smith2024"
+        }
+      ]
+    },
+    {
+      "id": "C002",
+      "location": {
+        "section": "2. Single-arm phase II evidence for pembrolizumab + platinum-doublet",
+        "paragraph": 1,
+        "line": null
+      },
+      "claim_text": "12-month progression-free survival rate of **47.3%** (95% CI 38.1\u201355.9%)",
+      "claim_type": "numerical",
+      "citations": []
+    },
+    {
+      "id": "C003",
+      "location": {
+        "section": "2. Single-arm phase II evidence for pembrolizumab + platinum-doublet",
+        "paragraph": 1,
+        "line": null
+      },
+      "claim_text": "exceeding the prespecified 40% threshold",
+      "claim_type": "numerical",
+      "citations": []
+    },
+    {
+      "id": "C004",
+      "location": {
+        "section": "2. Single-arm phase II evidence for pembrolizumab + platinum-doublet",
+        "paragraph": 2,
+        "line": null
+      },
+      "claim_text": "**210 patients** were enrolled with previously untreated PD-L1\u2013high disease between January 2022 and November 2023 (Smith 2024).",
+      "claim_type": "numerical",
+      "citations": [
+        {
+          "key": "Smith 2024",
+          "doi": "10.0001/jtor.fixture.smith2024",
+          "pmid": null,
+          "raw_text": "Smith JR, Patel A, Ng S, Williams T, Okafor C, Lee H, et al. Pembrolizumab plus carboplatin/pemetrexed in PD-L1\u2013high advanced non-squamous NSCLC: a single-center phase II investigator-initiated study. *Journal of Thoracic Oncology Reports* 2024; 12(4): 287-301. DOI: 10.0001/jtor.fixture.smith2024"
+        }
+      ]
+    },
+    {
+      "id": "C005",
+      "location": {
+        "section": "2. Single-arm phase II evidence for pembrolizumab + platinum-doublet",
+        "paragraph": 2,
+        "line": null
+      },
+      "claim_text": "between January 2022 and November 2023",
+      "claim_type": "numerical",
+      "citations": []
+    },
+    {
+      "id": "C006",
+      "location": {
+        "section": "2. Single-arm phase II evidence for pembrolizumab + platinum-doublet",
+        "paragraph": 2,
+        "line": null
+      },
+      "claim_text": "The reported median PFS of 11.2 months substantially exceeds the historical 7.7-month median for pembrolizumab monotherapy",
+      "claim_type": "numerical",
+      "citations": [
+        {
+          "key": "Smith 2024",
+          "doi": "10.0001/jtor.fixture.smith2024",
+          "pmid": null,
+          "raw_text": "Smith JR, Patel A, Ng S, Williams T, Okafor C, Lee H, et al. Pembrolizumab plus carboplatin/pemetrexed in PD-L1\u2013high advanced non-squamous NSCLC: a single-center phase II investigator-initiated study. *Journal of Thoracic Oncology Reports* 2024; 12(4): 287-301. DOI: 10.0001/jtor.fixture.smith2024"
+        }
+      ]
+    },
+    {
+      "id": "C007",
+      "location": {
+        "section": "2. Single-arm phase II evidence for pembrolizumab + platinum-doublet",
+        "paragraph": 2,
+        "line": null
+      },
+      "claim_text": "the difference reached statistical significance (p < 0.001 by one-sample log-rank against the historical control) (Smith 2024).",
+      "claim_type": "numerical",
+      "citations": [
+        {
+          "key": "Smith 2024",
+          "doi": "10.0001/jtor.fixture.smith2024",
+          "pmid": null,
+          "raw_text": "Smith JR, Patel A, Ng S, Williams T, Okafor C, Lee H, et al. Pembrolizumab plus carboplatin/pemetrexed in PD-L1\u2013high advanced non-squamous NSCLC: a single-center phase II investigator-initiated study. *Journal of Thoracic Oncology Reports* 2024; 12(4): 287-301. DOI: 10.0001/jtor.fixture.smith2024"
+        }
+      ]
+    },
+    {
+      "id": "C008",
+      "location": {
+        "section": "References",
+        "paragraph": 1,
+        "line": null
+      },
+      "claim_text": "Smith JR, Patel A, Ng S, Williams T, Okafor C, Lee H, et al. Pembrolizumab plus carboplatin/pemetrexed in PD-L1\u2013high advanced non-squamous NSCLC: a single-center phase II investigator-initiated study. *Journal of Thoracic Oncology Reports* 2024; 12(4): 287-301. DOI: 10.0001/jtor.fixture.smith2024",
+      "claim_type": "citation_bearing",
+      "citations": [
+        {
+          "key": "Smith 2024",
+          "doi": "10.0001/jtor.fixture.smith2024",
+          "pmid": null,
+          "raw_text": "Smith JR, Patel A, Ng S, Williams T, Okafor C, Lee H, et al. Pembrolizumab plus carboplatin/pemetrexed in PD-L1\u2013high advanced non-squamous NSCLC: a single-center phase II investigator-initiated study. *Journal of Thoracic Oncology Reports* 2024; 12(4): 287-301. DOI: 10.0001/jtor.fixture.smith2024"
+        }
+      ]
+    }
+  ]
+}

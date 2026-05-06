@@ -1,0 +1,10 @@
+[
+  { "claim_id": "C001", "verdict": "VERIFIED", "severity": "INFORMATIONAL", "stage": "3" },
+  { "claim_id": "C002", "verdict": "VERIFIED", "severity": "INFORMATIONAL", "stage": "6" },
+  { "claim_id": "C003", "verdict": "VERIFIED", "severity": "INFORMATIONAL", "stage": "6" },
+  { "claim_id": "C004", "verdict": "CONTRADICTED", "severity": "CRITICAL", "stage": "6" },
+  { "claim_id": "C005", "verdict": "VERIFIED", "severity": "INFORMATIONAL", "stage": "6" },
+  { "claim_id": "C006", "verdict": "VERIFIED", "severity": "INFORMATIONAL", "stage": "6" },
+  { "claim_id": "C007", "verdict": "VERIFIED", "severity": "INFORMATIONAL", "stage": "6" },
+  { "claim_id": "C008", "verdict": "VERIFIED", "severity": "INFORMATIONAL", "stage": "2" }
+]

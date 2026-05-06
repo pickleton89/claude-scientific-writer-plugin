@@ -1,0 +1,386 @@
+{
+  "stage": 3,
+  "stage_name": "alignment",
+  "document_type": "lit_review",
+  "written_at": "2026-05-06T18:12:10+00:00",
+  "findings": [
+    {
+      "id": "C001",
+      "location": {
+        "section": "2. Single-arm phase II evidence for pembrolizumab + platinum-doublet",
+        "paragraph": 1,
+        "line": null
+      },
+      "claim_verbatim": "Smith et al. reported a 12-month progression-free survival rate of **47.3%** (95% CI 38.1\u201355.9%) in their single-center investigator-initiated trial, exceeding the prespecified 40% threshold (Smith 2024).",
+      "claim_type": "citation_bearing",
+      "citations": [
+        {
+          "key": "Smith 2024",
+          "doi": "10.0001/jtor.fixture.smith2024",
+          "pmid": null,
+          "raw_text": "Smith JR, Patel A, Ng S, Williams T, Okafor C, Lee H, et al. Pembrolizumab plus carboplatin/pemetrexed in PD-L1\u2013high advanced non-squamous NSCLC: a single-center phase II investigator-initiated study. *Journal of Thoracic Oncology Reports* 2024; 12(4): 287-301. DOI: 10.0001/jtor.fixture.smith2024"
+        }
+      ],
+      "verification_path": [
+        {
+          "method": "abstract_check",
+          "tool": "user-provided source",
+          "query": "12-month PFS 47.3% threshold",
+          "result_summary": "Source abstract states '12-month progression-free survival rate was 47.3% (95% CI 38.1\u201355.9%)' and conclusions state 'exceeding the prespecified 40% threshold'. Direct match."
+        },
+        {
+          "method": "doi_lookup",
+          "tool": "intake.cited_papers source_meta.json",
+          "query": "10.0001/jtor.fixture.smith2024",
+          "result_summary": "Fixture DOI (10.0001/* reserved for examples; does not resolve online). Local source_meta.json provides canonical record per Stage 6 cooperation contract."
+        }
+      ],
+      "evidence": [
+        {
+          "source": "smith2024_pembro_nsclc.txt (user-provided full text)",
+          "url": "regression/sources/smith2024_pembro_nsclc/smith2024_pembro_nsclc.txt",
+          "snippet": "the 12-month progression-free survival rate was 47.3% (95% CI 38.1\u201355.9%)"
+        },
+        {
+          "source": "smith2024_pembro_nsclc_stats.json (claim_id C-03)",
+          "url": "regression/sources/smith2024_pembro_nsclc/smith2024_pembro_nsclc_stats.json",
+          "snippet": "12-month progression-free survival rate was 47.3% (95% CI 38.1\u201355.9%)"
+        }
+      ],
+      "verdict": "VERIFIED",
+      "severity": "INFORMATIONAL",
+      "recommended_action": "No action required; PFS rate, CI, and 40% threshold framing all match the cited source.",
+      "confidence": "high"
+    },
+    {
+      "id": "C002",
+      "location": {
+        "section": "2. Single-arm phase II evidence for pembrolizumab + platinum-doublet",
+        "paragraph": 1,
+        "line": null
+      },
+      "claim_verbatim": "12-month progression-free survival rate of **47.3%** (95% CI 38.1\u201355.9%)",
+      "claim_type": "numerical",
+      "verification_path": [
+        {
+          "method": "abstract_check",
+          "tool": "stats.json (research-paper-summarizer cooperation)",
+          "query": "claim_id C-03",
+          "result_summary": "stats.json claim_id C-03 records value=47.3, unit=%, context='12-month progression-free survival rate was 47.3% (95% CI 38.1\u201355.9%)'. Exact match to document."
+        },
+        {
+          "method": "abstract_check",
+          "tool": "user-provided source",
+          "query": "verbatim 47.3% 95% CI 38.1-55.9%",
+          "result_summary": "Source abstract and Results \u00a73.2 both state '47.3% (95% CI 38.1\u201355.9%)'. Verbatim match."
+        }
+      ],
+      "evidence": [
+        {
+          "source": "smith2024_pembro_nsclc_stats.json (C-03)",
+          "url": "regression/sources/smith2024_pembro_nsclc/smith2024_pembro_nsclc_stats.json",
+          "snippet": "value=47.3, unit=%; context: 12-month progression-free survival rate was 47.3% (95% CI 38.1\u201355.9%)"
+        }
+      ],
+      "verdict": "VERIFIED",
+      "severity": "INFORMATIONAL",
+      "recommended_action": "No action required.",
+      "confidence": "high"
+    },
+    {
+      "id": "C003",
+      "location": {
+        "section": "2. Single-arm phase II evidence for pembrolizumab + platinum-doublet",
+        "paragraph": 1,
+        "line": null
+      },
+      "claim_verbatim": "exceeding the prespecified 40% threshold",
+      "claim_type": "numerical",
+      "verification_path": [
+        {
+          "method": "abstract_check",
+          "tool": "user-provided source",
+          "query": "prespecified 40% threshold",
+          "result_summary": "Source Abstract Conclusions: 'exceeding the prespecified 40% threshold'. Verbatim match."
+        }
+      ],
+      "evidence": [
+        {
+          "source": "smith2024_pembro_nsclc.txt Abstract Conclusions",
+          "url": "regression/sources/smith2024_pembro_nsclc/smith2024_pembro_nsclc.txt",
+          "snippet": "exceeding the prespecified 40% threshold"
+        }
+      ],
+      "verdict": "VERIFIED",
+      "severity": "INFORMATIONAL",
+      "recommended_action": "No action required.",
+      "confidence": "high"
+    },
+    {
+      "id": "C004",
+      "location": {
+        "section": "2. Single-arm phase II evidence for pembrolizumab + platinum-doublet",
+        "paragraph": 2,
+        "line": null
+      },
+      "claim_verbatim": "**210 patients** were enrolled with previously untreated PD-L1\u2013high disease between January 2022 and November 2023 (Smith 2024).",
+      "claim_type": "numerical",
+      "citations": [
+        {
+          "key": "Smith 2024",
+          "doi": "10.0001/jtor.fixture.smith2024",
+          "pmid": null,
+          "raw_text": "Smith JR, Patel A, Ng S, Williams T, Okafor C, Lee H, et al. Pembrolizumab plus carboplatin/pemetrexed in PD-L1\u2013high advanced non-squamous NSCLC: a single-center phase II investigator-initiated study. *Journal of Thoracic Oncology Reports* 2024; 12(4): 287-301. DOI: 10.0001/jtor.fixture.smith2024"
+        }
+      ],
+      "verification_path": [
+        {
+          "method": "abstract_check",
+          "tool": "stats.json (research-paper-summarizer cooperation)",
+          "query": "claim_id C-01 sample_size",
+          "result_summary": "stats.json claim_id C-01 records value=187, unit=patients, stat_type=sample_size, context='We enrolled 187 patients with previously untreated PD-L1\u2013high (TPS \u2265 50%) advanced non-squamous NSCLC'. Document asserts 210 patients \u2014 conflict of 23 patients (12.3% overcount)."
+        },
+        {
+          "method": "abstract_check",
+          "tool": "user-provided source (Methods/Results \u00a73.1)",
+          "query": "patients enrolled 210 vs 187",
+          "result_summary": "Source Abstract Methods: 'We enrolled 187 patients ... between January 2022 and November 2023.' Source Results \u00a73.1 restates 187. No mention of 210 anywhere in the paper. The document's '210 patients' directly contradicts the cited source."
+        }
+      ],
+      "evidence": [
+        {
+          "source": "smith2024_pembro_nsclc.txt Abstract Methods",
+          "url": "regression/sources/smith2024_pembro_nsclc/smith2024_pembro_nsclc.txt",
+          "snippet": "We enrolled 187 patients with previously untreated PD-L1\u2013high (TPS \u2265 50%) advanced non-squamous NSCLC between January 2022 and November 2023"
+        },
+        {
+          "source": "smith2024_pembro_nsclc_stats.json (C-01)",
+          "url": "regression/sources/smith2024_pembro_nsclc/smith2024_pembro_nsclc_stats.json",
+          "snippet": "value=187, unit=patients, stat_type=sample_size"
+        }
+      ],
+      "verdict": "CONTRADICTED",
+      "severity": "CRITICAL",
+      "recommended_action": "Replace '210 patients' with '187 patients' to match the cited source (Smith 2024 Abstract Methods and Results \u00a73.1; stats.json C-01). The enrollment window (January 2022 \u2014 November 2023) is correct as written.",
+      "confidence": "high"
+    },
+    {
+      "id": "C005",
+      "location": {
+        "section": "2. Single-arm phase II evidence for pembrolizumab + platinum-doublet",
+        "paragraph": 2,
+        "line": null
+      },
+      "claim_verbatim": "between January 2022 and November 2023",
+      "claim_type": "numerical",
+      "verification_path": [
+        {
+          "method": "abstract_check",
+          "tool": "user-provided source",
+          "query": "enrollment dates",
+          "result_summary": "Source Abstract Methods: 'between January 2022 and November 2023'. Verbatim match."
+        }
+      ],
+      "evidence": [
+        {
+          "source": "smith2024_pembro_nsclc.txt Abstract Methods",
+          "url": "regression/sources/smith2024_pembro_nsclc/smith2024_pembro_nsclc.txt",
+          "snippet": "between January 2022 and November 2023"
+        }
+      ],
+      "verdict": "VERIFIED",
+      "severity": "INFORMATIONAL",
+      "recommended_action": "No action required.",
+      "confidence": "high"
+    },
+    {
+      "id": "C006",
+      "location": {
+        "section": "2. Single-arm phase II evidence for pembrolizumab + platinum-doublet",
+        "paragraph": 2,
+        "line": null
+      },
+      "claim_verbatim": "The reported median PFS of 11.2 months substantially exceeds the historical 7.7-month median for pembrolizumab monotherapy",
+      "claim_type": "numerical",
+      "citations": [
+        {
+          "key": "Smith 2024",
+          "doi": "10.0001/jtor.fixture.smith2024",
+          "pmid": null,
+          "raw_text": "Smith JR, Patel A, Ng S, Williams T, Okafor C, Lee H, et al. Pembrolizumab plus carboplatin/pemetrexed in PD-L1\u2013high advanced non-squamous NSCLC: a single-center phase II investigator-initiated study. *Journal of Thoracic Oncology Reports* 2024; 12(4): 287-301. DOI: 10.0001/jtor.fixture.smith2024"
+        }
+      ],
+      "verification_path": [
+        {
+          "method": "abstract_check",
+          "tool": "stats.json (C-02, C-06)",
+          "query": "median PFS 11.2 months; historical 7.7",
+          "result_summary": "stats.json C-02 records value=11.2, unit=months, stat_type=median (Median PFS). stats.json C-06 records value=7.7, unit=months (historical median PFS for pembrolizumab monotherapy). Both numbers match document."
+        },
+        {
+          "method": "abstract_check",
+          "tool": "user-provided source",
+          "query": "median PFS 11.2 historical 7.7",
+          "result_summary": "Source Abstract Results: 'Median PFS was 11.2 months (95% CI 8.4\u201314.7) ... historical median PFS of 7.7 months for pembrolizumab monotherapy'. Direct match."
+        }
+      ],
+      "evidence": [
+        {
+          "source": "smith2024_pembro_nsclc.txt Abstract Results",
+          "url": "regression/sources/smith2024_pembro_nsclc/smith2024_pembro_nsclc.txt",
+          "snippet": "Median PFS was 11.2 months (95% CI 8.4\u201314.7) ... historical median PFS of 7.7 months for pembrolizumab monotherapy"
+        },
+        {
+          "source": "smith2024_pembro_nsclc_stats.json (C-02, C-06)",
+          "url": "regression/sources/smith2024_pembro_nsclc/smith2024_pembro_nsclc_stats.json",
+          "snippet": "C-02 value=11.2 months median; C-06 value=7.7 months historical median"
+        }
+      ],
+      "verdict": "VERIFIED",
+      "severity": "INFORMATIONAL",
+      "recommended_action": "No action required.",
+      "confidence": "high"
+    },
+    {
+      "id": "C007",
+      "location": {
+        "section": "2. Single-arm phase II evidence for pembrolizumab + platinum-doublet",
+        "paragraph": 2,
+        "line": null
+      },
+      "claim_verbatim": "the difference reached statistical significance (p < 0.001 by one-sample log-rank against the historical control) (Smith 2024).",
+      "claim_type": "numerical",
+      "citations": [
+        {
+          "key": "Smith 2024",
+          "doi": "10.0001/jtor.fixture.smith2024",
+          "pmid": null,
+          "raw_text": "Smith JR, Patel A, Ng S, Williams T, Okafor C, Lee H, et al. Pembrolizumab plus carboplatin/pemetrexed in PD-L1\u2013high advanced non-squamous NSCLC: a single-center phase II investigator-initiated study. *Journal of Thoracic Oncology Reports* 2024; 12(4): 287-301. DOI: 10.0001/jtor.fixture.smith2024"
+        }
+      ],
+      "verification_path": [
+        {
+          "method": "abstract_check",
+          "tool": "stats.json (C-05)",
+          "query": "p-value <0.001 one-sample log-rank",
+          "result_summary": "stats.json C-05 records value='<0.001', stat_type=p_value, context: 'p < 0.001 by one-sample log-rank against the historical control'. Verbatim match including test name."
+        },
+        {
+          "method": "abstract_check",
+          "tool": "user-provided source",
+          "query": "p < 0.001 log-rank",
+          "result_summary": "Source Abstract Results and \u00a73.2 both state 'p < 0.001 by one-sample log-rank'. Direct match."
+        }
+      ],
+      "evidence": [
+        {
+          "source": "smith2024_pembro_nsclc.txt Abstract Results",
+          "url": "regression/sources/smith2024_pembro_nsclc/smith2024_pembro_nsclc.txt",
+          "snippet": "the observed benefit reached statistical significance (p < 0.001 by one-sample log-rank against the historical control)"
+        },
+        {
+          "source": "smith2024_pembro_nsclc_stats.json (C-05)",
+          "url": "regression/sources/smith2024_pembro_nsclc/smith2024_pembro_nsclc_stats.json",
+          "snippet": "value='<0.001', stat_type=p_value"
+        }
+      ],
+      "verdict": "VERIFIED",
+      "severity": "INFORMATIONAL",
+      "recommended_action": "No action required.",
+      "confidence": "high"
+    },
+    {
+      "id": "C008",
+      "location": {
+        "section": "References",
+        "paragraph": 1,
+        "line": null
+      },
+      "claim_verbatim": "Smith JR, Patel A, Ng S, Williams T, Okafor C, Lee H, et al. Pembrolizumab plus carboplatin/pemetrexed in PD-L1\u2013high advanced non-squamous NSCLC: a single-center phase II investigator-initiated study. *Journal of Thoracic Oncology Reports* 2024; 12(4): 287-301. DOI: 10.0001/jtor.fixture.smith2024",
+      "claim_type": "citation_bearing",
+      "citations": [
+        {
+          "key": "Smith 2024",
+          "doi": "10.0001/jtor.fixture.smith2024",
+          "pmid": null,
+          "raw_text": "Smith JR, Patel A, Ng S, Williams T, Okafor C, Lee H, et al. Pembrolizumab plus carboplatin/pemetrexed in PD-L1\u2013high advanced non-squamous NSCLC: a single-center phase II investigator-initiated study. *Journal of Thoracic Oncology Reports* 2024; 12(4): 287-301. DOI: 10.0001/jtor.fixture.smith2024"
+        }
+      ],
+      "verification_path": [
+        {
+          "method": "doi_lookup",
+          "tool": "intake.cited_papers source_meta.json",
+          "query": "10.0001/jtor.fixture.smith2024",
+          "result_summary": "Fixture DOI (10.0001/* prefix is reserved for examples and does not resolve online). Per intake instruction and Stage 6 cited_papers[] cooperation contract, source_meta.json is treated as the canonical record. All metadata fields (authors, title, year, venue, volume/issue/pages, DOI) in source_meta.json match the document's reference entry verbatim."
+        },
+        {
+          "method": "ref_reconcile",
+          "tool": "manual_check (single-citation document)",
+          "query": "inline 'Smith 2024' vs bibliography",
+          "result_summary": "Single inline key 'Smith 2024' appears 4 times; bibliography contains exactly one matching entry. Author/year/venue agree."
+        }
+      ],
+      "evidence": [
+        {
+          "source": "smith2024_pembro_nsclc_source_meta.json",
+          "url": "regression/sources/smith2024_pembro_nsclc/smith2024_pembro_nsclc_source_meta.json",
+          "snippet": "title, authors, year=2024, venue='Journal of Thoracic Oncology Reports', doi='10.0001/jtor.fixture.smith2024' all match document reference entry"
+        }
+      ],
+      "verdict": "VERIFIED",
+      "severity": "INFORMATIONAL",
+      "recommended_action": "No action required. Note: the cited source is a synthetic regression fixture (DOI 10.0001/* does not resolve online) \u2014 this is intentional in the audit context.",
+      "confidence": "high"
+    }
+  ],
+  "matrix_delta": [
+    {
+      "claim_id": "C001",
+      "verdict": "VERIFIED",
+      "severity": "INFORMATIONAL",
+      "stage": "3"
+    },
+    {
+      "claim_id": "C002",
+      "verdict": "VERIFIED",
+      "severity": "INFORMATIONAL",
+      "stage": "6"
+    },
+    {
+      "claim_id": "C003",
+      "verdict": "VERIFIED",
+      "severity": "INFORMATIONAL",
+      "stage": "6"
+    },
+    {
+      "claim_id": "C004",
+      "verdict": "CONTRADICTED",
+      "severity": "CRITICAL",
+      "stage": "6"
+    },
+    {
+      "claim_id": "C005",
+      "verdict": "VERIFIED",
+      "severity": "INFORMATIONAL",
+      "stage": "6"
+    },
+    {
+      "claim_id": "C006",
+      "verdict": "VERIFIED",
+      "severity": "INFORMATIONAL",
+      "stage": "6"
+    },
+    {
+      "claim_id": "C007",
+      "verdict": "VERIFIED",
+      "severity": "INFORMATIONAL",
+      "stage": "6"
+    },
+    {
+      "claim_id": "C008",
+      "verdict": "VERIFIED",
+      "severity": "INFORMATIONAL",
+      "stage": "2"
+    }
+  ]
+}
