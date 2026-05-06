@@ -176,7 +176,7 @@ frozen on approval:
      cross-domain / preprint-heavy), `research_question`
    - Outputs the required-database list (per `thresholds.MIN_DATABASES` +
      the domain tier table) plus mode-eligible optional channels (Scite
-     reception, Paperclip full-text)
+     reception, Paperclip full-text, PubTator3 entity-grounded search)
    - Mode-skipped channels are surfaced explicitly so the user can see
      *why* a tool is absent
 4. Present BOTH contracts to the user as part of Checkpoint 1:

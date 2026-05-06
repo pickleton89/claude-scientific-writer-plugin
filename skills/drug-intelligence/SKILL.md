@@ -214,6 +214,13 @@ Use `drug_data.chemistry` capabilities:
 - Convert all ChEMBL IDs to **strings** before API calls
 - ChEMBL bioactivity: use `target_chembl_id__exact` (double underscore)
 
+**Optional literature backbone (PubTator3)** (capability: `literature.entity_annotation`). Complements ChEMBL bioactivity with literature-grounded co-mention evidence. Run when the drug's PubTator3 entity ID was recorded by `entity-resolution`. Recipes:
+
+- `uv run python skills/shared/scripts/pubtator3.py relations --entity @CHEMICAL_<NAME> --summary --top 25` — top genes/diseases co-mentioned with the drug. Genes with `negative_correlate` relation type are strong literature signals for primary targets (e.g. `@CHEMICAL_Vemurafenib → negative_correlate → @GENE_BRAF`); diseases with `treat`/`associate` relations seed the indication-discovery list (Stage 4).
+- `uv run python skills/shared/scripts/pubtator3.py search --chemical <NAME> --gene <SYMBOL> --size 5 --summary` — confirm a candidate target by co-mention in primary literature before adding to Section 3.2.
+
+PubTator3 evidence is T4 (text-mined) by default. Promote to T2/T3 only after cross-confirmation by ChEMBL bioactivity (pChEMBL ≥ 6.0) or DailyMed MOA text. Skip silently on network/wrapper error.
+
 **Section 3 output format:**
 
 ```markdown

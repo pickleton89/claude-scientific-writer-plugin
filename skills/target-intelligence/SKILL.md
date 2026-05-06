@@ -140,6 +140,13 @@ Query these OT MCP endpoints (use `query_open_targets_graphql`):
 | Associated drugs | 9 | Known drugs (approved + clinical) |
 | Publications | 12 | Literature counts |
 
+**Optional literature backbone (PubTator3)** (capability: `literature.entity_annotation`). Complements Open Targets evidence with ID-grounded co-mention counts from the full PubMed corpus. Run when the target's PubTator3 entity ID was recorded by `entity-resolution` (Stage 3). Two recipes:
+
+- `uv run python skills/shared/scripts/pubtator3.py search --gene <SYMBOL> --size 1 --summary` — total mention count fills Section 12 (Data Sources). Useful as a sanity check against Open Targets' publication count.
+- `uv run python skills/shared/scripts/pubtator3.py relations --entity @GENE_<SYMBOL> --summary --top 25` — top diseases / chemicals / pathways co-mentioned with the target. Feeds Section 8 (Disease Associations) with a ranked literature list **and** Section 9 (Druggability) with chemical co-mentions (potential probes / leads). PubTator3 co-mentions are T4 evidence by default (text-mined association) — do not promote to T1-T3 without functional confirmation from another source.
+
+Skip silently on network/wrapper error — Open Targets remains the primary disease-association source.
+
 **Key patterns:**
 - Use `ensemblId` (camelCase, not `ensemblID`)
 - For associated drugs: include `size` parameter (required)

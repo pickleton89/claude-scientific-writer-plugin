@@ -118,12 +118,14 @@ Input entity received
    - Drug: ChEMBL ID → PubChem CID (via ChEMBL cross-refs), DrugBank ID, CAS number
    - Disease: EFO → MONDO cross-reference, OMIM if genetic
 2. Verify consistency: does the UniProt entry match the expected gene symbol? Does the ChEMBL entry name match the input?
-3. Collect synonyms and aliases (UniProt alternative names, drug trade names, disease aliases).
-4. Record the **versioned Ensembl/Gencode ID** if available (needed for GTEx queries).
+3. **PubTator3 literature confirmation** (capability: `literature.entity_autocomplete`). Run `uv run python skills/shared/scripts/pubtator3.py autocomplete "<input>" --concept <gene|disease|chemical|variant>` to obtain the PubTator3 entity ID and confirm the canonical resolution has literature backing. Record the `@<TYPE>_<symbol>` ID alongside the cross-references — downstream skills (deep-research, research-accuracy-verifier) consume it directly. Cross-concept disagreement (e.g. "ACE" returns both `@GENE_ACE` and `@CHEMICAL_*` candidates without `--concept` filter) is a Stage 4 collision signal — flag and pass through.
+4. Collect synonyms and aliases (UniProt alternative names, drug trade names, disease aliases).
+5. Record the **versioned Ensembl/Gencode ID** if available (needed for GTEx queries).
 
 **Exit Criteria:**
 - [ ] Identity table populated with >=2 cross-referenced IDs
 - [ ] No conflicting information between ID sources
+- [ ] PubTator3 entity ID (`@<TYPE>_<symbol>`) recorded when biomedical
 - [ ] Synonyms/aliases collected for literature search
 
 ---
@@ -138,12 +140,16 @@ Input entity received
    - Symbol is a common English word or abbreviation
    - Symbol matches entities in different biological contexts
    - Symbol listed in `references/known_collisions.md`
-2. If high-risk, run a PubMed title search: `"[SYMBOL]"[Title]` — review first 20 results.
-3. Calculate off-topic rate: count results clearly about a different entity.
+   - **PubTator3 autocomplete (Stage 3) returned >1 concept type for the bare query** (cross-concept ambiguity)
+2. If high-risk, run **two complementary checks**:
+   a. **PubTator3 mention counts** (capability: `literature.entity_annotation`): `uv run python skills/shared/scripts/pubtator3.py search --gene <SYMBOL> --size 50 --summary` (or `--disease`/`--chemical`). The `total` field gives an ID-grounded mention count — far higher precision than string matching for short symbols. If PubTator3 returns near-zero hits for a well-known gene, the canonical resolution is wrong.
+   b. **PubMed title search** (legacy, retained for reach): `"[SYMBOL]"[Title]` — review first 20 results for off-topic context.
+3. Calculate off-topic rate: count results clearly about a different entity. PubTator3-grounded hits cannot be off-topic by ID; the off-topic rate is computed from the PubMed title results.
 4. If >20% off-topic, build a **negative filter** string:
    - Identify the collision domain (e.g., bacterial, agricultural, chemical)
    - Construct: `NOT [collision_term_1] NOT [collision_term_2] ...`
-5. Record the collision warning and negative filter in output.
+   - Where possible, prefer entity-grounded queries (`@GENE_<SYMBOL>` via PubTator3) over keyword filters in downstream skills.
+5. Record the collision warning, PubTator3 mention count, and negative filter in output.
 
 **Exit Criteria:**
 - [ ] Collision risk assessed (none / low / high)

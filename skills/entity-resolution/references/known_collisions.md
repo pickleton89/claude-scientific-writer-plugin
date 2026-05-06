@@ -51,8 +51,18 @@ Symbols matching these patterns should **always** trigger collision detection:
 
 When a symbol matches any high-risk pattern:
 
-1. Search PubMed: `"{SYMBOL}"[Title]` — retrieve 20 results
-2. Classify each result as on-topic or off-topic
-3. If **>20% off-topic**: construct negative filter from collision terms
-4. If **>50% off-topic**: consider using the full gene name instead of symbol
-5. Record the off-topic rate and filter in the Entity Identity Table
+1. **PubTator3 autocomplete probe (preferred)**: `pubtator3 autocomplete "<SYMBOL>"` (no `--concept` filter) — if the result list contains >1 distinct `biotype`, that's hard evidence of cross-concept ambiguity. With `--concept gene`, check whether the top hit's `name` matches the symbol exactly (case-sensitive) and whether `match` says "Matched on name" (high confidence) vs "Matched on synonyms" (lower confidence).
+2. **PubTator3 mention count**: `pubtator3 search --gene <SYMBOL> --size 1 --summary` — the `total` field is an ID-grounded mention count. Near-zero for a well-known gene = wrong canonical resolution.
+3. **PubMed title scan (legacy reach check)**: `"{SYMBOL}"[Title]` — retrieve 20 results; classify each as on-topic or off-topic.
+4. If **>20% off-topic** in step 3: construct negative filter from collision terms.
+5. If **>50% off-topic** in step 3: consider using the full gene name instead of symbol.
+6. Record the PubTator3 entity ID, mention count, off-topic rate, and filter in the Entity Identity Table.
+
+### PubTator3 thresholds
+
+| Signal | Action |
+|---|---|
+| autocomplete returns 0 results for the input symbol | escalate — entity may not be in PubTator3 corpus, fall back to PubMed-only validation |
+| autocomplete returns >1 `biotype` without `--concept` filter | flag as cross-concept collision; require user to specify concept |
+| autocomplete top hit `match` is "Matched on synonyms" not "Matched on name" | lower confidence — verify with cross-references in Stage 3 |
+| `pubtator3 search --gene <X> --size 1 --summary` returns total < 10 for an HGNC-resolved symbol | suspicious — probable wrong gene or PubTator3 indexing gap |

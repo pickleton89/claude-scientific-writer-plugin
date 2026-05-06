@@ -167,6 +167,10 @@ For each claim-citation pair, verify the cited source actually supports the clai
 **Routing**:
 - User-provided source: extract relevant passage; exact-string match for direct quotes (delegate to `scripts/verify_exact_quote.py`); semantic match for paraphrased claims
 - No source, abstract available via PubMed: check whether abstract supports, contradicts, or is silent on the claim
+- **Biomedical pre-filter — PubTator3 entity co-mention check** (capability: `literature.entity_annotation`). Run BEFORE attempting full-text retrieval when the claim names structured entities (gene/drug/disease/variant) AND a cited PMID is available. Invoke `uv run python skills/shared/scripts/pubtator3.py annotations --pmids <cited_PMID> --summary`; the output is a per-PMID `entity_counts` tally. Outcomes:
+  - **All claim entities present in tally** → proceed to PMC/Paperclip for sentence-level alignment (unchanged below).
+  - **One or more claim entities absent from tally** → emit candidate verdict `MISATTRIBUTED` with `reason: entity_not_in_pubtator3_annotations` AND attempt one full-text confirmation via Paperclip before finalizing (PubTator3 NER has known gaps for newer papers; absence ≠ ground truth). If full text also lacks the entity, finalize as `MISATTRIBUTED`. If full text contains it, override to `VERIFIED`/`OVERGENERALIZED` per the alignment outcome and record the PubTator3 false-negative in `evidence[]` for downstream measurement.
+  - **PubTator3 unreachable / wrapper error** → skip pre-filter silently and continue with the existing routing chain. No hard failure.
 - Need full text: attempt PMC fetch; if open access, retrieve and search.
 - **PMC fetch failed (paywall / 404), biomedical context**: attempt OA full-text retrieval via Paperclip — `paperclip lookup doi <DOI>` (preferred) or `paperclip search "<title>" -n 1`. If a hit lands in `/papers/<id>/`, read the relevant section files (`/papers/<id>/sections/`) or `paperclip grep "<claim phrase>" /papers/<id>/content.lines` for the alignment check. Record the citation URL `https://citations.gxl.ai/papers/<doc_id>#L<n1>-L<n2>` in the finding's `evidence[]`. Capability key: `verification.claim_alignment` (Paperclip fallback). Skip if cited paper is outside Paperclip's 4-source corpus (PMC + bioRxiv + medRxiv + arXiv) or `paperclip --version` fails.
 - **Paperclip miss or unavailable, full text still required**: assign `UNVERIFIED` with `reason: paywalled_full_text`.
@@ -195,7 +199,7 @@ Cherry-picking — where the cite-claim pair itself is verified but the document
 For substantive uncited claims (depth permitting), search for support.
 
 **Routing**:
-- Biomedical: PubMed → bioRxiv (preprints) → Open Targets (target / disease / drug claims) → Consensus (routing aid only) → Scite (citation context) → web
+- Biomedical: PubMed → bioRxiv (preprints) → PubTator3 (entity-grounded literature when claim names genes/diseases/chemicals/variants) → Open Targets (target / disease / drug claims) → Consensus (routing aid only) → Scite (citation context) → web
 - General scientific: Crossref / OpenAlex → Exa semantic search → web
 
 Capability keys: `verification.citation_existence`, `verification.claim_alignment`. The LLM invokes the corresponding MCP tools (PubMed, Scite, etc.) directly per the call patterns documented in `tool-lookup.yaml`, and records each call as a `verification_path[]` entry.
@@ -417,11 +421,12 @@ In priority order, for biomedical documents (capability keys in `skills/shared/t
 5. **Scite MCP** (`verification.citation_existence` primary, `verification.claim_alignment` fallback, `verification.cherry_picking` primary) — `editorialNotices` for retraction / correction detection (Stage 2), sentiment-classified citing snippets for claim alignment (Stage 3), citation tallies + Scite Index for cherry-picking detection (Stage 4 Tier 3). All sentiment outputs reported "per Scite classification" — bias caveat documented at `tool-lookup.yaml` `literature.citation_context`.
 6. **Crossref / OpenAlex** via web fetch (`verification.citation_existence` fallback) — DOI resolution and metadata
 7. **PMC** via web fetch (`verification.claim_alignment` primary) — open-access full text for alignment
-8. **Paperclip CLI** (`verification.exact_quote` primary for Stage 5; `verification.claim_alignment` fallback for Stage 3, ahead of Scite snippets) — corpus-wide regex over PMC + bioRxiv + medRxiv + arXiv (4 sources) for no-source quote verification and `QUOTE_FABRICATED` rescue; OA full-text retrieval when PMC fetch fails. CLI transport only (vendor SKILL.md at `.claude/skills/paperclip/SKILL.md`); degrades silently if `paperclip --version` exits non-zero. Does **not** replace Scite for retraction (`citation_existence`) or cherry-picking (`cherry_picking`) — Paperclip has no `editorialNotices` equivalent. Capability keys: `literature.corpus_search`, `literature.corpus_grep`.
-9. **Consensus MCP** — claim-level synthesis as routing aid only
-10. **Exa** via web — semantic search when keyword search fails
-11. **Web search** (`verification.exact_quote` fallback) — fallback for everything else; fallback path for exact-quote verification when Paperclip is unavailable or context is non-biomedical
-12. **`entity-resolution` skill** (`verification.entity_sanity` delegate) — gene / drug / disease ID resolution
+8. **PubTator3 wrapper** (`literature.entity_annotation` primary for biomedical Stage 3 pre-filter; ahead of Paperclip) — entity-grounded BioC-JSON annotations for cited PMIDs. Cheap deterministic check: does the cited paper actually annotate the (gene, disease, chemical, variant) tuple the claim names? Used to short-circuit `MISATTRIBUTED` candidates before paying for full-text retrieval. Absence is escalated to Paperclip (NER gaps), not used as a hard verdict. Wrapper at `skills/shared/scripts/pubtator3.py`; degrades silently on network or wrapper error. Verdict reason: `entity_not_in_pubtator3_annotations` under `MISATTRIBUTED`.
+9. **Paperclip CLI** (`verification.exact_quote` primary for Stage 5; `verification.claim_alignment` fallback for Stage 3, ahead of Scite snippets) — corpus-wide regex over PMC + bioRxiv + medRxiv + arXiv (4 sources) for no-source quote verification and `QUOTE_FABRICATED` rescue; OA full-text retrieval when PMC fetch fails. CLI transport only (vendor SKILL.md at `.claude/skills/paperclip/SKILL.md`); degrades silently if `paperclip --version` exits non-zero. Does **not** replace Scite for retraction (`citation_existence`) or cherry-picking (`cherry_picking`) — Paperclip has no `editorialNotices` equivalent. Capability keys: `literature.corpus_search`, `literature.corpus_grep`.
+10. **Consensus MCP** — claim-level synthesis as routing aid only
+11. **Exa** via web — semantic search when keyword search fails
+12. **Web search** (`verification.exact_quote` fallback) — fallback for everything else; fallback path for exact-quote verification when Paperclip is unavailable or context is non-biomedical
+13. **`entity-resolution` skill** (`verification.entity_sanity` delegate) — gene / drug / disease ID resolution
 
 For general scientific documents, lead with Crossref / OpenAlex; use PubMed only when the topic crosses into life sciences.
 

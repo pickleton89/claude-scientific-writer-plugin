@@ -38,8 +38,13 @@ search strategy.
 | `search_literature` | Scite MCP | Citation-aware full-text search; post-search reception assessment | `term`, `dois` |
 | `paperclip search` | Paperclip CLI | Full-text discovery across PMC + bioRxiv + medRxiv + arXiv | `query`, `-n`, `-s`, `--year`, `--journal` |
 | `paperclip map` | Paperclip CLI | Per-paper LLM reader across 3–10 search hits | `--from <s_id>`, `"<question>"` |
+| `pubtator3 search` | PubTator3 wrapper | Entity-grounded discovery (gene/disease/chemical/variant co-mentions) | `--gene`, `--disease`, `--chemical`, `--variant`, `--size`, `--summary` |
+| `pubtator3 annotations` | PubTator3 wrapper | BioC-JSON entity spans for assembled PMID list | `--pmids`, `--summary` |
+| `pubtator3 relations` | PubTator3 wrapper | Co-mention graph for an entity (dossier-style pivots) | `--entity`, `--summary` |
 
 **Paperclip is invoked via Bash, not MCP** — requires `paperclip install` + `paperclip login` (per machine). Vendor-managed `SKILL.md` lives at `.claude/skills/paperclip/SKILL.md`. Skip Paperclip silently when the binary is absent (CI / sandboxed environments) — bibliography proceeds with the other databases. Capability keys: `literature.corpus_search`, `literature.corpus_grep`.
+
+**PubTator3 is invoked via Bash:** `uv run python skills/shared/scripts/pubtator3.py <subcommand>`. No auth, NCBI REST. Skip silently when the network call fails (sandboxed environments) — bibliography proceeds with the other databases. Capability keys: `literature.entity_annotation`, `literature.entity_autocomplete`. See `skills/shared/references/pubtator3_quirks.md` for entity-ID format and query syntax.
 
 ### Fallback Tools (ToolUniverse, use when primary unavailable)
 
@@ -60,6 +65,7 @@ search strategy.
 | ToolUniverse session expired | "session" or "auth" error from `execute_tool` | Retry `execute_tool` once | 1 |
 | Scite MCP error/timeout | Error response or timeout from `search_literature` | Skip Step 4b reception assessment; no equivalent fallback | 0 |
 | Paperclip CLI error | Non-zero exit / `paperclip: command not found` / OAuth expired | Skip Paperclip channel; proceed with PubMed + bioRxiv MCP + Consensus | 1 |
+| PubTator3 wrapper error | Non-zero exit / network error / `requests` not installed | Skip PubTator3 channel; proceed with other databases. No fallback for entity-grounded search. | 1 |
 | All tools fail for a database | Fallback also fails | Document gap, proceed with remaining databases | 0 |
 
 **Degraded-mode rule:** If ≥2 databases are unreachable, add to output:
@@ -147,6 +153,24 @@ in parallel with the primary databases as a full-text discovery channel covering
 `quick`, `fact-check`, `socratic`. Dedupe Paperclip hits by DOI against the other databases.
 Record in the Search Log alongside the other channels (see §Search Log below). For multi-paper
 synthesis, follow with `paperclip map --from <s_id>` (3–10 papers).
+
+**PubTator3 entity-grounded channel (optional):** Use when the topic includes named
+biomedical entities (gene, disease, chemical, variant, species). Provides ID-grounded
+discovery — far higher precision than keyword search for collision-prone symbols (e.g.
+"ACE", "MET", "IL-8") because matches are normalized to PubTator3 entity IDs, not
+strings. Modes: `full`, `lit-review`, `systematic-review`, `hypothesis`, `fact-check`
+(when claim names entities). Skip for `quick`, `socratic`.
+
+Recipes:
+- **Disambiguate first:** `uv run python skills/shared/scripts/pubtator3.py autocomplete "BRAF" --concept gene` — confirms the canonical PubTator3 ID before search.
+- **Co-mention search:** `uv run python skills/shared/scripts/pubtator3.py search --gene BRAF --disease Melanoma --size 20 --summary` — papers annotating both entities, ranked by relevance score. Bare symbols are auto-tagged.
+- **Cross-entity pivot (dossier style):** `pubtator3 relations --entity @GENE_BRAF --summary --top 25` — top diseases/chemicals co-mentioned with a target.
+- **Annotation verification:** `pubtator3 annotations --pmids 24200969,24469106 --summary` — per-PMID entity tally, useful to confirm a specific paper covers the (gene, disease) tuple before retrieving full text via Paperclip.
+
+Dedupe PubTator3 hits by PMID/DOI against PubMed and Paperclip. Record in the Search Log.
+Caveat: PubTator3's NER has known gaps for newer papers — absence of an annotation does
+not prove absence in the paper itself. Use as a fast positive signal; treat absence as
+"escalate to full text" rather than a hard verdict.
 
 ### Consensus Search Optimization
 

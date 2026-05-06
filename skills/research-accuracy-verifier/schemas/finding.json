@@ -85,7 +85,8 @@
               "ref_reconcile",
               "acronym_scan",
               "journal_volume_check",
-              "entity_resolve"
+              "entity_resolve",
+              "pubtator3_entity_check"
             ]
           },
           "tool": {

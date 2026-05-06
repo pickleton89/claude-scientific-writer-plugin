@@ -29,6 +29,8 @@ Stage 6 (numerical / named-entity sanity) reuses `VERIFIED | METADATA_MISMATCH |
 
 Stage 7 (internal consistency) emits `CONTRADICTED` (same fact, different numbers in two sections), `METADATA_MISMATCH` (inline cite ↔ bibliography drift), or `UNSUPPORTED` (orphan reference) — no separate vocabulary.
 
+**Stage 3 PubTator3 entity pre-filter** (capability: `literature.entity_annotation`). When a claim names structured biomedical entities (gene/drug/disease/variant) and a cited PMID is available, the verifier MAY run `pubtator3 annotations --pmids <PMID> --summary` BEFORE attempting full-text retrieval. If one or more claim entities are absent from PubTator3's BioC-JSON tally for that PMID, the candidate verdict is `MISATTRIBUTED` and the verifier MUST attempt one full-text confirmation (Paperclip / PMC) before finalizing — PubTator3 NER has known gaps. The verification_path entry uses `method: "pubtator3_entity_check"`, `tool: "pubtator3"`, and `result_summary` MUST include the per-entity present/absent flags. False-negative overrides (PubTator3 reported absent, full text contained the entity) MUST be recorded in `evidence[].snippet` for downstream measurement of the pre-filter's precision.
+
 ---
 
 ## Document type enum (7 values)
@@ -161,7 +163,7 @@ Tier → `checks_enabled` mapping (computed when tier ≠ `custom`):
                                                 "pubmed_search","pmc_fetch","exact_quote_match",
                                                 "scite_context","web_search","abstract_check",
                                                 "ref_reconcile","acronym_scan","journal_volume_check",
-                                                "entity_resolve"] },
+                                                "entity_resolve","pubtator3_entity_check"] },
                             "tool":           { "type": "string" },         // "PubMed MCP", "validate_citations.py"
                             "query":          { "type": "string" },
                             "result_summary": { "type": "string" }

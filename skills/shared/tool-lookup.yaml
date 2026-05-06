@@ -1,5 +1,5 @@
 # tool-lookup.yaml — Capability-to-Tool Mapping
-# Version: 1.5.0
+# Version: 1.6.0
 #
 # Skills reference capability KEYS (e.g., "disambiguation.gene_to_ensembl"),
 # not raw tool names. This lookup resolves capabilities to tools with
@@ -394,6 +394,60 @@ literature:
     fallback:
       - tool: web_search
         notes: "Quoted-phrase web search when Paperclip unavailable or claim is non-biomedical."
+
+  entity_annotation:
+    description: "Entity-grounded paper discovery + BioC-JSON annotations via NCBI PubTator3"
+    primary:
+      - tool: pubtator3 search  # skills/shared/scripts/pubtator3.py (invoke via `uv run python`)
+        notes: >
+          Annotated PubMed search keyed by typed entities (gene/disease/chemical/variant/species)
+          and/or free text. Bare symbols are auto-tagged (`--gene BRAF` → `@GENE_BRAF`); pre-tagged
+          tokens pass through. Combine entities with `--gene X --disease Y` (joined by AND).
+          Add `--summary` for a token-cheap view (total + per-hit pmid/title/doi/year/score).
+          Returns response with `count`, `total_pages`, and free `facets` (journal/type/year
+          breakdowns). Pair with `paperclip lookup doi <DOI>` for full text. Far higher precision
+          than `"BRAF" AND "melanoma"` keyword search because matches are ID-grounded, not
+          string-matched. NCBI REST, ~20 req/s, no auth — wrapper enforces 50ms throttle +
+          Retry-After-aware retry.
+      - tool: pubtator3 annotations  # skills/shared/scripts/pubtator3.py
+        notes: >
+          BioC-JSON entity spans for a comma-separated PMID list (`--pmids P1,P2,P3`). Use to
+          verify a cited paper actually annotates a (gene, disease, chemical) tuple BEFORE
+          paying for full-text retrieval. `--summary` emits per-PMID entity-count tally
+          (`{gene: {@GENE_BRAF: 15}, disease: {@DISEASE_Melanoma: 15}, ...}`). Caveat: absence
+          from PubTator3 ≠ absence from paper — escalate to Paperclip full text rather than
+          returning a hard verdict.
+      - tool: pubtator3 relations  # skills/shared/scripts/pubtator3.py
+        notes: >
+          Co-mention / relation graph for an entity (`--entity @GENE_BRAF`). Returns flat
+          array of `{type, source, target, publications}`. Default: omit `--type` and filter
+          client-side (NCBI's type filter empirically returns `[]` for many valid combinations).
+          Common types: `associate`, `negative_correlate`, `positive_correlate`, `treat`,
+          `cause`, `inhibit`. `--summary` groups by type, top-N each. Use for dossier-building
+          (gene → diseases / drugs co-mentioned).
+    tooluniverse: []
+    fallback:
+      - tool: search_articles  # PubMed MCP
+        notes: "Plain keyword search if PubTator3 endpoint is unreachable. No entity grounding — false positives on ambiguous symbols."
+      - tool: search_literature  # Scite MCP
+        notes: "Sentiment-classified citation snippets if you need claim-context evidence rather than entity annotations."
+
+  entity_autocomplete:
+    description: "Resolve free-text entity names to PubTator3 canonical IDs"
+    primary:
+      - tool: pubtator3 autocomplete  # skills/shared/scripts/pubtator3.py
+        notes: >
+          Free text → ranked PubTator3 entity ID candidates. Use BEFORE `pubtator3 search`
+          or `pubtator3 annotations` to disambiguate. Optional `--concept` filter
+          (gene|disease|chemical|variant|species) narrows results. Returns array of
+          `{_id: "@GENE_BRAF", biotype, db_id, db, name, description, match}`. Disambiguation
+          signal: if a query (e.g. "ACE") returns >1 concept type without `--concept`,
+          flag as collision and escalate. Synonym-only matches (`match: "Matched on synonyms..."`)
+          carry lower confidence than name matches.
+    tooluniverse: []
+    delegate:
+      - skill: entity-resolution
+        notes: "For full canonical-ID resolution with cross-reference validation across HGNC/UniProt/ChEMBL/Cellosaurus. PubTator3 autocomplete complements but does not replace the entity-resolution skill — it provides PubTator3-specific IDs for downstream search/annotations calls."
 
 # ─── ML PREDICTIONS ──────────────────────────────────────────────────────────
 
