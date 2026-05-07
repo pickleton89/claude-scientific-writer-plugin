@@ -86,6 +86,16 @@ The five-step design framework lives in `references/search_strategy_design.md`
 the agent's execution-side procedure; the framework reference is the design-side
 authority.
 
+For cross-database **process recipes** ("which databases in what order" for
+common RQ shapes — protocols, mechanism, drug efficacy, latest developments,
+reagents, method comparison), see `references/search_scenarios.md`. Recipes
+do not override the frozen Search Contract; they sequence and phrase queries
+against `required_databases`. For PubMed-only Boolean templates by domain
+(cancer, cardiovascular, neuro, etc.) and full PubMed query syntax (Boolean
+precedence, wildcards, proximity, complete field-tag table), see
+`scripts/sources/pubmed/references/common_queries.md` and
+`scripts/sources/pubmed/references/search_syntax.md`.
+
 ### Step 0: Define Inclusion/Exclusion Criteria
 
 Before query execution, draft inclusion/exclusion criteria. Use the default
@@ -152,7 +162,12 @@ in parallel with the primary databases as a full-text discovery channel covering
 + medRxiv + arXiv. Modes: `full`, `lit-review`, `systematic-review`, `hypothesis`. Skip for
 `quick`, `fact-check`, `socratic`. Dedupe Paperclip hits by DOI against the other databases.
 Record in the Search Log alongside the other channels (see §Search Log below). For multi-paper
-synthesis, follow with `paperclip map --from <s_id>` (3–10 papers).
+synthesis, follow with `paperclip map --from <s_id>` (3–10 papers). When the RQ touches a
+computational subfield (compbio methods, ML for biomedical data), include arXiv subject codes
+as keywords in the Paperclip query to tighten relevance — see
+`references/arxiv_categories.md` for q-bio.* and cs.* categories and the native arXiv `cat:`
+syntax. Record any retained arXiv hit's category in the Annotated Bibliography
+(`Source: arXiv (q-bio.QM)`).
 
 **PubTator3 entity-grounded channel (optional):** Use when the topic includes named
 biomedical entities (gene, disease, chemical, variant, species). Provides ID-grounded
@@ -266,6 +281,33 @@ Search Contract with the user for re-approval before continuing.
 - Does the abstract address the inclusion criteria?
 - Record exclusion reason for each excluded paper
 - Categorize by relevance: High / Medium / Low
+
+**Triage rubric (apply during the ≤2 min budget):**
+
+1. **Source venue** — peer-reviewed indexed journal, recognized preprint
+   server (bioRxiv, medRxiv, arXiv), or suspect/predatory? Verification
+   agent flags predatory journals post-inclusion; note suspect venues at
+   triage.
+2. **Author credentials & affiliation** — established lab in the area, or
+   first publication on the topic? Not a hard exclusion criterion;
+   informs the relevance tier.
+3. **Recency** — within the field's currency window
+   (`references/biomedical_research.md` §Currency Rules by Field)?
+   Foundational works exempt.
+4. **Study design fit for the RQ** — RCT for efficacy, cohort for
+   prognosis, case-control for risk, mechanistic for biology. Misfit
+   designs lower the relevance tier even if topically relevant.
+5. **Sample size adequacy** — flag obvious underpowering (n<10 for
+   clinical, n<3 biological replicates for bench). Triage signal only;
+   formal power assessment is the verification agent's responsibility.
+6. **Declared conflicts of interest** — note industry funding to inform
+   Tier-3 deep-dive prioritization and synthesis-stage interpretation.
+
+For *post-inclusion* methodological grading (Cochrane RoB 2,
+Newcastle-Ottawa, JBI, AMSTAR 2), see
+`references/quality_assessment_tools.md`. The rubric above is for
+pre-inclusion triage only — it shapes the High/Medium/Low tier, not the
+final evidence grade.
 
 ### Full-Text Assessment (when available)
 - Use PubMed MCP `get_full_text_article` for open-access papers

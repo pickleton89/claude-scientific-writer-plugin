@@ -129,7 +129,13 @@ or drug-intelligence), the synthesis agent MUST:
 ## Database-Specific Search Notes
 
 ### PubMed MCP
-- Supports MeSH terms: `"EGFR"[MeSH]` for controlled vocabulary
+- Supports MeSH controlled vocabulary (e.g., `"EGFR"[MeSH]`) and the full
+  PubMed field-tag surface — for the complete table (`[MeSH]`, `[tiab]`,
+  `[mh]`, `[pt]`, `[dp]`, `[au]`, `[Substance Name]`, `[MeSH Major Topic]`,
+  etc.) plus Boolean precedence, phrase searching, wildcards, and proximity
+  operators, see `scripts/sources/pubmed/references/search_syntax.md`. For
+  domain-specific Boolean templates, see
+  `scripts/sources/pubmed/references/common_queries.md`.
 - Publication type filters: Review, Clinical Trial, Meta-Analysis
 - Use `find_related_articles` for citation network expansion
 - Known issue: occasional transient session expiry — retry once

@@ -40,6 +40,39 @@ Decompose the research question into concept groups:
 | Phenotype | resistance | refractory, acquired resistance, drug resistance | "Drug Resistance, Neoplasm"[MeSH] |
 | Disease | NSCLC | non-small cell lung cancer, lung adenocarcinoma, LUAD | "Carcinoma, Non-Small-Cell Lung"[MeSH] |
 
+### Step 1a: PICO decomposition (clinical RQs only)
+
+For RQs that compare an intervention against an alternative in a defined
+population for a specific outcome, decompose to PICO before listing concept
+groups. PICO catches missing comparator arms that pure concept extraction
+misses, and the four axes map directly to MeSH-tagged Boolean clauses.
+
+| Axis | Definition | Worked example (metformin vs placebo for CV outcomes in T2D) |
+|---|---|---|
+| **P** Population | Who is studied? | Adults with type 2 diabetes — `"Diabetes Mellitus, Type 2"[MeSH]` |
+| **I** Intervention | What treatment / exposure? | Metformin — `"Metformin"[MeSH]` |
+| **C** Comparison | What is the alternative arm? | Placebo or other oral antidiabetic — `placebo OR "Sulfonylurea Compounds"[MeSH]` |
+| **O** Outcome | What result is measured? | Cardiovascular events — `"Cardiovascular Diseases"[MeSH]` |
+
+The PICO-derived Boolean joins all four axes:
+
+```
+"Diabetes Mellitus, Type 2"[MeSH] AND "Metformin"[MeSH]
+  AND (placebo OR "Sulfonylurea Compounds"[MeSH])
+  AND "Cardiovascular Diseases"[MeSH]
+  AND (clinical trial[Publication Type] OR meta-analysis[Publication Type])
+```
+
+For non-clinical RQs (basic biology, methods, computational), skip Step 1a
+and proceed with concept-group decomposition only. PICO's Comparison and
+Outcome axes do not apply outside the intervention-evaluation framing.
+
+For domain-specific PICO query templates (cancer, cardiovascular, infectious
+disease, neurology, diabetes), see
+`scripts/sources/pubmed/references/common_queries.md` §Tips for Constructing
+Queries §1 (PICO Framework) and the worked recipes in §Disease-Specific
+Queries.
+
 ### Step 2: Select Databases
 
 Use the domain-database matrix in `agents/bibliography.md` §Step 3 (Database
@@ -66,6 +99,14 @@ Standard biomed structure:
 
 If entity-resolution flagged HIGH collision risk for any term, append `NOT`
 exclusions per `agents/bibliography.md` §Step 2 (Apply Collision Filters).
+
+For the full PubMed query surface — Boolean precedence, phrase searching,
+wildcards, proximity operators, and the complete field-tag table
+(`[MeSH]`, `[tiab]`, `[mh]`, `[pt]`, `[dp]`, `[au]`, `[Substance Name]`,
+`[MeSH Major Topic]`) — see
+`scripts/sources/pubmed/references/search_syntax.md`. For arXiv `cat:` syntax
+and biomedical-adjacent subject categories (q-bio.*, cs.*), see
+`references/arxiv_categories.md`.
 
 ### Step 4: Define Inclusion / Exclusion Criteria
 
@@ -151,6 +192,48 @@ The bibliography agent emits the following block. Values fill in from Steps 1-5.
 | Criteria specificity | Every Include row has a paired Exclude row | Fill in missing exclusions |
 | Mode-appropriate database count | Meets minimum from Step 2 | Add database or document unavailability |
 | Currency justified | Date range cites `biomedical_research.md` threshold or explicit override | Add citation or override rationale |
+
+## Common Pitfalls
+
+Advisory checks during strategy design. Each pitfall links to the
+authoritative reference rather than restating policy.
+
+1. **Over-specific queries.** Packing every concept, modifier, and filter
+   into a single Boolean (typically 6+ ANDed clauses) cuts recall — all
+   clauses must match simultaneously. *Fix:* split into 2-3 sub-queries on
+   the primary concept axes from Step 1, run them independently, and union
+   the deduplicated results. Mode-minimum source counts in
+   `agents/bibliography.md` §Quantitative Thresholds remain in force on
+   the union, not per sub-query.
+
+2. **Single-database reliance.** Querying only PubMed (or only Consensus)
+   guarantees coverage gaps — preprints absent from PubMed, biomedical
+   results absent from Consensus's general index. *Fix:* the mode minimum
+   in `agents/bibliography.md` §Quantitative Thresholds (≥2 for `quick`,
+   ≥3 for `full`/`lit-review`/`hypothesis`, ≥4 for `systematic-review`)
+   is a hard floor enforced by `scripts/search_audit.py`.
+
+3. **Date-range neglect.** For fast-moving fields, defaulting to "all
+   years" buries current evidence under foundational papers; for
+   foundational topics, restricting to "last 5 years" excludes the
+   defining work. *Fix:* defer to
+   `references/biomedical_research.md` §Currency Rules by Field for the
+   per-field threshold; document foundational-work exemptions in the
+   Strategy Block.
+
+4. **Skipping abstract triage.** Sending all title-screen-passing hits
+   to full-text retrieval wastes the Tier-3 full-text budget on hits
+   that fail the inclusion criteria at abstract review. *Fix:* enforce
+   the 3-tier screening protocol in `agents/bibliography.md` §Screening
+   Protocol (title ≤15 s → abstract ≤2 min → full text for High/Medium
+   tiers only).
+
+5. **NOT-operator misuse.** `NOT cancer` excludes papers that mention
+   cancer in a different context (e.g., "no association with cancer
+   risk" — a relevant negative result). *Fix:* prefer adding positive
+   terms to narrow results, or use entity-resolution collision filters
+   (`agents/bibliography.md` §Step 2) which scope exclusions to the
+   specific colliding senses rather than the bare term.
 
 ## Interaction with Other Agents
 
