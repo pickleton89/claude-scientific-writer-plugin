@@ -293,6 +293,24 @@ convert diagram.pdf -colorspace gray diagram_gray.pdf
 - Minimum 7-8 pt font
 - Simplify labels if space is limited
 
+### Canonical Arrow Legend
+
+**Principle: Every arrow must convey exactly one relationship.** Mixing arrow styles arbitrarily — or using the same style for "leads to," "physically binds," "is required for," and "is hypothesized to influence" — forces readers to guess. Define a legend at the project level and apply it across every panel of every figure in the paper.
+
+| Symbol | Meaning | Encoding | Optional color |
+|--------|---------|----------|----------------|
+| → | Activation / direct positive effect | Solid line, solid arrowhead | Green |
+| ⊣ | Inhibition / repression | Solid line, flat bar terminator | Red |
+| - - → | Indirect, hypothetical, or context-dependent effect | Dashed line, solid arrowhead | Gray |
+| ⇌ | Reversible reaction / equilibrium | Two opposing half-arrows | Neutral |
+| ⊳ (open arrowhead) | Catalysis / enzyme action on substrate | Solid line, open arrowhead | Neutral |
+| → with label | Reaction or process named on the arrow | Add enzyme / kinase / process name above | Match arrow type |
+
+**Rules:**
+- Color is **redundant encoding only** — never the sole cue. ~8% of male readers cannot distinguish red/green; shape distinction (→ vs ⊣) carries the meaning.
+- Use **labels in the figure caption**, not on the arrows themselves, when arrow density is high. Arrow labels add clutter and reduce diagram readability.
+- A diagram should be self-explanatory to a reader who reads the caption.
+
 ### Pitfall 5: Ambiguous Arrows
 
 **Problem**: Unclear what arrows represent or where they point

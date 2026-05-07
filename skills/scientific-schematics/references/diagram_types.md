@@ -4,6 +4,28 @@
 
 ---
 
+## Reader-Intent Taxonomy (Choose Before Picking a Subtype)
+
+Before selecting a domain-specific subtype below, decide what the reader needs to extract. The wrong intent type leads to overloaded or underspecified figures regardless of how well-rendered they are.
+
+| Intent type | Reader question | Key elements | Subtype examples (this file) |
+|-------------|----------------|--------------|------------------------------|
+| **Mechanism** | *Why does this happen?* (cause and effect at the molecular level) | Proteins/molecules, conformational states, before/after panels, causal arrows | Signaling Pathway (kinase cascade), CRISPR cleavage, transcription factor binding |
+| **Pathway** | *How do these components interact in a network?* | Nodes (proteins/metabolites), edges (activation/inhibition), compartment boxes | Metabolic Pathway, Gene Regulatory Network, Protein Interaction Network |
+| **Workflow** | *What happened, step by step?* | Numbered steps, equipment/sample icons, time or step axis | Methods Flowchart, CONSORT, PRISMA, Data Flow Diagram |
+| **Graphical abstract** | *What is the 30-second summary of this paper?* | 2–4 panels: question → approach → key finding → implication; minimal text | Single-panel paper summary (handled by `paperbanana` for prose-driven generation) |
+| **Structural** | *What does this molecule/structure look like?* | 3D render, ribbon/surface representation, active site, scale bar | Protein domain schematic, ligand binding pocket (rendered in ChimeraX/PyMOL, annotated here) |
+
+**Decision rule:**
+- Step-by-step *what happened* → **Workflow**
+- *Why* it happens (cause and effect) → **Mechanism** (single chain) or **Pathway** (network)
+- 30-second paper summary → **Graphical abstract** (route to `paperbanana` if prose-driven)
+- 3D structure → **Structural** (route external render → annotate here)
+
+Each intent type maps to one or more domain-specific subtypes catalogued below.
+
+---
+
 ## Study Design & Methodology
 
 ### CONSORT Flowchart

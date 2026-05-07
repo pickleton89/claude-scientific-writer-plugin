@@ -101,6 +101,28 @@ CONSORT flowchart with Oligon brand colors:
 - Background: white
 ```
 
+### Biological Color Conventions (When Brand Styling Is Disabled)
+
+When generating mechanism, pathway, or structural diagrams without Oligon brand colors, biologists expect the following conventional color assignments. Use these in prompts to match reader mental models — inconsistency with convention forces reviewers to relearn the legend.
+
+| Entity | Conventional color | Notes |
+|--------|-------------------|-------|
+| DNA (double helix) | Blue / navy or neutral gray | Use single hue per strand |
+| mRNA / RNA | Orange or yellow | Distinguish from DNA |
+| Protein | Varies — assign one color per protein family and reuse across all figures in the paper | Consistency across figures > arbitrary palette per figure |
+| Cell nucleus | Light gray or pale blue fill | Subordinate to nuclear contents |
+| Cell membrane / lipid bilayer | Tan / beige | Two parallel lines or filled band |
+| Mitochondria | Orange | |
+| Lysosomes | Red / purple | |
+| Endoplasmic reticulum | Light green | |
+| Golgi apparatus | Pink / magenta | |
+
+**Signal-direction convention** (independent of color):
+- Activation: → (solid arrowhead)
+- Inhibition: ⊣ (flat bar)
+- Indirect / hypothetical: - - → (dashed)
+- Optional color overlay: green = activating, red = inhibiting, gray = neutral/context — **never** the only cue (see arrow legend in `references/best_practices.md`).
+
 ### Disabling Brand Styling
 
 To use generic/accessibility-focused styling instead of Oligon brand:
