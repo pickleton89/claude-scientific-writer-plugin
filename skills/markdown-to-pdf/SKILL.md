@@ -1,528 +1,327 @@
 ---
 name: markdown-to-pdf
-version: 1.0.0
-description: "Convert templated markdown to branded PDFs. Create documents from 12 templates (scientific, project-mgmt, technical), generate professional PDFs with Oligon styling."
-allowed-tools: [Read, Write, Edit, Bash]
+version: 2.0.0
+description: "Build branded long-form research reports as PDFs from markdown sources. HTML/CSS templates (Editorial / Banded variants) rendered via WeasyPrint. Use for analysis reports, literature reviews, and data reports — not for meeting notes, task lists, or short utility docs."
+allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
 ---
 
-# Markdown to PDF - Branded Document Conversion
+# Markdown to PDF — Branded Research Reports
 
 <overview>
-This skill bridges the template infrastructure and PDF component system to provide a complete markdown-to-PDF workflow. It uses `TemplateParser` for document parsing and `oligon_reports` components for branded PDF generation.
+Produce print-grade Oligon-branded research-report PDFs from markdown. The skill carries hand-crafted HTML/CSS templates (Editorial + Banded variants, 8 reference page layouts) and a deterministic WeasyPrint renderer. The LLM does the markdown→HTML slot-fill against a small component vocabulary; the renderer turns the populated HTML into a US-Letter PDF with edge-to-edge brand layout.
 
-**Dependencies:**
-- `oligon_reports.templates.TemplateParser` - Template parsing and validation
-- `oligon_reports.components` - PDF visual components
-- `oligon_reports.ReportGenerator` - PDF orchestration
-</overview>
-
-> **Prose Standards:** Markdown source content conforms to [`../shared/references/prose_standards.md`](../shared/references/prose_standards.md) (universal voice/style rules). This skill is format-only — it does not edit prose. Run `scientific-writing/scripts/validate_writing_quality.py` on markdown source before generating the PDF.
-
-<brand_application>
-## Brand Application (Default)
-
-**By default, all PDF outputs use Oligon Scientific Brand styling.** The `oligon_reports` package automatically applies brand colors, typography, and visual standards.
-
-### Auto-Applied Settings
-
-The ReportGenerator automatically applies:
-
-| Element | Style |
-|---------|-------|
-| Accent color | `#2DB2E8` (Brand Blue) |
-| Alert color | `#E8622D` (Orange) |
-| Text color | `#222222` (Dark Gray) |
-| Background | `#FFFFFF` (White) |
-| Fonts | Arial family |
-
-### Disabling Brand Styling
-
-To use generic styling instead of Oligon brand:
-
-**Explicit request in prompt:**
-- "Use default PDF styling"
-- "No brand colors" or "Generic styling"
-
-**Per-project override:** Add to project `CLAUDE.md`:
-```markdown
-## Visual Styling
-Use generic/default styling for all visual outputs. Do not apply Oligon brand.
+**Pipeline:**
+```
+markdown → preflight + element detection → fill HTML template → render_pdf.py (WeasyPrint) → output/<doc>.pdf
 ```
 
-</brand_application>
+**Brand source of truth:** `../oligon-brand/tokens/brand-tokens.json`. The skill's CSS (`templates/html/oligon-tokens.css`) is a derived implementation; values currently match exactly.
+</overview>
+
+> **Prose Standards:** Markdown source content conforms to [`../shared/references/prose_standards.md`](../shared/references/prose_standards.md). This skill does not edit prose. Run `scientific-writing/scripts/validate_writing_quality.py` on the markdown before rendering.
+
+<scope>
+## Scope (read this before invoking)
+
+This skill renders **three doc types** through the HTML pipeline:
+
+| Type | Pipeline | Schema |
+|---|---|---|
+| analysis-report | html-render | `templates/schemas/analysis-report.json` |
+| literature-review | html-render | `templates/schemas/literature-review.json` |
+| data-report | html-render | `templates/schemas/data-report.json` |
+
+The other 9 schemas (meeting-notes, task-list, project-status, phase-plan, technical-spec, method-guide, standards-guide, agent-definition, readme) are tagged `pipeline: markdown-only`. The skill will **refuse** `/doc-to-pdf` on them with a clear redirect — long-form report layouts don't suit short utility docs.
+
+For executive / external-facing audiences (board updates, grant pitches), use `--variant banded` on any of the three supported types. The `executive-summary` skill remains the source for stakeholder summary content.
+</scope>
 
 <prerequisites>
 ## Prerequisites
 
-Before using this skill, verify the oligon_reports package is installed:
+WeasyPrint depends on Pango, cairo, and glib (system libraries, not Python).
 
+**macOS:**
 ```bash
-uv sync  # Install all project dependencies
+brew install pango cairo glib
+```
+The renderer auto-sets `DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib` so Python can find them. No manual env setup required when running via `uv run`.
+
+**Linux (Debian/Ubuntu):**
+```bash
+sudo apt install libpango-1.0-0 libpangoft2-1.0-0 libcairo2 libgdk-pixbuf2.0-0
 ```
 
-**Quick verification:**
-```python
-from oligon_reports import ReportGenerator
-from oligon_reports.templates import TemplateParser
-print("Dependencies ready")
+**Smoke test:**
+```bash
+uv run skills/markdown-to-pdf/scripts/render_pdf.py --self-test
 ```
-
-If imports fail, ensure you're in the project directory with `pyproject.toml`.
+Renders both stock templates with placeholders. Should produce 8-page PDFs (~37–40 KB each) in under 2 seconds. If this fails, fix the system libs before doing anything else.
 </prerequisites>
 
 <when_to_use>
 ## Trigger Conditions
 
-Use this skill when:
-- Listing available document templates
-- Creating new documents from templates
-- Converting templated markdown to branded PDFs
-- Generating professional reports with Oligon styling
+Use this skill when the user wants:
+- A branded PDF of an analytical report, literature review, or data report
+- An executive/external-facing version of one of the above (`--variant banded`)
+- To list the supported doc types (`/list-templates`)
+- To start a new report from a template (`/new-doc`)
 
 Do NOT use this skill when:
-- Converting arbitrary files to markdown → use `markitdown`
-- Creating LaTeX/academic papers → use `scientific-writing`
-- Making PowerPoint presentations → use `scientific-slides` or `research-posters`
-- Working with existing PDFs (extraction, forms) → use `document-skills:pdf`
+- Producing PowerPoint / slides → `scientific-slides`
+- Writing an academic manuscript for a journal → `scientific-writing`
+- Building a research poster → `research-posters`
+- Generating a standalone executive summary doc → `executive-summary`
+- Working with an existing PDF (extract / fill forms) → `document-skills:pdf`
+- Converting an arbitrary file TO markdown → `markitdown`
+- Producing a meeting note, task list, or readme → those stay as markdown; this skill explicitly does not render them
 </when_to_use>
-
-<decision_framework>
-## Command Selection
-
-```
-What does the user need?
-│
-├─ See available templates?
-│  └─ YES → /list-templates
-│           Returns table of 12 document types with categories
-│
-├─ Start a new document from template?
-│  └─ YES → /new-doc <type>
-│           Creates <type>_YYYYMMDD.md in current directory
-│
-└─ Convert existing markdown to PDF?
-   └─ YES → /doc-to-pdf <file>
-            │
-            ├─ Parses and validates document
-            ├─ Shows structure for confirmation
-            ├─ Maps elements to PDF components
-            └─ Generates branded PDF in output/
-```
-
-## Template Categories
-
-| Category | Templates | Use Case |
-|----------|-----------|----------|
-| scientific | analysis-report, literature-review, data-report | Research outputs |
-| project-mgmt | meeting-notes, project-status, phase-plan, task-list | Project tracking |
-| technical | technical-spec, method-guide, standards-guide | Documentation |
-| meta | agent-definition, readme | System docs |
-</decision_framework>
 
 <commands>
 ## Commands
 
 ### /list-templates
 
-**Purpose:** Display all available document templates
+Display the three HTML-render-supported doc types with their categories and required sections. Read each schema's `pipeline` field and surface only `html-render` types.
 
-**Workflow:**
-1. Call `TemplateParser.list_templates()`
-2. Format as markdown table
-3. Display with type, category, and description
-
-**Output Example:**
-```
-| Type              | Category        | Description                           |
-|-------------------|-----------------|---------------------------------------|
-| analysis-report   | scientific      | Structured analysis with findings     |
-| literature-review | scientific      | Systematic literature review          |
-| data-report       | scientific      | Data analysis and visualization       |
-| meeting-notes     | project-mgmt    | Meeting documentation                 |
-| project-status    | project-mgmt    | Project status update                 |
-| phase-plan        | project-mgmt    | Implementation phase planning         |
-| task-list         | project-mgmt    | Task tracking document                |
-| technical-spec    | technical       | Technical specification               |
-| method-guide      | technical       | Methodology documentation             |
-| standards-guide   | technical       | Standards and guidelines              |
-| agent-definition  | meta            | AI agent behavior definition          |
-| readme            | meta            | Project documentation                 |
-```
-
-**Implementation:**
+**Implementation sketch:**
 ```python
-from oligon_reports.templates import TemplateParser
-
-templates = TemplateParser.list_templates()
-# Returns: [{"type": "...", "category": "...", "description": "..."}, ...]
+import json, pathlib
+schemas_dir = pathlib.Path(__file__).parent / "templates" / "schemas"
+for p in sorted(schemas_dir.glob("*.json")):
+    if p.name == "_base.json":
+        continue
+    data = json.loads(p.read_text())
+    if data.get("pipeline") == "html-render":
+        print(p.stem, data.get("required_sections", []))
 ```
 
 ---
 
 ### /new-doc \<type\>
 
-**Purpose:** Create a new document from a template
-
-**Arguments:**
-- `type` (required): Document type from template list
+Create a stub markdown file for one of the supported types. Frontmatter is generated from the schema's required fields; section headings come from `required_sections`.
 
 **Workflow:**
-1. Validate `<type>` exists in template list
-2. Get template content: `TemplateParser.get_template(type)`
-3. Generate filename: `<type>_YYYYMMDD.md`
-4. Write to current directory
-5. Report success
-
-**Output Example:**
-```
-Created: analysis-report_20251228.md
-Template type: analysis-report (scientific)
-
-Next: Edit the document, then run /doc-to-pdf analysis-report_20251228.md
-```
-
-**Implementation:**
-```python
-from datetime import date
-from oligon_reports.templates import TemplateParser
-
-template_content = TemplateParser.get_template("analysis-report")
-filename = f"analysis-report_{date.today().strftime('%Y%m%d')}.md"
-
-with open(filename, "w") as f:
-    f.write(template_content)
-```
-
-**Error Handling:**
-- If type not found → Show available types with `/list-templates`
-- If file exists → Prompt to overwrite or use incremental name
+1. Reject if `<type>` is not in the html-render set (point to `/list-templates`).
+2. Read schema and emit:
+   - YAML frontmatter with `type`, `title`, `date` (today), and any required fields from the schema.
+   - One H2 heading per `required_sections` entry.
+3. Write to `<type>_YYYYMMDD.md` in the current directory.
 
 ---
 
-### /doc-to-pdf \<file\> [--figures]
+### /doc-to-pdf \<file\> [--variant editorial|banded]
 
-**Purpose:** Convert a templated markdown document to branded PDF
+The full pipeline. Five steps; each must complete before the next.
 
-**Arguments:**
-- `file` (required): Path to markdown file
-- `--figures` (optional): Generate figures using `scientific-schematics`
-
-**Workflow:**
-
-#### Step 1: Parse & Detect
+#### Step 1 — Preflight
 
 ```python
-from oligon_reports.templates import TemplateParser
-
-parser = TemplateParser()
-tree = parser.parse(content)
-doc_type = tree.frontmatter.type  # e.g., "analysis-report"
+from scripts.preflight import preflight_check
+result = preflight_check(file)
 ```
+Reject if `result.is_valid is False`. Show errors. Do not proceed.
 
-#### Step 2: Show Structure for Confirmation
+Also assert: schema for the doc's `type` has `pipeline == "html-render"`. If not, raise `PipelineMismatchError` (see `templates/error_recovery_map.json`).
 
-Present document structure and detected elements for user approval:
-
-```
-📄 Document: analysis-report_20251228.md
-📋 Type: analysis-report (detected from frontmatter)
-
-Structure:
-├── 1. Objective
-├── 2. Key Questions
-├── 3. Methodology
-│   └── 3.1 Data Sources
-├── 4. Findings
-│   ├── Finding 1: [title]
-│   ├── Finding 2: [title]
-│   └── Finding 3: [title]
-└── 5. Recommendations
-
-Elements Detected:
-- 3 tables (→ StatusTable/GradedTable/BaseTable)
-- 3 finding cards (→ FindingCard)
-- 2 code blocks (→ MethodBlock)
-- 1 callout (→ CalloutBox)
-
-⚠️ Validation:
-- ✅ All required sections present
-- ⚠️ Missing optional: executive_summary
-
-Proceed with PDF generation? [Y/n/edit]
-```
-
-#### Step 3: Map Elements to Components
-
-Use the component mapping (see `{baseDir}/references/component_map.md`):
-
-| Markdown Element | Detection | PDF Component |
-|------------------|-----------|---------------|
-| Tables with ✓/✗ | Status symbols in cells | `StatusTable` |
-| Tables with grades | A-F or tier values | `GradedTable` |
-| Regular tables | Standard markdown | Standard table |
-| `#### Finding N:` | Heading pattern | `FindingCard` |
-| Code blocks | Triple backticks | `MethodBlock` |
-| `> **Type:**` | Blockquote + bold | `CalloutBox` |
-| Checklists | `- [ ]` pattern | Standard list |
-
-#### Step 4: Generate PDF
+#### Step 2 — Structure confirmation
 
 ```python
-from oligon_reports import ReportGenerator
+from scripts.structure_tree import build_tree
+from scripts.element_detector import count_elements
+```
+Show the user the heading tree, element counts (callout candidates, tables, finding cards, code blocks), and missing-optional-section list. Get explicit confirmation before generating.
 
-generator = ReportGenerator(output_dir="output")
-generator.add_title(tree.frontmatter.title)
+#### Step 3 — Pick variant and copy template
 
-for section in tree.sections:
-    generator.add_section(section.title, section.content)
-    for element in section.elements:
-        # Map to appropriate component
-        component = map_element_to_component(element)
-        generator.add_component(component)
+- Default: `editorial`. Override via `--variant banded` for executive/external audiences.
+- Copy `templates/html/template-{variant}.html` to a working file in the output directory.
+- Copy `templates/html/report.css`, `oligon-tokens.css`, and `assets/` alongside it (relative refs in the HTML expect them).
 
-pdf_path = generator.build(f"{filename_stem}.pdf")
+#### Step 4 — Slot-fill the HTML
+
+This is the LLM's core job. Drive it from the inlined component vocabulary below and from `templates/html/TEMPLATE_GUIDE.md` (preserved verbatim — read it before authoring).
+
+**Cover slots (page 1):**
+| Slot | Source |
+|---|---|
+| `{{TITLE_LINE_1}}` / `{{TITLE_LINE_2_HIGHLIGHT}}` | Frontmatter `title` (split at the meaning-carrying clause; wrap second half in `<em>` for Brand Blue) |
+| `{{EYEBROW}}` | Brief category label (e.g. "Research Report · SeekR Platform") |
+| `{{DECK}}` | One-paragraph summary — what the report assesses |
+| `{{PROGRAM_CODE}}`, `{{REPORT_NUMBER}}`, `{{DATE}}`, `{{CLASSIFICATION}}` | Frontmatter / user-provided. Recur in every page header/footer — replace globally. |
+| `{{AUTHOR_N}}` / `{{ROLE_N}}` | Up to three pairs |
+
+**Page mapping (duplicate / delete `<section class="page">` blocks as needed):**
+| Reference page # | Layout | Use it for |
+|---|---|---|
+| 1 | Cover | Always |
+| 2 | Executive summary | `## Executive Summary` / `## TL;DR` |
+| 3 | Contents | Reports ≥ 6 pages |
+| 4 | Methodology | `## Methodology` / `## Methods` |
+| 5 | Body section | Default analytical section. **Duplicate per top-level finding section.** |
+| 6 | Figure spread | Wherever the markdown references a figure |
+| 7 | Comparison table | Markdown tables with a winner / "best of" structure |
+| 8 | References | Always last |
+
+After populating, update each page's `.pg` footer text (`02 / NN`, `03 / NN`, …) globally.
+
+#### Step 5 — Render
+
+```bash
+uv run skills/markdown-to-pdf/scripts/render_pdf.py <filled.html> output/<stem>.pdf
+```
+The renderer auto-injects `@page { size: letter; margin: 0 }` and sets the macOS dyld path. Output is sharp vector text, ~30–60 KB per 8-page report.
+
+If `output/` is not in `.gitignore`, add it.
+
+---
+
+## Component Vocabulary (use these classes verbatim)
+
+The HTML templates only sanction what's in `templates/html/report.css`. Don't invent classes.
+
+**Section markers / headings:**
+```html
+<div class="sec-marker"><span class="num">01</span><span class="label">Section Name</span></div>
+<h1 class="display">Headline with <em>highlighted phrase</em>.</h1>
+<h2><span class="num">2.1</span>Sub-heading</h2>
+<p class="lede">First paragraph — slightly larger.</p>
 ```
 
-**Output:**
-- Creates `output/` directory if needed
-- Generates `output/<filename>.pdf`
-- Adds `output/` to `.gitignore` if not present
-
-#### Step 5: Optional Figure Enhancement
-
-If `--figures` flag provided:
-
+**Callouts (1–2 per page max):**
+```html
+<div class="callout">…</div>          <!-- Brand Blue: key findings, recommendations -->
+<div class="callout warn">…</div>     <!-- Orange: risks, caveats, opposition -->
+<div class="callout neutral">…</div>  <!-- Gray: honest gaps, side notes -->
 ```
-Generating figures for document...
-[Invokes scientific-schematics for each figure placeholder]
-```
+Each callout: `<div class="label">Label · 01</div>` then `<p>body</p>`.
 
-**Success Output:**
-```
-✅ PDF generated: output/analysis-report_20251228.pdf
+**Inline pills:** `<span class="pill">…</span>` (`pill warn` for risk, `pill neutral` for tied).
 
-Summary:
-- 5 sections rendered
-- 3 FindingCards
-- 2 StatusTables
-- 1 MethodBlock
-- Brand styling applied (Oligon)
+**Stat strip (3 numbers max):**
+```html
+<div class="summary-grid">
+  <div class="stat"><div class="num">12</div><div class="lab">Candidates</div></div>
+</div>
 ```
 
-**Error Handling:**
+**Definition list:** `<dl class="kv"><dt>Key</dt><dd>Value</dd></dl>`
 
-| Error | Cause | Solution |
-|-------|-------|----------|
-| `FileNotFoundError` | Markdown file doesn't exist | Verify path, check working directory |
-| `KeyError: 'type'` | Missing frontmatter type field | Add `type: <template-type>` to YAML header |
-| `ValidationError` | Required sections missing | Check template schema for required fields |
-| `PermissionError` on output/ | Directory not writable | Check permissions or use different output path |
-| `ModuleNotFoundError` | oligon_reports not installed | Run `uv sync` in project directory |
+**Tables:**
+```html
+<table class="tbl">
+  <thead><tr><th>Criterion</th><th>A</th><th>B</th></tr></thead>
+  <tbody><tr><td>…</td><td class="score-good">…</td></tr></tbody>
+</table>
+```
+Score chips: `score-good` (blue), `score-bad` (orange), `score-mid` (gray).
 
-**Recovery workflow:**
+**Figures:**
+```html
+<!-- Inline (preferred) -->
+<div class="fig-wrap">
+  <div class="fig"><img src="figures/foo.png" alt=""></div>
+  <div class="caption-side">
+    <span class="fnum">Figure 6.1</span><span class="ftitle">Title</span>
+    Caption body.
+  </div>
+</div>
+
+<!-- Full-bleed -->
+<div class="fig-bleed">
+  <div class="fig"><img src="figures/bar.png" alt=""></div>
+  <div class="fig-cap">
+    <div><span class="fnum">Figure 6.2</span> Caption…</div>
+    <div><strong>Source / n</strong><br>n = 6. Source: …</div>
+  </div>
+</div>
 ```
-Error detected?
-├─ Missing frontmatter → Add YAML header with type, title, date
-├─ Validation errors → Compare against template schema
-├─ Import errors → Run `uv sync` and retry
-└─ Permission errors → Check output/ directory permissions
+
+**References:**
+```html
+<ol class="refs">
+  <li>Author, A. (Year). Title. <i>Journal</i>, 1(1), 1–10.
+      <span class="doi">10.xxxx/xxxxx</span></li>
+</ol>
 ```
+
+---
+
+## Voice rules (when rewriting markdown into report prose)
+
+- Scientific, precise, declarative. Short sentences, present tense, strong verbs. No hedging.
+- Title Case for section labels; sentence case in body and headlines.
+- Strip emoji. Use callout colors to carry the same signal.
+- Strip marketing hype ("game-changing", "revolutionary"). Replace with measured claims.
+- Brand Blue is **earned by importance** — only ~1–2 elements per page. Don't sprinkle.
+- Contrast Orange = opposition only (risk vs. benefit, treatment vs. control). Never decorative.
+- Hex codes UPPERCASE (`#2DB2E8`). No new colors — only what's in `oligon-tokens.css`.
+
+Voice benchmark: the methods section of a *Nature* paper. Tight, factual, no decoration.
 
 </commands>
 
-<component_mapping>
-## Component Mapping Reference
+<error_handling>
+## Error Recovery
 
-See `{baseDir}/references/component_map.md` for the complete element-to-component mapping.
+See `templates/error_recovery_map.json` for the canonical error → recovery table. Key entries:
 
-### Quick Reference
-
-| Pattern | Component | Example |
-|---------|-----------|---------|
-| `✓`, `✗`, `✔`, `✘` in table | StatusTable | Compliance matrix |
-| `A`, `B`, `C`, `D`, `F` in table | GradedTable | Rating table |
-| `#### Finding [0-9]:` | FindingCard | Key findings |
-| Triple backticks | MethodBlock | Code/methods |
-| `> **Note:**` | CalloutBox (info) | Information |
-| `> **Warning:**` | CalloutBox (warning) | Caution |
-| `> **Important:**` | CalloutBox (alert) | Critical |
-| `- [ ]` or `- [x]` | Checklist | Tasks |
-
-</component_mapping>
-
-<workflow>
-## Complete Workflow Example
-
-### Creating a New Analysis Report
-
-```
-> /list-templates
-
-| Type              | Category        | Description                           |
-|-------------------|-----------------|---------------------------------------|
-| analysis-report   | scientific      | Structured analysis with findings     |
-...
-
-> /new-doc analysis-report
-
-Created: analysis-report_20251228.md
-Template type: analysis-report (scientific)
-
-[User edits the document with their content]
-
-> /doc-to-pdf analysis-report_20251228.md
-
-📄 Document: analysis-report_20251228.md
-📋 Type: analysis-report
-
-Structure:
-├── 1. Objective
-├── 2. Methodology
-├── 3. Findings
-└── 4. Recommendations
-
-Elements Detected:
-- 2 tables (→ StatusTable)
-- 3 finding cards (→ FindingCard)
-
-Proceed with PDF generation? [Y/n/edit]
-
-> Y
-
-✅ PDF generated: output/analysis-report_20251228.pdf
-```
-
-</workflow>
+| Error | Solution |
+|---|---|
+| `WeasyPrintNativeLibError` | macOS: `brew install pango cairo glib` |
+| `PipelineMismatchError` | This doc type isn't supported — see `<scope>` above |
+| `KeyError: 'type'` | Add `type: <doc-type>` to YAML frontmatter |
+| `ValidationError: Missing sections` | Compare doc against schema's `required_sections` |
+| `FileNotFoundError` | Verify path with `ls` |
+</error_handling>
 
 <success_criteria>
 ## Success Criteria
 
-**Command: /list-templates**
-- [ ] Shows all 12 template types
-- [ ] Grouped by category
-- [ ] Descriptions are helpful
-
-**Command: /new-doc**
-- [ ] Creates valid markdown file
-- [ ] Filename includes date
-- [ ] Template content is complete
-
-**Command: /doc-to-pdf**
-- [ ] Parses document without errors
-- [ ] Shows accurate structure tree
-- [ ] Correctly detects element types
-- [ ] PDF matches brand styling
-- [ ] Output folder is gitignored
-
+**`/doc-to-pdf` is successful when:**
+- [ ] Self-test passes (`render_pdf.py --self-test`)
+- [ ] Preflight reports no errors
+- [ ] User confirms structure tree before render
+- [ ] Output PDF: 8+ pages (or page count matching duplicated body sections), letter size
+- [ ] Cover slots all populated (no remaining `{{…}}`)
+- [ ] Page footers numbered consistently
+- [ ] Brand Blue used sparingly (≤ 2 elements per page)
+- [ ] Orange used only for opposition / risk
+- [ ] Figures referenced from `figures/`, no broken images
 </success_criteria>
-
-<anti_patterns>
-## Common Pitfalls
-
-### 1. Missing Frontmatter
-
-**Anti-pattern:**
-Converting a markdown file without YAML frontmatter
-
-**Solution:**
-```markdown
----
-type: analysis-report
-title: My Analysis
-date: 2025-12-28
-author: Jane Doe
----
-
-# My Analysis
-...
-```
-
----
-
-### 2. Wrong Element Detection
-
-**Anti-pattern:**
-Regular table detected as StatusTable
-
-**Solution:**
-StatusTable detection requires actual status symbols (✓, ✗, ✔, ✘) in cells, not just checkmark text.
-
----
-
-### 3. Missing Dependencies
-
-**Anti-pattern:**
-```python
-from oligon_reports import ReportGenerator
-# ModuleNotFoundError
-```
-
-**Solution:**
-```bash
-uv sync  # Ensure oligon_reports is installed
-```
-
----
-
-### 4. Output Directory Issues
-
-**Anti-pattern:**
-PDF generation fails because output/ doesn't exist
-
-**Solution:**
-The skill automatically creates `output/` and adds it to `.gitignore`.
-
-</anti_patterns>
 
 <cross_references>
 ## Related Skills
 
 | Skill | Relationship |
-|-------|-------------|
-| `oligon-brand` | Brand colors and tokens—`oligon_reports` uses these for PDF styling |
-| `markitdown` | Convert documents TO markdown (reverse direction) |
-| `document-skills:pdf` | Low-level PDF manipulation (forms, extraction) |
-| `scientific-writing` | Create academic manuscripts (different output format) |
-| `scientific-schematics` | Generate figures for `--figures` integration |
-| `venue-templates` | Journal-specific formatting (use before /doc-to-pdf) |
-
-**Skill Selection:**
-See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
+|---|---|
+| `oligon-brand` | Canonical brand tokens (`tokens/brand-tokens.json`). The skill's CSS mirrors these — currently in sync. |
+| `executive-summary` | Source for stakeholder summary content. Render its output via `--variant banded`. |
+| `scientific-writing` | Manuscript-format output (LaTeX/journal). Different deliverable; don't conflate. |
+| `scientific-schematics` / `paperbanana` | Generate figures, then drop into `figures/` and reference from the HTML. |
+| `markitdown` | Reverse direction (file → markdown). |
+| `document-skills:pdf` | Existing-PDF manipulation (forms, extraction). |
 
 </cross_references>
 
 <references>
 ## Reference Documents
 
-| Document | Purpose |
-|----------|---------|
-| `{baseDir}/references/component_map.md` | Complete element → component mapping |
-| `src/oligon_reports/templates/` | Template schemas and markdown files |
-| `src/oligon_reports/components.py` | PDF component implementations |
-| `../oligon-brand/references/brand-colors-full.md` | Brand colors and visual identity (V4) |
-| `../oligon-brand/tokens/brand-tokens.json` | Machine-readable brand tokens |
-
-## API Reference
-
-```python
-from oligon_reports.templates import TemplateParser
-
-# List available templates
-templates = TemplateParser.list_templates()
-# → [{"type": "...", "category": "...", "description": "..."}, ...]
-
-# Get template content
-content = TemplateParser.get_template("analysis-report")
-# → Markdown string
-
-# Parse document
-parser = TemplateParser()
-tree = parser.parse(markdown_content)
-# → DocumentTree with frontmatter, sections, elements
-
-# Validate
-errors = parser.validate(tree)
-# → List of ValidationError
-```
+| Path | Purpose |
+|---|---|
+| `templates/html/TEMPLATE_GUIDE.md` | Original LLM authoring guide — read this before slot-filling |
+| `templates/html/template-editorial.html` | Editorial variant (default) |
+| `templates/html/template-banded.html` | Banded variant (executive / external) |
+| `templates/html/report.css` | Component styling (do not edit without designer review) |
+| `templates/html/oligon-tokens.css` | Brand tokens — derived from `oligon-brand/tokens/brand-tokens.json` |
+| `templates/html/assets/` | Oligon logos (SVG) |
+| `templates/schemas/*.json` | Doc-type schemas; check `pipeline` field |
+| `templates/error_recovery_map.json` | Error → recovery actions |
+| `scripts/render_pdf.py` | WeasyPrint wrapper (PEP-723; deps installed automatically by `uv run`) |
+| `scripts/preflight.py` | Frontmatter / required-section validation |
+| `scripts/element_detector.py` | Pattern detection (callouts, tables, findings) |
+| `scripts/structure_tree.py` | Heading-tree formatter |
 
 </references>

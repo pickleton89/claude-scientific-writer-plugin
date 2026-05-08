@@ -1,24 +1,21 @@
 """
 Element Detection Patterns for Markdown-to-PDF
 
-Provides deterministic pattern matching for document elements.
-All patterns use explicit membership checks - no heuristics or LLM inference.
+Deterministic pattern matching for document elements. Used in `/doc-to-pdf`
+Step 2 (structure confirmation) to surface counts of callout candidates,
+table variants, finding cards, and code blocks before the LLM slot-fills the
+HTML template.
+
+Output is informational — the LLM, not this module, decides which HTML class
+to assign in the filled template.
 
 Usage:
-    from scripts.element_detector import (
-        detect_element_type,
-        count_elements,
-        has_status_symbols,
-        has_grade_values,
-    )
+    from scripts.element_detector import detect_element_type, count_elements
 
-    # Detect table type
-    element_type = detect_element_type(table_element)
-    # -> "status_table" | "graded_table" | "table"
-
-    # Count all elements in document
     counts = count_elements(markdown_content)
-    # -> ElementCounts(tables=3, status_tables=1, ...)
+    # -> ElementCounts(tables=3, status_tables=1, callouts=2, findings=4, ...)
+
+All patterns use explicit membership checks — no heuristics, no LLM inference.
 """
 
 from __future__ import annotations

@@ -101,19 +101,32 @@
       ],
       "example_fix": "mkdir -p output && chmod 755 output"
     },
-    "ModuleNotFoundError: oligon_reports": {
-      "description": "Required Python package not installed",
+    "WeasyPrintNativeLibError": {
+      "description": "WeasyPrint cannot load Pango/cairo/glib native libraries",
       "causes": [
-        "Dependencies not installed",
-        "Wrong virtual environment",
-        "Package name changed"
+        "Homebrew packages not installed (macOS)",
+        "DYLD_FALLBACK_LIBRARY_PATH not set",
+        "Linux: missing libpango/libcairo packages"
       ],
       "recovery_steps": [
-        "Install dependencies: uv sync",
-        "Verify environment: which python",
-        "Check package installed: uv pip list | grep oligon"
+        "macOS: brew install pango cairo glib",
+        "macOS: render_pdf.py auto-sets DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib — re-run via 'uv run scripts/render_pdf.py ...'",
+        "Linux: apt install libpango-1.0-0 libpangoft2-1.0-0 libcairo2 libgdk-pixbuf2.0-0"
       ],
-      "example_fix": "uv sync  # Install all project dependencies"
+      "example_fix": "brew install pango cairo glib && uv run skills/markdown-to-pdf/scripts/render_pdf.py --self-test"
+    },
+    "PipelineMismatchError": {
+      "description": "Document type does not flow through the HTML render pipeline",
+      "causes": [
+        "Doc type tagged 'pipeline: markdown-only' in its schema",
+        "Trying to /doc-to-pdf on meeting-notes, task-list, readme, or similar utility doc"
+      ],
+      "recovery_steps": [
+        "Check schema: cat templates/schemas/<type>.json | grep pipeline",
+        "Use /doc-to-pdf only on: analysis-report, literature-review, data-report",
+        "For other doc types, leave as markdown or use a different export tool"
+      ],
+      "example_fix": "Render pipeline only supports the three scientific doc types (see SKILL.md when_to_use)"
     },
     "YAMLError": {
       "description": "Invalid YAML syntax in frontmatter",
@@ -153,7 +166,8 @@
     "KeyError: 'type'": "Add frontmatter: ---\\ntype: <type>\\n---",
     "ValidationError": "Check template requirements with /list-templates",
     "PermissionError": "Create output dir: mkdir -p output",
-    "ModuleNotFoundError": "Install deps: uv sync",
+    "WeasyPrintNativeLibError": "macOS: brew install pango cairo glib",
+    "PipelineMismatchError": "Use /doc-to-pdf only on analysis-report / literature-review / data-report",
     "YAMLError": "Validate YAML syntax, check indentation",
     "UnicodeDecodeError": "Convert to UTF-8: iconv -f <encoding> -t UTF-8"
   }

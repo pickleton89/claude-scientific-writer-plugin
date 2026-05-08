@@ -33,5 +33,6 @@
     "Resources",
     "Risks",
     "Dependencies"
-  ]
+  ],
+  "pipeline": "markdown-only"
 }

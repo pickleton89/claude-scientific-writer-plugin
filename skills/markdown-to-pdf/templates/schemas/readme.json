@@ -34,5 +34,6 @@
     "Usage",
     "Contributing",
     "License"
-  ]
+  ],
+  "pipeline": "markdown-only"
 }

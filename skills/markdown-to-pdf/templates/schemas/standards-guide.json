@@ -29,5 +29,6 @@
     "Rationale",
     "Examples",
     "Exceptions"
-  ]
+  ],
+  "pipeline": "markdown-only"
 }

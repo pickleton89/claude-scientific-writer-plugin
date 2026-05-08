@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Oligon Report Templates</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --blue: #2DB2E8;
+    --ink: #0A1A24;
+    --paper: #f0eee9;
+    --rule: #d8d3c6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 64px 48px; }
+  header {
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 32px;
+    margin-bottom: 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 32px;
+  }
+  header img { height: 32px; }
+  .meta {
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #666;
+  }
+  h1 {
+    font-family: Georgia, serif;
+    font-size: 48px;
+    line-height: 1.1;
+    font-weight: 400;
+    margin: 0 0 16px;
+    letter-spacing: -0.01em;
+  }
+  h1 em { color: var(--blue); font-style: italic; }
+  .lede {
+    font-size: 18px;
+    line-height: 1.5;
+    color: #333;
+    max-width: 56ch;
+    margin: 0 0 56px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  .card {
+    background: #fff;
+    border: 1px solid var(--rule);
+    padding: 28px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 120ms, transform 120ms;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .card:hover { border-color: var(--blue); transform: translateY(-2px); }
+  .card .eyebrow {
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--blue);
+  }
+  .card h2 {
+    font-family: Georgia, serif;
+    font-size: 28px;
+    margin: 0;
+    font-weight: 400;
+  }
+  .card p { font-size: 14px; line-height: 1.5; color: #444; margin: 0; }
+  .card .swatches { display: flex; gap: 4px; margin-top: 4px; }
+  .card .swatches span {
+    width: 24px; height: 24px; border-radius: 50%;
+    border: 1px solid var(--rule);
+  }
+  .files {
+    margin-top: 64px;
+    padding-top: 32px;
+    border-top: 1px solid var(--rule);
+  }
+  .files h3 {
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #666;
+    font-weight: 500;
+    margin: 0 0 14px;
+  }
+  .files ul { list-style: none; padding: 0; margin: 0; }
+  .files li {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 13px;
+  }
+  .files li:last-child { border-bottom: none; }
+  .files li span:last-child { color: #888; }
+  .note {
+    margin-top: 48px;
+    padding: 20px 24px;
+    background: rgba(45,178,232,0.06);
+    border-left: 3px solid var(--blue);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .note strong { color: var(--blue); display: block; margin-bottom: 6px; font-family: "SF Mono", Menlo, monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img src="assets/Oligon_Logo_BrandBlue.svg" alt="Oligon" />
+    <div class="meta">Report Templates · v1.0</div>
+  </header>
+
+  <h1>Hand these to an LLM. <em>Get an Oligon-styled report back.</em></h1>
+  <p class="lede">Two reference templates and one authoring guide. Drop in markdown and figures; produce an HTML file in the house style, ready to print as PDF.</p>
+
+  <div class="grid">
+    <a class="card" href="template-editorial.html">
+      <span class="eyebrow">Variant 01 · Default</span>
+      <h2>Editorial</h2>
+      <p>Restrained, journal-feeling cover. Brand Blue used sparingly as accent. For pre-clinical, technical, and internal research reports.</p>
+      <div class="swatches">
+        <span style="background:#f0eee9"></span>
+        <span style="background:#0A1A24"></span>
+        <span style="background:#2DB2E8"></span>
+      </div>
+    </a>
+    <a class="card" href="template-banded.html">
+      <span class="eyebrow">Variant 02 · Assertive</span>
+      <h2>Banded</h2>
+      <p>Brand Blue band on the cover with white wordmark. Same inner layout system. For executive briefings and external-facing reports.</p>
+      <div class="swatches">
+        <span style="background:#2DB2E8"></span>
+        <span style="background:#005F8C"></span>
+        <span style="background:#0A1A24"></span>
+      </div>
+    </a>
+  </div>
+
+  <div class="note">
+    <strong>For the LLM</strong>
+    Read <code>TEMPLATE_GUIDE.md</code> first. It covers component vocabulary, voice rules, and the page-by-page mapping from markdown sections to layout slots. The HTML files are heavily commented — placeholder slots are written as <code>{{LIKE_THIS}}</code>.
+  </div>
+
+  <div class="files">
+    <h3>Files in this folder</h3>
+    <ul>
+      <li><span>TEMPLATE_GUIDE.md</span><span>Authoring instructions for the LLM</span></li>
+      <li><span>template-editorial.html</span><span>Reference template · Editorial</span></li>
+      <li><span>template-banded.html</span><span>Reference template · Banded</span></li>
+      <li><span>report.css</span><span>Shared stylesheet — do not edit per-report</span></li>
+      <li><span>oligon-tokens.css</span><span>Brand colour + type tokens</span></li>
+      <li><span>assets/</span><span>Logos &amp; icon (SVG)</span></li>
+    </ul>
+  </div>
+</div>
+</body>
+</html>

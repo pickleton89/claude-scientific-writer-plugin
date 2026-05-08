@@ -33,5 +33,6 @@
     "Completed",
     "Blocked",
     "Notes"
-  ]
+  ],
+  "pipeline": "markdown-only"
 }

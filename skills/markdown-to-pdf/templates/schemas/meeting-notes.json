@@ -32,5 +32,6 @@
     "Discussion",
     "Action Items",
     "Next Meeting"
-  ]
+  ],
+  "pipeline": "markdown-only"
 }

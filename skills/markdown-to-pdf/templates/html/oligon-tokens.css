@@ -1,0 +1,143 @@
+/* =============================================================================
+   Oligon Therapeutics — Design Tokens
+   Source: Oligon Digital Style Guide (April 2026), Brand Tokens v4.0
+   Philosophy: "Neutrals are default; Brand Colors are for highlights;
+                Contrast colors show opposition."
+   ============================================================================= */
+
+:root {
+  /* ── Primary & Contrast ──────────────────────────────────────────────────── */
+  --brand-blue:        #2DB2E8;  /* Hero highlight, primary data */
+  --contrast-orange:   #E8622D;  /* Opposition to Brand Blue */
+  --dark-warm:         #7D250F;  /* Heatmap positive extreme */
+
+  /* ── Neutrals (for data + UI) ────────────────────────────────────────────── */
+  --dark-gray:         #222222;  /* Primary default data, body text */
+  --medium-gray:       #666666;  /* Secondary data, secondary text */
+  --muted-gray:        #999999;  /* Tertiary data, tertiary text */
+  --light-gray:        #BDBDBD;  /* Annotations only (insufficient for data) */
+
+  /* ── Supporting Blues (limited use) ──────────────────────────────────────── */
+  --medium-blue:       #158BBB;  /* Additional categorical */
+  --dark-teal:         #0F5D7D;  /* Heatmap negative extreme; rare accent */
+
+  /* ── Structure ───────────────────────────────────────────────────────────── */
+  --white:             #FFFFFF;
+  --black:             #000000;
+  --gridline:          #E5E5E5;
+
+  /* ── Surfaces (from UI components spec) ──────────────────────────────────── */
+  --surface:           #FFFFFF;
+  --surface-alt:       #F8F9FA;  /* alternating table row */
+  --surface-sunken:    #F5F5F5;  /* neutral callout background */
+  --info-bg:           #F0F7FC;  /* info callout background */
+  --warning-bg:        #FDF0EB;  /* warning callout background */
+  --border:            #E5E5E5;
+
+  /* ── Semantic foreground ─────────────────────────────────────────────────── */
+  --fg-1:              var(--black);       /* titles, axes */
+  --fg-2:              var(--dark-gray);   /* body */
+  --fg-3:              var(--medium-gray); /* secondary */
+  --fg-muted:          var(--muted-gray);  /* tertiary */
+  --link:              var(--brand-blue);
+
+  /* ── Typography ──────────────────────────────────────────────────────────── */
+  --font-sans: Arial, Helvetica, "DejaVu Sans", "Liberation Sans", sans-serif;
+  /* The brand explicitly forbids: Calibri, Times New Roman, system defaults. */
+  --font-mono: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* Document type scale (11pt body baseline) */
+  --fs-h1:          14pt;  --fw-h1:          700;
+  --fs-h2:          12pt;  --fw-h2:          700;
+  --fs-h3:          11pt;  --fw-h3:          700;
+  --fs-body:        11pt;  --fw-body:        400;
+  --fs-caption:     10pt;  --fw-caption:     400;
+
+  /* Presentation type scale */
+  --fs-pres-title:    28pt;
+  --fs-pres-subtitle: 20pt;
+  --fs-pres-body:     18pt;
+  --fs-pres-footer:   12pt;
+
+  /* Figure type scale (publication; pt units) */
+  --fs-panel-label:  10pt; --fw-panel-label: 700;
+  --fs-axis-label:    8pt;
+  --fs-tick:          7pt;
+  --fs-legend:        7pt;
+
+  /* UI type scale (px, for web surfaces — scaled from figure scale) */
+  --fs-ui-xs:     12px;
+  --fs-ui-sm:     13px;
+  --fs-ui-base:   14px;
+  --fs-ui-md:     15px;
+  --fs-ui-lg:     18px;
+  --fs-ui-xl:     22px;
+  --fs-ui-2xl:    28px;
+  --fs-ui-3xl:    36px;
+
+  /* ── Spacing (4-step scale) ──────────────────────────────────────────────── */
+  --s-0:   0;
+  --s-1:   4px;
+  --s-2:   8px;
+  --s-3:   12px;
+  --s-4:   16px;
+  --s-5:   24px;
+  --s-6:   32px;
+  --s-7:   48px;
+  --s-8:   64px;
+
+  /* ── Radii ───────────────────────────────────────────────────────────────── */
+  /* The brand is precise and clinical — radii are small. */
+  --r-0:   0;
+  --r-sm:  2px;
+  --r-md:  4px;
+  --r-lg:  8px;
+  --r-pill: 999px;
+
+  /* ── Borders ─────────────────────────────────────────────────────────────── */
+  --bw-hair:  0.5px;
+  --bw-thin:  1px;
+  --bw-med:   2px;
+  --bw-thick: 4px;   /* left-border for callouts */
+
+  /* ── Shadows — minimal; data-ink first ───────────────────────────────────── */
+  /* "No effects: avoid gradients, shadows, or 3D elements" on figures.
+     Web UI permits subtle elevation only. */
+  --shadow-0: none;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-2: 0 2px 6px rgba(0, 0, 0, 0.08);
+
+  /* ── Motion ──────────────────────────────────────────────────────────────── */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --dur-fast:  120ms;
+  --dur-base:  200ms;
+  --dur-slow:  320ms;
+}
+
+/* =============================================================================
+   Base semantic styles
+   ============================================================================= */
+
+html { font-family: var(--font-sans); color: var(--fg-2); background: var(--white); }
+body { margin: 0; font-family: var(--font-sans); color: var(--fg-2); line-height: 1.5; }
+
+h1, .h1 { font: var(--fw-h1) var(--fs-h1)/1.2 var(--font-sans); color: var(--fg-1); margin: 0 0 0.6em; letter-spacing: -0.005em; }
+h2, .h2 { font: var(--fw-h2) var(--fs-h2)/1.25 var(--font-sans); color: var(--fg-1); margin: 1.2em 0 0.5em; }
+h3, .h3 { font: var(--fw-h3) var(--fs-h3)/1.3 var(--font-sans); color: var(--fg-1); margin: 1em 0 0.4em; }
+p       { font: var(--fw-body) var(--fs-body)/1.55 var(--font-sans); margin: 0 0 0.8em; }
+small, .caption { font: var(--fw-caption) var(--fs-caption)/1.4 var(--font-sans); color: var(--fg-3); font-style: italic; }
+code, pre { font-family: var(--font-mono); font-size: 0.92em; }
+
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+hr { border: 0; border-top: var(--bw-thin) solid var(--border); margin: var(--s-5) 0; }
+
+/* =============================================================================
+   Utility classes — sparingly used in demo cards
+   ============================================================================= */
+
+.u-mono   { font-family: var(--font-mono); }
+.u-caps   { text-transform: uppercase; letter-spacing: 0.08em; }
+.u-hero   { color: var(--brand-blue); }
+.u-muted  { color: var(--fg-muted); }

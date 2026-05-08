@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>{{TITLE}} — Oligon Report</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="report.css" />
+<style>
+  body { background: #f0eee9; margin: 0; padding: 32px 0; font-family: Arial, sans-serif; }
+  .page { margin: 0 auto 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  @media print {
+    @page { size: letter; margin: 0; }
+    body { background: #fff; padding: 0; }
+    .page { margin: 0; box-shadow: none; page-break-after: always; }
+    .page:last-child { page-break-after: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     OLIGON REPORT TEMPLATE · EDITORIAL VARIANT
+     ============================================================
+     LLM authoring instructions:
+       1. Replace every {{PLACEHOLDER}} with content from the brief.
+       2. Each <section class="page"> is one US-Letter page (816×1056).
+          Add or remove pages by duplicating/deleting these sections.
+       3. Update the .pg footer text on each page (e.g. "03 / 12").
+       4. Keep all class names — they carry the styling.
+       5. Use the component vocabulary in TEMPLATE_GUIDE.md.
+     ============================================================ -->
+
+
+<!-- ============================================================
+     PAGE 1 — COVER (editorial: minimal + orbital-dot motif)
+     ============================================================ -->
+<section class="page v-editorial cover">
+  <!-- Decorative orbital-dot motif. Keep as-is. -->
+  <svg class="orbital-art" viewBox="0 0 540 540"
+       style="position:absolute;top:0;right:-120px;width:540px;height:540px;pointer-events:none">
+    <circle cx="270" cy="270" r="240" fill="none" stroke="#2DB2E8" stroke-width="0.6" stroke-opacity="0.35"/>
+    <circle cx="270" cy="270" r="180" fill="none" stroke="#2DB2E8" stroke-width="0.6" stroke-opacity="0.35"/>
+    <circle cx="270" cy="270" r="120" fill="none" stroke="#2DB2E8" stroke-width="0.6" stroke-opacity="0.35"/>
+    <circle cx="270" cy="270" r="60"  fill="none" stroke="#2DB2E8" stroke-width="0.8" stroke-opacity="0.55"/>
+    <circle cx="270" cy="270" r="2.5" fill="#2DB2E8"/>
+    <circle cx="450" cy="270" r="6"   fill="#2DB2E8"/>
+  </svg>
+
+  <div class="top">
+    <img src="assets/Oligon_Logo_BrandBlue.svg" alt="Oligon" />
+    <div class="meta-block">
+      <strong>{{PROGRAM_CODE}}</strong>
+      Research Report &nbsp;·&nbsp; {{DATE}}
+    </div>
+  </div>
+
+  <div class="cover-body">
+    <div class="eyebrow">{{EYEBROW e.g. Research Report · SeekR Platform}}</div>
+    <!-- Wrap the highlighted phrase in <em> for Brand Blue accent -->
+    <h1>{{TITLE_LINE_1}}<br/> <em>{{TITLE_LINE_2_HIGHLIGHT}}</em></h1>
+    <p class="deck">{{DECK — one-paragraph summary of what the report is about}}</p>
+    <div class="auth-grid">
+      <!-- Three author/role pairs max -->
+      <div><strong>{{AUTHOR_1}}</strong>{{ROLE_1}}</div>
+      <div><strong>{{AUTHOR_2}}</strong>{{ROLE_2}}</div>
+      <div><strong>{{AUTHOR_3}}</strong>{{ROLE_3}}</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PAGE 2 — EXECUTIVE SUMMARY
+     Pattern: sec-marker → display headline → lede → stat strip
+              → callouts (info + warn) for key findings/risks
+     ============================================================ -->
+<section class="page v-editorial">
+  <div class="page-header">
+    <img class="icon" src="assets/Oligon_Icon_BrandBlue.svg" alt="" />
+    <span class="meta">Oligon · Executive Summary</span>
+    <span class="rule"></span>
+    <span>{{PROGRAM_CODE}}</span>
+  </div>
+
+  <div class="page-body">
+    <div class="sec-marker">
+      <span class="num">01</span>
+      <span class="label">Executive Summary</span>
+    </div>
+
+    <h1 class="display">{{HEADLINE — wrap the key phrase in <em>highlighted</em>}}</h1>
+
+    <p class="lede">{{LEDE — 2–4 sentences setting up what the report assesses
+       and why it matters}}</p>
+
+    <!-- Stat strip — three numbers max. Use for headline metrics. -->
+    <div class="summary-grid">
+      <div class="stat"><div class="num">{{N1}}</div><div class="lab">{{LABEL_1}}</div></div>
+      <div class="stat"><div class="num">{{N2}}</div><div class="lab">{{LABEL_2}}</div></div>
+      <div class="stat"><div class="num">{{N3}}</div><div class="lab">{{LABEL_3}}</div></div>
+    </div>
+
+    <h2>{{SUBHEAD — e.g. What we found}}</h2>
+    <p>{{PARAGRAPH — narrative summary, can include
+       <strong>bold terms</strong> and inline <span class="pill">pills</span>}}</p>
+    <p>{{ANOTHER PARAGRAPH — second key finding;
+       <span class="pill warn">orange pill for opposition</span>}}</p>
+
+    <!-- Info callout — Brand Blue. Use for recommendations / wins. -->
+    <div class="callout">
+      <div class="label">Key recommendation · 01</div>
+      <p>{{CALLOUT BODY}}</p>
+    </div>
+
+    <!-- Warning callout — Contrast Orange. Use for risks. -->
+    <div class="callout warn">
+      <div class="label">Risk flag · 01</div>
+      <p>{{CALLOUT BODY}}</p>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>{{REPORT_NUMBER}}</span>
+    <span class="rule"></span>
+    <span class="conf">{{CLASSIFICATION}}</span>
+    <span class="pg">02 / {{TOTAL}}</span>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PAGE 3 — TABLE OF CONTENTS
+     Pattern: eyebrow → display title → toc-row × N
+     ============================================================ -->
+<section class="page v-editorial">
+  <div class="page-header">
+    <img class="icon" src="assets/Oligon_Icon_BrandBlue.svg" alt="" />
+    <span class="meta">Oligon · Contents</span>
+    <span class="rule"></span>
+    <span>{{PROGRAM_CODE}}</span>
+  </div>
+
+  <div class="page-body">
+    <div class="eyebrow">Contents</div>
+    <h1 class="display">{{TOC HEADLINE — e.g. Eight sections, in order.}}</h1>
+    <div class="divider"></div>
+
+    <!-- Repeat .toc-row for each section. Three columns: number, title+sub, page. -->
+    <div class="toc-row">
+      <div class="toc-num">01</div>
+      <div>
+        <div class="toc-title">{{SECTION TITLE}}</div>
+        <div class="toc-sub">{{ONE-LINE DESCRIPTION}}</div>
+      </div>
+      <div class="toc-pg">p.&nbsp;02</div>
+    </div>
+    <div class="toc-row">
+      <div class="toc-num">02</div>
+      <div>
+        <div class="toc-title">{{SECTION TITLE}}</div>
+        <div class="toc-sub">{{ONE-LINE DESCRIPTION}}</div>
+      </div>
+      <div class="toc-pg">p.&nbsp;04</div>
+    </div>
+    <!-- … add more rows as needed … -->
+  </div>
+
+  <div class="page-footer">
+    <span>{{REPORT_NUMBER}}</span>
+    <span class="rule"></span>
+    <span class="conf">{{CLASSIFICATION}}</span>
+    <span class="pg">03 / {{TOTAL}}</span>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PAGE 4 — METHODOLOGY (or any "how the work was done" page)
+     Pattern: sec-marker → display headline → lede →
+              numbered subheadings (h2 with .num span) →
+              kv definition list → neutral callout for caveats
+     ============================================================ -->
+<section class="page v-editorial">
+  <div class="page-header">
+    <img class="icon" src="assets/Oligon_Icon_BrandBlue.svg" alt="" />
+    <span class="meta">Oligon · Methodology</span>
+    <span class="rule"></span>
+    <span>{{PROGRAM_CODE}}</span>
+  </div>
+
+  <div class="page-body">
+    <div class="sec-marker">
+      <span class="num">02</span>
+      <span class="label">Methodology &amp; Sources</span>
+    </div>
+
+    <h1 class="display">{{HEADLINE}}</h1>
+    <p class="lede">{{LEDE}}</p>
+
+    <!-- Numbered sub-section -->
+    <h2><span class="num">2.1</span>{{SUBHEAD}}</h2>
+    <p>{{BODY PARAGRAPH}}</p>
+
+    <h2><span class="num">2.2</span>{{SUBHEAD}}</h2>
+    <!-- Definition list — for parameter tables, search strategy, etc. -->
+    <dl class="kv">
+      <dt>{{KEY 1}}</dt><dd>{{VALUE 1}}</dd>
+      <dt>{{KEY 2}}</dt><dd>{{VALUE 2}}</dd>
+      <dt>{{KEY 3}}</dt><dd>{{VALUE 3}}</dd>
+      <dt>{{KEY 4}}</dt><dd>{{VALUE 4}}</dd>
+    </dl>
+
+    <h2><span class="num">2.3</span>{{SUBHEAD}}</h2>
+    <p>{{BODY PARAGRAPH}}</p>
+
+    <!-- Neutral callout — gray. Use for honest gaps / caveats. -->
+    <div class="callout neutral">
+      <div class="label">Honest gap</div>
+      <p>{{CAVEAT BODY}}</p>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>{{REPORT_NUMBER}}</span>
+    <span class="rule"></span>
+    <span class="conf">{{CLASSIFICATION}}</span>
+    <span class="pg">04 / {{TOTAL}}</span>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PAGE 5 — KEY FINDINGS / BODY SECTION
+     The most reusable inner page. Use for any analytical content.
+     Pattern: sec-marker → display headline → numbered subheads,
+              paragraphs, callouts mixed.
+     ============================================================ -->
+<section class="page v-editorial">
+  <div class="page-header">
+    <img class="icon" src="assets/Oligon_Icon_BrandBlue.svg" alt="" />
+    <span class="meta">Oligon · {{SECTION NAME}}</span>
+    <span class="rule"></span>
+    <span>{{PROGRAM_CODE}}</span>
+  </div>
+
+  <div class="page-body">
+    <div class="sec-marker">
+      <span class="num">03</span>
+      <span class="label">{{SECTION LABEL}}</span>
+    </div>
+
+    <h1 class="display">{{HEADLINE — wrap key phrase in <em>highlighted</em>}}</h1>
+
+    <h2><span class="num">3.1</span>{{FINDING TITLE}}</h2>
+    <p>{{BODY}}</p>
+    <div class="callout">
+      <div class="label">Key finding · 01</div>
+      <p>{{CALLOUT BODY}}</p>
+    </div>
+
+    <h2><span class="num">3.2</span>{{FINDING TITLE}}</h2>
+    <p>{{BODY}}</p>
+    <div class="callout warn">
+      <div class="label">Key finding · 02 · Risk</div>
+      <p>{{CALLOUT BODY}}</p>
+    </div>
+
+    <h2><span class="num">3.3</span>{{FINDING TITLE}}</h2>
+    <p>{{BODY}}</p>
+  </div>
+
+  <div class="page-footer">
+    <span>{{REPORT_NUMBER}}</span>
+    <span class="rule"></span>
+    <span class="conf">{{CLASSIFICATION}}</span>
+    <span class="pg">05 / {{TOTAL}}</span>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PAGE 6 — FIGURE PAGE (caption sidebar + full-bleed below)
+     Pattern: sec-marker → headline → fig-wrap (sidebar caption)
+              → fig-bleed (full-width caption underneath)
+     Drop figures as inline <svg> or <img src="figures/…">
+     ============================================================ -->
+<section class="page v-editorial">
+  <div class="page-header">
+    <img class="icon" src="assets/Oligon_Icon_BrandBlue.svg" alt="" />
+    <span class="meta">Oligon · Figures</span>
+    <span class="rule"></span>
+    <span>{{PROGRAM_CODE}}</span>
+  </div>
+
+  <div class="page-body">
+    <div class="sec-marker">
+      <span class="num">06</span>
+      <span class="label">Figure suite · 6.1</span>
+    </div>
+
+    <h1 class="display">{{HEADLINE}}</h1>
+
+    <!-- Inline figure with sidebar caption -->
+    <div class="fig-wrap">
+      <div class="fig">
+        <!-- Replace with <svg> or <img src="figures/your-figure.png" alt=""> -->
+        <img src="{{FIG_6_1_SRC}}" alt="" style="width:100%;height:auto;display:block"/>
+      </div>
+      <div class="caption-side">
+        <span class="fnum">Figure 6.1</span>
+        <span class="ftitle">{{FIGURE TITLE}}</span>
+        {{CAPTION BODY — describe what the figure shows.}}
+        <br/><br/>
+        <strong style="color:#222">Reading the graphic.</strong>
+        {{Optional second paragraph explaining colour conventions, etc.}}
+      </div>
+    </div>
+
+    <!-- Full-bleed figure with caption + source aside -->
+    <div class="fig-bleed">
+      <div class="fig" style="padding:18px 24px">
+        <img src="{{FIG_6_2_SRC}}" alt="" style="width:100%;height:auto;display:block"/>
+      </div>
+      <div class="fig-cap">
+        <div>
+          <span class="fnum">Figure 6.2</span>
+          {{CAPTION BODY}}
+        </div>
+        <div style="border-left:1px solid #E5E5E5;padding-left:14px;font-size:8.5pt">
+          <strong style="color:#222;display:block;margin-bottom:4px">n / Source</strong>
+          {{n value, source citations}}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>{{REPORT_NUMBER}}</span>
+    <span class="rule"></span>
+    <span class="conf">{{CLASSIFICATION}}</span>
+    <span class="pg">06 / {{TOTAL}}</span>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PAGE 7 — COMPARISON TABLE
+     Pattern: sec-marker → headline → lede → .tbl → optional
+              neutral callout explaining the table.
+     Score chips: .score-good (blue), .score-bad (orange), .score-mid (gray)
+     ============================================================ -->
+<section class="page v-editorial">
+  <div class="page-header">
+    <img class="icon" src="assets/Oligon_Icon_BrandBlue.svg" alt="" />
+    <span class="meta">Oligon · Comparison</span>
+    <span class="rule"></span>
+    <span>{{PROGRAM_CODE}}</span>
+  </div>
+
+  <div class="page-body">
+    <div class="sec-marker">
+      <span class="num">07</span>
+      <span class="label">Comparison · 7.1</span>
+    </div>
+
+    <h1 class="display">{{HEADLINE — e.g. Head-to-head: <em>A vs. B</em>}}</h1>
+    <p class="lede">{{LEDE}}</p>
+
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th style="width:30%">Criterion</th>
+          <th>{{COL_A}}</th>
+          <th>{{COL_B}}</th>
+          <th style="width:14%">Winner</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{CRITERION 1}}</td>
+          <td>{{A VALUE}}</td>
+          <td>{{B VALUE}}</td>
+          <td class="score-good">{{WINNER}}</td>
+        </tr>
+        <tr>
+          <td>{{CRITERION 2}}</td>
+          <td>{{A VALUE}}</td>
+          <td>{{B VALUE}}</td>
+          <td class="score-good">{{WINNER}}</td>
+        </tr>
+        <tr>
+          <td>{{CRITERION 3}}</td>
+          <td>{{A VALUE}}</td>
+          <td>{{B VALUE}}</td>
+          <td class="score-mid">Tie</td>
+        </tr>
+        <tr>
+          <td><strong>Overall</strong></td>
+          <td><strong>{{A SCORE}}</strong></td>
+          <td><strong>{{B SCORE}}</strong></td>
+          <td class="score-good">{{WINNER}}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout neutral" style="margin-top:14px">
+      <div class="label">Reading the table</div>
+      <p>{{HOW TO INTERPRET — caveats, limits of the comparison}}</p>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>{{REPORT_NUMBER}}</span>
+    <span class="rule"></span>
+    <span class="conf">{{CLASSIFICATION}}</span>
+    <span class="pg">07 / {{TOTAL}}</span>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PAGE 8 — REFERENCES & APPENDIX
+     Pattern: sec-marker → headline → numbered ref list →
+              optional kv block for queries/data sources.
+     ============================================================ -->
+<section class="page v-editorial">
+  <div class="page-header">
+    <img class="icon" src="assets/Oligon_Icon_BrandBlue.svg" alt="" />
+    <span class="meta">Oligon · References</span>
+    <span class="rule"></span>
+    <span>{{PROGRAM_CODE}}</span>
+  </div>
+
+  <div class="page-body">
+    <div class="sec-marker">
+      <span class="num">08</span>
+      <span class="label">Appendix · References</span>
+    </div>
+
+    <h1 class="display">{{HEADLINE — e.g. Sources cited.}}</h1>
+    <p class="lede">{{LEDE — short note on the corpus}}</p>
+
+    <div class="refs">
+      <ol>
+        <!-- One <li> per reference. Italicise journal name; mono DOI. -->
+        <li>
+          {{Author, A., et al. (Year). Title.}}
+          <i>{{Journal}}</i>, {{vol}}({{issue}}), {{pages}}.
+          <span class="doi">{{10.xxxx/yyyy}}</span>
+        </li>
+        <li>
+          {{Author, B., et al. (Year). Title.}}
+          <i>{{Journal}}</i>, {{vol}}({{issue}}), {{pages}}.
+          <span class="doi">{{10.xxxx/yyyy}}</span>
+        </li>
+      </ol>
+    </div>
+
+    <!-- Optional appendix block — search queries, GO terms, etc. -->
+    <h2 style="margin-top:24px"><span class="num">A.1</span>{{APPENDIX SUBHEAD}}</h2>
+    <dl class="kv">
+      <dt>{{KEY}}</dt><dd><code>{{QUERY OR VALUE}}</code></dd>
+      <dt>{{KEY}}</dt><dd><code>{{QUERY OR VALUE}}</code></dd>
+    </dl>
+  </div>
+
+  <div class="page-footer">
+    <span>{{REPORT_NUMBER}}</span>
+    <span class="rule"></span>
+    <span class="conf">{{CLASSIFICATION}}</span>
+    <span class="pg">08 / {{TOTAL}}</span>
+  </div>
+</section>
+
+
+</body>
+</html>

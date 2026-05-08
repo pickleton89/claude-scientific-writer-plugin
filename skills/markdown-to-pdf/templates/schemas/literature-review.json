@@ -30,5 +30,6 @@
     "Discussion",
     "Conclusion",
     "References"
-  ]
+  ],
+  "pipeline": "html-render"
 }

@@ -31,5 +31,6 @@
     "Key Questions",
     "Recommendations",
     "Appendix"
-  ]
+  ],
+  "pipeline": "html-render"
 }

@@ -29,5 +29,6 @@
     "Methodology",
     "Visualizations",
     "Conclusions"
-  ]
+  ],
+  "pipeline": "html-render"
 }

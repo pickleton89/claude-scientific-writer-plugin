@@ -29,5 +29,6 @@
     "Prerequisites",
     "Troubleshooting",
     "References"
-  ]
+  ],
+  "pipeline": "markdown-only"
 }

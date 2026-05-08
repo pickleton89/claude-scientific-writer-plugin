@@ -29,5 +29,6 @@
     "Blockers",
     "Next Steps",
     "Metrics"
-  ]
+  ],
+  "pipeline": "markdown-only"
 }
