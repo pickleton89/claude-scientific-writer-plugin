@@ -8,7 +8,7 @@
       "name": "claude-scientific-writer",
       "source": "./",
       "description": "30 scientific research skills — biomedical intelligence, literature analysis, accuracy verification, publication-ready documents, and ToolUniverse integration with 2400+ database tools",
-      "version": "1.4.1"
+      "version": "1.5.0"
     }
   ]
 }

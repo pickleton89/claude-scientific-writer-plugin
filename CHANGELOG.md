@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-05-08
+
 ### Changed — `markdown-to-pdf` rebuilt around HTML/WeasyPrint pipeline
 
 Replaced the skill's nonexistent `oligon_reports` Python renderer (TemplateParser / ReportGenerator described in SKILL.md but never implemented in-tree) with a working HTML-template + WeasyPrint pipeline. User-provided design files at `docs/report-template/` (Editorial + Banded variants, 8 reference page layouts, full Oligon brand styling — built in Figma-Make and exported as production HTML/CSS) are now the canonical templates. A renderer spike confirmed WeasyPrint matches Chrome "Print to PDF" with high fidelity at 0.3s per render, ~40KB vector output (vs Chrome's ~380KB rasterized). Skill scope tightened to three doc types that the long-form report layout actually fits: `analysis-report`, `literature-review`, `data-report`. The other 9 schemas (meeting-notes, task-list, readme, etc.) are tagged `pipeline: markdown-only` so `/doc-to-pdf` refuses them with a clear redirect rather than degrading silently. Slug `markdown-to-pdf` retained — 6+ other skills cross-reference it. **140 / 140 markdown-to-pdf tests pass (60 pre-existing untouched + 60 new); 21 / 21 skill-router tests pass (was 21 errors).**
