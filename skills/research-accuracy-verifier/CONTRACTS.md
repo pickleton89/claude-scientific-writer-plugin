@@ -13,7 +13,7 @@ The canonical vocabulary used by every stage. No stage may invent a parallel ver
 | Verdict | Origin stage | Meaning |
 |---|---|---|
 | `VERIFIED` | 2 | Citation exists; all metadata fields agree |
-| `METADATA_MISMATCH` | 2 | Citation exists; ≥1 field disagrees (year, journal, volume, pages, authors) |
+| `METADATA_MISMATCH` | 2 | Citation exists; ≥1 field disagrees (year, journal, volume, pages, authors) — OR the venue itself is flagged predatory / non-indexed by OpenAlex `check_venue_quality` (`result_summary` sub-reason `venue_quality_concern`) — OR the citation has a non-empty Scite `editorialNotices` (retraction / correction / expression of concern) |
 | `UNSUPPORTED` | 2/3 | No identifier path resolves; or cited source does not contain the claim |
 | `OVERGENERALIZED` | 3 | Source supports a weaker / narrower version of the claim |
 | `CONTRADICTED` | 3 | Source explicitly contradicts the claim |

@@ -35,7 +35,9 @@ def _frozen_contract(mode: str = "full", domain: str = "biomedical") -> dict:
 
 def test_audit_passes_when_all_required_dbs_called():
     contract = _frozen_contract(mode="full", domain="biomedical")
-    result = audit_search(contract, ["PubMed", "Consensus", "Paperclip"])
+    result = audit_search(
+        contract, ["PubMed", "Consensus", "Paperclip", "OpenAlex"]
+    )
     assert result.passed is True
     assert result.missing_databases == []
     assert result.phase == "phase_2_investigation"
@@ -44,8 +46,10 @@ def test_audit_passes_when_all_required_dbs_called():
 def test_audit_passes_when_optional_skipped():
     """Optional channels (Scite, PubTator3) are not part of the gate."""
     contract = _frozen_contract(mode="full", domain="biomedical")
-    # Only the 3 required databases are present; no Scite, no PubTator3
-    result = audit_search(contract, ["PubMed", "Consensus", "Paperclip"])
+    # Only the 4 required databases are present; no Scite, no PubTator3
+    result = audit_search(
+        contract, ["PubMed", "Consensus", "Paperclip", "OpenAlex"]
+    )
     assert result.passed is True
 
 
@@ -54,7 +58,10 @@ def test_audit_passes_with_extra_databases_called():
     contract = _frozen_contract(mode="full", domain="biomedical")
     result = audit_search(
         contract,
-        ["PubMed", "Consensus", "Paperclip", "Scite", "PubTator3", "EuropePMC"],
+        [
+            "PubMed", "Consensus", "Paperclip", "OpenAlex",
+            "Scite", "PubTator3", "EuropePMC",
+        ],
     )
     assert result.passed is True
 
@@ -69,23 +76,26 @@ def test_audit_fails_when_pubmed_only_in_full_mode():
     contract = _frozen_contract(mode="full", domain="biomedical")
     result = audit_search(contract, ["PubMed"])
     assert result.passed is False
-    assert set(result.missing_databases) == {"Consensus", "Paperclip"}
+    assert set(result.missing_databases) == {"Consensus", "Paperclip", "OpenAlex"}
     assert "Consensus" in result.message
     assert "Paperclip" in result.message
+    assert "OpenAlex" in result.message
 
 
 def test_audit_fails_when_one_db_missing():
     contract = _frozen_contract(mode="full", domain="biomedical")
-    result = audit_search(contract, ["PubMed", "Consensus"])
+    result = audit_search(contract, ["PubMed", "Consensus", "Paperclip"])
     assert result.passed is False
-    assert result.missing_databases == ["Paperclip"]
+    assert result.missing_databases == ["OpenAlex"]
 
 
 def test_audit_fails_with_empty_searched_list():
     contract = _frozen_contract(mode="full", domain="biomedical")
     result = audit_search(contract, [])
     assert result.passed is False
-    assert set(result.missing_databases) == {"PubMed", "Consensus", "Paperclip"}
+    assert set(result.missing_databases) == {
+        "PubMed", "Consensus", "Paperclip", "OpenAlex",
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -105,21 +115,23 @@ def test_audit_unfrozen_contract_raises():
 # ---------------------------------------------------------------------------
 
 
-def test_quick_mode_audit_still_requires_three_required_dbs():
+def test_quick_mode_audit_still_requires_all_required_dbs():
     """
-    Quick mode has MIN_DATABASES=2, but the contract still seats 3 required
-    databases per the domain tier table. The audit checks contract-required,
-    not the abstract minimum — so all three must still be hit.
+    Quick mode has MIN_DATABASES=2, but the contract seats 4 required
+    databases (3 tier slots + OpenAlex scholarly_graph). The audit checks
+    contract-required, not the abstract minimum — so all four must be hit.
     """
     contract = _frozen_contract(mode="quick", domain="biomedical")
-    assert len(contract["required_databases"]) == 3
+    assert len(contract["required_databases"]) == 4
     result = audit_search(contract, ["PubMed"])
     assert result.passed is False
 
 
-def test_quick_mode_passes_when_all_three_called():
+def test_quick_mode_passes_when_all_four_called():
     contract = _frozen_contract(mode="quick", domain="biomedical")
-    result = audit_search(contract, ["PubMed", "Consensus", "bioRxiv"])
+    result = audit_search(
+        contract, ["PubMed", "Consensus", "bioRxiv", "OpenAlex"]
+    )
     assert result.passed is True
 
 

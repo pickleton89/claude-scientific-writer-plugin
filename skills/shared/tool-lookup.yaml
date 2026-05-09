@@ -1,5 +1,5 @@
 # tool-lookup.yaml — Capability-to-Tool Mapping
-# Version: 1.6.0
+# Version: 1.7.0
 #
 # Skills reference capability KEYS (e.g., "disambiguation.gene_to_ensembl"),
 # not raw tool names. This lookup resolves capabilities to tools with
@@ -283,6 +283,13 @@ literature:
     primary:
       - tool: search_articles  # PubMed MCP
         notes: "Structured search with field tags, MeSH, date filters"
+      - tool: mcp__openalex__search_works  # OpenAlex MCP
+        notes: >
+          Cross-disciplinary primary — broad topic queries across 240M+ works (biomedical
+          + non-biomedical). Use as the general-domain backbone alongside PubMed (biomedical)
+          and Paperclip (full-text). Required across all deep-research modes/domains.
+      - tool: mcp__openalex__search_by_topic  # OpenAlex MCP
+        notes: "Topic-faceted retrieval using OpenAlex's curated topic taxonomy; preferred when query maps to a known field/concept rather than free-text keywords."
       - tool: search  # Consensus MCP (mcp__claude_ai_Consensus__search)
         notes: "Semantic search over 200M+ papers"
       - tool: search_literature  # Scite MCP (mcp__scite__search_literature)
@@ -317,15 +324,50 @@ literature:
         notes: "Param is 'paper_id' (40-char hex Semantic Scholar ID); returns related papers"
     fallback: []
   citations:
-    description: "Citation network traversal"
+    description: "Citation network traversal (forward/backward expansion + multi-hop graph)"
     primary:
+      - tool: mcp__openalex__get_citation_network  # OpenAlex MCP
+        notes: >
+          Multi-hop citation graph (forward + backward) for snowballing. Required across
+          all deep-research modes for cross-disciplinary citation expansion. Far broader
+          coverage than PubMed find_related_articles (biomedical-only).
+      - tool: mcp__openalex__get_work_citations  # OpenAlex MCP
+        notes: "Forward citations (papers citing the target work); use when expanding from a seed paper to downstream literature."
+      - tool: mcp__openalex__get_work_references  # OpenAlex MCP
+        notes: "Backward citations (papers cited by the target work); use for tracing intellectual lineage."
       - tool: find_related_articles  # PubMed MCP
+        notes: "Biomedical-only related-article retrieval; use as biomedical complement to OpenAlex citation tools."
     tooluniverse:
       - tool: EuropePMC_get_citations
         notes: "Forward citations from Europe PMC; param is article ID"
-      - tool: openalex_citations
       - tool: semantic_scholar_citations
     fallback: []
+
+  seminal_papers:
+    description: "Discover landmark / foundational works in a research field"
+    primary:
+      - tool: mcp__openalex__find_seminal_papers  # OpenAlex MCP
+        notes: >
+          Returns landmark works ranked by citation impact + age within a field/topic.
+          Required for early-stage deep-research scoping (Survey/Triage stages) when
+          building intellectual context for a topic.
+    tooluniverse: []
+    fallback:
+      - tool: mcp__openalex__get_top_cited_works
+        notes: "Filterable top-cited works when find_seminal_papers returns sparse results."
+
+  reviews:
+    description: "Discover review articles and meta-analyses on a topic"
+    primary:
+      - tool: mcp__openalex__find_review_articles  # OpenAlex MCP
+        notes: >
+          Filters OpenAlex works to review articles (review type) on a topic.
+          Required for deep-research Survey stage to anchor on existing syntheses
+          before primary literature dive.
+    tooluniverse: []
+    fallback:
+      - tool: search_articles  # PubMed MCP
+        notes: "Use PubMed `Publication Type[pt]` filter for biomedical reviews when OpenAlex coverage is sparse."
 
   citation_context:
     description: "Citation context with sentiment classification (supporting/contrasting/mentioning)"
@@ -648,8 +690,15 @@ verification:
     fallback:
       - tool: crossref_lookup
         notes: "Crossref REST via WebFetch — DOI resolution + journal ISSN start year for volume-year sanity"
-      - tool: openalex_search
-        notes: "OpenAlex API — broad coverage when topic crosses disciplines"
+      - tool: mcp__openalex__batch_resolve_references  # OpenAlex MCP
+        notes: >
+          Bulk DOI/title → canonical work resolution across 240M+ works. Call BEFORE
+          declaring CITATION_NOT_FOUND when PubMed + Crossref both miss — OpenAlex
+          covers cross-disciplinary works (CS, physics, social sciences) where PubMed
+          has no coverage. Returns OpenAlex Work IDs + canonical metadata for any
+          resolved entries.
+      - tool: mcp__openalex__search_works  # OpenAlex MCP
+        notes: "Free-text fallback when batch_resolve_references can't match by identifier; useful for fuzzy title-based retrieval."
     local:
       - tool: resolve_citation.py
         notes: "skills/research-accuracy-verifier/scripts/ — offline shape + plausibility checks before live lookup"
@@ -679,6 +728,27 @@ verification:
           for the documented bias toward 'mentioning'.
       - tool: pubmed_abstract
         notes: "Abstract-only check when full text unavailable; mark UNVERIFIED for full-text-required claims"
+      - tool: mcp__openalex__get_citation_network  # OpenAlex MCP
+        notes: >
+          Backstop when Scite returns empty for a DOI: traverse OpenAlex citation
+          network to surface citing/cited works that may anchor the claim, even
+          without sentiment classification. Mark evidence as 'unsentenced citation
+          context (per OpenAlex)' to distinguish from Scite's classified snippets.
+
+  venue_quality:
+    description: "Assess journal/venue credibility (Stage 2 sub-check) — surfaces predatory or low-quality venues as a sub-reason on METADATA_MISMATCH"
+    primary:
+      - tool: mcp__openalex__check_venue_quality  # OpenAlex MCP
+        notes: >
+          Returns OpenAlex venue quality signals (DOAJ membership, indexing status,
+          h-index, works/year, openness). Call AFTER citation_existence resolves a
+          DOI/work — if quality signals indicate predatory or non-indexed venue,
+          attach as sub-reason on METADATA_MISMATCH (do NOT introduce a new verdict
+          subtype). Verdict stays METADATA_MISMATCH; finding `evidence[]` records
+          the venue concern with OpenAlex source URL.
+      - tool: mcp__openalex__get_top_venues_for_field  # OpenAlex MCP
+        notes: "Use when assessing whether a venue is reasonable for the paper's claimed field; comparison against top-N venues for the field disambiguates 'unfamiliar but legitimate' from 'predatory'."
+    fallback: []
 
   cherry_picking:
     description: "Stage 4 Tier-3 cherry-picking detection — flag VERIFIED cite-claim pairs whose cited paper has a heavily contested citation tally"

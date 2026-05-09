@@ -117,6 +117,11 @@ DATABASE_METADATA: dict[str, dict[str, str]] = {
         "tool": "pubtator3 search",
         "transport": "CLI",
     },
+    "OpenAlex": {
+        "capability_key": "literature.search",
+        "tool": "mcp__openalex__search_works",
+        "transport": "MCP",
+    },
 }
 
 # Mode-eligibility for optional channels (mirrors bibliography.md §Step 4b
@@ -135,6 +140,16 @@ PAPERCLIP_ELIGIBLE_MODES: frozenset[str] = frozenset(
 # disease, chemical, variant) per ``_detect_named_entities``.
 PUBTATOR3_ELIGIBLE_MODES: frozenset[str] = frozenset(
     {"full", "lit-review", "systematic-review", "hypothesis", "fact-check"}
+)
+
+# OpenAlex is required across ALL domains and ALL search-running modes — it is
+# the cross-disciplinary backbone (240M+ works) covering the gap left by
+# PubMed (biomedical-only) and Paperclip (corpus-limited). Slotted as a 4th
+# required tier "scholarly_graph" alongside the primary/secondary/tertiary
+# trio, not gated by entity-detection or domain. Strikable by the user at
+# Checkpoint 1 only if remaining required count stays above the mode floor.
+OPENALEX_REQUIRED_MODES: frozenset[str] = frozenset(
+    {"full", "quick", "lit-review", "systematic-review", "hypothesis", "fact-check"}
 )
 
 # Modes that do not run a search phase at all.
@@ -502,6 +517,21 @@ def build_contract(
             )
         )
 
+    # OpenAlex — required across all search-running modes/domains as the
+    # cross-disciplinary scholarly_graph channel (per OPENALEX_REQUIRED_MODES).
+    # Not gated by entity-detection or domain. Always appended after the
+    # primary/secondary/tertiary tier slots so it never displaces a tier
+    # database; strikable at Checkpoint 1 subject to the mode floor.
+    if mode in OPENALEX_REQUIRED_MODES:
+        contract.required_databases.append(
+            _make_entry(
+                name="OpenAlex",
+                tier="scholarly_graph",
+                purpose="cross-disciplinary discovery + citation-graph expansion (240M+ works)",
+                starter_query=_starter_query("OpenAlex", research_question),
+            )
+        )
+
     # If Paperclip is in the required tier table, surface a Checkpoint 1
     # warning when the binary is missing. We don't hard-fail — user can
     # acknowledge and proceed, then strike Paperclip if needed.
@@ -614,7 +644,11 @@ def format_contract_for_user(contract: SearchContract) -> str:
         "_Note: in heavy modes + fact-check, Paperclip replaces bioRxiv as "
         "the full-text corpus (PMC + bioRxiv + medRxiv + arXiv). Preprint-"
         "heavy domain keeps bioRxiv MCP primary. PubTator3 is required when "
-        "the RQ names biomedical entities (gene/disease/chemical/variant)._"
+        "the RQ names biomedical entities (gene/disease/chemical/variant). "
+        "OpenAlex is required across all domains and modes as the cross-"
+        "disciplinary scholarly_graph channel — it provides 240M+ works "
+        "spanning biomedical and non-biomedical literature plus citation-"
+        "network traversal for snowballing._"
     )
     lines.append("")
 

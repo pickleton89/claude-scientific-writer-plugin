@@ -9,6 +9,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 from search_contract import (
     NO_SEARCH_MODES,
+    OPENALEX_REQUIRED_MODES,
     PAPERCLIP_ELIGIBLE_MODES,
     PAPERCLIP_PROMOTED_MODES,
     PUBTATOR3_ELIGIBLE_MODES,
@@ -27,8 +28,9 @@ from search_contract import (
 
 
 def test_full_mode_biomedical_seats_paperclip_in_place_of_biorxiv():
-    """Full + biomedical: PubMed + Consensus + Paperclip (bioRxiv replaced)."""
+    """Full + biomedical: PubMed + Consensus + Paperclip (bioRxiv replaced) + OpenAlex."""
     # RQ has no named entities → PubTator3 stays optional, not in required.
+    # OpenAlex is required across all search-running modes.
     contract = build_contract(
         mode="full",
         research_question="x",
@@ -36,11 +38,11 @@ def test_full_mode_biomedical_seats_paperclip_in_place_of_biorxiv():
         has_named_entities=False,
     )
     names = contract.required_database_names()
-    assert names == ["PubMed", "Consensus", "Paperclip"]
-    assert contract.min_databases == 3
+    assert names == ["PubMed", "Consensus", "Paperclip", "OpenAlex"]
+    assert contract.min_databases == 4
     assert contract.min_sources == 15
     tiers = [d.tier for d in contract.required_databases]
-    assert tiers == ["primary", "secondary", "tertiary"]
+    assert tiers == ["primary", "secondary", "tertiary", "scholarly_graph"]
 
 
 def test_full_mode_biomedical_with_entities_promotes_pubtator3():
@@ -238,13 +240,17 @@ def test_user_strikes_paperclip_in_preprint_heavy():
 
 def test_strike_below_min_databases_raises():
     """Cannot strike a required database below mode's MIN_DATABASES floor."""
+    # Use full + named entities to get 5 required (3 tier + OpenAlex +
+    # PubTator3) against floor=4. Strike PubTator3 first to drop to the floor;
+    # the next strike must raise.
     contract = build_contract(
         mode="full",
-        research_question="x",
+        research_question="EGFR resistance",
         domain="biomedical",
-        has_named_entities=False,
     )
-    # full has min_databases=3, with 3 required (PubMed/Consensus/Paperclip).
+    assert len(contract.required_databases) == 5
+    contract.strike("PubTator3")
+    assert len(contract.required_databases) == 4
     with pytest.raises(ValueError, match="below the mode minimum"):
         contract.strike("PubMed")
 
@@ -287,11 +293,12 @@ def test_to_dict_round_trip_preserves_required_databases():
     d = contract.to_dict()
     assert d["mode"] == "full"
     assert d["domain"] == "biomedical"
-    assert d["min_databases"] == 3
+    assert d["min_databases"] == 4
     assert [r["name"] for r in d["required_databases"]] == [
         "PubMed",
         "Consensus",
         "Paperclip",
+        "OpenAlex",
     ]
     assert d["frozen"] is False
 
@@ -326,7 +333,84 @@ def test_eligibility_sets_match_documented_semantics():
     assert PAPERCLIP_ELIGIBLE_MODES == heavy_plus_factcheck
     assert PUBTATOR3_ELIGIBLE_MODES == heavy_plus_factcheck
     assert PAPERCLIP_PROMOTED_MODES == heavy_plus_factcheck
+    # OpenAlex covers every mode that runs a search phase.
+    assert OPENALEX_REQUIRED_MODES == frozenset(
+        {"full", "quick", "lit-review", "systematic-review", "hypothesis", "fact-check"}
+    )
     assert NO_SEARCH_MODES == frozenset({"socratic", "review"})
+
+
+# ---------------------------------------------------------------------------
+# OpenAlex required-channel coverage
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("mode", sorted(OPENALEX_REQUIRED_MODES))
+@pytest.mark.parametrize(
+    "domain",
+    ["biomedical", "molecular", "pharmacology", "cross-domain", "preprint-heavy"],
+)
+def test_openalex_required_across_all_modes_and_domains(mode, domain):
+    """OpenAlex is a required scholarly_graph channel for every search-running
+    mode in every domain — that's the v1.7 contract."""
+    contract = build_contract(
+        mode=mode,
+        research_question="x",
+        domain=domain,
+        has_named_entities=False,
+    )
+    names = contract.required_database_names()
+    assert "OpenAlex" in names
+    openalex = next(d for d in contract.required_databases if d.name == "OpenAlex")
+    assert openalex.tier == "scholarly_graph"
+    assert openalex.transport == "MCP"
+    assert openalex.tool == "mcp__openalex__search_works"
+
+
+def test_openalex_skipped_for_no_search_modes():
+    """Socratic / review modes don't run search → no OpenAlex either."""
+    for mode in NO_SEARCH_MODES:
+        contract = build_contract(
+            mode=mode, research_question="x", domain="biomedical"
+        )
+        assert "OpenAlex" not in contract.required_database_names()
+
+
+def test_openalex_capability_key_in_contract():
+    """Capability key on the OpenAlex entry must point at literature.search so
+    bibliography agent can resolve it via tool-lookup.yaml."""
+    contract = build_contract(
+        mode="full", research_question="x", domain="biomedical"
+    )
+    openalex = next(d for d in contract.required_databases if d.name == "OpenAlex")
+    assert openalex.capability_key == "literature.search"
+
+
+def test_format_contract_includes_openalex_behavior_note():
+    """The Checkpoint 1 markdown must surface OpenAlex's role to the user."""
+    contract = build_contract(
+        mode="full", research_question="x", domain="biomedical"
+    )
+    rendered = format_contract_for_user(contract)
+    assert "OpenAlex" in rendered
+    assert "scholarly_graph" in rendered
+    assert "cross-disciplinary" in rendered.lower()
+
+
+def test_user_can_strike_openalex_when_above_floor():
+    """OpenAlex is strikable at Checkpoint 1 if floor is preserved."""
+    contract = build_contract(
+        mode="full",
+        research_question="EGFR resistance",
+        domain="biomedical",
+    )
+    # full mode + named entities = 5 required (3 tier + OpenAlex + PubTator3),
+    # floor = 4. Striking OpenAlex drops to 4 (== floor) — still allowed.
+    assert "OpenAlex" in contract.required_database_names()
+    contract.strike("OpenAlex", reason="user-removed: cost")
+    assert "OpenAlex" not in contract.required_database_names()
+    struck = [d.name for d in contract.user_struck]
+    assert "OpenAlex" in struck
 
 
 # ---------------------------------------------------------------------------

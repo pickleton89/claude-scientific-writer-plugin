@@ -57,12 +57,16 @@ MIN_SOURCES: Final[dict[str, int]] = {
 # ---------------------------------------------------------------------------
 
 MIN_DATABASES: Final[dict[str, int]] = {
-    "full": 3,
-    "quick": 2,
-    "lit-review": 3,
-    "systematic-review": 4,
-    "hypothesis": 3,
-    "fact-check": 2,
+    # Floors bumped +1 across search-running modes when OpenAlex was promoted
+    # to a required scholarly_graph channel (v1.7 contract). Reflects the new
+    # contract reality: every search-running mode has at least 4 required
+    # channels (3 tier slots + OpenAlex).
+    "full": 4,
+    "quick": 3,
+    "lit-review": 4,
+    "systematic-review": 5,
+    "hypothesis": 4,
+    "fact-check": 3,
     "review": 0,
     "socratic": 0,
 }

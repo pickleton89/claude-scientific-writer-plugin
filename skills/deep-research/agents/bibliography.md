@@ -41,10 +41,23 @@ search strategy.
 | `pubtator3 search` | PubTator3 wrapper | Entity-grounded discovery (gene/disease/chemical/variant co-mentions) | `--gene`, `--disease`, `--chemical`, `--variant`, `--size`, `--summary` |
 | `pubtator3 annotations` | PubTator3 wrapper | BioC-JSON entity spans for assembled PMID list | `--pmids`, `--summary` |
 | `pubtator3 relations` | PubTator3 wrapper | Co-mention graph for an entity (dossier-style pivots) | `--entity`, `--summary` |
+| `mcp__openalex__search_works` | OpenAlex MCP | **Required cross-disciplinary backbone** (240M+ works, biomedical + non-biomedical). Always present in the contract for every search-running mode/domain. | `query`, `filters` (year, type, oa_status), `per_page` |
+| `mcp__openalex__search_by_topic` | OpenAlex MCP | Topic-faceted retrieval using OpenAlex's curated topic taxonomy; preferred when query maps to a known field/concept rather than free-text keywords. | `topic_id`, `filters` |
+| `mcp__openalex__get_citation_network` | OpenAlex MCP | Multi-hop citation graph (forward + backward) for snowballing. Far broader than PubMed `find_related_articles` (biomedical-only). | `work_id`, `depth`, `direction` |
+| `mcp__openalex__get_work_citations` | OpenAlex MCP | Forward citations (papers citing the seed work). | `work_id` |
+| `mcp__openalex__get_work_references` | OpenAlex MCP | Backward citations (papers cited by the seed work) — intellectual lineage. | `work_id` |
+| `mcp__openalex__find_seminal_papers` | OpenAlex MCP | Landmark/foundational works in a field — anchor early-stage scoping. | `topic`, `field` |
+| `mcp__openalex__find_review_articles` | OpenAlex MCP | Review articles + meta-analyses on a topic — anchor Survey stage. | `topic`, `filters` |
+| `mcp__openalex__health_check` | OpenAlex MCP | Liveness probe before relying on OpenAlex in a contract; fires the OpenAlex circuit breaker on failure. | _(none)_ |
 
 **Paperclip is invoked via Bash, not MCP** — requires `paperclip install` + `paperclip login` (per machine). Vendor-managed `SKILL.md` lives at `.claude/skills/paperclip/SKILL.md`. Skip Paperclip silently when the binary is absent (CI / sandboxed environments) — bibliography proceeds with the other databases. Capability keys: `literature.corpus_search`, `literature.corpus_grep`.
 
 **PubTator3 is invoked via Bash:** `uv run python skills/shared/scripts/pubtator3.py <subcommand>`. No auth, NCBI REST. Skip silently when the network call fails (sandboxed environments) — bibliography proceeds with the other databases. Capability keys: `literature.entity_annotation`, `literature.entity_autocomplete`. See `skills/shared/references/pubtator3_quirks.md` for entity-ID format and query syntax.
+
+**OpenAlex is required across all domains and all search-running modes** (per the v1.7 Search Contract). It is the cross-disciplinary backbone — PubMed and Paperclip cover biomedical literature; OpenAlex covers the rest (CS, physics, social sciences, humanities) plus a 240M-work citation graph for snowballing. Capability keys: `literature.search`, `literature.citations`, `literature.seminal_papers`, `literature.reviews`. Two distinctive workflows enabled here:
+
+- **Citation-graph snowballing** — given a seed paper (DOI or OpenAlex Work ID), call `get_citation_network` for multi-hop expansion, or `get_work_citations` (forward) / `get_work_references` (backward) for single-hop. Use to fill out a bibliography after primary search saturation, especially when the topic crosses disciplines.
+- **Survey-stage anchoring** — call `find_review_articles` and `find_seminal_papers` BEFORE primary discovery to surface existing syntheses + landmark works. Reduces wasted effort re-deriving consensus already published.
 
 ### Fallback Tools (ToolUniverse, use when primary unavailable)
 
@@ -66,6 +79,7 @@ search strategy.
 | Scite MCP error/timeout | Error response or timeout from `search_literature` | Skip Step 4b reception assessment; no equivalent fallback | 0 |
 | Paperclip CLI error | Non-zero exit / `paperclip: command not found` / OAuth expired | Skip Paperclip channel; proceed with PubMed + bioRxiv MCP + Consensus | 1 |
 | PubTator3 wrapper error | Non-zero exit / network error / `requests` not installed | Skip PubTator3 channel; proceed with other databases. No fallback for entity-grounded search. | 1 |
+| OpenAlex MCP error/timeout | Error from `health_check` or any `mcp__openalex__*` call; rate-limit (429) | Re-run `health_check` once; on second failure skip OpenAlex channel and emit DEGRADED-SEARCH advisory (OpenAlex is required, so its loss must be flagged). For citation-graph requests, fall back to PubMed `find_related_articles` (biomedical only) or Scite citation context (sentiment-classified, narrower coverage). | 1 |
 | All tools fail for a database | Fallback also fails | Document gap, proceed with remaining databases | 0 |
 
 **Degraded-mode rule:** If ≥2 databases are unreachable, add to output:
