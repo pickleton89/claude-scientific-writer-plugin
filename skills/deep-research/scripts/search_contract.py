@@ -23,6 +23,8 @@ Output:
 from __future__ import annotations
 
 import json
+import re
+import shutil
 import sys
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -35,6 +37,13 @@ from thresholds import ALL_MODES, MIN_DATABASES, MIN_SOURCES
 # ---------------------------------------------------------------------------
 # Domain → tier table (mirrors agents/bibliography.md Step 3)
 # Keys are canonical domain labels; values map tier → MCP/CLI database name.
+#
+# NOTE: The tier table below is the *default* (used by quick mode and by
+# preprint-heavy across all modes). For heavy modes (full / lit-review /
+# systematic-review / hypothesis) and fact-check, ``_resolve_tier_table``
+# swaps bioRxiv → Paperclip in non-preprint-heavy domains, since Paperclip's
+# corpus already covers PMC + bioRxiv + medRxiv + arXiv as full text. See
+# ``_resolve_tier_table`` for the per-mode resolution logic.
 # ---------------------------------------------------------------------------
 
 DOMAIN_TIER_TABLE: dict[str, dict[str, str]] = {
@@ -64,6 +73,14 @@ DOMAIN_TIER_TABLE: dict[str, dict[str, str]] = {
         "tertiary": "Consensus",
     },
 }
+
+# Modes where Paperclip's PMC + bioRxiv + medRxiv + arXiv corpus replaces the
+# bioRxiv MCP slot in the tier table (heavy modes + fact-check). preprint-heavy
+# domain is exempt — direct bioRxiv MCP gives fresher metadata for hot-off-the-
+# press preprint scans there.
+PAPERCLIP_PROMOTED_MODES: frozenset[str] = frozenset(
+    {"full", "lit-review", "systematic-review", "hypothesis", "fact-check"}
+)
 
 DEFAULT_DOMAIN = "biomedical"
 
@@ -95,6 +112,11 @@ DATABASE_METADATA: dict[str, dict[str, str]] = {
         "tool": "paperclip search",
         "transport": "CLI",
     },
+    "PubTator3": {
+        "capability_key": "literature.entity_annotation",
+        "tool": "pubtator3 search",
+        "transport": "CLI",
+    },
 }
 
 # Mode-eligibility for optional channels (mirrors bibliography.md §Step 4b
@@ -102,12 +124,163 @@ DATABASE_METADATA: dict[str, dict[str, str]] = {
 SCITE_ELIGIBLE_MODES: frozenset[str] = frozenset(
     {"full", "lit-review", "systematic-review", "hypothesis"}
 )
+# Paperclip is now mode-eligible for heavy modes + fact-check. In domains
+# other than preprint-heavy it is *required* (replaces bioRxiv in the tier
+# table); in preprint-heavy it remains *optional* alongside primary bioRxiv.
 PAPERCLIP_ELIGIBLE_MODES: frozenset[str] = frozenset(
-    {"full", "lit-review", "systematic-review", "hypothesis"}
+    {"full", "lit-review", "systematic-review", "hypothesis", "fact-check"}
+)
+# PubTator3 is mode-eligible for heavy modes + fact-check. Promotes from
+# optional → required when the RQ contains named biomedical entities (gene,
+# disease, chemical, variant) per ``_detect_named_entities``.
+PUBTATOR3_ELIGIBLE_MODES: frozenset[str] = frozenset(
+    {"full", "lit-review", "systematic-review", "hypothesis", "fact-check"}
 )
 
 # Modes that do not run a search phase at all.
 NO_SEARCH_MODES: frozenset[str] = frozenset({"socratic", "review"})
+
+
+# ---------------------------------------------------------------------------
+# Heuristics: Paperclip availability + named-entity detection
+# ---------------------------------------------------------------------------
+
+
+def _paperclip_available() -> bool:
+    """Return True if the ``paperclip`` CLI binary is on PATH.
+
+    Used to surface a Checkpoint 1 warning when Paperclip is required by the
+    contract but the binary is missing. Per project decision, missing binary
+    does not hard-fail — the user sees a warning and can either install/login
+    or strike Paperclip explicitly. Run-time PATH check via ``shutil.which``;
+    no subprocess call (``paperclip --version`` may prompt for OAuth refresh).
+    """
+    return shutil.which("paperclip") is not None
+
+
+# Gene-symbol-shaped tokens: 2–6 uppercase letters optionally followed by digits
+# (e.g. BRAF, EGFR, IL8, TP53, NF1). Excludes common English ALL-CAPS noise and
+# common biomedical-but-not-gene acronyms via a stop-list. False positives just
+# promote PubTator3 unnecessarily, which the user can strike at Checkpoint 1.
+_GENE_SYMBOL_RE = re.compile(r"\b[A-Z][A-Z0-9]{1,5}\b")
+_GENE_SYMBOL_STOPLIST: frozenset[str] = frozenset(
+    {
+        # Generic English ALL-CAPS / Roman numerals (≥2 chars; 1-char entries
+        # can never match the regex so omitted)
+        "AND", "OR", "NOT", "THE", "FOR", "AM", "PM", "II", "III", "IV", "VI",
+        "VII", "VIII", "IX", "XL",
+        # Bio-data nouns / methods
+        "DNA", "RNA", "MRNA", "CDNA", "TRNA", "RRNA", "SIRNA", "MIRNA",
+        "PCR", "RTPCR", "QPCR", "ELISA", "FACS", "FISH", "GWAS",
+        # Geographies / agencies
+        "WHO", "USA", "EU", "UK", "US", "FDA", "EMA", "NIH", "NCI", "CDC",
+        "MHRA", "PMDA", "NHS",
+        # Tech / software acronyms
+        "AI", "ML", "API", "URL", "HTTP", "JSON", "YAML", "CSV", "PDF",
+        "HTML", "CSS", "OS", "ID", "IDS", "GMT", "UTC", "PI",
+        # Common biomedical-but-not-gene acronyms (imaging, vitals, units of
+        # care). Adding these prevents PubTator3 false-promotion on RQs like
+        # "BMI and cancer risk" or "PET imaging in dementia". Note: 4+ char
+        # gene tokens like MEG3 still match the regex and are NOT stoplisted
+        # — only the bare ambiguous 2-3 char acronyms.
+        "BMI", "MRI", "CT", "PET", "EEG", "ECG", "EKG", "MEG", "TMS",
+        "NIRS", "ICU", "ER", "CV", "IQ", "CSF", "BP", "HR", "RR", "BMD",
+        "VO2", "LDL", "HDL", "GFR", "AST", "ALT", "INR", "WBC", "RBC",
+        "CRP", "TSH", "FEV1", "EMG", "ENT", "ENG",
+    }
+)
+# Disease/chemical/variant keyword tokens. Length ≥4 ensures substring match
+# is safe (no English-word false positives like "false"/"individuals" matching
+# a 3-char "als"). Short keywords (e.g. "als" for ALS, "snp" for SNP) are
+# handled separately below via word-boundary regex.
+_DISEASE_KEYWORDS: frozenset[str] = frozenset(
+    {
+        "cancer", "tumor", "tumour", "carcinoma", "sarcoma", "leukemia",
+        "lymphoma", "melanoma", "glioma", "metastasis", "metastatic",
+        "diabetes", "alzheimer", "parkinson", "huntington",
+        "obesity", "hypertension", "stroke", "infarction", "ischemia",
+        "covid", "covid-19", "sars-cov-2", "influenza", "tuberculosis",
+        "asthma", "copd", "fibrosis", "cirrhosis", "hepatitis",
+        "arthritis", "psoriasis", "lupus", "crohn", "colitis",
+        "schizophrenia", "depression", "autism", "epilepsy",
+        "syndrome", "disease", "disorder", "deficiency",
+    }
+)
+_VARIANT_KEYWORDS: frozenset[str] = frozenset(
+    {"mutation", "variant", "polymorphism", "indel", "fusion", "deletion"}
+)
+# Short biomedical tokens (≤3 chars) that need word-boundary matching to
+# avoid false positives via substring containment in common English words
+# (e.g. "als" must not match "false", "individuals", "trials").
+_SHORT_BIO_TOKENS_RE = re.compile(
+    r"\b(?:als|snp|cml|aml|all|cll|gbm|nsclc|sclc|hcc|ckd|aki|chd|pad|dvt|"
+    r"pe|mi|ms|ra|sle|ibd|uc|cd|ad|pd)\b",
+    re.IGNORECASE,
+)
+# Drug-name suffix patterns common in INN nomenclature (e.g. -mab, -nib, -tinib).
+_DRUG_SUFFIX_RE = re.compile(
+    r"\b\w+(?:mab|nib|tinib|stat|olol|pril|sartan|prazole|cycline|mycin|"
+    r"floxacin|cillin|parin|caine|done|formin|gliflozin|gliptin)\b",
+    re.IGNORECASE,
+)
+
+
+def _detect_named_entities(research_question: str) -> bool:
+    """Heuristic: does the RQ contain named biomedical entities?
+
+    Returns True if any of the following appears in the RQ:
+      - A gene-symbol-shaped ALL-CAPS token (BRAF, EGFR, TP53, ...) not on the
+        stop-list
+      - A disease/condition keyword (cancer, diabetes, alzheimer, ...)
+      - A variant-class keyword (mutation, variant, fusion, ...)
+      - A drug name with a recognized INN suffix (-mab, -nib, -tinib, ...)
+
+    False positives just promote PubTator3 to required when it could have been
+    optional — strikable at Checkpoint 1, low cost. False negatives leave it
+    optional when entity-grounded search would have helped — also strikable
+    via the ``has_named_entities=True`` override at ``build_contract``.
+    """
+    rq = (research_question or "").strip()
+    if not rq:
+        return False
+    lower = rq.lower()
+    # Disease / variant keyword hit (substring match — all tokens are ≥4 chars
+    # so substring containment is safe).
+    for kw in _DISEASE_KEYWORDS:
+        if kw in lower:
+            return True
+    for kw in _VARIANT_KEYWORDS:
+        if kw in lower:
+            return True
+    # Short biomedical acronyms (≤3 chars) — word-boundary match required to
+    # avoid matching them inside English words.
+    if _SHORT_BIO_TOKENS_RE.search(rq):
+        return True
+    # Drug INN suffix hit
+    if _DRUG_SUFFIX_RE.search(rq):
+        return True
+    # Gene symbol shape (with stop-list filter)
+    for match in _GENE_SYMBOL_RE.finditer(rq):
+        token = match.group(0)
+        if token not in _GENE_SYMBOL_STOPLIST:
+            return True
+    return False
+
+
+def _resolve_tier_table(domain: str, mode: str) -> dict[str, str]:
+    """Return the effective primary/secondary/tertiary tier table.
+
+    For non-preprint-heavy domains in heavy/fact-check modes, swap bioRxiv
+    → Paperclip (Paperclip's corpus already covers PMC + bioRxiv + medRxiv
+    + arXiv as full text). For preprint-heavy or quick mode, return the
+    default tier table unchanged.
+    """
+    base = DOMAIN_TIER_TABLE[domain]
+    if mode not in PAPERCLIP_PROMOTED_MODES:
+        return dict(base)
+    if domain == "preprint-heavy":
+        return dict(base)
+    return {tier: ("Paperclip" if name == "bioRxiv" else name) for tier, name in base.items()}
 
 
 # ---------------------------------------------------------------------------
@@ -250,17 +423,12 @@ def _starter_query(database: str, research_question: str) -> str:
     rq = research_question.strip()
     if not rq:
         return ""
-    if database == "PubMed":
-        # Pre-Boolean stub; agent expands with [tiab]/[mh] tags downstream.
-        return rq
-    if database == "bioRxiv":
-        return rq
-    if database == "Consensus":
-        return rq
     if database == "Scite":
         # Scite Step 4b is dois-only by default — term left empty here.
         return ""
-    if database == "Paperclip":
+    if database == "PubTator3":
+        # PubTator3 entity-grounded queries are auto-tagged from bare symbols;
+        # bibliography agent disambiguates first via `pubtator3 autocomplete`.
         return rq
     return rq
 
@@ -269,6 +437,7 @@ def build_contract(
     mode: str,
     research_question: str = "",
     domain: str = DEFAULT_DOMAIN,
+    has_named_entities: bool | None = None,
 ) -> SearchContract:
     """
     Build a Search Contract for the given mode + domain + RQ.
@@ -279,8 +448,13 @@ def build_contract(
     Args:
         mode: One of ``ALL_MODES``. Modes in ``NO_SEARCH_MODES`` produce an
             empty contract with a warning.
-        research_question: User's RQ (used to seed starter queries).
+        research_question: User's RQ (used to seed starter queries and to
+            run the named-entity heuristic for PubTator3 promotion).
         domain: One of ``DOMAIN_TIER_TABLE`` keys. Defaults to ``biomedical``.
+        has_named_entities: Override the named-entity detection heuristic.
+            ``None`` (default) runs ``_detect_named_entities`` on the RQ;
+            ``True`` forces PubTator3 promotion to required (when mode-eligible);
+            ``False`` keeps PubTator3 optional. Use to override misfires.
 
     Returns:
         Unfrozen :class:`SearchContract` ready for Checkpoint 1 presentation.
@@ -313,8 +487,10 @@ def build_contract(
             f"{', '.join(DOMAIN_TIER_TABLE)}"
         )
 
-    # --- Required databases (per domain tier table) ---------------------------
-    tier_map = DOMAIN_TIER_TABLE[domain]
+    # --- Required databases (per resolved tier table) -------------------------
+    # ``_resolve_tier_table`` swaps bioRxiv → Paperclip in non-preprint-heavy
+    # domains for heavy modes + fact-check.
+    tier_map = _resolve_tier_table(domain, mode)
     for tier in ("primary", "secondary", "tertiary"):
         db_name = tier_map[tier]
         contract.required_databases.append(
@@ -324,6 +500,20 @@ def build_contract(
                 purpose="discovery",
                 starter_query=_starter_query(db_name, research_question),
             )
+        )
+
+    # If Paperclip is in the required tier table, surface a Checkpoint 1
+    # warning when the binary is missing. We don't hard-fail — user can
+    # acknowledge and proceed, then strike Paperclip if needed.
+    paperclip_in_required = any(
+        d.name == "Paperclip" for d in contract.required_databases
+    )
+    if paperclip_in_required and not _paperclip_available():
+        contract.warnings.append(
+            "Paperclip is required by this contract but the `paperclip` "
+            "binary is not on PATH. Run `paperclip install` + "
+            "`paperclip login`, or strike Paperclip at Checkpoint 1 to "
+            "proceed without full-text corpus search."
         )
 
     # --- Optional channels (mode-gated) ---------------------------------------
@@ -340,20 +530,51 @@ def build_contract(
         scite_entry.skipped_reason = f"mode '{mode}' not in Scite-eligible modes"
         contract.skipped_by_mode.append(scite_entry)
 
-    # Paperclip full-text corpus
-    paperclip_entry = _make_entry(
-        name="Paperclip",
-        tier="corpus",
-        purpose="full-text discovery across PMC + bioRxiv + medRxiv + arXiv",
-        starter_query=_starter_query("Paperclip", research_question),
-    )
-    if mode in PAPERCLIP_ELIGIBLE_MODES:
-        contract.optional_databases.append(paperclip_entry)
-    else:
-        paperclip_entry.skipped_reason = (
-            f"mode '{mode}' not in Paperclip-eligible modes"
+    # Paperclip — only seat as optional when it is NOT already required (i.e.
+    # preprint-heavy in heavy modes, where bioRxiv MCP stays primary but
+    # Paperclip is still useful as a full-text complement).
+    if not paperclip_in_required:
+        paperclip_entry = _make_entry(
+            name="Paperclip",
+            tier="corpus",
+            purpose="full-text discovery across PMC + bioRxiv + medRxiv + arXiv",
+            starter_query=_starter_query("Paperclip", research_question),
         )
-        contract.skipped_by_mode.append(paperclip_entry)
+        if mode in PAPERCLIP_ELIGIBLE_MODES:
+            contract.optional_databases.append(paperclip_entry)
+        else:
+            paperclip_entry.skipped_reason = (
+                f"mode '{mode}' not in Paperclip-eligible modes"
+            )
+            contract.skipped_by_mode.append(paperclip_entry)
+
+    # PubTator3 — entity-grounded discovery. Promotes from optional → required
+    # when (a) mode is eligible AND (b) the RQ contains named biomedical
+    # entities (per heuristic or explicit override).
+    pubtator3_entry = _make_entry(
+        name="PubTator3",
+        tier="entity",
+        purpose="entity-grounded discovery (gene/disease/chemical/variant co-mentions)",
+        starter_query=_starter_query("PubTator3", research_question),
+    )
+    if mode in PUBTATOR3_ELIGIBLE_MODES:
+        if has_named_entities is None:
+            entities_present = _detect_named_entities(research_question)
+        else:
+            entities_present = bool(has_named_entities)
+        if entities_present:
+            pubtator3_entry.purpose = (
+                "entity-grounded discovery (REQUIRED — RQ contains named "
+                "biomedical entities; strike if heuristic misfired)"
+            )
+            contract.required_databases.append(pubtator3_entry)
+        else:
+            contract.optional_databases.append(pubtator3_entry)
+    else:
+        pubtator3_entry.skipped_reason = (
+            f"mode '{mode}' not in PubTator3-eligible modes"
+        )
+        contract.skipped_by_mode.append(pubtator3_entry)
 
     # --- Sanity checks --------------------------------------------------------
     if len(contract.required_databases) < contract.min_databases:
@@ -387,6 +608,13 @@ def format_contract_for_user(contract: SearchContract) -> str:
     lines.append(
         f"**Floor:** ≥{contract.min_databases} databases, "
         f"≥{contract.min_sources} sources (per `thresholds.MIN_DATABASES`/`MIN_SOURCES`)."
+    )
+    lines.append("")
+    lines.append(
+        "_Note: in heavy modes + fact-check, Paperclip replaces bioRxiv as "
+        "the full-text corpus (PMC + bioRxiv + medRxiv + arXiv). Preprint-"
+        "heavy domain keeps bioRxiv MCP primary. PubTator3 is required when "
+        "the RQ names biomedical entities (gene/disease/chemical/variant)._"
     )
     lines.append("")
 
@@ -471,6 +699,7 @@ def main() -> None:
         mode=data.get("mode", "full"),
         research_question=data.get("research_question", ""),
         domain=data.get("domain", DEFAULT_DOMAIN),
+        has_named_entities=data.get("has_named_entities"),
     )
 
     print(format_contract_for_user(contract))

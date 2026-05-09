@@ -146,6 +146,16 @@ If **LOW collision risk** or no identity table: use query as-is.
 
 Select ≥3 databases based on domain (from `references/biomedical_research.md`):
 
+The required databases are resolved by the **Search Contract** (see
+`scripts/search_contract.py`) and frozen at Checkpoint 1. Two tables below:
+the **base tier table** (used by quick mode and by preprint-heavy across all
+modes), and the **heavy/fact-check tier table** (used by heavy modes +
+fact-check in non-preprint-heavy domains, where Paperclip replaces bioRxiv
+as the full-text discovery channel — Paperclip's corpus already covers PMC
++ bioRxiv + medRxiv + arXiv).
+
+**Base tier table** — quick mode and preprint-heavy (all modes):
+
 | Domain | Primary | Secondary | Tertiary | Reception (post-search) |
 |--------|---------|-----------|----------|------------------------|
 | Biomedical/Clinical | PubMed | Consensus | bioRxiv | Scite tallies |
@@ -154,27 +164,53 @@ Select ≥3 databases based on domain (from `references/biomedical_research.md`)
 | Cross-Domain | Consensus | PubMed | bioRxiv | Scite tallies |
 | Emerging/Preprint-heavy | bioRxiv | PubMed | Consensus | Scite tallies |
 
+**Heavy modes + fact-check tier table** — `full` / `lit-review` /
+`systematic-review` / `hypothesis` / `fact-check` (non-preprint-heavy
+domains only; preprint-heavy uses the base table above):
+
+| Domain | Primary | Secondary | Tertiary | Reception (post-search) |
+|--------|---------|-----------|----------|------------------------|
+| Biomedical/Clinical | PubMed | Consensus | **Paperclip** | Scite tallies |
+| Molecular Biology | PubMed | **Paperclip** | Consensus | Scite tallies |
+| Drug/Pharmacology | PubMed | Consensus | **Paperclip** | Scite tallies |
+| Cross-Domain | Consensus | PubMed | **Paperclip** | Scite tallies |
+
+The bioRxiv slot is replaced by Paperclip in-place (same tier position).
+Preprint-heavy is exempt — direct bioRxiv MCP gives fresher metadata than
+Paperclip's PMC-routed wrapper for hot-off-the-press preprint scans.
+
 **Note:** Scite is NOT a 4th discovery database. It is a post-search enrichment step applied
 after the bibliography is assembled (see Step 4b below).
 
-**Paperclip channel (optional):** When `paperclip --version` succeeds, run `paperclip search`
-in parallel with the primary databases as a full-text discovery channel covering PMC + bioRxiv
-+ medRxiv + arXiv. Modes: `full`, `lit-review`, `systematic-review`, `hypothesis`. Skip for
-`quick`, `fact-check`, `socratic`. Dedupe Paperclip hits by DOI against the other databases.
-Record in the Search Log alongside the other channels (see §Search Log below). For multi-paper
-synthesis, follow with `paperclip map --from <s_id>` (3–10 papers). When the RQ touches a
-computational subfield (compbio methods, ML for biomedical data), include arXiv subject codes
-as keywords in the Paperclip query to tighten relevance — see
-`references/arxiv_categories.md` for q-bio.* and cs.* categories and the native arXiv `cat:`
-syntax. Record any retained arXiv hit's category in the Annotated Bibliography
-(`Source: arXiv (q-bio.QM)`).
+**Paperclip channel (required for heavy modes + fact-check, except in
+preprint-heavy domain):** Run `paperclip search` in the same parallel batch as
+PubMed/Consensus. Full-text discovery across PMC + bioRxiv + medRxiv + arXiv.
+In preprint-heavy domain (bioRxiv stays primary), Paperclip is **optional** —
+useful as a complement, strikable at Checkpoint 1. In quick mode Paperclip is
+not eligible. When the binary is missing, the contract surfaces a Checkpoint 1
+warning rather than hard-failing — the user can install/login or strike the
+channel. Dedupe Paperclip hits by DOI against the other databases. Record in
+the Search Log alongside the other channels (see §Search Log below). For
+multi-paper synthesis, follow with `paperclip map --from <s_id>` (3–10
+papers). When the RQ touches a computational subfield (compbio methods, ML
+for biomedical data), include arXiv subject codes as keywords in the
+Paperclip query to tighten relevance — see `references/arxiv_categories.md`
+for q-bio.* and cs.* categories and the native arXiv `cat:` syntax. Record
+any retained arXiv hit's category in the Annotated Bibliography (`Source:
+arXiv (q-bio.QM)`).
 
-**PubTator3 entity-grounded channel (optional):** Use when the topic includes named
-biomedical entities (gene, disease, chemical, variant, species). Provides ID-grounded
-discovery — far higher precision than keyword search for collision-prone symbols (e.g.
-"ACE", "MET", "IL-8") because matches are normalized to PubTator3 entity IDs, not
-strings. Modes: `full`, `lit-review`, `systematic-review`, `hypothesis`, `fact-check`
-(when claim names entities). Skip for `quick`, `socratic`.
+**PubTator3 entity-grounded channel (required when the RQ names biomedical
+entities; optional otherwise):** Use when the topic includes named
+biomedical entities (gene, disease, chemical, variant, species). Provides
+ID-grounded discovery — far higher precision than keyword search for
+collision-prone symbols (e.g. "ACE", "MET", "IL-8") because matches are
+normalized to PubTator3 entity IDs, not strings. Eligible modes: `full`,
+`lit-review`, `systematic-review`, `hypothesis`, `fact-check`. Skip for
+`quick`, `socratic`. The Search Contract auto-promotes PubTator3 to
+**required** when the RQ contains gene-symbol-shaped tokens, disease/variant
+keywords, or drug INN suffixes (`-mab`, `-nib`, `-tinib`, etc.). When no
+named entities are detected, PubTator3 stays optional and the user can opt
+in via `has_named_entities=True` at contract build time.
 
 Recipes:
 - **Disambiguate first:** `uv run python skills/shared/scripts/pubtator3.py autocomplete "BRAF" --concept gene` — confirms the canonical PubTator3 ID before search.
@@ -212,12 +248,15 @@ in `required_databases` MUST be called.
 
 1. **Issue tool calls for ALL `required_databases` from the frozen Search
    Contract in a SINGLE batched message with parallel tool calls.** Do not
-   serialize. Sequential execution ("call PubMed, wait, then call bioRxiv")
+   serialize. Sequential execution ("call PubMed, wait, then call Paperclip")
    is forbidden in this step. Per the user's CLAUDE.md preference, batch
-   independent tool calls. Mode-eligible optional channels (Scite Step 4b
-   for non-quick/non-fact-check, Paperclip for full / lit-review /
-   systematic-review / hypothesis) are batched in the same message unless
-   the user struck them at Checkpoint 1.
+   independent tool calls. The required set typically includes PubMed +
+   Consensus + Paperclip (heavy modes + fact-check, non-preprint-heavy) or
+   PubMed + Consensus + bioRxiv (quick mode, preprint-heavy primary). When
+   the RQ names biomedical entities, PubTator3 is also in `required_databases`.
+   Mode-eligible optional channels (Scite Step 4b for non-quick/non-fact-check,
+   Paperclip in preprint-heavy domain, PubTator3 when no entities detected)
+   are batched in the same message unless the user struck them at Checkpoint 1.
 2. Deduplicate by DOI (remove exact DOI matches across sources).
 3. Count unique results.
 4. If < minimum threshold (15 for full, 5 for quick): expand keywords, broaden

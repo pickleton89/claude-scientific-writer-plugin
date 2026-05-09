@@ -173,12 +173,22 @@ frozen on approval:
 3. Run `scripts/search_contract.py` to produce the **Search Contract** (skip
    for `socratic` and `review` — those modes do not search):
    - Inputs: `mode`, `domain` (biomedical / molecular / pharmacology /
-     cross-domain / preprint-heavy), `research_question`
+     cross-domain / preprint-heavy), `research_question`, optional
+     `has_named_entities` override
    - Outputs the required-database list (per `thresholds.MIN_DATABASES` +
-     the domain tier table) plus mode-eligible optional channels (Scite
-     reception, Paperclip full-text, PubTator3 entity-grounded search)
+     the resolved domain tier table). In heavy modes (`full` /
+     `lit-review` / `systematic-review` / `hypothesis`) and `fact-check`,
+     **Paperclip replaces bioRxiv as a required full-text channel** for
+     all domains except `preprint-heavy`. **PubTator3** is auto-promoted
+     to required when the RQ contains named biomedical entities (gene
+     symbols, disease/variant keywords, drug INN suffixes).
+   - Optional/reception channels (Scite, Paperclip in preprint-heavy,
+     PubTator3 when no entities detected) are also surfaced
    - Mode-skipped channels are surfaced explicitly so the user can see
      *why* a tool is absent
+   - When Paperclip is required but the binary is missing, a Checkpoint 1
+     warning fires (no hard fail) — user can install/login or strike the
+     channel
 4. Present BOTH contracts to the user as part of Checkpoint 1:
    - Selected mode and confidence level (plus any mode-confirmation note)
    - Output: section structure with user-label mappings, word counts, file spec
@@ -221,12 +231,16 @@ and advocate assessment to the user.
      entry MUST be called.
    - **Issue all required-database tool calls in a SINGLE batched message
      using parallel tool calls.** Sequential execution (call PubMed, wait,
-     then call bioRxiv) is forbidden in this step. Per the user's CLAUDE.md
-     preference, batch independent tool calls.
-   - Mode-eligible optional channels (Scite reception in Step 4b, Paperclip
-     in `full` / `lit-review` / `systematic-review` / `hypothesis`) are
-     also called in the same parallel batch unless the user struck them
-     at Checkpoint 1.
+     then call Paperclip) is forbidden in this step. Per the user's CLAUDE.md
+     preference, batch independent tool calls. The required set typically
+     includes PubMed + Consensus + Paperclip (heavy modes + fact-check,
+     non-preprint-heavy domains) or PubMed + Consensus + bioRxiv (quick
+     mode, preprint-heavy primary). PubTator3 joins the required set when
+     the RQ names biomedical entities.
+   - Mode-eligible optional channels (Scite reception in Step 4b,
+     Paperclip in preprint-heavy domain, PubTator3 when no entities are
+     detected) are also called in the same parallel batch unless the user
+     struck them at Checkpoint 1.
    - ToolUniverse fallbacks → EuropePMC, SemanticScholar (via
      `grep_tools`/`execute_tool`) only fire when a contract-required MCP
      trips its circuit breaker.
