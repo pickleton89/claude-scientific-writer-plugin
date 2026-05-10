@@ -24,9 +24,24 @@
      Identical structure to template-editorial.html except:
        • Cover uses a Brand-Blue band w/ white wordmark
        • Inner pages use class "v-banded" (accent shifts to Dark Teal)
-     LLM authoring instructions are the same — see
-     TEMPLATE_GUIDE.md and the comments in template-editorial.html.
+
+     Two page modes coexist (see template-editorial.html for full notes):
+       • <section class="page">       — fixed-canvas showcase pages
+       • <section class="body-flow">  — flow-paginated prose sections
+
+     LLM authoring instructions are the same — see TEMPLATE_GUIDE.md.
      ============================================================ -->
+
+<!-- Running header/footer for all .body-flow sections; auto-replicated
+     on every flowed page via CSS Paged Media. -->
+<div class="flow-running-header-l">
+  <img class="icon" src="assets/Oligon_Icon_BrandBlue.svg" alt="" />
+  <span class="meta">Oligon · {{REPORT_TITLE_SHORT}}</span>
+</div>
+<div class="flow-running-header-r">{{PROGRAM_CODE}}</div>
+<div class="flow-running-footer-l">
+  {{REPORT_NUMBER}}<span class="sep">·</span><span class="conf">{{CLASSIFICATION}}</span>
+</div>
 
 
 <!-- ============================================================
@@ -139,81 +154,55 @@
 </section>
 
 
-<!-- PAGE 4 — Methodology -->
-<section class="page v-banded">
-  <div class="page-header">
-    <img class="icon" src="assets/Oligon_Icon_BrandBlue.svg" alt="" />
-    <span class="meta">Oligon · Methodology</span>
-    <span class="rule"></span>
-    <span>{{PROGRAM_CODE}}</span>
+<!-- METHODOLOGY — flow-paginated. -->
+<section class="body-flow v-banded">
+  <div class="sec-marker">
+    <span class="num">02</span>
+    <span class="label">Methodology &amp; Sources</span>
   </div>
-  <div class="page-body">
-    <div class="sec-marker">
-      <span class="num">02</span>
-      <span class="label">Methodology &amp; Sources</span>
-    </div>
-    <h1 class="display">{{HEADLINE}}</h1>
-    <p class="lede">{{LEDE}}</p>
-    <h2><span class="num">2.1</span>{{SUBHEAD}}</h2>
-    <p>{{BODY}}</p>
-    <h2><span class="num">2.2</span>{{SUBHEAD}}</h2>
-    <dl class="kv">
-      <dt>{{KEY 1}}</dt><dd>{{VALUE 1}}</dd>
-      <dt>{{KEY 2}}</dt><dd>{{VALUE 2}}</dd>
-      <dt>{{KEY 3}}</dt><dd>{{VALUE 3}}</dd>
-    </dl>
-    <h2><span class="num">2.3</span>{{SUBHEAD}}</h2>
-    <p>{{BODY}}</p>
-    <div class="callout neutral">
-      <div class="label">Honest gap</div>
-      <p>{{CAVEAT BODY}}</p>
-    </div>
-  </div>
-  <div class="page-footer">
-    <span>{{REPORT_NUMBER}}</span><span class="rule"></span>
-    <span class="conf">{{CLASSIFICATION}}</span>
-    <span class="pg">04 / {{TOTAL}}</span>
+  <h1 class="display">{{HEADLINE}}</h1>
+  <p class="lede">{{LEDE}}</p>
+  <h2><span class="num">2.1</span>{{SUBHEAD}}</h2>
+  <p>{{BODY}}</p>
+  <h2><span class="num">2.2</span>{{SUBHEAD}}</h2>
+  <dl class="kv">
+    <dt>{{KEY 1}}</dt><dd>{{VALUE 1}}</dd>
+    <dt>{{KEY 2}}</dt><dd>{{VALUE 2}}</dd>
+    <dt>{{KEY 3}}</dt><dd>{{VALUE 3}}</dd>
+  </dl>
+  <h2><span class="num">2.3</span>{{SUBHEAD}}</h2>
+  <p>{{BODY}}</p>
+  <div class="callout neutral">
+    <div class="label">Honest gap</div>
+    <p>{{CAVEAT BODY}}</p>
   </div>
 </section>
 
 
-<!-- PAGE 5 — Key Findings / generic body section -->
-<section class="page v-banded">
-  <div class="page-header">
-    <img class="icon" src="assets/Oligon_Icon_BrandBlue.svg" alt="" />
-    <span class="meta">Oligon · {{SECTION NAME}}</span>
-    <span class="rule"></span>
-    <span>{{PROGRAM_CODE}}</span>
+<!-- KEY FINDINGS / generic body section — flow-paginated. -->
+<section class="body-flow v-banded">
+  <div class="sec-marker">
+    <span class="num">03</span>
+    <span class="label">{{SECTION LABEL}}</span>
   </div>
-  <div class="page-body">
-    <div class="sec-marker">
-      <span class="num">03</span>
-      <span class="label">{{SECTION LABEL}}</span>
-    </div>
-    <h1 class="display">{{HEADLINE}}</h1>
+  <h1 class="display">{{HEADLINE}}</h1>
 
-    <h2><span class="num">3.1</span>{{FINDING TITLE}}</h2>
-    <p>{{BODY}}</p>
-    <div class="callout">
-      <div class="label">Key finding · 01</div>
-      <p>{{CALLOUT BODY}}</p>
-    </div>
-
-    <h2><span class="num">3.2</span>{{FINDING TITLE}}</h2>
-    <p>{{BODY}}</p>
-    <div class="callout warn">
-      <div class="label">Key finding · 02 · Risk</div>
-      <p>{{CALLOUT BODY}}</p>
-    </div>
-
-    <h2><span class="num">3.3</span>{{FINDING TITLE}}</h2>
-    <p>{{BODY}}</p>
+  <h2><span class="num">3.1</span>{{FINDING TITLE}}</h2>
+  <p>{{BODY}}</p>
+  <div class="callout">
+    <div class="label">Key finding · 01</div>
+    <p>{{CALLOUT BODY}}</p>
   </div>
-  <div class="page-footer">
-    <span>{{REPORT_NUMBER}}</span><span class="rule"></span>
-    <span class="conf">{{CLASSIFICATION}}</span>
-    <span class="pg">05 / {{TOTAL}}</span>
+
+  <h2><span class="num">3.2</span>{{FINDING TITLE}}</h2>
+  <p>{{BODY}}</p>
+  <div class="callout warn">
+    <div class="label">Key finding · 02 · Risk</div>
+    <p>{{CALLOUT BODY}}</p>
   </div>
+
+  <h2><span class="num">3.3</span>{{FINDING TITLE}}</h2>
+  <p>{{BODY}}</p>
 </section>
 
 

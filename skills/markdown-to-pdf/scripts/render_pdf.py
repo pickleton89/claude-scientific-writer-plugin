@@ -12,7 +12,14 @@ the right page size and margins for both renderers to agree.
 
 Usage:
     uv run scripts/render_pdf.py <html_path> <output_pdf>
+    uv run scripts/render_pdf.py <html_path> <output_pdf> --no-probe
+    uv run scripts/render_pdf.py <html_path> <output_pdf> --allow-overflow
     uv run scripts/render_pdf.py --self-test
+
+Every render is validated by the overflow probe before the PDF is written;
+showcase pages whose .page-body content exceeds the canvas cause exit 2 and
+no PDF on disk. --no-probe skips validation; --allow-overflow runs it but
+writes the PDF anyway.
 """
 
 from __future__ import annotations
@@ -55,22 +62,63 @@ except (OSError, ImportError) as e:
 PAGE_OVERRIDE_CSS = CSS(string="@page { size: letter; margin: 0; }")
 
 
-def render_html_to_pdf(html_path: Path, output_path: Path) -> Path:
+class OverflowProbeError(RuntimeError):
+    """Raised when the overflow probe finds clipped content on a showcase
+    page. Carries the structured findings so callers can format their own
+    diagnostic messages."""
+    def __init__(self, findings: list[Any]) -> None:
+        self.findings = findings
+        super().__init__(f"{len(findings)} showcase page(s) overflow")
+
+
+def render_html_to_pdf(
+    html_path: Path,
+    output_path: Path,
+    *,
+    probe: bool = True,
+    allow_overflow: bool = False,
+) -> Path:
     """Render a filled HTML template to a PDF.
 
-    Forces letter size with zero page margin (the templates lay out their own
-    margins inside .page sections); this keeps WeasyPrint and Chrome's
-    print-to-PDF in agreement and matches the design intent stated in
-    TEMPLATE_GUIDE.md ("Page size: US Letter, margins: None").
+    Forces letter size with zero page margin (the showcase pages lay out
+    their own margins inside .page sections); the named @page flow rule in
+    report.css applies its own margins for body-flow content.
+
+    Pipeline:
+        1. Render the document (lays out boxes, doesn't write PDF yet).
+        2. Probe showcase pages for content overflow.
+        3. If clean — or if the caller passed allow_overflow=True — write
+           the PDF. Otherwise raise OverflowProbeError with structured findings.
+
+    The probe step adds ~5% to render time and catches the most common
+    failure mode (LLM stuffs more content into a fixed-canvas .page than
+    fits between header and footer). Set probe=False for a raw render.
     """
     html_path = Path(html_path).resolve()
     output_path = Path(output_path).resolve()
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    HTML(filename=str(html_path), base_url=str(html_path.parent)).write_pdf(
-        target=str(output_path),
+    doc = HTML(filename=str(html_path), base_url=str(html_path.parent)).render(
         stylesheets=[PAGE_OVERRIDE_CSS],
     )
+
+    if probe:
+        # Lazy import so a broken probe degrades gracefully instead of
+        # blocking PDF generation. The probe is a safety check, not a
+        # hard dependency — if it can't run, warn and proceed.
+        try:
+            from overflow_probe import probe_document  # noqa: PLC0415
+            findings = probe_document(doc)
+        except ImportError as e:
+            sys.stderr.write(
+                f"WARNING: overflow probe unavailable ({e}); rendering "
+                "without validation. Layout overflow will not be caught.\n"
+            )
+            findings = []
+        if findings and not allow_overflow:
+            raise OverflowProbeError(findings)
+
+    doc.write_pdf(target=str(output_path))
     return output_path
 
 
@@ -130,13 +178,43 @@ def _cli() -> int:
     parser.add_argument("html", nargs="?", help="Path to filled HTML template")
     parser.add_argument("output", nargs="?", help="Path to output PDF")
     parser.add_argument("--self-test", action="store_true", help="Render both templates with placeholders as a smoke test")
+    parser.add_argument(
+        "--no-probe",
+        action="store_true",
+        help="Skip the overflow probe (faster but unsafe)",
+    )
+    parser.add_argument(
+        "--allow-overflow",
+        action="store_true",
+        help="Run the probe but write the PDF even if showcase pages overflow",
+    )
     args = parser.parse_args()
 
     if args.self_test:
         return _self_test()
     if not args.html or not args.output:
         parser.error("html and output are required (or use --self-test)")
-    out = render_html_to_pdf(Path(args.html), Path(args.output))
+    try:
+        out = render_html_to_pdf(
+            Path(args.html),
+            Path(args.output),
+            probe=not args.no_probe,
+            allow_overflow=args.allow_overflow,
+        )
+    except OverflowProbeError as e:
+        sys.stderr.write(
+            f"OVERFLOW: {len(e.findings)} showcase page(s) have content "
+            "exceeding the body band. PDF was NOT written.\n\n"
+        )
+        for f in e.findings:
+            sys.stderr.write(f.format_human() + "\n\n")
+        sys.stderr.write(
+            "Fix: split the overflowing section across multiple pages, OR "
+            "move prose into a <section class=\"body-flow\"> which "
+            "paginates automatically. Pass --allow-overflow to write the "
+            "PDF anyway (clipped content will be hidden but lost).\n"
+        )
+        return 2
     print(f"Rendered: {out}")
     return 0
 

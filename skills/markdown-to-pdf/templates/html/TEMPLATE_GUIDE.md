@@ -39,22 +39,29 @@ The cover has these slots (see top of template):
 
 The same `{{PROGRAM_CODE}}`, `{{REPORT_NUMBER}}`, `{{CLASSIFICATION}}` recur in every page header/footer — replace them globally.
 
-### 3 · Map the markdown to pages
+### 3 · Map the markdown to sections
 
-The template has eight reference pages, each demonstrating one layout:
+The template uses **two section modes** — pick the right one for each piece of content:
 
-| # | Layout | Use it for |
+- **Showcase** (`<section class="page">`) — fixed 816×1056 canvas. Cover, TOC, figure spread, comparison table, references. Content **must** fit; the overflow probe rejects renders that exceed the body band.
+- **Flow** (`<section class="body-flow">`) — natural pagination. Methodology, key findings, executive summary, any prose-heavy section. Dump everything in one section; WeasyPrint paginates with running header/footer intact.
+
+| Section | Mode | Use it for |
 |---|---|---|
-| 1 | Cover | Always. |
-| 2 | Executive summary | `## Executive Summary` / `## TL;DR` / `## The One-Sentence Essence` sections. |
-| 3 | Contents | If the report is ≥6 pages. |
-| 4 | Methodology | `## Methodology` / `## How we did this` / `## First Principles`. |
-| 5 | Body section | Default for every analytical section. **Duplicate this page as needed.** |
-| 6 | Figure spread | Wherever the markdown references a figure, or a finding warrants a chart. |
-| 7 | Comparison table | Markdown tables with a "winner" or "best of" structure. |
-| 8 | References | Always last. Citations from the markdown. |
+| Cover | Showcase | Always (page 1). |
+| Executive summary | Showcase or Flow | Showcase if it fits one page; Flow if you have multiple callouts running long. |
+| Contents | Showcase | Reports ≥ 6 pages. |
+| Methodology | **Flow** | `## Methodology` / `## Methods` — these run long, especially with `kv` blocks. |
+| Body / Findings | **Flow** | Default for every analytical section. Dump all `## Finding N` inside one `<section class="body-flow">`. |
+| Figure spread | Showcase | Wherever the markdown references a figure. |
+| Comparison table | Showcase | Markdown tables with a "winner" or "best of" structure. |
+| References | Showcase | Always last (split into multiple `.page` blocks if the list is long). |
 
-**Add or remove pages by duplicating / deleting `<section class="page">` blocks.** Update `.pg` footer text on every page (`02 / 12`, `03 / 12`, …).
+**Authoring rules:**
+
+- For showcase pages, update `.pg` footer text manually (`02 / NN`, `03 / NN`, …).
+- For flow sections, page numbers are auto-injected (`counter(page) / counter(pages)`). Set the running-header/footer slots once globally — `{{REPORT_TITLE_SHORT}}`, `{{PROGRAM_CODE}}`, `{{REPORT_NUMBER}}`, `{{CLASSIFICATION}}` — they appear on every flow page automatically.
+- **Never hand-paginate prose into showcase pages.** If a body section has more than ~450 words, it belongs in `body-flow`. The renderer's overflow probe will reject it otherwise.
 
 ### 4 · Component vocabulary
 
@@ -173,13 +180,15 @@ Voice benchmark: the methods section of a *Nature* paper. Tight, factual, no dec
 
 ## Generating the PDF
 
-After populating the HTML:
+Render via the bundled WeasyPrint script — this is the supported path:
 
-1. Open it in a browser (Chrome / Safari).
-2. **File → Print → Save as PDF.**
-3. Page size: **US Letter**, margins: **None** (the page already has its own margins).
+```bash
+uv run skills/markdown-to-pdf/scripts/render_pdf.py <filled.html> output/<stem>.pdf
+```
 
-Pages are pre-sized to 8.5 × 11 in and break correctly.
+The renderer lays out the document, runs the overflow probe (rejects any showcase `.page-body` that's overstuffed), then writes the PDF. Letter size, margins owned by the templates.
+
+Browser "Print → Save as PDF" still works for visual previews but **skips the overflow probe** — prefer the script.
 
 ---
 
@@ -187,11 +196,11 @@ Pages are pre-sized to 8.5 × 11 in and break correctly.
 
 - [ ] Variant chosen (Editorial / Banded)
 - [ ] Cover slots filled
-- [ ] Markdown content mapped to pages, page by page
-- [ ] Footer page numbers updated everywhere (`NN / TOTAL`)
+- [ ] Markdown content mapped to sections (showcase vs. flow — see Step 3)
+- [ ] Showcase footer page numbers updated (`NN / TOTAL`); flow page numbers auto-inject
+- [ ] Running-header/footer slots filled once globally (`{{REPORT_TITLE_SHORT}}`, `{{PROGRAM_CODE}}`, `{{REPORT_NUMBER}}`, `{{CLASSIFICATION}}`)
 - [ ] Figures placed in `figures/`, referenced from inline `<img>`
 - [ ] Emoji stripped, voice aligned to Oligon style
-- [ ] Callouts limited to 1–2 per page
+- [ ] Callouts limited to 1–2 per showcase page; unrestricted in flow
 - [ ] References numbered, DOIs in `<span class="doi">`
-- [ ] HTML opens cleanly in browser
-- [ ] PDF exports without weird breaks
+- [ ] `render_pdf.py` exits 0 (overflow probe passes)

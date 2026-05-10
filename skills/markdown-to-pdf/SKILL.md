@@ -1,6 +1,6 @@
 ---
 name: markdown-to-pdf
-version: 2.0.0
+version: 2.1.0
 description: "Build branded long-form research reports as PDFs from markdown sources. HTML/CSS templates (Editorial / Banded variants) rendered via WeasyPrint. Use for analysis reports, literature reviews, and data reports — not for meeting notes, task lists, or short utility docs."
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
 ---
@@ -151,28 +151,50 @@ This is the LLM's core job. Drive it from the inlined component vocabulary below
 | `{{EYEBROW}}` | Brief category label (e.g. "Research Report · SeekR Platform") |
 | `{{DECK}}` | One-paragraph summary — what the report assesses |
 | `{{PROGRAM_CODE}}`, `{{REPORT_NUMBER}}`, `{{DATE}}`, `{{CLASSIFICATION}}` | Frontmatter / user-provided. Recur in every page header/footer — replace globally. |
+| `{{REPORT_TITLE_SHORT}}` | 1–3 word abbreviation of the title for the running header on flow pages (e.g. "Target Assessment", "ALS Pipeline"). Keep ≤ 24 chars to avoid wrapping. Recurs on every flow page header — replace globally. |
 | `{{AUTHOR_N}}` / `{{ROLE_N}}` | Up to three pairs |
 
-**Page mapping (duplicate / delete `<section class="page">` blocks as needed):**
-| Reference page # | Layout | Use it for |
-|---|---|---|
-| 1 | Cover | Always |
-| 2 | Executive summary | `## Executive Summary` / `## TL;DR` |
-| 3 | Contents | Reports ≥ 6 pages |
-| 4 | Methodology | `## Methodology` / `## Methods` |
-| 5 | Body section | Default analytical section. **Duplicate per top-level finding section.** |
-| 6 | Figure spread | Wherever the markdown references a figure |
-| 7 | Comparison table | Markdown tables with a winner / "best of" structure |
-| 8 | References | Always last |
+**Two page modes — pick the right one for each section:**
 
-After populating, update each page's `.pg` footer text (`02 / NN`, `03 / NN`, …) globally.
+| Mode | Markup | Use it for | Pagination |
+|---|---|---|---|
+| **Showcase** | `<section class="page">` | Cover, TOC, figure spread, comparison table, references | Hand-laid 816×1056 canvas; one `<section>` = one PDF page. Content **must** fit — overflow probe rejects renders that exceed the body band. |
+| **Flow** | `<section class="body-flow">` | Executive summary, methodology, key findings, any prose-heavy section | WeasyPrint paginates automatically across as many pages as the content needs. Running header/footer reproduce on every flow page. |
+
+Section mapping (duplicate / delete blocks as needed; the stock templates ship with one of each):
+
+| Reference section | Mode | Use it for |
+|---|---|---|
+| Cover | Showcase | Always (page 1) |
+| Executive summary | Showcase or Flow | Showcase if it fits one page; Flow if you have a stat strip + multiple callouts running long |
+| Contents | Showcase | Reports ≥ 6 pages |
+| Methodology | **Flow** | `## Methodology` / `## Methods` — these run long, especially with `kv` blocks |
+| Body section / Findings | **Flow** | Default analytical section. Dump every `## Finding N` inside one `<section class="body-flow">` — no need to split into multiple pages. |
+| Figure spread | Showcase | Wherever the markdown references a figure |
+| Comparison table | Showcase | Markdown tables with a winner / "best of" structure |
+| References | Showcase | Always last (split into multiple `<section class="page">` blocks if the list is long) |
+
+**Authoring rules:**
+
+- For **flow sections**, the running header/footer come from the `.flow-running-header-l` / `-r` / `.flow-running-footer-l` blocks declared once near the top of `<body>`. Replace `{{REPORT_TITLE_SHORT}}`, `{{PROGRAM_CODE}}`, `{{REPORT_NUMBER}}`, `{{CLASSIFICATION}}` once globally — they appear on every flow page automatically.
+- Page numbers on flow pages are auto-injected (`counter(page) / counter(pages)`) — do not hand-edit.
+- For **showcase pages**, update the `.pg` footer text manually (`02 / NN`, `03 / NN`, …). The probe doesn't auto-renumber.
+- **Never hand-paginate prose into showcase pages.** If a body section has more than ~450 words, it belongs in `body-flow`. The probe will reject the render otherwise.
 
 #### Step 5 — Render
 
 ```bash
 uv run skills/markdown-to-pdf/scripts/render_pdf.py <filled.html> output/<stem>.pdf
 ```
-The renderer auto-injects `@page { size: letter; margin: 0 }` and sets the macOS dyld path. Output is sharp vector text, ~30–60 KB per 8-page report.
+The renderer:
+1. Lays out the document with WeasyPrint.
+2. Runs the **overflow probe** (`scripts/overflow_probe.py`) against every showcase page; if any `.page-body` is over-stuffed, it exits with code 2 and a structured diagnostic — no PDF is written.
+3. On clean renders, writes the PDF (~30–60 KB per 8-page report; flow-paginated reports vary by content length).
+
+**Escape hatches** (use sparingly):
+
+- `--no-probe` — skip the probe entirely. Fastest, unsafe; only use when you've already confirmed the layout is correct.
+- `--allow-overflow` — run the probe and write the PDF anyway. Phase-1 CSS clips overflowing content cleanly above the footer rule — the layout stays clean, but the clipped content is invisible in the output PDF (the source HTML still has it; the reader doesn't).
 
 If `output/` is not in `.gitignore`, add it.
 
@@ -181,6 +203,8 @@ If `output/` is not in `.gitignore`, add it.
 ## Component Vocabulary (use these classes verbatim)
 
 The HTML templates only sanction what's in `templates/html/report.css`. Don't invent classes.
+
+**Mode compatibility:** All components below work inside both `<section class="page">` (showcase) and `<section class="body-flow">` (flow), unless noted. In flow mode, `report.css` already adds `break-inside: avoid` to callouts, summary-grids, figure blocks, KV lists, and tables, and `break-after: avoid-page` to headings — so designed elements never split mid-component or orphan a heading. **Cover-only**: `.cover`, `.cover-body`, `.band`, `.auth-grid`, `.orbital-art`, `.hero-fig` (cover page exclusively). **Showcase-only by convention**: `.toc-row` (TOC page), `.refs` (References page).
 
 **Section markers / headings:**
 ```html
@@ -284,9 +308,11 @@ See `templates/error_recovery_map.json` for the canonical error → recovery tab
 - [ ] Self-test passes (`render_pdf.py --self-test`)
 - [ ] Preflight reports no errors
 - [ ] User confirms structure tree before render
-- [ ] Output PDF: 8+ pages (or page count matching duplicated body sections), letter size
-- [ ] Cover slots all populated (no remaining `{{…}}`)
-- [ ] Page footers numbered consistently
+- [ ] **Overflow probe passes** (renderer exits 0; no `.page-body` exceeds its canvas)
+- [ ] Output PDF: 8+ pages, letter size (page count varies with flow-paginated content length)
+- [ ] Cover slots all populated (no remaining `{{…}}` in the cover section)
+- [ ] Flow-running slots populated globally (`{{REPORT_TITLE_SHORT}}`, `{{PROGRAM_CODE}}`, `{{REPORT_NUMBER}}`, `{{CLASSIFICATION}}`)
+- [ ] Showcase page footers numbered consistently (flow page numbers auto-inject)
 - [ ] Brand Blue used sparingly (≤ 2 elements per page)
 - [ ] Orange used only for opposition / risk
 - [ ] Figures referenced from `figures/`, no broken images
@@ -319,7 +345,8 @@ See `templates/error_recovery_map.json` for the canonical error → recovery tab
 | `templates/html/assets/` | Oligon logos (SVG) |
 | `templates/schemas/*.json` | Doc-type schemas; check `pipeline` field |
 | `templates/error_recovery_map.json` | Error → recovery actions |
-| `scripts/render_pdf.py` | WeasyPrint wrapper (PEP-723; deps installed automatically by `uv run`) |
+| `scripts/render_pdf.py` | WeasyPrint wrapper (PEP-723; deps installed automatically by `uv run`). Runs the overflow probe before writing the PDF. |
+| `scripts/overflow_probe.py` | Validates that no showcase `.page-body` overflows its canvas. Standalone CLI: `uv run scripts/overflow_probe.py <filled.html>` (exit 0 = OK, 1 = overflow). |
 | `scripts/preflight.py` | Frontmatter / required-section validation |
 | `scripts/element_detector.py` | Pattern detection (callouts, tables, findings) |
 | `scripts/structure_tree.py` | Heading-tree formatter |

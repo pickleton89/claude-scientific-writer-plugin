@@ -21,14 +21,44 @@
 <!-- ============================================================
      OLIGON REPORT TEMPLATE · EDITORIAL VARIANT
      ============================================================
+     Two page modes coexist in this template:
+
+       SHOWCASE (`<section class="page">`) — hand-laid 816×1056 canvas
+         used for designed compositions (cover, TOC, figures, comparison
+         table, references). Content is bounded by the design.
+
+       FLOW (`<section class="body-flow">`) — natural-flow prose
+         paginated by WeasyPrint. Running header/footer appear on every
+         page automatically. Use for prose-heavy sections (methodology,
+         findings, executive summary). NEVER hand-paginate prose into
+         showcase pages — flow handles overflow correctly.
+
      LLM authoring instructions:
        1. Replace every {{PLACEHOLDER}} with content from the brief.
-       2. Each <section class="page"> is one US-Letter page (816×1056).
-          Add or remove pages by duplicating/deleting these sections.
-       3. Update the .pg footer text on each page (e.g. "03 / 12").
+       2. For prose sections, dump everything inside one <section
+          class="body-flow"> — no need to split into multiple pages.
+          The renderer paginates with running header/footer intact.
+       3. For showcase pages, keep content bounded — the overflow probe
+          will fail the render if a .page-body exceeds its canvas.
        4. Keep all class names — they carry the styling.
        5. Use the component vocabulary in TEMPLATE_GUIDE.md.
      ============================================================ -->
+
+<!-- ============================================================
+     RUNNING HEADER / FOOTER for all .body-flow sections.
+     Placed in the DOM once; each piece is replicated in a specific
+     @page margin box via CSS Paged Media position: running().
+     Page numbers auto-inject via counter(page) / counter(pages) —
+     they never need manual updates.
+     ============================================================ -->
+<div class="flow-running-header-l">
+  <img class="icon" src="assets/Oligon_Icon_BrandBlue.svg" alt="" />
+  <span class="meta">Oligon · {{REPORT_TITLE_SHORT}}</span>
+</div>
+<div class="flow-running-header-r">{{PROGRAM_CODE}}</div>
+<div class="flow-running-footer-l">
+  {{REPORT_NUMBER}}<span class="sep">·</span><span class="conf">{{CLASSIFICATION}}</span>
+</div>
 
 
 <!-- ============================================================
@@ -175,106 +205,80 @@
 
 
 <!-- ============================================================
-     PAGE 4 — METHODOLOGY (or any "how the work was done" page)
+     METHODOLOGY — flow-paginated. Drop in as much prose as you need;
+     WeasyPrint paginates across as many pages as the content requires,
+     with the running header/footer (declared once, near top of <body>)
+     reproduced on every page.
+
      Pattern: sec-marker → display headline → lede →
               numbered subheadings (h2 with .num span) →
               kv definition list → neutral callout for caveats
      ============================================================ -->
-<section class="page v-editorial">
-  <div class="page-header">
-    <img class="icon" src="assets/Oligon_Icon_BrandBlue.svg" alt="" />
-    <span class="meta">Oligon · Methodology</span>
-    <span class="rule"></span>
-    <span>{{PROGRAM_CODE}}</span>
+<section class="body-flow v-editorial">
+  <div class="sec-marker">
+    <span class="num">02</span>
+    <span class="label">Methodology &amp; Sources</span>
   </div>
 
-  <div class="page-body">
-    <div class="sec-marker">
-      <span class="num">02</span>
-      <span class="label">Methodology &amp; Sources</span>
-    </div>
+  <h1 class="display">{{HEADLINE}}</h1>
+  <p class="lede">{{LEDE}}</p>
 
-    <h1 class="display">{{HEADLINE}}</h1>
-    <p class="lede">{{LEDE}}</p>
+  <!-- Numbered sub-section -->
+  <h2><span class="num">2.1</span>{{SUBHEAD}}</h2>
+  <p>{{BODY PARAGRAPH}}</p>
 
-    <!-- Numbered sub-section -->
-    <h2><span class="num">2.1</span>{{SUBHEAD}}</h2>
-    <p>{{BODY PARAGRAPH}}</p>
+  <h2><span class="num">2.2</span>{{SUBHEAD}}</h2>
+  <!-- Definition list — for parameter tables, search strategy, etc. -->
+  <dl class="kv">
+    <dt>{{KEY 1}}</dt><dd>{{VALUE 1}}</dd>
+    <dt>{{KEY 2}}</dt><dd>{{VALUE 2}}</dd>
+    <dt>{{KEY 3}}</dt><dd>{{VALUE 3}}</dd>
+    <dt>{{KEY 4}}</dt><dd>{{VALUE 4}}</dd>
+  </dl>
 
-    <h2><span class="num">2.2</span>{{SUBHEAD}}</h2>
-    <!-- Definition list — for parameter tables, search strategy, etc. -->
-    <dl class="kv">
-      <dt>{{KEY 1}}</dt><dd>{{VALUE 1}}</dd>
-      <dt>{{KEY 2}}</dt><dd>{{VALUE 2}}</dd>
-      <dt>{{KEY 3}}</dt><dd>{{VALUE 3}}</dd>
-      <dt>{{KEY 4}}</dt><dd>{{VALUE 4}}</dd>
-    </dl>
+  <h2><span class="num">2.3</span>{{SUBHEAD}}</h2>
+  <p>{{BODY PARAGRAPH}}</p>
 
-    <h2><span class="num">2.3</span>{{SUBHEAD}}</h2>
-    <p>{{BODY PARAGRAPH}}</p>
-
-    <!-- Neutral callout — gray. Use for honest gaps / caveats. -->
-    <div class="callout neutral">
-      <div class="label">Honest gap</div>
-      <p>{{CAVEAT BODY}}</p>
-    </div>
-  </div>
-
-  <div class="page-footer">
-    <span>{{REPORT_NUMBER}}</span>
-    <span class="rule"></span>
-    <span class="conf">{{CLASSIFICATION}}</span>
-    <span class="pg">04 / {{TOTAL}}</span>
+  <!-- Neutral callout — gray. Use for honest gaps / caveats. -->
+  <div class="callout neutral">
+    <div class="label">Honest gap</div>
+    <p>{{CAVEAT BODY}}</p>
   </div>
 </section>
 
 
 <!-- ============================================================
-     PAGE 5 — KEY FINDINGS / BODY SECTION
-     The most reusable inner page. Use for any analytical content.
+     KEY FINDINGS / BODY SECTION — flow-paginated.
+     The most reusable inner section. Add as many h2 subsections,
+     paragraphs, and callouts as needed; the renderer paginates.
+
      Pattern: sec-marker → display headline → numbered subheads,
               paragraphs, callouts mixed.
      ============================================================ -->
-<section class="page v-editorial">
-  <div class="page-header">
-    <img class="icon" src="assets/Oligon_Icon_BrandBlue.svg" alt="" />
-    <span class="meta">Oligon · {{SECTION NAME}}</span>
-    <span class="rule"></span>
-    <span>{{PROGRAM_CODE}}</span>
+<section class="body-flow v-editorial">
+  <div class="sec-marker">
+    <span class="num">03</span>
+    <span class="label">{{SECTION LABEL}}</span>
   </div>
 
-  <div class="page-body">
-    <div class="sec-marker">
-      <span class="num">03</span>
-      <span class="label">{{SECTION LABEL}}</span>
-    </div>
+  <h1 class="display">{{HEADLINE — wrap key phrase in <em>highlighted</em>}}</h1>
 
-    <h1 class="display">{{HEADLINE — wrap key phrase in <em>highlighted</em>}}</h1>
-
-    <h2><span class="num">3.1</span>{{FINDING TITLE}}</h2>
-    <p>{{BODY}}</p>
-    <div class="callout">
-      <div class="label">Key finding · 01</div>
-      <p>{{CALLOUT BODY}}</p>
-    </div>
-
-    <h2><span class="num">3.2</span>{{FINDING TITLE}}</h2>
-    <p>{{BODY}}</p>
-    <div class="callout warn">
-      <div class="label">Key finding · 02 · Risk</div>
-      <p>{{CALLOUT BODY}}</p>
-    </div>
-
-    <h2><span class="num">3.3</span>{{FINDING TITLE}}</h2>
-    <p>{{BODY}}</p>
+  <h2><span class="num">3.1</span>{{FINDING TITLE}}</h2>
+  <p>{{BODY}}</p>
+  <div class="callout">
+    <div class="label">Key finding · 01</div>
+    <p>{{CALLOUT BODY}}</p>
   </div>
 
-  <div class="page-footer">
-    <span>{{REPORT_NUMBER}}</span>
-    <span class="rule"></span>
-    <span class="conf">{{CLASSIFICATION}}</span>
-    <span class="pg">05 / {{TOTAL}}</span>
+  <h2><span class="num">3.2</span>{{FINDING TITLE}}</h2>
+  <p>{{BODY}}</p>
+  <div class="callout warn">
+    <div class="label">Key finding · 02 · Risk</div>
+    <p>{{CALLOUT BODY}}</p>
   </div>
+
+  <h2><span class="num">3.3</span>{{FINDING TITLE}}</h2>
+  <p>{{BODY}}</p>
 </section>
 
 

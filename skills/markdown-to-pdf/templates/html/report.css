@@ -8,6 +8,143 @@
 
 /* Reset within report pages so design-canvas chrome doesn't bleed in */
 .page, .page * { box-sizing: border-box; }
+.body-flow, .body-flow * { box-sizing: border-box; }
+
+/* ── Two page modes ──────────────────────────────────────────────────────
+   Showcase pages (`<section class="page">`): hand-laid 816×1056 canvas,
+   absolute-positioned chrome, content bounded by design (cover, TOC,
+   figure spread, comparison, references).
+
+   Flow pages (`<section class="body-flow">`): natural-flow prose paginated
+   by WeasyPrint via CSS Paged Media. Running header/footer come from the
+   .flow-running-* elements via position: running(). Use for prose-heavy
+   sections (methodology, findings, executive summary) where length varies.
+
+   The two coexist in one document. `@page` (default) keeps margin: 0 for
+   the showcase canvases; `@page flow` introduces real margins so flowed
+   content can have a proper running header/footer in the margin boxes.
+   ────────────────────────────────────────────────────────────────────── */
+@page flow {
+  size: letter;
+  margin: 88px 64px 72px 64px;
+
+  /* Top margin: continuous brand-blue rule across all three boxes;
+     icon + meta lives on the left, program code on the right. The
+     middle box is empty but carries the rule so it spans the full width. */
+  @top-left {
+    content: element(flow-running-header-l);
+    vertical-align: bottom;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--brand-blue);
+  }
+  @top-center {
+    content: "";
+    border-bottom: 1px solid var(--brand-blue);
+  }
+  @top-right {
+    content: element(flow-running-header-r);
+    vertical-align: bottom;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--brand-blue);
+    text-align: right;
+    font-family: var(--font-sans);
+    font-size: 8.5pt;
+    color: var(--fg-3);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* Bottom margin: continuous gridline rule across all three boxes;
+     report number + classification on the left, page count on the right. */
+  @bottom-left {
+    content: element(flow-running-footer-l);
+    vertical-align: top;
+    padding-top: 4px;
+    border-top: 1px solid var(--gridline);
+  }
+  @bottom-center {
+    content: "";
+    border-top: 1px solid var(--gridline);
+  }
+  @bottom-right {
+    content: counter(page) " / " counter(pages);
+    font-family: var(--font-sans);
+    font-size: 8.5pt;
+    font-weight: 700;
+    color: var(--fg-2);
+    font-variant-numeric: tabular-nums;
+    vertical-align: top;
+    padding-top: 4px;
+    border-top: 1px solid var(--gridline);
+    text-align: right;
+  }
+}
+
+/* Running elements: present in the DOM once, replicated in every flow
+   page's margin box. position: running(name) removes them from normal
+   flow; `content: element(name)` in the @page margin box pulls them in. */
+.flow-running-header-l {
+  position: running(flow-running-header-l);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-sans);
+  font-size: 8.5pt;
+  color: var(--fg-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.flow-running-header-l .icon { width: 14px; height: 14px; flex: 0 0 auto; }
+.flow-running-header-l .meta { font-weight: 700; color: var(--fg-2); }
+
+/* The right-side running element carries no own styling; visual properties
+   (font, size, color, alignment) come from the @top-right margin box —
+   running elements render *inside* their target box and inherit through it.
+   The left-side counterpart needs its own `display: flex` to lay out the
+   icon + meta inline, which is why -l and -r are asymmetric here. */
+.flow-running-header-r {
+  position: running(flow-running-header-r);
+}
+
+.flow-running-footer-l {
+  position: running(flow-running-footer-l);
+  font-family: var(--font-sans);
+  font-size: 8.5pt;
+  color: var(--fg-3);
+  letter-spacing: 0.04em;
+}
+.flow-running-footer-l .conf { text-transform: uppercase; }
+.flow-running-footer-l .sep { color: var(--gridline); margin: 0 8px; }
+
+.body-flow {
+  page: flow;
+  break-before: page;
+  /* Type & layout match .page-body so flow pages feel like the showcase
+     pages, just without the fixed canvas. */
+  font-family: var(--font-sans);
+  font-size: 10.5pt;
+  line-height: 1.55;
+  color: var(--fg-2);
+}
+
+/* Don't split designed components across page breaks. */
+.body-flow .callout,
+.body-flow .summary-grid,
+.body-flow .stat,
+.body-flow .scorebar,
+.body-flow .fig-wrap,
+.body-flow .fig-bleed,
+.body-flow .kv,
+.body-flow .toc-row { break-inside: avoid; }
+
+/* Don't orphan a heading at the bottom of a page. */
+.body-flow h1,
+.body-flow h2,
+.body-flow h3,
+.body-flow .sec-marker { break-after: avoid-page; }
+
+/* Avoid a single line of a paragraph stranded at top/bottom of a page. */
+.body-flow p { orphans: 2; widows: 2; }
 
 .page {
   width: 816px;
@@ -23,6 +160,11 @@
 }
 
 /* ── Running header / footer ────────────────────────────────────────────── */
+/* Header & footer sit on top of the body band (z-index: 2) and carry an
+   opaque white background so any overflowing body text is visually clipped
+   by the chrome instead of bleeding through it. Combined with overflow:hidden
+   on .page-body, this makes overflow a visible failure (clean truncation
+   above the footer rule), never a silent run-through. */
 .page-header {
   position: absolute;
   top: 36px;
@@ -35,6 +177,9 @@
   color: var(--fg-3);
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  background: var(--white);
+  z-index: 2;
+  padding: 4px 0;
 }
 .page-header .rule {
   flex: 1;
@@ -60,6 +205,9 @@
   font-size: 8.5pt;
   color: var(--fg-3);
   letter-spacing: 0.04em;
+  background: var(--white);
+  z-index: 2;
+  padding: 4px 0;
 }
 .page-footer .rule {
   flex: 1;
@@ -82,6 +230,34 @@
   left: 64px;
   right: 64px;
   bottom: 72px;
+  /* Hard-clip body content so overflow can never bleed past the body band.
+     Combined with the opaque, z-indexed footer above, overflow becomes a
+     clean horizontal truncation 12px above the footer rule — visible in
+     review, never a silent run-through. */
+  overflow: hidden;
+}
+
+/* Diagnostic outline toggled on by the overflow probe (Phase 3). Stays
+   off in normal renders; renders a 1pt red border so reviewers can see
+   exactly which page tripped the validator if it was bypassed for output. */
+.page-body.overflow-warn {
+  outline: 2px solid #C0392B;
+  outline-offset: -2px;
+}
+.page-body.overflow-warn::after {
+  content: "OVERFLOW — content clipped";
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  font-size: 7pt;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #C0392B;
+  background: rgba(255,255,255,0.92);
+  padding: 2px 6px;
+  border: 1px solid #C0392B;
+  z-index: 3;
 }
 
 /* ── Eyebrow + numbered section markers ─────────────────────────────────── */

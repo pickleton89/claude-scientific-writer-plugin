@@ -174,10 +174,81 @@ def test_pick_variant_executive_summary_is_banded() -> None:
     sys.path.insert(0, str(SCRIPTS_DIR))
     try:
         from render_pdf import pick_variant  # noqa: PLC0415
-    except OSError:
-        pytest.skip("WeasyPrint native libs not loadable on this machine")
+    except (OSError, ImportError):
+        # OSError = native libs missing (Pango/cairo). ImportError = the
+        # weasyprint Python package isn't on the test interpreter's path.
+        # Both are environment issues, not bugs — skip cleanly.
+        pytest.skip("WeasyPrint not loadable in this environment")
 
     assert pick_variant("executive-summary") == "banded"
     assert pick_variant("analysis-report") == "editorial"
     assert pick_variant("analysis-report", audience="external") == "banded"
     assert pick_variant("analysis-report", audience="internal") == "editorial"
+
+
+# ---------------------------------------------------------------------------
+# Overflow probe — Phase 3 of the markdown-to-pdf overflow-fix work
+# ---------------------------------------------------------------------------
+
+def _try_import_probe():
+    """Import overflow_probe lazily; skip the test if WeasyPrint isn't
+    available in this environment (CI machines without Pango/cairo)."""
+    sys.path.insert(0, str(SCRIPTS_DIR))
+    try:
+        from overflow_probe import probe_html_file  # noqa: PLC0415
+    except (OSError, ImportError) as e:
+        pytest.skip(f"overflow_probe import failed: {e}")
+    return probe_html_file
+
+
+@pytest.mark.parametrize("variant", ["editorial", "banded"])
+def test_stock_templates_pass_overflow_probe(variant: str) -> None:
+    """The stock templates ship with placeholder slots and must not
+    trip the overflow probe — otherwise every render of a fresh
+    document would fail before the LLM had a chance to fill anything."""
+    probe = _try_import_probe()
+    findings = probe(TEMPLATES_DIR / f"template-{variant}.html")
+    assert findings == [], (
+        f"{variant} stock template overflows: "
+        + "; ".join(f.format_human() for f in findings)
+    )
+
+
+def test_overflow_probe_catches_stuffed_showcase(tmp_path: Path) -> None:
+    """Build a deliberately-overstuffed showcase page and confirm the
+    probe reports a finding with non-trivial overflow. We write the
+    fixture next to report.css so relative asset paths resolve."""
+    probe = _try_import_probe()
+
+    # Colocate with assets so report.css / oligon-tokens.css are reachable
+    fixture = TEMPLATES_DIR / "_test-stuffed-showcase.html"
+    paragraphs = (
+        '<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. '
+        'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>\n'
+    ) * 40
+    fixture.write_text(
+        '<!DOCTYPE html><html><head>'
+        '<link rel="stylesheet" href="report.css"/></head><body>'
+        '<section class="page v-editorial">'
+        '<div class="page-header"><span class="meta">T</span>'
+        '<span class="rule"></span></div>'
+        '<div class="page-body">'
+        '<div class="sec-marker"><span class="num">99</span>'
+        '<span class="label">Stuffed</span></div>'
+        '<h1 class="display">Test</h1>'
+        + paragraphs +
+        '</div>'
+        '<div class="page-footer"><span class="pg">99 / 99</span></div>'
+        '</section></body></html>'
+    )
+    try:
+        findings = probe(fixture)
+        assert findings, "probe failed to detect a deliberately overstuffed page"
+        assert findings[0].overflow_px > 10, (
+            f"overflow magnitude unexpectedly small: {findings[0].overflow_px}"
+        )
+        assert findings[0].section_label == "Stuffed", (
+            f"unexpected label: {findings[0].section_label!r}"
+        )
+    finally:
+        fixture.unlink(missing_ok=True)
