@@ -118,6 +118,95 @@ class TestWriteValidatedStages:
         )
         assert (tmp_path / "new-slug").is_dir()
 
+    def test_p7_blocks_biomedical_stage2_without_scite(
+        self, tmp_path: Path
+    ) -> None:
+        """Threading domain='biomedical' through write_stage_artifact must
+        activate P7 inside the validator closure, rejecting Stage-2
+        findings that lack a Scite probe."""
+        finding: dict[str, Any] = {
+            "id": "F900",
+            "location": {"section": "Intro", "paragraph": 1, "line": 1},
+            "claim_verbatim": "X causes Y per Smith et al.",
+            "claim_type": "citation_bearing",
+            "citations": [{"key": "Smith2020", "raw_text": "Smith 2020"}],
+            "verification_path": [
+                {"method": "doi_lookup", "tool": "Crossref",
+                 "result_summary": "DOI resolves"},
+            ],
+            "evidence": [
+                {"source": "Crossref", "url": "https://doi.org/10.1/x",
+                 "snippet": "ok"}
+            ],
+            "verdict": "VERIFIED",
+            "severity": "INFORMATIONAL",
+            "recommended_action": "No action.",
+            "confidence": "high",
+        }
+        with pytest.raises(ValueError, match="P7"):
+            write_stage_artifact(
+                "p7-block", 2, [finding], [], "manuscript",
+                domain="biomedical", audits_root=tmp_path,
+            )
+        assert not (tmp_path / "p7-block" / "02_existence.json").exists()
+
+    def test_p7_passes_when_scite_probe_present(self, tmp_path: Path) -> None:
+        finding: dict[str, Any] = {
+            "id": "F901",
+            "location": {"section": "Intro", "paragraph": 1, "line": 1},
+            "claim_verbatim": "X causes Y per Smith et al.",
+            "claim_type": "citation_bearing",
+            "citations": [{"key": "Smith2020", "raw_text": "Smith 2020"}],
+            "verification_path": [
+                {"method": "doi_lookup", "tool": "Crossref",
+                 "result_summary": "DOI resolves"},
+                {"method": "scite_context", "tool": "Scite MCP",
+                 "result_summary": "editorialNotices: none"},
+            ],
+            "evidence": [
+                {"source": "Crossref", "url": "https://doi.org/10.1/x",
+                 "snippet": "ok"}
+            ],
+            "verdict": "VERIFIED",
+            "severity": "INFORMATIONAL",
+            "recommended_action": "No action.",
+            "confidence": "high",
+        }
+        path = write_stage_artifact(
+            "p7-pass", 2, [finding], [], "manuscript",
+            domain="biomedical", audits_root=tmp_path,
+        )
+        assert path.exists()
+
+    def test_p7_skipped_when_domain_omitted(self, tmp_path: Path) -> None:
+        """Back-compat: omitting `domain` keeps P7 dormant even on biomedical
+        content — same finding shape that fails with domain='biomedical'
+        must pass when domain is unset."""
+        finding: dict[str, Any] = {
+            "id": "F902",
+            "location": {"section": "Intro", "paragraph": 1, "line": 1},
+            "claim_verbatim": "X causes Y per Smith et al.",
+            "claim_type": "citation_bearing",
+            "citations": [{"key": "Smith2020", "raw_text": "Smith 2020"}],
+            "verification_path": [
+                {"method": "doi_lookup", "tool": "Crossref",
+                 "result_summary": "DOI resolves"},
+            ],
+            "evidence": [
+                {"source": "Crossref", "url": "https://doi.org/10.1/x",
+                 "snippet": "ok"}
+            ],
+            "verdict": "VERIFIED",
+            "severity": "INFORMATIONAL",
+            "recommended_action": "No action.",
+            "confidence": "high",
+        }
+        # No domain kwarg → P7 off → write succeeds.
+        path = write_stage_artifact(
+            "p7-skip", 2, [finding], [], "manuscript", audits_root=tmp_path,
+        )
+        assert path.exists()
+
 
 class TestLoadResumeState:
     def test_no_resumable_state_when_dir_missing(self, tmp_path: Path) -> None:

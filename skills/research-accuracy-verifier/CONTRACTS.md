@@ -72,14 +72,18 @@ Severity ∈ `{CRITICAL, MAJOR, MINOR, INFORMATIONAL}`. Cells abbreviate: `CRIT`
 
 ---
 
-## Hard predicates (enforced by `validate_finding.py`)
+## Hard predicates
+
+P1–P5 and P7 are per-finding predicates enforced by `validate_finding.py`. P8 is a cross-stage post-condition enforced by `validate_audit_report.py` (also invoked transitively from `render_report.generate_report()` so audits cannot render past a P8 violation).
 
 P1. `verdict == UNVERIFIED ⟹ reason ∈ Reason AND severity != CRITICAL`
 P2. `severity == CRITICAL ⟹ len(verification_path) >= 2`
 P3. `len(evidence) >= 1 AND every evidence entry has a resolvable URL / PMID / DOI`
 P4. `verdict ∈ {QUOTE_VERIFIED, QUOTE_PARAPHRASED, QUOTE_FABRICATED} ⟺ claim_type == "direct_quote"`
 P5. `severity == SeverityMatrix[document_type][verdict]` — severity is **computed**, not user-supplied; validator rejects mismatches
-P6 (advisory, not code-enforced). Verdict glyphs (✅⚠️❌❓) MUST NOT appear as verdict markers in any rendered AuditReport, finding table, or schema enum. Severity is rendered as text. Glyphs may appear in `SKILL.md` / `CONTRACTS.md` only as documentation that they are deprecated. P1–P5 are the hard predicates enforced by `validate_finding.py`.
+P6 (advisory, not code-enforced). Verdict glyphs (✅⚠️❌❓) MUST NOT appear as verdict markers in any rendered AuditReport, finding table, or schema enum. Severity is rendered as text. Glyphs may appear in `SKILL.md` / `CONTRACTS.md` only as documentation that they are deprecated.
+P7 (Stage-2 Scite retraction probe). When `domain ∈ {biomedical, mixed}` AND `stage == 2` AND `verdict ∈ {VERIFIED, METADATA_MISMATCH, UNSUPPORTED}`, `verification_path[]` MUST contain either (a) an entry with `method == "scite_context"` whose `result_summary` records the editorialNotices outcome (notices found, or empty/no record), OR (b) an entry whose `tool` field matches `/scite/i` and whose `result_summary` documents the probe failure mode (api_timeout / empty_response / not_indexed / other). Silence — no Scite entry at all — is a P7 violation. Validator inputs: `domain`, `stage` are passed as keyword args to `FindingValidator.validate(...)`; when either is `None` the predicate is skipped (back-compat for ad-hoc callers).
+P8 (Tier-3 cherry-picking sweep). When `intake.domain ∈ {biomedical, mixed}` AND (`intake.verification_tier == "3"` OR (`intake.verification_tier == "custom"` AND `"uncited_claims" ∈ intake.checks_enabled`)), every `verification_matrix[]` entry satisfying `stage == "3" AND verdict == "VERIFIED"` MUST be covered by one of: (a) a `findings[]` entry whose `id`-or-`claim_ref` links to the same `claim_id`, with `stage == "4"`, `verdict == "OVERGENERALIZED"`, at least one `verification_path[]` entry with `method == "scite_context"`, and a `result_summary` matching `/USI\s*=/` (cherry-picking finding); OR (b) a `header.coverage_caveats[]` string of shape `cherry_picking:<claim_id>: <reason>` (parseable tag prefix `cherry_picking:` immediately followed by the matrix claim_id, a colon, a space, and a free-form reason). Coverage caveats with this tag prefix are auto-detected by `validate_audit_report.py`.
 
 ---
 

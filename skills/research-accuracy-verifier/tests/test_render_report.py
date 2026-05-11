@@ -8,7 +8,9 @@ from typing import Any
 
 from jsonschema import validate
 
-from render_report import SCITE_BIAS_CAVEAT, generate_report
+import pytest
+
+from render_report import P8_PASS_NOTE, SCITE_BIAS_CAVEAT, generate_report
 
 SCHEMAS_DIR = Path(__file__).parent.parent / "schemas"
 
@@ -122,3 +124,107 @@ class TestRenderReport:
         )
         md = generate_report(rep)
         assert md.count(SCITE_BIAS_CAVEAT) == 1
+
+
+# ---- P8 hook -----------------------------------------------------------
+
+
+def _tier3_report_missing_cherry_picking() -> dict[str, Any]:
+    """Tier-3 biomedical report with a Stage-3 VERIFIED claim but no
+    cherry-picking coverage. Triggers P8 failure when intake is supplied."""
+    return {
+        "header": {
+            "document_title": "Test Tier-3",
+            "document_type": "manuscript",
+            "date_checked": "2026-05-11",
+            "verification_tier": "3",
+            "sources_consulted": ["PubMed", "Scite"],
+            "overall_confidence": "moderate",
+            "confidence_justification": "Single VERIFIED Stage-3 claim, P8 sweep pending.",
+            "coverage_caveats": [],
+        },
+        "executive_summary": (
+            "Tier-3 audit fixture for the render-time P8 hook. One Stage-3 "
+            "VERIFIED claim, deliberately uncovered by cherry-picking, to "
+            "exercise the hard-gate behavior of generate_report(intake=...)."
+        ),
+        "findings": [],
+        "verification_matrix": [
+            {
+                "claim_id": "C100",
+                "verdict": "VERIFIED",
+                "severity": "INFORMATIONAL",
+                "stage": "3",
+            }
+        ],
+        "methodology_note": "Tier-3 biomedical audit (PubMed + Scite).",
+    }
+
+
+def _tier3_intake_biomedical() -> dict[str, Any]:
+    return {
+        "document_type": "manuscript",
+        "sources_available": "uploaded_files",
+        "verification_tier": "3",
+        "domain": "biomedical",
+        "flag_threshold": "standard",
+    }
+
+
+class TestRenderP8Hook:
+    def test_no_intake_skips_p8_back_compat(self) -> None:
+        """generate_report(report) — no intake — must still render."""
+        md = generate_report(_tier3_report_missing_cherry_picking())
+        assert "# Accuracy Audit" in md
+        assert P8_PASS_NOTE not in md  # P8 was not run
+
+    def test_intake_with_p8_failure_raises(self) -> None:
+        """generate_report(report, intake=...) must raise on P8 violation."""
+        rep = _tier3_report_missing_cherry_picking()
+        with pytest.raises(ValueError, match="P8"):
+            generate_report(rep, intake=_tier3_intake_biomedical())
+
+    def test_intake_with_p8_pass_appends_note(self) -> None:
+        rep = _tier3_report_missing_cherry_picking()
+        # Cover the lone Stage-3 VERIFIED claim with a tagged caveat
+        rep["header"]["coverage_caveats"].append(
+            "cherry_picking:C100: tally_uncontested_USI=0.81"
+        )
+        md = generate_report(rep, intake=_tier3_intake_biomedical())
+        assert P8_PASS_NOTE in md
+
+    def test_intake_general_domain_skips_p8_no_note(self) -> None:
+        """P8 trigger inactive (general domain) — no failure, no note."""
+        rep = _tier3_report_missing_cherry_picking()
+        intake = _tier3_intake_biomedical()
+        intake["domain"] = "general"
+        md = generate_report(rep, intake=intake)
+        # Renders, no pass-note since P8 was n/a
+        assert "# Accuracy Audit" in md
+        assert P8_PASS_NOTE not in md
+
+    def test_intake_tier2_skips_p8_no_note(self) -> None:
+        rep = _tier3_report_missing_cherry_picking()
+        rep["header"]["verification_tier"] = "2"
+        intake = _tier3_intake_biomedical()
+        intake["verification_tier"] = "2"
+        md = generate_report(rep, intake=intake)
+        assert P8_PASS_NOTE not in md
+
+    def test_intake_failure_lists_uncovered_claim_ids(self) -> None:
+        """P8 ValueError message must surface the uncovered claim_ids so the
+        caller can loop back to Stage 4 with concrete targets."""
+        rep = _tier3_report_missing_cherry_picking()
+        rep["verification_matrix"].append(
+            {
+                "claim_id": "C200",
+                "verdict": "VERIFIED",
+                "severity": "INFORMATIONAL",
+                "stage": "3",
+            }
+        )
+        with pytest.raises(ValueError) as excinfo:
+            generate_report(rep, intake=_tier3_intake_biomedical())
+        msg = str(excinfo.value)
+        assert "C100" in msg
+        assert "C200" in msg

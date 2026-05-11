@@ -328,3 +328,161 @@ class TestFindingValidator:
                 assert sev in {"CRITICAL", "MAJOR", "MINOR", "INFORMATIONAL"}, (dt, vd, sev)
                 cells += 1
         assert cells == 70
+
+
+# ---------- P7: Stage-2 Scite retraction probe ----------------------------
+
+
+def _stage2_verified_finding(*, with_scite: bool, scite_via_tool: bool = False) -> dict[str, Any]:
+    """Build a minimal valid Stage-2 VERIFIED finding for P7 tests.
+
+    `with_scite=True` includes a Scite verification_path entry; `scite_via_tool`
+    chooses between method=='scite_context' (False) and tool ~ /scite/i (True).
+    """
+    paths: list[dict[str, Any]] = [
+        {"method": "doi_lookup", "tool": "Crossref", "result_summary": "DOI resolved"},
+    ]
+    if with_scite:
+        if scite_via_tool:
+            paths.append(
+                {
+                    "method": "doi_lookup",  # not scite_context — covered by tool match
+                    "tool": "Scite MCP (search_literature) — failed",
+                    "result_summary": "probe failed: api_timeout",
+                }
+            )
+        else:
+            paths.append(
+                {
+                    "method": "scite_context",
+                    "tool": "Scite MCP (search_literature)",
+                    "result_summary": "editorialNotices: none (Scite returned no record for DOI)",
+                }
+            )
+    return {
+        "id": "F100",
+        "location": {"section": "Intro", "paragraph": 1, "line": 3},
+        "claim_verbatim": "Foo et al. demonstrated bar.",
+        "claim_type": "citation_bearing",
+        "citations": [{"key": "Foo2020", "raw_text": "Foo et al. 2020 Nature"}],
+        "verification_path": paths,
+        "evidence": [
+            {
+                "source": "Crossref",
+                "url": "https://doi.org/10.1038/s41586-020-1234-5",
+                "snippet": "metadata agrees",
+            }
+        ],
+        "verdict": "VERIFIED",
+        "severity": "INFORMATIONAL",
+        "recommended_action": "No action needed.",
+        "confidence": "high",
+    }
+
+
+class TestP7ScitePropeRequired:
+    """P7: biomedical/mixed Stage-2 findings need a Scite probe entry."""
+
+    def test_p7_biomedical_stage2_verified_without_scite_fails(self) -> None:
+        finding = _stage2_verified_finding(with_scite=False)
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="biomedical", stage=2
+        )
+        assert not ok
+        assert any("P7" in e for e in errors)
+
+    def test_p7_biomedical_stage2_verified_with_scite_method_passes(self) -> None:
+        finding = _stage2_verified_finding(with_scite=True, scite_via_tool=False)
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="biomedical", stage=2
+        )
+        assert ok, errors
+
+    def test_p7_biomedical_stage2_verified_with_scite_tool_only_passes(self) -> None:
+        """Scite logged via tool field (e.g. failure case) still satisfies P7."""
+        finding = _stage2_verified_finding(with_scite=True, scite_via_tool=True)
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="biomedical", stage=2
+        )
+        assert ok, errors
+
+    def test_p7_mixed_domain_also_active(self) -> None:
+        finding = _stage2_verified_finding(with_scite=False)
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="mixed", stage=2
+        )
+        assert not ok
+        assert any("P7" in e for e in errors)
+
+    def test_p7_general_domain_skipped(self) -> None:
+        finding = _stage2_verified_finding(with_scite=False)
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="general", stage=2
+        )
+        assert ok, errors
+
+    def test_p7_stage3_skipped(self) -> None:
+        """P7 only fires for Stage 2."""
+        finding = _stage2_verified_finding(with_scite=False)
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="biomedical", stage=3
+        )
+        assert ok, errors
+
+    def test_p7_unverified_verdict_skipped(self) -> None:
+        """UNVERIFIED citations weren't resolved — no DOI to feed Scite."""
+        finding = _stage2_verified_finding(with_scite=False)
+        finding["verdict"] = "UNVERIFIED"
+        finding["severity"] = "INFORMATIONAL"
+        finding["reason"] = "api_timeout"
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="biomedical", stage=2
+        )
+        assert ok, errors
+
+    def test_p7_no_domain_kwarg_skipped_back_compat(self) -> None:
+        """Legacy callers (no domain/stage) MUST still pass — P7 opt-in."""
+        finding = _stage2_verified_finding(with_scite=False)
+        ok, errors, _ = FindingValidator().validate(finding, "manuscript")
+        assert ok, errors
+
+    def test_p7_no_stage_kwarg_skipped_back_compat(self) -> None:
+        """domain alone without stage is insufficient to activate P7."""
+        finding = _stage2_verified_finding(with_scite=False)
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="biomedical"
+        )
+        assert ok, errors
+
+    def test_p7_metadata_mismatch_also_requires_scite(self) -> None:
+        """METADATA_MISMATCH (e.g., retraction signaled by editorialNotices)
+        still requires the probe to be logged."""
+        finding = _stage2_verified_finding(with_scite=False)
+        finding["verdict"] = "METADATA_MISMATCH"
+        finding["severity"] = "MAJOR"  # matrix[manuscript][METADATA_MISMATCH]
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="biomedical", stage=2
+        )
+        assert not ok
+        assert any("P7" in e for e in errors)
+
+    def test_p7_unsupported_also_requires_scite(self) -> None:
+        """UNSUPPORTED is the third P7-gated verdict.
+
+        matrix[manuscript][UNSUPPORTED] == CRITICAL, so P2 (≥2 verification
+        paths) also fires. Append a non-Scite path so P2 is satisfied,
+        leaving P7 as the only failure surface.
+        """
+        finding = _stage2_verified_finding(with_scite=False)
+        finding["verdict"] = "UNSUPPORTED"
+        finding["severity"] = "CRITICAL"
+        finding["verification_path"].append(
+            {"method": "pubmed_search", "tool": "PubMed", "result_summary": "no hit"}
+        )
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="biomedical", stage=2
+        )
+        assert not ok
+        assert any("P7" in e for e in errors)
+        # Confirm P2 is NOT the blocker (we satisfied it with 2 paths).
+        assert not any("P2" in e for e in errors)

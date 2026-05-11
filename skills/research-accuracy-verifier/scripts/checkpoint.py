@@ -78,13 +78,30 @@ class ResumeState:
     verification_matrix: list[dict[str, Any]] = field(default_factory=list)
 
 
-def _make_checkpoint(audits_root: Path = DEFAULT_AUDITS_ROOT) -> _Checkpoint:
+def _make_checkpoint(
+    audits_root: Path = DEFAULT_AUDITS_ROOT,
+    *,
+    domain: str | None = None,
+) -> _Checkpoint:
+    """Build a Checkpoint with a closure-bound FindingValidator.
+
+    `domain` is captured by the closure and forwarded to every per-finding
+    validation call, alongside the `stage` kwarg that `verifier_kit.Checkpoint`
+    supplies. Together they gate predicate P7 (Stage-2 Scite retraction probe).
+    """
     validator = FindingValidator()
 
     def validate(
-        finding: dict[str, Any], document_type: str
+        finding: dict[str, Any], document_type: str, **kwargs: Any
     ) -> tuple[bool, list[str], list[str]]:
-        return validator.validate(finding, document_type)
+        # `stage` arrives via the kit; `domain` is closed over from the
+        # surrounding factory call. Either may be None — P7 is skipped in
+        # that case, preserving back-compat for callers that never set
+        # `domain`.
+        stage = kwargs.get("stage")
+        return validator.validate(
+            finding, document_type, domain=domain, stage=stage
+        )
 
     return _Checkpoint(
         STAGE_NAMES,
@@ -103,6 +120,7 @@ def write_stage_artifact(
     document_type: str,
     *,
     claim_inventory: dict[str, Any] | None = None,
+    domain: str | None = None,
     audits_root: Path = DEFAULT_AUDITS_ROOT,
 ) -> Path:
     """Validate findings, then write the stage artifact. Returns the written path.
@@ -113,6 +131,12 @@ def write_stage_artifact(
     Stages 2–7: validates each finding via FindingValidator before writing —
     invalid findings raise ValueError so the caller loops back rather than
     persisting unvalidated state.
+
+    `domain` is the intake domain (`biomedical | general | mixed`). When
+    supplied, it activates predicate P7 (Stage-2 Scite retraction probe);
+    biomedical/mixed Stage-2 findings without a Scite verification_path
+    entry will fail validation and the write raises ValueError. When `None`
+    (default), P7 is skipped — back-compat for legacy callers.
     """
     if stage == 1:
         # Preserve the pre-Sprint-3 error message wording for back-compat.
@@ -126,7 +150,7 @@ def write_stage_artifact(
     if stage not in STAGE_NAMES:
         raise ValueError(f"stage must be 1..7, got {stage}")
 
-    cp = _make_checkpoint(audits_root)
+    cp = _make_checkpoint(audits_root, domain=domain)
     return cp.write(
         slug,
         stage,
@@ -174,6 +198,14 @@ def main() -> None:
         "--claim-inventory",
         help='Path to claim_inventory JSON object (stage 1; {"items": [...]})',
     )
+    w.add_argument(
+        "--domain",
+        choices=["biomedical", "general", "mixed"],
+        help=(
+            "Intake domain. Activates P7 (Stage-2 Scite retraction probe) "
+            "during per-finding validation. Omit to skip P7 (legacy behavior)."
+        ),
+    )
     w.add_argument("--audits-root", default=str(DEFAULT_AUDITS_ROOT))
 
     r = sub.add_parser("resume", help="Print resume state for a slug")
@@ -198,6 +230,7 @@ def main() -> None:
                 matrix,
                 args.document_type,
                 claim_inventory=inventory,
+                domain=args.domain,
                 audits_root=Path(args.audits_root),
             )
         except ValueError as e:

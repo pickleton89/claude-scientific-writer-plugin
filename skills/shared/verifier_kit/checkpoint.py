@@ -128,8 +128,13 @@ class Checkpoint:
         differs from any future skill's intake artifact).
 
         Stages 2+: each finding is validated via `findings_validator(finding,
-        document_type)` if present; any failure raises `ValueError` so the
-        caller loops back rather than persisting unvalidated state.
+        document_type, stage=stage)` if present; any failure raises
+        `ValueError` so the caller loops back rather than persisting
+        unvalidated state. The `stage` kwarg is supplied so per-finding
+        validators can run stage-conditional predicates (e.g. the verifier's
+        P7 Scite-probe check, which only applies to Stage 2). Validator
+        callables MUST accept `**kwargs` so the kit can grow the kwarg set
+        without breaking existing consumers.
         """
         if stage not in self.stage_names:
             raise ValueError(
@@ -164,7 +169,9 @@ class Checkpoint:
         if self.findings_validator is not None:
             errors: list[str] = []
             for i, f in enumerate(findings):
-                ok, errs, _ = self.findings_validator(f, document_type)
+                ok, errs, _ = self.findings_validator(
+                    f, document_type, stage=stage
+                )
                 if not ok:
                     errors.append(
                         f"findings[{i}] (id={f.get('id')}): {'; '.join(errs)}"

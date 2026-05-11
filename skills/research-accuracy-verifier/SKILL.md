@@ -140,7 +140,11 @@ For every cited reference, attempt at least two independent identifier paths bef
 - If no identifier provided, search by author + year + title fragment + journal
 - Verify all metadata fields agree: authors (at least first and last), year, journal, volume, pages, DOI
 - For journal-volume-year impossibility (e.g., volume X did not exist in year Y), call `scripts/check_journal_volume.py` (capability key: `verification.citation_existence`)
-- **Retraction / correction check**: after identifier resolution succeeds, call `mcp__scite__search_literature` with `dois=[<resolved DOI>]` (no `term`) and inspect the `editorialNotices` field. A clean DOI resolution does NOT exempt the citation from this check — retracted papers resolve cleanly. If Scite returns no record for the DOI (e.g., older paper or niche journal not indexed), treat as "no notices found" and let the verdict fall through to the standard assignments below; record the empty result in `verification_path[]` so the audit trail is complete. Capability key: `verification.citation_existence`. Canonical call shape: `tool-lookup.yaml` `literature.citation_tallies`.
+- **Retraction / correction check** (**P7 — validator-enforced; not optional for biomedical/mixed Stage 2**): after identifier resolution succeeds, call `mcp__scite__search_literature` with `dois=[<resolved DOI>]` (no `term`) and inspect the `editorialNotices` field. A clean DOI resolution does NOT exempt the citation from this check — retracted papers resolve cleanly. **The call MUST be logged in `verification_path[]` regardless of outcome.** Three log shapes are valid:
+  - Notices found → append `{ "method": "scite_context", "tool": "Scite MCP (search_literature)", "result_summary": "editorialNotices: <notice_type> — <reason>" }`. Verdict becomes `METADATA_MISMATCH` per the assignment table below.
+  - Empty / no record (paper not indexed by Scite) → append `{ "method": "scite_context", "tool": "Scite MCP (search_literature)", "result_summary": "editorialNotices: none (Scite returned no record for DOI)" }`. Verdict falls through to the standard assignments.
+  - Scite API failure (timeout / rate-limit / wrapper error) → append `{ "method": "scite_context", "tool": "Scite MCP (search_literature) — failed", "result_summary": "probe failed: <api_timeout|empty_response|not_indexed|other>" }`. Verdict still falls through, but the audit trail records the gap.
+  Silence — no Scite entry of any shape — is a **P7 violation** and `validate_finding.py` will reject the finding when invoked with `--domain biomedical --stage 2` (or transitively via `checkpoint.py write --stage 2` when `domain` is threaded through). Capability key: `verification.citation_existence`. Canonical call shape: `tool-lookup.yaml` `literature.citation_tallies`.
 - **OpenAlex backstop** (capability key: `verification.citation_existence` fallback): when PubMed AND Crossref both miss for a citation, call `mcp__openalex__batch_resolve_references` with the DOI (or title-author-year tuple) BEFORE declaring `UNSUPPORTED`. OpenAlex covers cross-disciplinary works (CS, physics, social sciences) where PubMed has no coverage. If OpenAlex resolves the work, proceed with metadata-agreement check using OpenAlex's canonical metadata as the reference. If OpenAlex also misses, finalize `UNSUPPORTED` with the full chain in `verification_path[]`. For free-text fallback (fuzzy title match), use `mcp__openalex__search_works` after `batch_resolve_references` returns empty.
 - **Venue quality sub-check** (capability key: `verification.venue_quality`): AFTER citation existence resolves a DOI/work, call `mcp__openalex__check_venue_quality` with the venue ID. If quality signals indicate predatory venue, non-indexed venue, or DOAJ-non-membership for an OA-claimed venue, attach as a **sub-reason on a `METADATA_MISMATCH` finding** — do NOT introduce a new verdict subtype. The `result_summary` MUST name the venue concern; the `evidence[]` entry MUST record the OpenAlex venue URL + quality signals. When uncertain whether an unfamiliar venue is "predatory" vs "legitimate-but-niche," call `mcp__openalex__get_top_venues_for_field` to compare against top-N venues for the paper's claimed field. Skip this sub-check silently if OpenAlex venue lookup errors — venue-quality is a sub-check, not a hard gate.
 
@@ -210,7 +214,12 @@ Capability keys: `verification.citation_existence`, `verification.claim_alignmen
 
 Verdict assignments: same as Stage 3.
 
-**Cherry-picking detection** (Tier 3 only): for already-`VERIFIED` cite-claim pairs from Stage 3, additionally call `mcp__scite__search_literature` with `dois=[<cited DOI>]` (no `term`) to fetch the citation tally. Compute `USI = supporting / (supporting + contrasting)`. If `USI < 0.5` (matches deep-research's `[CONTESTED]` threshold), emit a separate finding with verdict `OVERGENERALIZED`. The "claim" being overgeneralized here is the implicit consensus framing, not the narrow cite-claim pair (which remains `VERIFIED` in the matrix). The `evidence[]` entry MUST cite the USI value, supporting count, and contrasting count; the `result_summary` MUST be tagged "per Scite classification". Recommended action: add a contrasting citation or scope-limit the claim. Capability key: `verification.cherry_picking`.
+**Cherry-picking detection** (**P8 — validator-enforced; Tier 3 biomedical/mixed audits, and custom audits with `uncited_claims` enabled**): for every already-`VERIFIED` cite-claim pair emitted by Stage 3 in the `verification_matrix[]`, sweep Scite for tally-based contested-consensus detection. Two valid outcomes per Stage-3 VERIFIED claim:
+
+- **Cherry-picking finding emitted.** Call `mcp__scite__search_literature` with `dois=[<cited DOI>]` (no `term`) to fetch the citation tally. Compute `USI = supporting / (supporting + contrasting)`. If `USI < 0.5` (matches deep-research's `[CONTESTED]` threshold), emit a Stage-4 finding with `verdict == "OVERGENERALIZED"`, `verification_path[]` containing at least one `method == "scite_context"` entry, and a `result_summary` containing **both** (a) the literal tag `cherry_picking:<claim_id>` — where `<claim_id>` exactly matches the `verification_matrix[].claim_id` of the Stage‑3 VERIFIED claim this finding covers — and (b) the literal pattern `USI=<value>` plus supporting/contrasting counts. The tag is what lets `validate_audit_report.py` pair the Stage‑4 finding with its originating Stage‑3 claim. The "claim" being overgeneralized is the implicit consensus framing, not the narrow cite-claim pair (which remains `VERIFIED` in the matrix). Tag the `result_summary` "per Scite classification". Recommended action: add a contrasting citation or scope-limit the claim.
+- **Caveat in lieu of finding.** When the Scite tally cannot be computed (DOI not indexed by Scite, API failure, USI ≥ 0.5 so no `OVERGENERALIZED` is warranted), the Stage‑3 VERIFIED claim MUST still be accounted for via a `header.coverage_caveats[]` entry of structured shape `cherry_picking:<claim_id>: <reason>`. The `<claim_id>` MUST exactly match the `verification_matrix[].claim_id`. The `<reason>` is free-form text but should name the actual outcome (`scite_doi_not_indexed`, `api_timeout`, `tally_uncontested_USI=0.83`, `tally_empty`, etc.). The `cherry_picking:` prefix is parsed by `validate_audit_report.py` / `render_report.py`.
+
+Silence — a Stage‑3 VERIFIED claim with no matching cherry-picking finding **and** no `cherry_picking:<claim_id>:` caveat — is a **P8 violation**. The audit cannot be rendered: `render_report.generate_report()` invokes `validate_audit_report.run_p8(...)` and raises on failure. Capability key: `verification.cherry_picking`.
 
 **On stage completion:** persist via `checkpoint.py write --stage 4`.
 
@@ -279,9 +288,11 @@ The LLM still adjudicates:
 
 ### Stage 8 — Synthesis and reporting
 
-Assemble the report per `schemas/audit_report.json`. **MUST** call `scripts/validate_finding.py` on every finding before assembling the report; on validation failure, loop back to the offending stage rather than deliver an incomplete report.
+Assemble the report per `schemas/audit_report.json`. **MUST** call `scripts/validate_finding.py` on every finding before assembling the report — passing `--domain <intake.domain>` and `--stage <originating-stage>` so predicate **P7** (Stage-2 Scite probe) fires. On per-finding validation failure, loop back to the offending stage rather than deliver an incomplete report.
 
-Render the markdown report via `scripts/render_report.py` (`generate_report(audit_report_dict) → str`). When resuming from a partial audit, merge `findings[]` and `verification_matrix[]` from all loaded `0N_<stage>.json` artifacts before assembly. Write the final `audit_report.json` to `research/audits/<slug>/audit_report.json` alongside the per-stage artifacts.
+**MUST** then call `scripts/validate_audit_report.py <audit_report.json> --intake <intake.json>` to enforce predicate **P8** (Tier-3 cherry-picking sweep). On P8 failure, loop back to Stage 4 — emit either the missing cherry-picking finding(s) or a `cherry_picking:<claim_id>: <reason>` coverage caveat for each uncovered Stage-3 VERIFIED claim. P8 is also enforced transitively: `render_report.generate_report()` invokes `validate_audit_report.run_p8(...)` and raises on failure, so the markdown cannot render past a P8 violation even if the LLM skips the CLI step.
+
+Render the markdown report via `scripts/render_report.py` (`generate_report(audit_report_dict, intake=...) → str`). When resuming from a partial audit, merge `findings[]` and `verification_matrix[]` from all loaded `0N_<stage>.json` artifacts before assembly. Write the final `audit_report.json` to `research/audits/<slug>/audit_report.json` alongside the per-stage artifacts.
 
 ## Canonical verdicts
 
@@ -336,6 +347,8 @@ These are not guidelines — they are enforced by `validate_finding.py`. Finding
 - **MUST NOT** emit `severity == CRITICAL` when `verdict == UNVERIFIED`. (P1.)
 - **MUST** restrict verdicts ∈ `{QUOTE_VERIFIED, QUOTE_PARAPHRASED, QUOTE_FABRICATED}` to claims with `claim_type == "direct_quote"`. (P4.)
 - **MUST** compute `severity` from the matrix in `schemas/severity_matrix.values.json`; user-supplied severities that disagree are rejected. (P5.)
+- **MUST** include a `method == "scite_context"` (or `tool` ~ `/scite/i`) entry in every biomedical/mixed Stage‑2 finding's `verification_path[]` whose verdict is `VERIFIED`, `METADATA_MISMATCH`, or `UNSUPPORTED` — even on Scite API failure (log the failure mode in `result_summary`). Silence is a violation. (P7.)
+- **MUST** cover every Stage‑3 `VERIFIED` claim in a biomedical/mixed Tier‑3 audit (or `custom` audit with `uncited_claims` enabled) with **either** a matching Stage‑4 cherry-picking finding (`OVERGENERALIZED`, `scite_context`, `USI=` in `result_summary`) **or** a `header.coverage_caveats[]` entry of structured shape `cherry_picking:<claim_id>: <reason>`. (P8.)
 - **MUST** treat Consensus syntheses as routing aids, not primary evidence. Cite the underlying paper, not the synthesis.
 - **MUST** quote the original document verbatim when reproducing a claim in the report (so the user can locate the passage); paraphrase external sources per copyright norms.
 - **MUST** state coverage gaps prominently in `header.coverage_caveats[]` when full-text access blocks a tier-3 check.
@@ -447,11 +460,12 @@ When document content concerns aptamer-siRNA chimera biology, T-cell exhaustion,
 
 ## Self-audit (automated, runs in Stage 8)
 
-Before delivering the report, `scripts/validate_finding.py --batch findings.json` **MUST** pass. The validator enforces:
+Before delivering the report, the following validators **MUST** pass:
 
-1. Every finding satisfies P1–P5 (see CONTRACTS.md).
-2. Every claim in the inventory appears in either `findings[]` or `verification_matrix[]`.
-3. Severity is consistent with the matrix.
+1. `scripts/validate_finding.py --batch findings.json --document-type <type> --domain <domain>` (per-finding P1–P5 + P7). The Stage attribute is supplied implicitly when the validator is invoked via `checkpoint.py`; when calling the CLI directly, pass `--stage <originating-stage>` so P7 fires for biomedical Stage-2 findings.
+2. `scripts/validate_audit_report.py audit_report.json --intake intake.json` (cross-stage P8). Enforces the Tier-3 cherry-picking sweep over Stage-3 VERIFIED claims.
+3. Every claim in the inventory appears in either `findings[]` or `verification_matrix[]`.
+4. Severity is consistent with the matrix.
 4. Original document wording is preserved exactly when quoted (string equality against `<document>` content).
 5. Coverage caveats are populated whenever a tier-3 check was requested but blocked.
 
@@ -503,7 +517,7 @@ The fork's final message to the caller is a single JSON object capped at ~800 to
   "top_findings": [
     { "id": "F-NN", "verdict": "<enum>", "severity": "<enum>", "rationale": "<≤140 chars>" }
   ],
-  "predicate_audit": { "P1": "pass", "P2": "pass", "P3": "pass", "P4": "pass", "P5": "pass" },
+  "predicate_audit": { "P1": "pass", "P2": "pass", "P3": "pass", "P4": "pass", "P5": "pass", "P7": "pass", "P8": "pass" },
   "report_paths": {
     "json": "research/audits/<slug>/audit_report.json",
     "markdown": "research/audits/<slug>/report.md"
@@ -512,7 +526,7 @@ The fork's final message to the caller is a single JSON object capped at ~800 to
 }
 ```
 
-**Required fields:** `audit_id`, `audit_dir`, `verdict_counts` (one count for each of the 10 canonical Finding verdicts from CONTRACTS.md §Verdict enum, zero if absent — this is `findings[]` only, not `style_findings[]`), `severity_counts`, `style_summary` (set `enabled: false` and zeros for non-Tier-3 audits where `prose_quality_audit` is not in `checks_enabled`; otherwise `total` is `len(style_findings)` and `critical` counts the four canonical CRITICAL style rules W6/AI8/Q5/R5), `predicate_audit` (P1–P5 from CONTRACTS.md), `report_paths`. `top_findings` MUST be the up to three highest-severity findings ordered by severity descending, drawing from `findings[]` only (style findings surface separately via `style_summary`); rationales must be ≤140 characters and contain no quoted excerpts or full claim text.
+**Required fields:** `audit_id`, `audit_dir`, `verdict_counts` (one count for each of the 10 canonical Finding verdicts from CONTRACTS.md §Verdict enum, zero if absent — this is `findings[]` only, not `style_findings[]`), `severity_counts`, `style_summary` (set `enabled: false` and zeros for non-Tier-3 audits where `prose_quality_audit` is not in `checks_enabled`; otherwise `total` is `len(style_findings)` and `critical` counts the four canonical CRITICAL style rules W6/AI8/Q5/R5), `predicate_audit` (P1–P5, P7, P8 from CONTRACTS.md — P7/P8 emit `"pass" | "fail" | "n/a"`; `"n/a"` when the predicate's trigger conditions did not apply for this audit, e.g., P7 on a general-domain audit or P8 outside Tier 3), `report_paths`. `top_findings` MUST be the up to three highest-severity findings ordered by severity descending, drawing from `findings[]` only (style findings surface separately via `style_summary`); rationales must be ≤140 characters and contain no quoted excerpts or full claim text.
 
 **Forbidden in fork return:** raw claim text, quoted source excerpts, full-text snippets, MCP tool responses, paperclip output, intermediate stage findings (those live in `research/audits/<slug>/stage*.json`). The caller follows up with targeted reads — for example, `!\`jq '.findings[] | select(.id=="F-NN")' research/audits/<slug>/audit_report.json\`` — to surface specific finding details on demand at zero token cost in the main context.
 

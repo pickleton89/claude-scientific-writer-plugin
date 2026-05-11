@@ -1,24 +1,37 @@
 #!/usr/bin/env python3
-"""Validate Finding JSON against schema and predicates P1-P5 from CONTRACTS.md.
+"""Validate Finding JSON against schema and predicates P1-P5, P7 from CONTRACTS.md.
 
 Two-stage pattern delegated to `verifier_kit.validate.SchemaValidator`:
   Stage 1: JSON Schema (Draft-07) against schemas/finding.json
-  Stage 2: Predicates P1-P5 (this module's `run_predicates`)
+  Stage 2: Predicates P1-P5, P7 (this module's `run_predicates`)
     P1. verdict == UNVERIFIED ⟹ reason ∈ enum AND severity != CRITICAL
     P2. severity == CRITICAL ⟹ len(verification_path) >= 2
     P3. len(evidence) >= 1 AND every evidence has resolvable URL/PMID/DOI
     P4. verdict ∈ {QUOTE_*} ⟺ claim_type == "direct_quote"
     P5. severity == SeverityMatrix[document_type][verdict]
+    P7. domain ∈ {biomedical,mixed} AND stage == 2 AND
+        verdict ∈ {VERIFIED, METADATA_MISMATCH, UNSUPPORTED}
+        ⟹ verification_path[] contains either method == "scite_context"
+          OR an entry with tool matching /scite/i
+        — see CONTRACTS.md §Hard predicates. Skipped when domain or stage
+        is None (back-compat for ad-hoc CLI calls without those flags).
+
+P8 (Tier-3 cherry-picking sweep) is a cross-stage post-condition and lives
+in `validate_audit_report.py` — it cannot be enforced from a per-finding
+validator.
 
 Usage:
     uv run python validate_finding.py finding.json --document-type manuscript
     uv run python validate_finding.py findings.json --batch --document-type grant
+    uv run python validate_finding.py finding.json --document-type grant \\
+        --domain biomedical --stage 2     # enables P7
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -44,15 +57,23 @@ UNVERIFIED_REASONS = {
     "other",
 }
 
+# P7: domains for which the Stage-2 Scite retraction probe is mandatory.
+P7_DOMAINS = {"biomedical", "mixed"}
+# P7: verdicts that require the probe (UNVERIFIED is exempt — the citation
+# itself wasn't resolved, so no DOI was available to feed Scite).
+P7_VERDICTS = {"VERIFIED", "METADATA_MISMATCH", "UNSUPPORTED"}
+_SCITE_TOOL_RE = re.compile(r"scite", re.IGNORECASE)
+
 
 class FindingValidator(SchemaValidator):
-    """Validate findings with schema + predicates P1-P5.
+    """Validate findings with schema + predicates P1-P5, P7.
 
     Subclasses `verifier_kit.validate.SchemaValidator` to inherit the
-    continue-past-schema-failure two-stage pattern. P1-P5 live in
-    `run_predicates`. Public API (`__init__`, `validate(finding, document_type)`,
-    `expected_severity`) is unchanged from the pre-Sprint-3 implementation
-    so existing callers and tests continue to work.
+    continue-past-schema-failure two-stage pattern. P1-P5 and P7 live in
+    `run_predicates`. The public `validate(finding, document_type, *,
+    domain=None, stage=None)` signature stays back-compatible with the
+    pre-Sprint-3 two-arg form: omitting `domain` or `stage` skips P7 only,
+    so legacy callers and tests pass unchanged.
     """
 
     def __init__(
@@ -137,11 +158,54 @@ class FindingValidator(SchemaValidator):
                     f"finding has {severity}"
                 )
 
+        # P7: Stage-2 Scite retraction probe (biomedical/mixed only).
+        # Skipped when domain or stage is None — callers that don't supply
+        # them opt out of P7 (e.g., ad-hoc CLI debugging, legacy tests).
+        domain = ctx.get("domain")
+        stage = ctx.get("stage")
+        if (
+            domain in P7_DOMAINS
+            and stage == 2
+            and verdict in P7_VERDICTS
+        ):
+            has_scite = False
+            for entry in verification_path:
+                if not isinstance(entry, dict):
+                    continue
+                method = (entry.get("method") or "").lower()
+                tool = entry.get("tool") or ""
+                if method == "scite_context" or _SCITE_TOOL_RE.search(tool):
+                    has_scite = True
+                    break
+            if not has_scite:
+                errors.append(
+                    f"P7: biomedical/mixed Stage-2 finding with verdict {verdict} "
+                    "requires a Scite probe entry in verification_path[] "
+                    "(method == 'scite_context' or tool ~ /scite/i). "
+                    "Silence is a violation — log the probe outcome (or its "
+                    "failure mode) even on API error."
+                )
+
     def validate(  # type: ignore[override]
-        self, finding: dict[str, Any], document_type: str
+        self,
+        finding: dict[str, Any],
+        document_type: str,
+        *,
+        domain: str | None = None,
+        stage: int | None = None,
     ) -> tuple[bool, list[str], list[str]]:
-        """Preserve the pre-Sprint-3 positional signature."""
-        return super().validate(finding, document_type=document_type)
+        """Validate a finding.
+
+        `domain` and `stage` gate predicate P7. When either is `None`
+        (default), P7 is skipped — preserving back-compat with all
+        pre-P7 callers and tests that pass only `(finding, document_type)`.
+        """
+        return super().validate(
+            finding,
+            document_type=document_type,
+            domain=domain,
+            stage=stage,
+        )
 
 
 def main() -> None:
@@ -151,6 +215,17 @@ def main() -> None:
         "--document-type",
         required=True,
         choices=["grant", "manuscript", "lit_review", "slides", "report", "memo", "other"],
+    )
+    parser.add_argument(
+        "--domain",
+        choices=["biomedical", "general", "mixed"],
+        help="Intake domain. Required to activate P7 (Stage-2 Scite probe).",
+    )
+    parser.add_argument(
+        "--stage",
+        type=int,
+        choices=range(2, 8),
+        help="Originating pipeline stage. Required to activate P7.",
     )
     parser.add_argument("--batch", action="store_true", help="Treat input as array of findings")
     parser.add_argument("--schema", help="Custom schema path")
@@ -169,7 +244,9 @@ def main() -> None:
     results: list[dict[str, Any]] = []
     all_ok = True
     for i, f in enumerate(findings):
-        ok, errs, warns = validator.validate(f, args.document_type)
+        ok, errs, warns = validator.validate(
+            f, args.document_type, domain=args.domain, stage=args.stage
+        )
         all_ok = all_ok and ok
         results.append(
             {"index": i, "id": f.get("id"), "valid": ok, "errors": errs, "warnings": warns}

@@ -195,7 +195,9 @@ class TestCheckpointAlternateFirstStage:
         assert state.next_stage == 2
 
     def test_findings_validator_blocks_invalid_writes(self, tmp_path: Path) -> None:
-        def reject_all(_f: dict[str, Any], _dt: str) -> tuple[bool, list[str], list[str]]:
+        def reject_all(
+            _f: dict[str, Any], _dt: str, **_kw: Any
+        ) -> tuple[bool, list[str], list[str]]:
             return False, ["always-reject"], []
 
         cp = Checkpoint(

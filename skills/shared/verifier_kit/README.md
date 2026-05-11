@@ -89,7 +89,7 @@ from verifier_kit.checkpoint import Checkpoint
 cp = Checkpoint(
     stage_names={1: "extract", 2: "summarize", 3: "validate"},
     audits_root=Path("research/my-audits"),
-    findings_validator=MyValidator().validate,   # optional but recommended
+    findings_validator=my_validate,   # optional but recommended
 )
 
 # Stage write:
@@ -99,6 +99,13 @@ cp.write("paper-slug", 2, findings, matrix_delta, document_type="general")
 state = cp.load("paper-slug")
 print(state.completed_stages)   # [1, 2] for example
 print(state.next_stage)         # 3
+```
+
+**Validator-callable contract.** `Checkpoint.write()` invokes the validator as `findings_validator(finding, document_type, stage=stage)`. The callable MUST accept `**kwargs` so the kit can grow the kwarg set without breaking existing consumers (the verifier's P7 predicate, for instance, is gated on the `stage` kwarg). Wrap a validator whose method signature is fixed:
+
+```python
+def my_validate(finding, document_type, **_kw):
+    return MyValidator().validate(finding, document_type)
 ```
 
 If your Stage 1 produces a different artifact shape than Stages 2+ (the verifier's `claim_inventory.json` is the canonical example), pass `stage_one_alternate_filename="…"` and write Stage 1's payload via the `stage_one_payload=` kwarg.

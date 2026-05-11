@@ -2,11 +2,22 @@
 """Render an AuditReport (validated against schemas/audit_report.json) to markdown.
 
 Pattern model: skills/peer-review/scripts/calculate_scores.py generate_report().
-Public API: generate_report(report: dict) -> str
+
+Public API:
+    generate_report(report: dict, *, intake: dict | None = None) -> str
+
+When `intake` is supplied, the renderer also enforces predicate P8 (Tier-3
+cherry-picking sweep) via `validate_audit_report.run_p8(...)` before
+rendering. On P8 failure, the call raises `ValueError` with a structured
+message listing the uncovered Stage-3 VERIFIED claim_ids. P8 cannot be
+silenced by skipping the CLI step — every render path that supplies an
+intake goes through the gate. When `intake is None`, P8 is skipped
+(back-compat for legacy callers and tests that render synthetic reports
+without an intake context).
 
 Usage:
     uv run python render_report.py report.json
-    uv run python render_report.py report.json --out report.md
+    uv run python render_report.py report.json --intake intake.json --out report.md
 """
 
 from __future__ import annotations
@@ -17,7 +28,15 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from validate_audit_report import run_p8
+
 SEVERITY_ORDER = ["CRITICAL", "MAJOR", "MINOR", "INFORMATIONAL"]
+P8_PASS_NOTE = (
+    "Predicate P8 (Tier-3 cherry-picking sweep) enforced: every Stage-3 "
+    "VERIFIED biomedical/mixed claim is covered by either a Stage-4 "
+    "cherry-picking finding or a `cherry_picking:<claim_id>: <reason>` "
+    "coverage caveat."
+)
 
 SCITE_BIAS_CAVEAT = (
     "Scite-derived sentiment classifications are reported per Scite classification "
@@ -140,22 +159,50 @@ def _section_methodology(report: dict[str, Any]) -> str:
     return f"## Methodology\n\n{report['methodology_note']}\n"
 
 
-def generate_report(report: dict[str, Any]) -> str:
-    """Render an AuditReport dict to markdown."""
-    return "\n".join(
-        [
-            _section_header(report),
-            _section_executive_summary(report),
-            _section_findings(report),
-            _section_matrix(report),
-            _section_methodology(report),
-        ]
-    )
+def generate_report(
+    report: dict[str, Any], *, intake: dict[str, Any] | None = None
+) -> str:
+    """Render an AuditReport dict to markdown.
+
+    When `intake` is supplied, enforces predicate P8 before rendering:
+    raises `ValueError` if any Stage-3 VERIFIED claim lacks a cherry-picking
+    finding or a `cherry_picking:<claim_id>: <reason>` coverage caveat. When
+    `intake is None`, P8 is skipped (back-compat).
+    """
+    p8_status: str | None = None
+    if intake is not None:
+        p8_status, p8_errors = run_p8(report, intake)
+        if p8_status == "fail":
+            raise ValueError(
+                "P8 (Tier-3 cherry-picking sweep) failed; cannot render audit. "
+                "Loop back to Stage 4 and emit the missing cherry-picking "
+                "finding(s) or coverage caveat(s):\n  "
+                + "\n  ".join(p8_errors)
+            )
+
+    sections = [
+        _section_header(report),
+        _section_executive_summary(report),
+        _section_findings(report),
+        _section_matrix(report),
+        _section_methodology(report),
+    ]
+    if p8_status == "pass":
+        sections.append(f"> {P8_PASS_NOTE}\n")
+    return "\n".join(sections)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Render AuditReport JSON to markdown")
     parser.add_argument("report_file", help="Path to audit report JSON")
+    parser.add_argument(
+        "--intake",
+        help=(
+            "Path to intake.json. When supplied, enforces P8 "
+            "(Tier-3 cherry-picking sweep) before rendering and raises on "
+            "failure. Omit to render without P8 enforcement."
+        ),
+    )
     parser.add_argument("--out", help="Write to file instead of stdout")
     args = parser.parse_args()
 
@@ -165,7 +212,19 @@ def main() -> None:
         sys.exit(1)
 
     report = json.loads(p.read_text())
-    md = generate_report(report)
+    intake: dict[str, Any] | None = None
+    if args.intake:
+        ip = Path(args.intake)
+        if not ip.exists():
+            print(f"Error: file not found: {args.intake}", file=sys.stderr)
+            sys.exit(1)
+        intake = json.loads(ip.read_text())
+
+    try:
+        md = generate_report(report, intake=intake)
+    except ValueError as e:
+        print(f"Render aborted: {e}", file=sys.stderr)
+        sys.exit(1)
     if args.out:
         Path(args.out).write_text(md, encoding="utf-8")
         print(f"Wrote {args.out}")
