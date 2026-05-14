@@ -49,6 +49,8 @@ search strategy.
 | `mcp__openalex__find_seminal_papers` | OpenAlex MCP | Landmark/foundational works in a field — anchor early-stage scoping. | `topic`, `field` |
 | `mcp__openalex__find_review_articles` | OpenAlex MCP | Review articles + meta-analyses on a topic — anchor Survey stage. | `topic`, `filters` |
 | `mcp__openalex__health_check` | OpenAlex MCP | Liveness probe before relying on OpenAlex in a contract; fires the OpenAlex circuit breaker on failure. | _(none)_ |
+| `mcp__exa__web_search_exa` | Exa MCP | **Required WebSemantic channel** for grey-lit discovery (regulatory pages, conference abstracts, registry pages, sponsor disclosures). Natural-language *page-description* queries, not keywords. Filter hits against the W1/W2 whitelist before promoting to bibliography. | `query` (natural-language page description), `numResults` |
+| `mcp__exa__web_fetch_exa` | Exa MCP | Markdown fetch for whitelisted URLs to capture snippet + `fetched_at` ISO-8601 timestamp into the Search Log. Batch URLs in one call. | `urls` (array, batch-friendly) |
 
 **Paperclip is invoked via Bash, not MCP** — requires `paperclip install` + `paperclip login` (per machine). Vendor-managed `SKILL.md` lives at `.claude/skills/paperclip/SKILL.md`. Skip Paperclip silently when the binary is absent (CI / sandboxed environments) — bibliography proceeds with the other databases. Capability keys: `literature.corpus_search`, `literature.corpus_grep`.
 
@@ -80,6 +82,7 @@ search strategy.
 | Paperclip CLI error | Non-zero exit / `paperclip: command not found` / OAuth expired | Skip Paperclip channel; proceed with PubMed + bioRxiv MCP + Consensus | 1 |
 | PubTator3 wrapper error | Non-zero exit / network error / `requests` not installed | Skip PubTator3 channel; proceed with other databases. No fallback for entity-grounded search. | 1 |
 | OpenAlex MCP error/timeout | Error from `health_check` or any `mcp__openalex__*` call; rate-limit (429) | Re-run `health_check` once; on second failure skip OpenAlex channel and emit DEGRADED-SEARCH advisory (OpenAlex is required, so its loss must be flagged). For citation-graph requests, fall back to PubMed `find_related_articles` (biomedical only) or Scite citation context (sentiment-classified, narrower coverage). | 1 |
+| Exa MCP error/empty | Error from `mcp__exa__web_search_exa` or empty results across all sub-queries | Retry once with the RQ reformulated as a page-description (Exa is semantic). On second failure, skip the WebSemantic channel and emit DEGRADED-SEARCH advisory; record gap in Search Log (no equivalent grey-lit fallback). In `fact-check` with regulatory auto-hardening, treat Exa loss as a HARD GAP and re-open the Search Contract with the user. | 1 |
 | All tools fail for a database | Fallback also fails | Document gap, proceed with remaining databases | 0 |
 
 **Degraded-mode rule:** If ≥2 databases are unreachable, add to output:
@@ -237,6 +240,59 @@ Caveat: PubTator3's NER has known gaps for newer papers — absence of an annota
 not prove absence in the paper itself. Use as a fast positive signal; treat absence as
 "escalate to full text" rather than a hard verdict.
 
+**WebSemantic channel (required for `full` / `lit-review` / `hypothesis` /
+`fact-check`; opt-in for `systematic-review`):** Exa-based grey-literature
+discovery for content that is not in scholarly indices — regulatory letters,
+EMA/MHRA assessment reports, NICE guidance, ClinicalTrials.gov registry
+pages, conference abstracts pre-indexing, and sponsor disclosures. In
+`fact-check`, this channel auto-hardens to non-strikable when the Search
+Contract's regulator/regulatory-action regex matches the RQ
+(`FDA approved`, `EMA recall`, `EUA`, `boxed warning`, `retract*`, etc.).
+In `systematic-review`, WebSemantic is **off by default**: the agent emits
+the Phase 1 opt-in prompt (see SKILL.md §3a) and, if the user opts in,
+appends a PRISMA-S §S4 disclosure block to the Search Strategy.
+
+Tools (capability key `discovery.web_grey_literature` in
+`shared/tool-lookup.yaml`):
+- **Discovery:** `mcp__exa__web_search_exa(query=<natural-language page
+  description>, numResults=10)`. Exa is *semantic* — describe the page
+  you want, not the keywords (`"FDA black-box warning page for
+  fluoroquinolones"` outperforms `"fluoroquinolone FDA warning"`).
+- **Fetch:** `mcp__exa__web_fetch_exa(urls=[<whitelisted url>, ...])` for
+  clean markdown when a hit's preview is insufficient. Batch URLs in one
+  call.
+
+Bibliography filtering rules (canonical: `shared/references/citable_web_domains.md`):
+1. **W1 hits** (regulatory + registries: fda.gov, ema.europa.eu, who.int,
+   nih.gov, nice.org.uk, clinicaltrials.gov, mhra.gov.uk, cdc.gov,
+   ec.europa.eu, prospero.crd.york.ac.uk): enter the bibliography as
+   `[Grey Lit]` entries with `fetched_at` ISO-8601 timestamp. Can ground
+   `VERIFIED` verdicts directly downstream.
+2. **W2 hits** (societies + repositories: acs.org, asco.org, aacr.org,
+   esmo.org, hematology.org, ash.confex.com, idsociety.org, zenodo.org,
+   figshare.com, osf.io, protocols.io, dataverse.harvard.edu; plus path-
+   scoped cell.com/conference-coverage, ahajournals.org/conferences):
+   enter as `[Grey Lit]` entries tagged "per society/repository source".
+3. **W3a hits** (`*.edu` wildcard): treated like W2, tagged "per
+   institutional source".
+4. **W3b hits** (curated journalism: Nature/Science/NEJM/Lancet/BMJ news
+   desks, statnews.com, endpts.com): enter as `[Context]` only — never as
+   `[Grey Lit]` bibliography entries. Use for narrative context, not
+   primary evidence.
+5. **Out-of-whitelist hits**: dropped from the bibliography. May be cited
+   in narrative as context if needed, but never as `[Grey Lit]`.
+
+Match semantics for the whitelist are **dot-delimited suffix match**:
+hostname `h` matches domain `d` iff `h == d` OR `h.endswith("." + d)` —
+so `accessdata.fda.gov` matches `fda.gov` but `fda.gov.evil.com` does not.
+See `shared/references/citable_web_domains.yaml` for the programmatic
+table.
+
+Record WebSemantic hits in the Search Log alongside scholarly hits, with
+the URL, `fetched_at` timestamp, and tier (W1/W2/W3a). Dedupe against
+prior channels by URL (DOI-based dedupe does not apply — grey lit has no
+DOI).
+
 ### Consensus Search Optimization
 
 When using Consensus MCP as a search database, apply domain-appropriate filters:
@@ -265,12 +321,15 @@ in `required_databases` MUST be called.
    serialize. Sequential execution ("call PubMed, wait, then call Paperclip")
    is forbidden in this step. Per the user's CLAUDE.md preference, batch
    independent tool calls. The required set typically includes PubMed +
-   Consensus + Paperclip (heavy modes + fact-check, non-preprint-heavy) or
-   PubMed + Consensus + bioRxiv (quick mode, preprint-heavy primary). When
-   the RQ names biomedical entities, PubTator3 is also in `required_databases`.
-   Mode-eligible optional channels (Scite Step 4b for non-quick/non-fact-check,
-   Paperclip in preprint-heavy domain, PubTator3 when no entities detected)
-   are batched in the same message unless the user struck them at Checkpoint 1.
+   Consensus + Paperclip + OpenAlex + WebSemantic (heavy modes + fact-check,
+   non-preprint-heavy) or PubMed + Consensus + bioRxiv + OpenAlex + WebSemantic
+   (preprint-heavy primary); WebSemantic drops out in `quick` (no grey-lit
+   channel there) and in `systematic-review` unless the user opted in at
+   Phase 1. When the RQ names biomedical entities, PubTator3 is also in
+   `required_databases`. Mode-eligible optional channels (Scite Step 4b for
+   non-quick/non-fact-check, Paperclip in preprint-heavy domain, PubTator3
+   when no entities detected) are batched in the same message unless the
+   user struck them at Checkpoint 1.
 2. Deduplicate by DOI (remove exact DOI matches across sources).
 3. Count unique results.
 4. If < minimum threshold (15 for full, 5 for quick): expand keywords, broaden

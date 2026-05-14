@@ -57,16 +57,22 @@ MIN_SOURCES: Final[dict[str, int]] = {
 # ---------------------------------------------------------------------------
 
 MIN_DATABASES: Final[dict[str, int]] = {
-    # Floors bumped +1 across search-running modes when OpenAlex was promoted
-    # to a required scholarly_graph channel (v1.7 contract). Reflects the new
-    # contract reality: every search-running mode has at least 4 required
-    # channels (3 tier slots + OpenAlex).
-    "full": 4,
+    # Floors evolution:
+    #   v1.7 (OpenAlex promotion): +1 across all search-running modes — every
+    #     mode now has at least 3 tier slots + OpenAlex (= 4 required).
+    #   v1.8 (WebSemantic promotion): +1 for heavy modes + fact-check
+    #     — full/lit-review/hypothesis = 3 tier slots + OpenAlex + WebSemantic
+    #     = 5 required minimum. Fact-check bumped from 3 → 5 to match (3 tier
+    #     slots + OpenAlex + WebSemantic). Systematic-review stays at 5
+    #     (WebSemantic is opt-in only; PRISMA-S §S4 disclosure gates
+    #     inclusion). Quick is unchanged at 3 (no WebSemantic, no Paperclip;
+    #     just 3 tier slots).
+    "full": 5,
     "quick": 3,
-    "lit-review": 4,
+    "lit-review": 5,
     "systematic-review": 5,
-    "hypothesis": 4,
-    "fact-check": 3,
+    "hypothesis": 5,
+    "fact-check": 5,
     "review": 0,
     "socratic": 0,
 }

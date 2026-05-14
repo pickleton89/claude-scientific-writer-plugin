@@ -122,6 +122,11 @@ DATABASE_METADATA: dict[str, dict[str, str]] = {
         "tool": "mcp__openalex__search_works",
         "transport": "MCP",
     },
+    "WebSemantic": {
+        "capability_key": "discovery.web_grey_literature",
+        "tool": "mcp__exa__web_search_exa",
+        "transport": "MCP",
+    },
 }
 
 # Mode-eligibility for optional channels (mirrors bibliography.md §Step 4b
@@ -151,6 +156,42 @@ PUBTATOR3_ELIGIBLE_MODES: frozenset[str] = frozenset(
 OPENALEX_REQUIRED_MODES: frozenset[str] = frozenset(
     {"full", "quick", "lit-review", "systematic-review", "hypothesis", "fact-check"}
 )
+
+# WebSemantic (Exa-based grey-literature discovery) is required in heavy modes
+# + fact-check. Systematic-review is NOT in the required set by default —
+# PRISMA-S §S4 allows grey-lit but only with explicit disclosure, so the
+# bibliography agent's Phase 1 opt-in prompt gates inclusion.
+WEBSEMANTIC_REQUIRED_MODES: frozenset[str] = frozenset(
+    {"full", "lit-review", "hypothesis", "fact-check"}
+)
+WEBSEMANTIC_OPTIONAL_MODES: frozenset[str] = frozenset({"systematic-review"})
+
+# Regulatory-entity regex for fact-check auto-hardening. When the RQ contains
+# any of these tokens, WebSemantic flips to non-strikable in fact-check mode
+# (regulatory pages are first-party authoritative for these claims and cannot
+# be substituted by scholarly indices). Mirrors how `_detect_named_entities`
+# hardens PubTator3.
+REGULATORY_ENTITY_PATTERN: re.Pattern[str] = re.compile(
+    r"\b(?:FDA|EMA|MHRA|NICE|PMDA|TGA|WHO)\b"
+    r"|\b(?:approv\w+|recall\w*|withdraw\w+|"
+    r"retract(?:ed|ing|ion|ions)?|"  # tight suffix list — "retractable" must NOT match
+    r"black[- ]?box|boxed[- ]?warning|"
+    r"emergency[- ]use[- ]authori[sz]ation|EUA)\b"
+    r"|\bexpression of concern\b",
+    re.IGNORECASE,
+)
+
+
+def _detect_regulatory_entities(research_question: str) -> bool:
+    """Return True if the RQ mentions a regulator or a regulatory action.
+
+    Used by fact-check mode to auto-harden WebSemantic to non-strikable: when
+    the user is asking "did FDA approve X?", regulatory grey lit (label, press
+    release, advisory committee briefing) is the authoritative primary source,
+    not a downstream paper.
+    """
+    return bool(REGULATORY_ENTITY_PATTERN.search(research_question or ""))
+
 
 # Modes that do not run a search phase at all.
 NO_SEARCH_MODES: frozenset[str] = frozenset({"socratic", "review"})
@@ -315,6 +356,12 @@ class DatabaseEntry:
     purpose: str = ""
     starter_query: str = ""
     skipped_reason: str = ""  # populated when the user strikes the channel
+    # When False, the user cannot strike this entry at Checkpoint 1 even if the
+    # floor would still be honored. Used for fact-check + regulatory-entity
+    # auto-hardened WebSemantic (regulatory pages are authoritative; no
+    # scholarly substitute exists).
+    strikable: bool = True
+    notes: str = ""  # free-form annotation (e.g., "auto-hardened by ...")
 
     def to_dict(self) -> dict:
         """Convert to JSON-serialisable dict."""
@@ -327,6 +374,8 @@ class DatabaseEntry:
             "purpose": self.purpose,
             "starter_query": self.starter_query,
             "skipped_reason": self.skipped_reason,
+            "strikable": self.strikable,
+            "notes": self.notes,
         }
 
 
@@ -371,6 +420,11 @@ class SearchContract:
             collection = getattr(self, collection_name)
             for entry in list(collection):
                 if entry.name == database_name:
+                    if not entry.strikable:
+                        raise ValueError(
+                            f"Cannot strike '{database_name}': entry is "
+                            f"non-strikable (reason: {entry.notes or 'hardened'})"
+                        )
                     if (
                         collection_name == "required_databases"
                         and len(self.required_databases) - 1 < self.min_databases
@@ -444,6 +498,11 @@ def _starter_query(database: str, research_question: str) -> str:
     if database == "PubTator3":
         # PubTator3 entity-grounded queries are auto-tagged from bare symbols;
         # bibliography agent disambiguates first via `pubtator3 autocomplete`.
+        return rq
+    if database == "WebSemantic":
+        # Exa rewards natural-language page-description queries rather than
+        # keywords. Bibliography agent's Step 4d reshapes the RQ into a
+        # page-description; this is just a seed for Checkpoint 1.
         return rq
     return rq
 
@@ -531,6 +590,39 @@ def build_contract(
                 starter_query=_starter_query("OpenAlex", research_question),
             )
         )
+
+    # WebSemantic — Exa-based grey-literature discovery. Required across heavy
+    # modes + fact-check (per WEBSEMANTIC_REQUIRED_MODES). Systematic-review
+    # opts in via a separate Phase 1 prompt (PRISMA-S §S4 disclosure required).
+    # Fact-check auto-hardens to non-strikable when the RQ contains regulatory
+    # entities — regulatory pages are first-party authoritative for those
+    # claims and cannot be substituted by scholarly indices.
+    if mode in WEBSEMANTIC_REQUIRED_MODES:
+        websemantic_entry = _make_entry(
+            name="WebSemantic",
+            tier="web_discovery",
+            purpose=(
+                "grey-literature + non-indexed web discovery "
+                "(regulatory letters, conference abstracts, registry pages)"
+            ),
+            starter_query=_starter_query("WebSemantic", research_question),
+        )
+        if mode == "fact-check" and _detect_regulatory_entities(research_question):
+            websemantic_entry.strikable = False
+            websemantic_entry.notes = (
+                "auto-hardened: RQ contains regulatory-entity token "
+                "(regulatory grey-lit is the authoritative primary source)"
+            )
+            websemantic_entry.purpose = (
+                "grey-literature + non-indexed web discovery "
+                "(REQUIRED — RQ names a regulator/regulatory action; "
+                "non-strikable)"
+            )
+        contract.required_databases.append(websemantic_entry)
+    # Systematic-review: NOT added here — surfaced via the bibliography agent's
+    # Phase 1 opt-in prompt. If the user opts in, the agent appends WebSemantic
+    # to optional_databases with mandatory_disclosure semantics and the
+    # contract gets a `prisma_s_disclosure_required: true` flag.
 
     # If Paperclip is in the required tier table, surface a Checkpoint 1
     # warning when the binary is missing. We don't hard-fail — user can
@@ -648,7 +740,11 @@ def format_contract_for_user(contract: SearchContract) -> str:
         "OpenAlex is required across all domains and modes as the cross-"
         "disciplinary scholarly_graph channel — it provides 240M+ works "
         "spanning biomedical and non-biomedical literature plus citation-"
-        "network traversal for snowballing._"
+        "network traversal for snowballing. WebSemantic (Exa-based grey-"
+        "literature discovery) is required across heavy modes + fact-check "
+        "for regulatory letters, conference abstracts, registry pages, and "
+        "sponsor disclosures; systematic-review opts in separately at "
+        "Phase 1 with PRISMA-S §S4 disclosure._"
     )
     lines.append("")
 

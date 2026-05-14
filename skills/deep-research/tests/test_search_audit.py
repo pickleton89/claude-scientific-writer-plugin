@@ -36,7 +36,8 @@ def _frozen_contract(mode: str = "full", domain: str = "biomedical") -> dict:
 def test_audit_passes_when_all_required_dbs_called():
     contract = _frozen_contract(mode="full", domain="biomedical")
     result = audit_search(
-        contract, ["PubMed", "Consensus", "Paperclip", "OpenAlex"]
+        contract,
+        ["PubMed", "Consensus", "Paperclip", "OpenAlex", "WebSemantic"],
     )
     assert result.passed is True
     assert result.missing_databases == []
@@ -46,9 +47,10 @@ def test_audit_passes_when_all_required_dbs_called():
 def test_audit_passes_when_optional_skipped():
     """Optional channels (Scite, PubTator3) are not part of the gate."""
     contract = _frozen_contract(mode="full", domain="biomedical")
-    # Only the 4 required databases are present; no Scite, no PubTator3
+    # Only the 5 required databases are present; no Scite, no PubTator3
     result = audit_search(
-        contract, ["PubMed", "Consensus", "Paperclip", "OpenAlex"]
+        contract,
+        ["PubMed", "Consensus", "Paperclip", "OpenAlex", "WebSemantic"],
     )
     assert result.passed is True
 
@@ -59,7 +61,7 @@ def test_audit_passes_with_extra_databases_called():
     result = audit_search(
         contract,
         [
-            "PubMed", "Consensus", "Paperclip", "OpenAlex",
+            "PubMed", "Consensus", "Paperclip", "OpenAlex", "WebSemantic",
             "Scite", "PubTator3", "EuropePMC",
         ],
     )
@@ -76,15 +78,20 @@ def test_audit_fails_when_pubmed_only_in_full_mode():
     contract = _frozen_contract(mode="full", domain="biomedical")
     result = audit_search(contract, ["PubMed"])
     assert result.passed is False
-    assert set(result.missing_databases) == {"Consensus", "Paperclip", "OpenAlex"}
+    assert set(result.missing_databases) == {
+        "Consensus", "Paperclip", "OpenAlex", "WebSemantic",
+    }
     assert "Consensus" in result.message
     assert "Paperclip" in result.message
     assert "OpenAlex" in result.message
+    assert "WebSemantic" in result.message
 
 
 def test_audit_fails_when_one_db_missing():
     contract = _frozen_contract(mode="full", domain="biomedical")
-    result = audit_search(contract, ["PubMed", "Consensus", "Paperclip"])
+    result = audit_search(
+        contract, ["PubMed", "Consensus", "Paperclip", "WebSemantic"]
+    )
     assert result.passed is False
     assert result.missing_databases == ["OpenAlex"]
 
@@ -94,7 +101,7 @@ def test_audit_fails_with_empty_searched_list():
     result = audit_search(contract, [])
     assert result.passed is False
     assert set(result.missing_databases) == {
-        "PubMed", "Consensus", "Paperclip", "OpenAlex",
+        "PubMed", "Consensus", "Paperclip", "OpenAlex", "WebSemantic",
     }
 
 

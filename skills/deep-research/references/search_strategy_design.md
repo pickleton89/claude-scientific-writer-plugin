@@ -116,7 +116,7 @@ biomed scaffold.
 
 | Criterion | Include | Exclude |
 |---|---|---|
-| Publication type | Peer-reviewed primary research, systematic reviews, meta-analyses, registered preprints | Editorials, letters, news, blog posts, retracted papers (per Scite editorial notices) |
+| Publication type | Peer-reviewed primary research, systematic reviews, meta-analyses, registered preprints; **grey lit from W1/W2 domains** (regulatory, registries, societies — via the WebSemantic channel) carrying `[Grey Lit]` tag + `fetched_at` timestamp | Editorials, letters, news, blog posts and **curated media (W3b)** unless context-only, retracted papers (per Scite editorial notices) |
 | Study design | Match the RQ (RCT for efficacy; cohort for prognosis; case-control for risk; mechanistic for biology) | Designs that cannot answer the RQ |
 | Date range | Per `references/biomedical_research.md` §Currency Rules by Field; foundational works exempt | Older than threshold unless seminal (substantially above the era's median citations and routinely cited as foundational; "seminal" is a judgment call, not a fixed cutoff) |
 | Language | English | Other languages unless key source (translate or note as gap) |
@@ -128,6 +128,17 @@ biomed scaffold.
 Currency thresholds default to the field-specific values in
 `references/biomedical_research.md` §Currency Rules by Field. Source-count
 minimums defer to `scripts/thresholds.py` (`MIN_SOURCES`).
+
+**Grey-literature note.** In heavy modes + fact-check, the WebSemantic
+channel (Exa MCP) admits grey lit from the W1/W2 tiers of
+`shared/references/citable_web_domains.md` (regulatory pages, society
+abstracts, open repositories). W3a (`*.edu` institutional pages) is
+treated like W2; W3b (curated journalism — Nature/Science/NEJM news desks)
+is context-only and cannot ground a verdict. In `systematic-review` mode,
+WebSemantic is **off by default** to keep PRISMA-S compliance clean —
+explicit user opt-in at Phase 1 toggles it on with a PRISMA-S §S4
+disclosure block. See `agents/bibliography.md` §WebSemantic channel for
+the filtering rules and Search Log conventions.
 
 ### Step 5: Document the Screening Protocol
 

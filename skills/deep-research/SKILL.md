@@ -181,7 +181,14 @@ frozen on approval:
      **Paperclip replaces bioRxiv as a required full-text channel** for
      all domains except `preprint-heavy`. **PubTator3** is auto-promoted
      to required when the RQ contains named biomedical entities (gene
-     symbols, disease/variant keywords, drug INN suffixes).
+     symbols, disease/variant keywords, drug INN suffixes). **WebSemantic**
+     (Exa-based grey-literature discovery) is required across `full` /
+     `lit-review` / `hypothesis` / `fact-check`; `systematic-review` opts
+     in separately (see step 3a below). In `fact-check`, WebSemantic
+     auto-hardens to non-strikable when the RQ contains regulatory-entity
+     tokens (`FDA`, `EMA`, `MHRA`, `recall`, `withdrawal`, `retract`,
+     `EUA`, `boxed warning`, etc.) — regulatory pages are first-party
+     authoritative for those claims.
    - Optional/reception channels (Scite, Paperclip in preprint-heavy,
      PubTator3 when no entities detected) are also surfaced
    - Mode-skipped channels are surfaced explicitly so the user can see
@@ -189,6 +196,18 @@ frozen on approval:
    - When Paperclip is required but the binary is missing, a Checkpoint 1
      warning fires (no hard fail) — user can install/login or strike the
      channel
+3a. **WebSemantic opt-in (systematic-review only).** Before locking
+    Checkpoint 1 in `systematic-review` mode, emit this one-line prompt:
+    > "WebSemantic (Exa grey-lit discovery) is not in the default
+    > systematic-review contract. PRISMA-S §S4 permits grey-lit inclusion
+    > **only with disclosure**. Opt in? (yes → I'll append WebSemantic to
+    > optional_databases and emit a `prisma_s_disclosure_block` in the
+    > Search Strategy.) [yes / skip]"
+    If the user opts in: append WebSemantic to `optional_databases`,
+    flag the contract with `prisma_s_disclosure_required: true`, and the
+    bibliography agent must emit a PRISMA-S §S4 disclosure block in
+    Phase 2 output. Out-of-whitelist hits stay context-only per
+    `shared/references/citable_web_domains.md` W3 rules.
 4. Present BOTH contracts to the user as part of Checkpoint 1:
    - Selected mode and confidence level (plus any mode-confirmation note)
    - Output: section structure with user-label mappings, word counts, file spec
