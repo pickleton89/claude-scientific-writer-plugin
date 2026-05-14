@@ -1,0 +1,102 @@
+# Citable web-domain whitelist — programmatic lookup for deep-research
+# bibliography agent (Step 4d) and research-accuracy-verifier web-slot routing.
+#
+# Tier rules: see citable_web_domains.md (canonical narrative).
+#   W1  — can ground VERIFIED directly; deep-research bibliography entry tagged [Grey Lit]
+#   W2  — can ground VERIFIED with "per society/repository source" tag
+#   W3a — *.edu wildcard, treated like W2 with "per institutional source" tag
+#   W3b — curated media; context-only (verifier: UNVERIFIED/OVERGENERALIZED support; deep-research: [Context] narrative only)
+#
+# Match semantics:
+#   - `domains:` entries match as DOT-DELIMITED suffix matches on the hostname.
+#     A hostname `h` matches domain `d` iff `h == d` OR `h.endswith("." + d)`.
+#     Example: `fda.gov` matches `www.fda.gov` and `accessdata.fda.gov` but
+#     NOT `fda.gov.evil.com` (avoids suffix-spoofing).
+#   - `path_prefixes:` entries require BOTH dot-delimited hostname suffix match
+#     against `host:` AND URL path begins with the listed `prefix:`.
+#   - `edu_wildcard: true` means any hostname matching dot-suffix `.edu` (or
+#     hostname == `edu`, theoretical) matches W3a.
+#
+# Maintenance: update this file in lockstep with citable_web_domains.md.
+
+W1:
+  description: "Regulatory authorities & registries — primary-source pages"
+  grounding: "verified_direct"
+  result_summary_tag: ""   # no extra tag required beyond the no_doi token
+  domains:
+    - fda.gov
+    - ema.europa.eu
+    - who.int
+    - nih.gov
+    - nice.org.uk
+    - clinicaltrials.gov
+    - mhra.gov.uk
+    - cdc.gov
+    - ec.europa.eu
+    - prospero.crd.york.ac.uk
+
+W2:
+  description: "Professional societies & open repositories"
+  grounding: "verified_with_tag"
+  result_summary_tag: "per society/repository source"
+  domains:
+    # Societies
+    - acs.org
+    - asco.org
+    - aacr.org
+    - esmo.org
+    - hematology.org
+    - ash.confex.com
+    - idsociety.org
+    # Open repositories & preregistration
+    - zenodo.org
+    - figshare.com
+    - osf.io
+    - protocols.io
+    - dataverse.harvard.edu
+  path_prefixes:
+    - host: cell.com
+      prefix: "/conference-coverage"
+    - host: ahajournals.org
+      prefix: "/conferences"
+
+W3a:
+  description: "Academic institution pages (*.edu wildcard)"
+  grounding: "verified_with_tag"
+  result_summary_tag: "per institutional source"
+  edu_wildcard: true
+
+W3b:
+  description: "Curated media (journal news desks) — context-only, cannot ground VERIFIED"
+  grounding: "context_only"
+  result_summary_tag: "context only, W3b curated media"
+  domains:
+    - statnews.com
+    - endpts.com
+  path_prefixes:
+    - host: nature.com
+      prefix: "/news"
+    - host: nature.com
+      prefix: "/articles/d41586-"
+    - host: science.org
+      prefix: "/news"
+    - host: science.org
+      prefix: "/content/article/news-"
+    - host: nejm.org
+      prefix: "/journal-watch"
+    - host: thelancet.com
+      prefix: "/journals/lancet/news"
+    - host: bmj.com
+      prefix: "/news"
+
+# Out-of-whitelist handling: any URL not matching W1/W2/W3a/W3b is dropped
+# from deep-research bibliography and rejected as grounding evidence in the
+# verifier (it may still appear in verification_path[] as documentary trail).
+
+# KNOWN GAP — archive.org / web.archive.org handling is intentionally
+# unspecified here. Inheriting the tier of the embedded original URL would
+# require a regex extractor + recursive whitelist evaluation, and a half-
+# implemented fallback is worse than no fallback for audit-critical code.
+# For v1, web.archive.org URLs are treated as out-of-whitelist (dropped from
+# bibliography, rejected as grounding). Revisit in a follow-up if archive
+# URLs become a frequent source.

@@ -804,3 +804,58 @@ verification:
         notes: "skills/research-accuracy-verifier/scripts/ — bibliography ↔ inline cite set diff"
       - tool: scan_acronyms.py
         notes: "skills/research-accuracy-verifier/scripts/ — undefined-first-use + expansion drift"
+
+  semantic_web_search:
+    description: "Stage 2/3 last-fallback semantic web search for non-DOI content (Exa MCP) + Stage 5 quote-fabrication rescue"
+    # Routing: Exa is the documented concrete tool for the trailing `web` slot in
+    # SKILL.md Stage 2/3 routing (biomedical: …→ Scite → Exa; general scientific:
+    # OpenAlex → Exa → WebSearch). Use when scholarly indices return empty AND the
+    # claim plausibly lives on a citable web domain (regulatory, registry, society,
+    # *.edu, curated media). Web evidence has no DOI — P7 carve-out applies:
+    # verification_path[] entry MUST include `method: "web_search"` (existing enum
+    # value in schemas/finding.json) and `result_summary` containing the literal
+    # token `no_doi` (otherwise validate_finding.py raises a P7 violation under
+    # the carve-out). P8 carve-out: emit a `header.coverage_caveats[]` entry of
+    # shape `cherry_picking:<claim_id>: web_source_no_doi_for_scite_tally` instead
+    # of a Stage-4 cherry-picking finding. Citable-domain rules at
+    # skills/shared/references/citable_web_domains.md (W1/W2/W3 trust tiers).
+    primary:
+      - tool: mcp__exa__web_search_exa
+        notes: >
+          Natural-language page-description query (NOT keywords) +
+          `numResults` (default 10). Returns clean text content from top results.
+          Use category:people / category:company filters when claim is about a
+          named individual or organization.
+      - tool: mcp__exa__web_fetch_exa
+        notes: >
+          Batch-fetch full markdown for one or more URLs surfaced by
+          web_search_exa when result highlights are insufficient. Capture
+          `fetched_at` ISO-8601 timestamp into verification_path[].result_summary.
+    fallback:
+      - tool: WebSearch
+        notes: "Deeper fallback when Exa returns empty (regional restriction, rate limit, or query truly off-corpus). Quote-fabrication rescue path also uses Exa first, WebSearch second."
+
+discovery:
+  web_grey_literature:
+    description: "Deep-research WebSemantic channel — grey-literature + non-indexed web discovery for the bibliography agent (Exa MCP)"
+    # Used by deep-research's WebSemantic channel (search_contract.py). Required
+    # in full / lit-review / hypothesis / fact-check modes; opt-in only for
+    # systematic-review (PRISMA-S §S4 disclosure required if enabled).
+    # Bibliography entries from this channel MUST be in the W1/W2 tier of
+    # skills/shared/references/citable_web_domains.md and carry a `[Grey Lit]`
+    # tag + `fetched_at` ISO-8601 timestamp. W3 hits (curated media) enter the
+    # report as `[Context]` only, never as bibliography entries. Out-of-whitelist
+    # hits are dropped from the bibliography entirely.
+    primary:
+      - tool: mcp__exa__web_search_exa
+        notes: >
+          Discovery call: natural-language page-description query targeting
+          grey-lit (regulatory letters, EMA assessment reports, NICE guidance,
+          conference abstracts, sponsor disclosures, registry pages). Filter
+          results against citable_web_domains whitelist before promoting to
+          bibliography. Fact-check mode auto-hardens this channel when the
+          research question contains regulatory-entity tokens (FDA, EMA, recall,
+          withdrawal, retraction, EUA, etc.).
+      - tool: mcp__exa__web_fetch_exa
+        notes: "Markdown fetch for whitelisted URLs to capture snippet + fetched_at into the Search Log. Batch URLs in one call."
+    fallback: []
