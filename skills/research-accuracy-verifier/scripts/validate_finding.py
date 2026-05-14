@@ -11,10 +11,17 @@ Two-stage pattern delegated to `verifier_kit.validate.SchemaValidator`:
     P5. severity == SeverityMatrix[document_type][verdict]
     P7. domain ∈ {biomedical,mixed} AND stage == 2 AND
         verdict ∈ {VERIFIED, METADATA_MISMATCH, UNSUPPORTED}
-        ⟹ verification_path[] contains either method == "scite_context"
-          OR an entry with tool matching /scite/i
-        — see CONTRACTS.md §Hard predicates. Skipped when domain or stage
-        is None (back-compat for ad-hoc CLI calls without those flags).
+        ⟹ EITHER verification_path[] contains a Scite probe entry
+          (method == "scite_context" OR an entry with tool matching /scite/i)
+          OR (web-source carve-out) verification_path[] contains an entry
+          with method == "web_search" AND result_summary containing the
+          literal token "no_doi" — documents non-DOI evidence explicitly.
+          Silence (no Scite AND no web_search+no_doi) is still a violation.
+          A web_search entry that omits the no_doi token raises a
+          dedicated carve-out error so the LLM is told *why* P7 failed.
+        — see CONTRACTS.md §Hard predicates and
+          skills/shared/references/citable_web_domains.md. Skipped when
+          domain or stage is None (back-compat for ad-hoc CLI calls).
 
 P8 (Tier-3 cherry-picking sweep) is a cross-stage post-condition and lives
 in `validate_audit_report.py` — it cannot be enforced from a per-finding
@@ -161,6 +168,27 @@ class FindingValidator(SchemaValidator):
         # P7: Stage-2 Scite retraction probe (biomedical/mixed only).
         # Skipped when domain or stage is None — callers that don't supply
         # them opt out of P7 (e.g., ad-hoc CLI debugging, legacy tests).
+        #
+        # Web-source carve-out: web evidence has no DOI to feed Scite, so a
+        # verification_path[] entry with method == "web_search" AND
+        # result_summary containing the literal token "no_doi" satisfies P7
+        # in lieu of a Scite probe. A web_search entry missing the no_doi
+        # token raises a *dedicated* carve-out error (not the generic P7
+        # message) so the LLM knows the issue is the missing token, not
+        # the missing Scite call. See
+        # skills/shared/references/citable_web_domains.md for the citable
+        # web-domain whitelist and the canonical result_summary shape.
+        #
+        # NOTE: the carve-out checks for the no_doi token only — it does
+        # NOT verify the URL against the W1/W2/W3 citable-web-domain
+        # whitelist. Whitelist compliance is a routing concern enforced
+        # at Stage 3 (see SKILL.md § "Web-evidence routing rules") via
+        # the LLM following the W1/W2/W3a/W3b grounding rules; the
+        # validator gates P7 satisfaction (Scite-probe documented OR
+        # web-source carve-out documented), not evidence-source trust
+        # tier. A future v1.1 could add URL parsing + YAML-based tier
+        # enforcement here, but separating concerns keeps the validator
+        # deterministic and YAML-independent for v1.
         domain = ctx.get("domain")
         stage = ctx.get("stage")
         if (
@@ -169,6 +197,8 @@ class FindingValidator(SchemaValidator):
             and verdict in P7_VERDICTS
         ):
             has_scite = False
+            has_web_search = False
+            has_web_no_doi = False
             for entry in verification_path:
                 if not isinstance(entry, dict):
                     continue
@@ -176,14 +206,36 @@ class FindingValidator(SchemaValidator):
                 tool = entry.get("tool") or ""
                 if method == "scite_context" or _SCITE_TOOL_RE.search(tool):
                     has_scite = True
-                    break
-            if not has_scite:
+                if method == "web_search":
+                    has_web_search = True
+                    summary = (entry.get("result_summary") or "").lower()
+                    if "no_doi" in summary:
+                        has_web_no_doi = True
+
+            if has_scite:
+                pass  # Standard P7 satisfaction — Scite probe logged.
+            elif has_web_no_doi:
+                pass  # Web-source carve-out — no_doi token documents non-DOI evidence.
+            elif has_web_search:
+                errors.append(
+                    f"P7 carve-out: biomedical/mixed Stage-2 finding with verdict "
+                    f"{verdict} has a verification_path[] entry with "
+                    "method == 'web_search' but result_summary lacks the literal "
+                    "token 'no_doi'. Web-sourced evidence must document the "
+                    "absence of a DOI explicitly (e.g., result_summary: "
+                    "'web evidence: no_doi available for Scite retraction probe; "
+                    "URL=<url>, fetched_at=<ISO-8601>'). See "
+                    "skills/shared/references/citable_web_domains.md."
+                )
+            else:
                 errors.append(
                     f"P7: biomedical/mixed Stage-2 finding with verdict {verdict} "
                     "requires a Scite probe entry in verification_path[] "
                     "(method == 'scite_context' or tool ~ /scite/i). "
                     "Silence is a violation — log the probe outcome (or its "
-                    "failure mode) even on API error."
+                    "failure mode) even on API error. Web-sourced (non-DOI) "
+                    "evidence may instead satisfy P7 via method == 'web_search' "
+                    "with result_summary containing the literal token 'no_doi'."
                 )
 
     def validate(  # type: ignore[override]

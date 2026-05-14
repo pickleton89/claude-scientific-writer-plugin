@@ -486,3 +486,162 @@ class TestP7ScitePropeRequired:
         assert any("P7" in e for e in errors)
         # Confirm P2 is NOT the blocker (we satisfied it with 2 paths).
         assert not any("P2" in e for e in errors)
+
+
+# ---------- P7 web-source carve-out ---------------------------------------
+
+
+def _stage2_web_finding(
+    *, with_no_doi_token: bool, scite_also_present: bool = False
+) -> dict[str, Any]:
+    """Build a minimal valid Stage-2 VERIFIED finding sourced from the web.
+
+    The finding has NO scholarly verification_path entries (no DOI lookup, no
+    Scite probe) — only a `method == "web_search"` entry pointing at a W1 URL
+    (FDA approval letter). `with_no_doi_token` controls whether the `no_doi`
+    literal appears in result_summary (the carve-out's satisfaction token).
+    `scite_also_present` toggles whether a Scite entry appears alongside; when
+    True, P7 should be satisfied by Scite regardless of the web entry's shape.
+    """
+    paths: list[dict[str, Any]] = [
+        {
+            "method": "web_search",
+            "tool": "mcp__exa__web_search_exa",
+            "result_summary": (
+                "web evidence: no_doi available for Scite retraction probe; "
+                "URL=https://www.fda.gov/drugs/news-events-human-drugs/"
+                "fda-approves-aducanumab-2021; fetched_at=2026-05-14T16:22:18Z"
+                if with_no_doi_token
+                else "web evidence located at FDA.gov approval page; "
+                "URL=https://www.fda.gov/drugs/news-events-human-drugs/"
+                "fda-approves-aducanumab-2021; fetched_at=2026-05-14T16:22:18Z"
+            ),
+        },
+    ]
+    if scite_also_present:
+        paths.append(
+            {
+                "method": "scite_context",
+                "tool": "Scite MCP (search_literature)",
+                "result_summary": (
+                    "editorialNotices: none (Scite returned no record for DOI)"
+                ),
+            }
+        )
+    return {
+        "id": "F200",
+        "location": {"section": "Intro", "paragraph": 2, "line": 7},
+        "claim_verbatim": "The FDA approved aducanumab in 2021.",
+        "claim_type": "citation_bearing",
+        "citations": [{"key": "FDA2021", "raw_text": "FDA approval letter"}],
+        "verification_path": paths,
+        "evidence": [
+            {
+                "source": "FDA",
+                "url": "https://www.fda.gov/drugs/news-events-human-drugs/fda-approves-aducanumab-2021",
+                "snippet": "Accelerated approval granted June 7, 2021.",
+            }
+        ],
+        "verdict": "VERIFIED",
+        "severity": "INFORMATIONAL",
+        "recommended_action": "No action needed.",
+        "confidence": "high",
+    }
+
+
+class TestP7WebSourceCarveOut:
+    """P7 carve-out: web evidence with no DOI satisfies P7 via the no_doi token.
+
+    See skills/shared/references/citable_web_domains.md for the canonical
+    result_summary shape and the citable-web-domain whitelist.
+    """
+
+    def test_p7_web_search_with_no_doi_token_passes(self) -> None:
+        """Web-sourced finding with explicit no_doi token → P7 satisfied."""
+        finding = _stage2_web_finding(with_no_doi_token=True)
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="biomedical", stage=2
+        )
+        assert ok, errors
+
+    def test_p7_web_search_missing_no_doi_token_fails_with_carve_out_error(
+        self,
+    ) -> None:
+        """Web-sourced finding WITHOUT no_doi token → dedicated carve-out error
+        (not the generic P7 error), so the LLM knows the issue is the missing
+        token, not the missing Scite call."""
+        finding = _stage2_web_finding(with_no_doi_token=False)
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="biomedical", stage=2
+        )
+        assert not ok
+        # Carve-out error is distinct from generic P7 error.
+        assert any("P7 carve-out" in e for e in errors)
+        assert any("no_doi" in e for e in errors)
+
+    def test_p7_web_search_with_scite_present_passes_via_scite(self) -> None:
+        """When Scite is also probed, the web entry's no_doi token is moot —
+        Scite alone satisfies P7. This covers hybrid findings where the web
+        entry is supplementary, not the primary evidence."""
+        finding = _stage2_web_finding(
+            with_no_doi_token=False, scite_also_present=True
+        )
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="biomedical", stage=2
+        )
+        assert ok, errors
+
+    def test_p7_web_search_no_doi_case_insensitive(self) -> None:
+        """The no_doi token check is case-insensitive (result_summary is
+        lower-cased before substring search)."""
+        finding = _stage2_web_finding(with_no_doi_token=True)
+        # Force mixed case in result_summary to exercise the .lower() path.
+        finding["verification_path"][0]["result_summary"] = (
+            "Web evidence: NO_DOI available for Scite retraction probe; "
+            "URL=https://www.fda.gov/...; fetched_at=2026-05-14T16:22:18Z"
+        )
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="biomedical", stage=2
+        )
+        assert ok, errors
+
+    def test_p7_web_search_mixed_domain_carve_out_active(self) -> None:
+        """Web-source carve-out applies in mixed domain too (P7_DOMAINS scope)."""
+        finding = _stage2_web_finding(with_no_doi_token=True)
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="mixed", stage=2
+        )
+        assert ok, errors
+
+    def test_p7_web_search_general_domain_skipped(self) -> None:
+        """Carve-out is moot in general domain — P7 itself doesn't fire there."""
+        finding = _stage2_web_finding(with_no_doi_token=False)
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="general", stage=2
+        )
+        assert ok, errors
+
+    def test_p7_web_search_metadata_mismatch_carve_out_applies(self) -> None:
+        """The carve-out applies to all P7-gated verdicts, not just VERIFIED."""
+        finding = _stage2_web_finding(with_no_doi_token=True)
+        finding["verdict"] = "METADATA_MISMATCH"
+        finding["severity"] = "MAJOR"  # matrix[manuscript][METADATA_MISMATCH]
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="biomedical", stage=2
+        )
+        assert ok, errors
+
+    def test_p7_generic_error_mentions_web_carve_out_path(self) -> None:
+        """When P7 fails WITHOUT a web_search entry at all, the generic error
+        message should still mention the web-source carve-out path so the LLM
+        is told both satisfaction routes."""
+        finding = _stage2_verified_finding(with_scite=False)
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="biomedical", stage=2
+        )
+        assert not ok
+        # Generic P7 error (not the carve-out error — no web_search present)
+        # AND the error text mentions the carve-out path as an alternative.
+        p7_errors = [e for e in errors if "P7" in e]
+        assert any("carve-out" not in e for e in p7_errors)  # generic P7 present
+        assert any("no_doi" in e for e in p7_errors)  # mentions carve-out
