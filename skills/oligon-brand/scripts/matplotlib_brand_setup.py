@@ -108,10 +108,10 @@ COLORS_VOLCANO = {
 # HELPER FUNCTIONS
 # =============================================================================
 
-def add_panel_label(ax, label, x=-0.1, y=1.05, fontsize=10, fontweight='bold'):
+def add_panel_label(ax, label, x=-0.1, y=1.05, fontsize=14, fontweight='bold'):
     """
     Add a panel label (A, B, C, etc.) to an axes.
-    
+
     Parameters
     ----------
     ax : matplotlib.axes.Axes
@@ -121,7 +121,7 @@ def add_panel_label(ax, label, x=-0.1, y=1.05, fontsize=10, fontweight='bold'):
     x, y : float
         Position in axes coordinates (default: top-left)
     fontsize : int
-        Font size (default: 10)
+        Font size in points (default: 14, per brand-tokens.json typography.figures.panel_labels)
     fontweight : str
         Font weight (default: 'bold')
     """

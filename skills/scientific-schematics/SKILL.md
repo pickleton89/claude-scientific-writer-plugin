@@ -101,6 +101,62 @@ CONSORT flowchart with Oligon brand colors:
 - Background: white
 ```
 
+### Mermaid Brand Theme (SVG output)
+
+When emitting SVG via Mermaid, the default theme uses Trebuchet MS at ~14–16px — both the font family and (effectively) the smallest sizes violate brand standards. **Every Mermaid block must declare `themeVariables` in an init directive** to enforce Arial + the brand size ladder (10pt floor, 12pt base, 14pt panel, 16pt title — see `../oligon-brand/SKILL.md` `<svg_output>`).
+
+Paste this block at the top of every Mermaid source:
+
+```mermaid
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'fontFamily': 'Arial, Helvetica, sans-serif',
+    'fontSize': '12px',
+    'primaryColor': '#FFFFFF',
+    'primaryBorderColor': '#222222',
+    'primaryTextColor': '#222222',
+    'lineColor': '#222222',
+    'secondaryColor': '#2DB2E8',
+    'tertiaryColor': '#E8622D',
+    'background': '#FFFFFF',
+    'titleColor': '#222222'
+  }
+} }%%
+flowchart TD
+  ...
+```
+
+Mermaid's `fontSize` is a single value applied as the base; node/edge/title sizes are derived multiplicatively. To pin specific text elements at 10pt, 14pt, or 16pt, define classes with Mermaid's `classDef` and apply them per-node with `:::`:
+
+```mermaid
+flowchart TD
+  A[Study Title]:::title
+  B[Patient Cohort n=240]:::body
+  C[Excluded n=12]:::small
+  A --> B
+  B --> C
+
+  classDef title font-size:16px;
+  classDef body font-size:12px;
+  classDef small font-size:10px;
+```
+
+Note the `:::class` syntax after each node — Mermaid won't apply `classDef` rules to nodes that aren't tagged.
+
+**Post-render verification (required for every SVG emission):**
+
+```bash
+grep -oE 'font-family[^;">]+' figure.svg | sort -u
+# Expected: only Arial / Helvetica / sans-serif variants
+grep -oE 'font-size[^;">]+' figure.svg | sort -u
+# Expected: values in {10, 12, 14, 16} px or pt
+```
+
+If Mermaid renders with system defaults despite the init block (some renderers strip `%%{init}%%`), pass the same themeVariables via the Mermaid CLI `-c config.json` flag or render through `mmdc --configFile`. Do not deliver an SVG that fails the grep checks.
+
+For AI-generated SVG (Nano Banana Pro path), the model cannot be relied upon to emit explicit `font-family` and `font-size` attributes per element. After generation, post-process with a small SVG-walker (or Inkscape's `--actions=select-all;object-set-attribute:font-family,Arial`) to inject the brand attributes — or regenerate with the explicit attribute requirement in the prompt.
+
 ### Biological Color Conventions (When Brand Styling Is Disabled)
 
 When generating mechanism, pathway, or structural diagrams without Oligon brand colors, biologists expect the following conventional color assignments. Use these in prompts to match reader mental models — inconsistency with convention forces reviewers to relearn the legend.

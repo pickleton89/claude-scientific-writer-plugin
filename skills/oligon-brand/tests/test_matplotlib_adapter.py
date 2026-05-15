@@ -878,3 +878,114 @@ class TestPhase2Integration:
             assert brand_blue['compliant'], f"{cycle_name} failed brand blue check"
 
             plt.close(fig)
+
+
+# =============================================================================
+# SVG OUTPUT CONTRACT TESTS
+# =============================================================================
+
+import re
+import tempfile
+import os
+
+
+class TestSvgOutputContract:
+    """
+    Tests for the SVG output contract documented in oligon-brand/SKILL.md
+    <svg_output>:
+
+    - svg.fonttype must be 'none' so text stays as <text> elements
+      (not glyph paths), enabling grep-based brand verification and
+      downstream editability.
+    - font-family in emitted SVG must be Arial/Helvetica/sans-serif.
+    - font-size must be in the 10/12/14/16 band — no values below 10.
+    """
+
+    def _emit_svg(self) -> str:
+        """Create a brand-styled figure, save to SVG, return SVG text."""
+        set_brand_style('treatment_control')
+        fig, ax = plt.subplots(figsize=(5, 3))
+        ax.plot([1, 2, 3], [1, 4, 9], label='Control')
+        ax.plot([1, 2, 3], [2, 5, 10], label='Treatment')
+        ax.set_xlabel('X axis label')
+        ax.set_ylabel('Y axis label')
+        ax.set_title('Title text')
+        ax.legend()
+
+        with tempfile.NamedTemporaryFile(
+            mode='w', suffix='.svg', delete=False
+        ) as tmp:
+            svg_path = tmp.name
+        try:
+            fig.savefig(svg_path, bbox_inches='tight')
+            with open(svg_path, 'r') as fh:
+                svg_text = fh.read()
+        finally:
+            plt.close(fig)
+            if os.path.exists(svg_path):
+                os.unlink(svg_path)
+        return svg_text
+
+    def test_svg_fonttype_is_none(self):
+        """set_brand_style() must set svg.fonttype to 'none'."""
+        set_brand_style('treatment_control')
+        assert plt.rcParams['svg.fonttype'] == 'none'
+
+    def test_svg_contains_text_elements(self):
+        """
+        With svg.fonttype='none', matplotlib emits <text> elements
+        rather than rasterizing glyphs to <path>. If this regresses,
+        the brand grep-checks return nothing and the contract fails
+        silently.
+        """
+        svg = self._emit_svg()
+        assert '<text' in svg, "SVG has no <text> elements — fonttype likely reverted"
+
+    def test_svg_font_family_is_brand_compliant(self):
+        """
+        Every font-family declaration must reference Arial/Helvetica
+        (or sans-serif fallback). No Times, Calibri, or system defaults.
+        """
+        svg = self._emit_svg()
+        font_families = set(re.findall(r'font-family[^;">]+', svg))
+        assert font_families, "No font-family declarations in SVG"
+
+        forbidden = ['Times', 'Calibri']
+        for ff in font_families:
+            for bad in forbidden:
+                assert bad.lower() not in ff.lower(), \
+                    f"Forbidden font in {ff!r}"
+            # At least one of Arial/Helvetica/sans-serif must appear
+            assert any(
+                ok.lower() in ff.lower()
+                for ok in ['Arial', 'Helvetica', 'sans-serif']
+            ), f"font-family {ff!r} has no brand-approved family"
+
+    def test_svg_font_sizes_meet_10pt_floor(self):
+        """
+        Every font-size in emitted SVG must be >=10 (px or pt).
+        Brand contract: 10pt floor, 12pt base, 14pt panel, 16pt title.
+        """
+        svg = self._emit_svg()
+        size_pattern = re.compile(r'font-size:\s*([0-9]+(?:\.[0-9]+)?)(px|pt)')
+        sizes = size_pattern.findall(svg)
+        assert sizes, "No font-size declarations in SVG"
+
+        for value_str, _unit in sizes:
+            value = float(value_str)
+            assert value >= 10, \
+                f"Found font-size {value_str} below 10pt floor"
+
+    def test_svg_font_sizes_match_ladder(self):
+        """
+        Sizes should be drawn from the brand ladder {10, 12, 14, 16}.
+        Other values in the band suggest the rcParams were overridden
+        between style and savefig.
+        """
+        svg = self._emit_svg()
+        size_pattern = re.compile(r'font-size:\s*([0-9]+(?:\.[0-9]+)?)(px|pt)')
+        sizes = {float(v) for v, _ in size_pattern.findall(svg)}
+        allowed = {10.0, 12.0, 14.0, 16.0}
+        unexpected = sizes - allowed
+        assert not unexpected, \
+            f"Sizes outside brand ladder: {unexpected} (expected subset of {allowed})"

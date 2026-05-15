@@ -24,28 +24,60 @@ Guide effective use of data visualization libraries for creating publication-qua
 | Statistical graphics, publications | R | ggplot2, Bioconductor |
 | Bioinformatics (omics data) | Either | See specialized guides below |
 
-**Quick patterns:**
+**Quick patterns (brand-styled):**
 
-Python (matplotlib/seaborn):
+Python (matplotlib/seaborn) — load the Oligon mplstyle FIRST so all subsequent figures inherit the brand font ladder (10pt floor / 12pt base / 14pt panel / 16pt title) and color palette. The path below resolves the mplstyle relative to the plugin root; adjust if the plugin is installed elsewhere:
 ```python
-import seaborn as sns
+from pathlib import Path
 import matplotlib.pyplot as plt
+import seaborn as sns
 
-fig, ax = plt.subplots(figsize=(10, 6))
+# Resolve plugin root via $CLAUDE_PLUGIN_ROOT, env var, or absolute path
+plugin_root = Path("/path/to/claude-scientific-writer-plugin")  # adjust to your install
+plt.style.use(plugin_root / "skills" / "oligon-brand" / "assets" / "oligon_color_brand.mplstyle")
+# OR (preferred for programmatic control): import the adapter directly
+# import sys; sys.path.insert(0, str(plugin_root / "skills" / "oligon-brand" / "adapters"))
+# from matplotlib_adapter import set_brand_style
+# set_brand_style('treatment_control')
+
+fig, ax = plt.subplots(figsize=(6, 4))
 sns.boxplot(data=df, x='group', y='value', ax=ax)
-plt.savefig('figure.pdf', dpi=300, bbox_inches='tight')
+plt.savefig('figure.svg', bbox_inches='tight')  # SVG preserves brand fonts
 ```
 
-R (ggplot2):
+R (ggplot2) — source `theme_brand()` from the oligon-brand adapter; it applies the same ladder. Adjust the source path to match your install:
 ```r
 library(ggplot2)
+source("/path/to/claude-scientific-writer-plugin/skills/oligon-brand/adapters/ggplot2_adapter.R")
 
 ggplot(df, aes(x = group, y = value, fill = group)) +
   geom_boxplot() +
-  theme_classic()
-ggsave("figure.pdf", width = 7, height = 5)
+  theme_brand()
+ggsave("figure.svg", width = 7, height = 5)
 ```
 </quick_start>
+
+<svg_export>
+## SVG Export (Brand-Correct)
+
+SVG is the preferred output format for deep-research reports: vector, embeddable, brand-verifiable via grep. matplotlib and ggplot2 both export SVG that preserves Arial + the brand font ladder when the brand setup is loaded *before* figure creation.
+
+**Required setup (matplotlib):** load `oligon_color_brand.mplstyle` or call `set_brand_style()` from `skills/oligon-brand/adapters/matplotlib_adapter.py`. This pins font.size=12, axes.labelsize=12, axes.titlesize=16 (bold), xtick/ytick.labelsize=10, legend.fontsize=12 — all matching `tokens/brand-tokens.json` `typography.figures`.
+
+**Required setup (ggplot2):** apply `theme_brand()` from `skills/oligon-brand/adapters/ggplot2_adapter.R`. Same ladder, applied via theme elements.
+
+**Export call:**
+```python
+fig.savefig('out.svg', bbox_inches='tight')  # No dpi needed for vector
+```
+```r
+ggsave("out.svg", width = 7, height = 5)  # cairo-svg backend recommended for font embedding
+```
+
+**Post-export verification (run every time):** see `../oligon-brand/SKILL.md` `<svg_output>` for the two-grep sanity check. No `font-family` outside Arial/Helvetica/sans-serif; no `font-size` below 10pt.
+
+**Do not** write inline SVG by hand or accept SVG from a non-adapter path — fonts will silently default to Times/system and fail the brand contract.
+</svg_export>
 
 <prerequisites>
 ## Required Packages

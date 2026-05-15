@@ -194,14 +194,14 @@ def set_brand_style(cycle: CycleType = 'treatment_control') -> None:
         'axes.spines.top': False,
         'axes.spines.right': False,
         'axes.labelcolor': 'black',
-        'axes.labelsize': 8,
-        'axes.titlesize': 9,
+        'axes.labelsize': 12,
+        'axes.titlesize': 16,
         'axes.titleweight': 'normal',
         'axes.prop_cycle': plt.cycler(color=selected_cycle),
 
         # Ticks
-        'xtick.labelsize': 7,
-        'ytick.labelsize': 7,
+        'xtick.labelsize': 10,
+        'ytick.labelsize': 10,
         'xtick.color': 'black',
         'ytick.color': 'black',
         'xtick.direction': 'out',
@@ -213,14 +213,22 @@ def set_brand_style(cycle: CycleType = 'treatment_control') -> None:
         'grid.alpha': 1.0,
 
         # Legend
-        'legend.fontsize': 7,
+        'legend.fontsize': 12,
+        'legend.title_fontsize': 12,
         'legend.frameon': False,
         'legend.loc': 'best',
 
-        # Font
+        # Font (10pt floor, 12pt base — see brand-tokens.json typography.figures)
         'font.family': 'sans-serif',
         'font.sans-serif': ['Arial', 'Helvetica', 'DejaVu Sans'],
-        'font.size': 8,
+        'font.size': 12,
+
+        # SVG/PDF font handling — keep text as text (not glyph paths) so
+        # brand grep-checks find font-family/font-size attributes and so
+        # downstream editors (Inkscape, Illustrator) can edit the text.
+        'svg.fonttype': 'none',
+        'pdf.fonttype': 42,
+        'ps.fonttype': 42,
 
         # Lines
         'lines.linewidth': 1.25,
@@ -348,7 +356,7 @@ def add_panel_label(
     ax: plt.Axes,
     label: str,
     offset: tuple = (-0.12, 1.05),
-    fontsize: int = 10,
+    fontsize: int = 14,
     fontweight: str = 'bold'
 ) -> None:
     """

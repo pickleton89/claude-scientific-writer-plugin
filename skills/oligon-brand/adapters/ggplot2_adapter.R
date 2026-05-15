@@ -83,7 +83,7 @@ volcano_colors <- c(
 #'
 #' Apply Oligon scientific brand visual standards to ggplot2 plots.
 #'
-#' @param base_size Base font size in points (default: 8)
+#' @param base_size Base font size in points (default: 12, per brand-tokens.json typography.figures)
 #' @param base_family Font family (default: "Arial")
 #'
 #' @return A ggplot2 theme object
@@ -93,7 +93,7 @@ volcano_colors <- c(
 #'   geom_point() +
 #'   theme_brand()
 #'
-theme_brand <- function(base_size = 8, base_family = "Arial") {
+theme_brand <- function(base_size = 12, base_family = "Arial") {
   theme_minimal(base_size = base_size, base_family = base_family) %+replace%
     theme(
       # Background
@@ -105,27 +105,28 @@ theme_brand <- function(base_size = 8, base_family = "Arial") {
       panel.grid.minor = element_blank(),
 
       # Axes - despined style (only left and bottom)
+      # Font sizes: 10pt floor / 12pt base / 14pt bold / 16pt bold
       axis.line = element_line(color = "black", linewidth = 0.8 / .pt),
       axis.line.x = element_line(color = "black", linewidth = 0.8 / .pt),
       axis.line.y = element_line(color = "black", linewidth = 0.8 / .pt),
       axis.ticks = element_line(color = "black", linewidth = 0.4 / .pt),
-      axis.text = element_text(color = "black", size = 7),
-      axis.title = element_text(color = "black", size = 8),
+      axis.text = element_text(color = "black", size = 10),
+      axis.title = element_text(color = "black", size = 12),
 
       # Title
-      plot.title = element_text(color = "black", size = 9, hjust = 0, face = "plain"),
-      plot.subtitle = element_text(color = "#666666", size = 8, hjust = 0),
+      plot.title = element_text(color = "black", size = 16, hjust = 0, face = "plain"),
+      plot.subtitle = element_text(color = "#666666", size = 12, hjust = 0),
 
       # Legend
       legend.background = element_blank(),
       legend.key = element_blank(),
-      legend.text = element_text(size = 7),
-      legend.title = element_text(size = 8),
+      legend.text = element_text(size = 12),
+      legend.title = element_text(size = 12),
       legend.position = "right",
 
       # Facets
       strip.background = element_blank(),
-      strip.text = element_text(color = "black", size = 8, face = "bold"),
+      strip.text = element_text(color = "black", size = 14, face = "bold"),
 
       # Margins
       plot.margin = margin(10, 10, 10, 10)
@@ -230,7 +231,7 @@ scale_fill_brand_divergent <- function(limits = NULL, ...) {
 #'
 #' @return Modified ggplot object
 #'
-add_panel_label <- function(p, label, x = 0.02, y = 0.98, size = 10) {
+add_panel_label <- function(p, label, x = 0.02, y = 0.98, size = 14) {
   p + annotation_custom(
     grob = grid::textGrob(
       label = label,

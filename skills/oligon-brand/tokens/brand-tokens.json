@@ -132,12 +132,12 @@
       "forbidden": ["Calibri", "Times New Roman", "system defaults"]
     },
     "figures": {
-      "panel_labels": {"size_pt": [9, 10], "weight": "bold", "color": "#000000"},
-      "axis_labels": {"size_pt": 8, "weight": "normal", "color": "#000000"},
-      "tick_labels": {"size_pt": [7, 8], "weight": "normal", "color": "#000000"},
-      "legend_text": {"size_pt": [7, 8], "weight": "normal", "color": "#000000"},
-      "annotations": {"size_pt": 7, "weight": "normal", "color": "#000000"},
-      "titles": {"size_pt": [8, 9], "weight": "normal", "color": "#000000"}
+      "panel_labels": {"size_pt": 14, "weight": "bold", "color": "#000000"},
+      "axis_labels": {"size_pt": 12, "weight": "normal", "color": "#000000"},
+      "tick_labels": {"size_pt": 10, "weight": "normal", "color": "#000000"},
+      "legend_text": {"size_pt": 12, "weight": "normal", "color": "#000000"},
+      "annotations": {"size_pt": 10, "weight": "normal", "color": "#000000"},
+      "titles": {"size_pt": 16, "weight": "normal", "color": "#000000"}
     },
     "documents": {
       "body_text": {"size_pt": 11, "weight": "normal"},

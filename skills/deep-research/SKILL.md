@@ -404,7 +404,29 @@ Present final output to the user with:
 - Summary of changes from Phase 5 feedback
 - Any acknowledged limitations
 - Suggested next steps (downstream skills: scientific-writing, plotting-libraries, etc.)
+- **Figure handoff guidance** (see "Figure Handoff" section below) if the report mentions figures or the user is likely to request them
+
 **User confirms delivery.**
+
+## Figure Handoff
+
+After a deep-research report is delivered, users frequently request figures. To prevent ad-hoc figure generation that bypasses brand standards, route every figure request through the matrix below. Every path MUST invoke `oligon-brand` (default-on) and conform to the SVG output contract in `../oligon-brand/SKILL.md` `<svg_output>` (font-family Arial/Helvetica, 10pt floor, 12pt base, 14pt panel labels, 16pt titles).
+
+| Figure type                                              | Skill to invoke         | Output format          |
+|----------------------------------------------------------|-------------------------|------------------------|
+| Schematic, flowchart, pathway, mechanism, architecture   | `scientific-schematics` | SVG (Mermaid or AI)    |
+| Data plot, chart, heatmap, survival/forest/volcano       | `plotting-libraries`    | SVG (matplotlib/ggplot)|
+| Prose → graphical abstract / visual summary              | `paperbanana`           | PNG (raster; brand colors only, font ladder not enforceable)|
+| Mixed / unclear                                          | Ask user which figure type before routing | — |
+
+**Routing rule:** If the figure has named nodes and explicit relationships, use `scientific-schematics`. If it has quantitative data, use `plotting-libraries`. If only unstructured prose, use `paperbanana` — but prefer the other two whenever SVG + font compliance matters.
+
+**Post-generation verification:** For SVG outputs, run the two-grep sanity check from `<svg_output>`:
+```bash
+grep -oE 'font-family[^;">]+' figure.svg | sort -u
+grep -oE 'font-size[^;">]+' figure.svg | sort -u
+```
+No Times/Calibri/system defaults; no sizes below 10 (px or pt).
 
 ## Failure Paths
 
@@ -437,7 +459,10 @@ Some modes skip phases:
 | `drug-intelligence` | **Upstream** — dossier consumed by synthesis agent (dossier-first) |
 | `target-validation` | **Downstream** — consumes T1-T4 evidence grading from synthesis |
 | `scientific-writing` | **Downstream** — consumes research reports for manuscript drafting |
-| `scientific-schematics` | **Downstream** — generates visual schematics for hypothesis mode |
+| `scientific-schematics` | **Downstream** — schematics/diagrams (Mermaid + AI), SVG; see Figure Handoff above |
+| `plotting-libraries` | **Downstream** — data plots/charts (matplotlib/ggplot), SVG; see Figure Handoff above |
+| `paperbanana` | **Downstream** — prose-to-figure graphical abstracts, PNG only |
+| `oligon-brand` | **Cross-cutting** — invoked by all figure paths; owns SVG output contract |
 | `citation-management` | **Downstream** — manages bibliography output |
 | `statistical-analysis` | **Downstream** — meta-analysis and power analysis |
 | `peer-review` | **Complementary** — deep review of manuscripts (deep-research reviews evidence, peer-review reviews manuscripts) |

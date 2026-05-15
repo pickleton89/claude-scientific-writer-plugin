@@ -277,6 +277,54 @@ grayscale.save('output_figure_grayscale.png')
 - [ ] Logo excluded from publication figures
 </success_criteria>
 
+<svg_output>
+## SVG Output Contract
+
+SVG is the preferred figure format for scientific reports — vector, editable, and embeddable. To enforce brand compliance on SVG output, the following invariants MUST hold on every emitted figure.
+
+### Font Family
+Every `<text>`, `<tspan>`, or styled element MUST carry an explicit font-family declaration:
+
+```
+font-family="Arial, Helvetica, sans-serif"
+```
+
+Renderers that omit this (some Mermaid configs, AI-generated SVG) silently fall back to the system default — typically Times New Roman on Linux, which is on the forbidden list in `brand-tokens.json` typography.font_family.forbidden.
+
+### Font Size Ladder (Figures — Source of Truth)
+
+| Element       | Size  | Weight |
+|---------------|-------|--------|
+| Annotations   | 10pt  | normal |
+| Tick labels   | 10pt  | normal |
+| Axis labels   | 12pt  | normal |
+| Legend text   | 12pt  | normal |
+| Panel labels  | 14pt  | bold   |
+| Figure titles | 16pt  | bold   |
+
+**10pt is the floor — no figure text smaller than 10pt.** 12pt is the base; titles and panel labels scale up; tick labels and annotations sit at the floor. These values are canonical in `tokens/brand-tokens.json` `typography.figures`. Adapters (matplotlib, ggplot2) ship with rcParams/theme defaults wired to this ladder — do not override downward.
+
+### Post-Generation Sanity Check
+
+After producing an SVG, run two greps before delivering. Both CSS-style (`font-family: ...`) and XML-attribute (`font-family="..."`) forms appear depending on renderer — matplotlib uses CSS, Mermaid uses attributes — so use the broader pattern:
+
+```bash
+# Must return matches; must NOT include Times, Calibri, or system defaults
+grep -oE 'font-family[^;">]+' figure.svg | sort -u
+
+# Confirm sizes are in the 10/12/14/16 band (px or pt; matplotlib emits px, Mermaid pt)
+grep -oE 'font-size[^;">]+' figure.svg | sort -u
+```
+
+If `font-family` is absent or the size band shows values below 10 (px or pt), regenerate with the correct adapter or theme variables. For Mermaid SVG specifically, see `../scientific-schematics/SKILL.md` for the `themeVariables` init block.
+
+**For matplotlib SVG specifically:** the brand mplstyle sets `svg.fonttype: none`, which keeps text as `<text>` elements (not glyph paths). Without that setting, matplotlib would emit outlined glyphs and the grep checks would return nothing — looking like a fail but actually a renderer quirk. If you load a non-brand style first, force this rcParam manually: `plt.rcParams['svg.fonttype'] = 'none'`.
+
+### When SVG Isn't an Option
+Raster pipelines (paperbanana → Imagen) emit PNG, not SVG. Brand colors still apply via the Stylist agent, but the font-size contract cannot be enforced post-hoc. Prefer scientific-schematics or plotting-libraries when SVG + brand-correct typography is required.
+
+</svg_output>
+
 <scope>
 ## Scope
 
@@ -286,6 +334,7 @@ grayscale.save('output_figure_grayscale.png')
 - Typography standards for figures and documents
 - Logo usage guidelines
 - Preflight verification checklist
+- SVG output contract (font-family + font-size ladder)
 
 **Out of Scope:**
 - Design philosophy and principles → use `visual-design`
