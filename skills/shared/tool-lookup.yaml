@@ -291,7 +291,13 @@ literature:
       - tool: mcp__openalex__search_by_topic  # OpenAlex MCP
         notes: "Topic-faceted retrieval using OpenAlex's curated topic taxonomy; preferred when query maps to a known field/concept rather than free-text keywords."
       - tool: search  # Consensus MCP (mcp__claude_ai_Consensus__search)
-        notes: "Semantic search over 200M+ papers"
+        notes: >
+          Semantic search over 200M+ papers (Semantic Scholar + PubMed + Scopus + arXiv).
+          Ranking uses server-side full-text indexing — surfaces papers where the key finding
+          lives in methods/results, not just the abstract; real discovery advantage over
+          PubMed/OpenAlex abstract-keyword search. Paper results are first-class citations.
+          Do NOT cite Consensus's natural-language synthesis output as evidence — cite the
+          underlying paper.
       - tool: search_literature  # Scite MCP (mcp__scite__search_literature)
         notes: "Full-text search over ~50M articles; use for claim-specific queries and citation context"
     tooluniverse:
