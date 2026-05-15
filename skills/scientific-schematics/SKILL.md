@@ -146,12 +146,21 @@ Note the `:::class` syntax after each node — Mermaid won't apply `classDef` ru
 
 **Post-render verification (required for every SVG emission):**
 
+Step 1 — text-level brand compliance via grep:
 ```bash
 grep -oE 'font-family[^;">]+' figure.svg | sort -u
 # Expected: only Arial / Helvetica / sans-serif variants
 grep -oE 'font-size[^;">]+' figure.svg | sort -u
 # Expected: values in {10, 12, 14, 16} px or pt
 ```
+
+Step 2 — visual layout check via PNG preview (catches problems grep can't see — overlap, clipping, weird proportions in Mermaid auto-layout):
+```bash
+../oligon-brand/scripts/render_svg_preview.sh figure.svg
+# Then Read the resulting figure.preview.png and confirm: no clipped labels,
+# no node overlap, arrowheads land correctly, legend/title placement sane.
+```
+See `../oligon-brand/SKILL.md` `<svg_output>` § Visual Preview for the full delivery checklist. Mermaid's auto-layout is especially prone to overlap when node text is long — the preview step catches this before delivery.
 
 If Mermaid renders with system defaults despite the init block (some renderers strip `%%{init}%%`), pass the same themeVariables via the Mermaid CLI `-c config.json` flag or render through `mmdc --configFile`. Do not deliver an SVG that fails the grep checks.
 

@@ -74,7 +74,9 @@ fig.savefig('out.svg', bbox_inches='tight')  # No dpi needed for vector
 ggsave("out.svg", width = 7, height = 5)  # cairo-svg backend recommended for font embedding
 ```
 
-**Post-export verification (run every time):** see `../oligon-brand/SKILL.md` `<svg_output>` for the two-grep sanity check. No `font-family` outside Arial/Helvetica/sans-serif; no `font-size` below 10pt.
+**Post-export verification (run every time):** see `../oligon-brand/SKILL.md` `<svg_output>` for the full delivery gate:
+1. Two-grep sanity check — `font-family` must be Arial/Helvetica/sans-serif; `font-size` must all be ≥10pt in {10, 12, 14, 16}.
+2. **Visual preview** — `../oligon-brand/scripts/render_svg_preview.sh figure.svg` produces a PNG; Read it and confirm no clipped labels, no legend-over-data, no overlapping tick labels. The grep step catches font drift; the preview step catches layout issues (label clipping at panel edges is the most common matplotlib failure mode — `bbox_inches='tight'` helps but isn't infallible).
 
 **Do not** write inline SVG by hand or accept SVG from a non-adapter path — fonts will silently default to Times/system and fail the brand contract.
 </svg_export>

@@ -421,12 +421,20 @@ After a deep-research report is delivered, users frequently request figures. To 
 
 **Routing rule:** If the figure has named nodes and explicit relationships, use `scientific-schematics`. If it has quantitative data, use `plotting-libraries`. If only unstructured prose, use `paperbanana` — but prefer the other two whenever SVG + font compliance matters.
 
-**Post-generation verification:** For SVG outputs, run the two-grep sanity check from `<svg_output>`:
+**Post-generation verification (two-step gate):** For SVG outputs, run BOTH:
+
+1. Text-level grep check:
 ```bash
 grep -oE 'font-family[^;">]+' figure.svg | sort -u
 grep -oE 'font-size[^;">]+' figure.svg | sort -u
 ```
 No Times/Calibri/system defaults; no sizes below 10 (px or pt).
+
+2. Visual preview (catches layout failures grep can't see):
+```bash
+skills/oligon-brand/scripts/render_svg_preview.sh figure.svg
+```
+Read the resulting PNG and confirm no clipping, overlap, or composition issues before delivering.
 
 ## Failure Paths
 

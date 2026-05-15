@@ -320,6 +320,43 @@ If `font-family` is absent or the size band shows values below 10 (px or pt), re
 
 **For matplotlib SVG specifically:** the brand mplstyle sets `svg.fonttype: none`, which keeps text as `<text>` elements (not glyph paths). Without that setting, matplotlib would emit outlined glyphs and the grep checks would return nothing — looking like a fail but actually a renderer quirk. If you load a non-brand style first, force this rcParam manually: `plt.rcParams['svg.fonttype'] = 'none'`.
 
+### Visual Preview (Required for Delivery)
+
+The grep checks confirm text-level brand compliance. They do NOT catch layout problems — overlapping labels, clipped panel titles, mis-positioned arrowheads, illegible legend stacks, or scale issues that only appear when the figure is actually rendered. **Render the SVG to a PNG preview and visually inspect before declaring the figure delivery-ready.**
+
+**Canonical script path:** `skills/oligon-brand/scripts/render_svg_preview.sh` (project-root-relative). Downstream skills cross-reference it via their own relative paths (e.g. `../oligon-brand/scripts/...` from sibling skills, `scripts/...` from inside this skill) — all resolve to the same file. Adjust to your install root if the plugin lives elsewhere.
+
+```bash
+# Minimal call — writes figure.preview.png alongside the SVG:
+scripts/render_svg_preview.sh figure.svg
+
+# Explicit output path:
+scripts/render_svg_preview.sh figure.svg /tmp/my_preview.png
+
+# Higher resolution for dense labels:
+scripts/render_svg_preview.sh figure.svg --scale 3
+
+# All three combined:
+scripts/render_svg_preview.sh figure.svg /tmp/dense.png --scale 3
+```
+
+The script wraps `rsvg-convert` (install with `brew install librsvg` on macOS; available in most Linux distros). It exits non-zero if rsvg-convert is missing or the input SVG isn't readable, so it's safe to chain in pipelines. Prints the output path to stdout; status messages go to stderr.
+
+After rendering, **Read the PNG** (it's a normal image file — Claude can view it directly). Check:
+- Every text element is fully visible (not clipped at panel edges)
+- Tick labels don't overlap each other or the axis line
+- Legend doesn't cover data
+- Arrowheads / connector endpoints land where they should
+- Panel labels (A, B, C) don't collide with axis titles
+- Overall composition matches the figure brief
+
+If any check fails, regenerate — don't deliver a figure whose preview you haven't viewed. The grep + visual-preview pair is the brand delivery gate.
+
+**Font-rendering caveat:** `rsvg-convert` rasterizes text using the **system font cache**, not the font names declared in the SVG. The SVG itself is brand-correct (the `font-family` attribute is preserved for any downstream consumer that has Arial). But:
+- macOS: Arial ships system-wide; preview matches the SVG's declared font exactly.
+- Linux: Arial is often not installed. rsvg-convert falls back through the `font-family` cascade and typically lands on **DejaVu Sans** or **Liberation Sans** — DejaVu Sans is in the brand whitelist as a sans-serif fallback, so this is *not* a brand violation.
+- If a Linux PNG preview looks visually different from a macOS one, the SVG is still brand-compliant — only the rasterization fell back. Use the grep checks as the authoritative brand verdict, not the visual rendering.
+
 ### When SVG Isn't an Option
 Raster pipelines (paperbanana → Imagen) emit PNG, not SVG. Brand colors still apply via the Stylist agent, but the font-size contract cannot be enforced post-hoc. Prefer scientific-schematics or plotting-libraries when SVG + brand-correct typography is required.
 
