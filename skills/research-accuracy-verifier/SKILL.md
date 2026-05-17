@@ -1,7 +1,7 @@
 ---
 name: research-accuracy-verifier
 version: 0.1.0
-description: Verify factual, citation, quotation, and numerical accuracy of LLM-generated research documents (lit reviews, grant sections, manuscripts, slides, reports) where citations may be hallucinated, misattributed, or misaligned with the claims they support. Triggers on "fact-check", "verify the citations", "audit this lit review", "did the AI make this up", "check for accuracy" — or whenever the user shows AI-generated scholarly content and wants to confirm cited papers exist, quotes are real, numbers check out, and sources actually support the claims. Defaults to biomedical sourcing (PubMed, bioRxiv, PMC, Open Targets, Scite) with Crossref/OpenAlex/Exa fallback for general scientific writing. Produces a deterministic audit with a canonical 10-value verdict enum, a Verdict×DocumentType severity matrix, and JSON-schema-validated findings (validator-enforced predicates P1–P8).
+description: Verify factual, citation, quotation, and numerical accuracy of LLM-generated research documents (lit reviews, grant sections, manuscripts, slides, reports) where citations may be hallucinated, misattributed, or misaligned with the claims they support. Triggers on "fact-check", "verify the citations", "audit this lit review", "did the AI make this up", "check for accuracy" — or whenever the user shows AI-generated scholarly content and wants to confirm cited papers exist, quotes are real, numbers check out, and sources actually support the claims. Defaults to biomedical sourcing (PubMed, bioRxiv, PMC, Open Targets, Scite) with Crossref/OpenAlex/Exa fallback for general scientific writing. Produces a deterministic audit with a canonical 10-value verdict enum, a Verdict×DocumentType severity matrix, and JSON-schema-validated findings (validator-enforced predicates P1–P5, P7, P8).
 allowed-tools: [Read, Write, Bash, WebSearch, WebFetch]
 shared-thresholds: "../QUANTIFICATION_THRESHOLDS.md"
 context: fork
@@ -33,14 +33,16 @@ The intake answers are emitted as a JSON object validated against [`schemas/inta
 ```jsonc
 {
   "document_type":     "grant" | "manuscript" | "lit_review" | "slides" | "report" | "memo" | "other",
-  "document_type_other": "string",                                       // required iff document_type == "other"
+  "document_type_other": "string",   // required iff document_type == "other"
   "sources_available": "uploaded_files" | "bibliography_only" | "none",
   "verification_tier": "1" | "2" | "3" | "custom",
+
+  // checks_enabled: required iff verification_tier == "custom".
+  // prose_quality_audit is Tier-3 + custom only (parallel pipeline → style_findings[]).
   "checks_enabled":    ["citation_existence","claim_alignment","uncited_claims",
                         "exact_quotes","numerical_sanity","named_entities","internal_consistency",
                         "prose_quality_audit"],
-                                                                         // required iff verification_tier == "custom"
-                                                                         // prose_quality_audit is Tier 3 + custom only (parallel pipeline → style_findings[])
+
   "domain":            "biomedical" | "general" | "mixed",
   "flag_threshold":    "conservative" | "standard" | "strict"
 }
@@ -115,7 +117,10 @@ Build a `ClaimInventory` validated against [`schemas/claim_inventory.json`](./sc
 
 ### Stage 2 — Citation existence verification
 
-Use ≥2 independent identifier paths (PubMed → Crossref → OpenAlex `batch_resolve_references`) before declaring `UNSUPPORTED`. Routing covers DOI/PMID/PMCID resolution, journal-volume sanity, OpenAlex venue-quality sub-check, and web-citation handling for bare URLs. **Validator gate P7** ([`references/predicates.md`](./references/predicates.md)): biomedical/mixed Stage-2 findings with verdict in `{VERIFIED, METADATA_MISMATCH, UNSUPPORTED}` MUST log a Scite `editorialNotices` probe (retraction check) — or, for no-DOI web evidence, a `web_search` carve-out entry with the literal token `no_doi` in `result_summary`. Detail (routing, OpenAlex backstop, hallucination signatures, worked CRITICAL example): [`references/stages/stage_2_citation_existence.md`](./references/stages/stage_2_citation_existence.md). Artifact: `02_existence.json`.
+- **What runs:** ≥2 independent identifier paths (PubMed → Crossref → OpenAlex `batch_resolve_references`) before declaring `UNSUPPORTED`. Covers DOI/PMID/PMCID resolution, journal-volume sanity, OpenAlex venue-quality sub-check, and web-citation handling for bare URLs.
+- **Validator gate — P7** ([`references/predicates.md`](./references/predicates.md)): biomedical/mixed Stage-2 findings with verdict in `{VERIFIED, METADATA_MISMATCH, UNSUPPORTED}` MUST log a Scite `editorialNotices` probe (retraction check) — or, for no-DOI web evidence, a `web_search` carve-out entry with the literal token `no_doi` in `result_summary`.
+- **Detail:** [`references/stages/stage_2_citation_existence.md`](./references/stages/stage_2_citation_existence.md) (routing, OpenAlex backstop, hallucination signatures, worked CRITICAL example).
+- **Artifact:** `02_existence.json`.
 
 ### Stage 3 — Claim-citation alignment
 
@@ -123,7 +128,10 @@ Verify each cite-claim pair against the source: user-provided text → PubMed ab
 
 ### Stage 4 — Uncited claim verification
 
-Search for support for substantive uncited claims via the same routing chain as Stage 3, plus Open Targets, Consensus, and Exa grey-lit. Verdicts: same as Stage 3. **Validator gate P8** ([`references/predicates.md`](./references/predicates.md)): for Tier-3 biomedical/mixed audits (and custom audits with `uncited_claims` enabled), every Stage-3 VERIFIED claim MUST be covered by **either** a Scite-tally cherry-picking finding (`OVERGENERALIZED`, `USI<0.5`, tag `cherry_picking:<claim_id>`) **or** a `header.coverage_caveats[]` entry of shape `cherry_picking:<claim_id>: <reason>` (including the `web_source_no_doi_for_scite_tally` carve-out for web-sourced VERIFIED claims). Detail (web-evidence whitelist rules W1/W2/W3a/W3b, USI computation, carve-outs): [`references/stages/stage_4_uncited.md`](./references/stages/stage_4_uncited.md). Artifact: `04_uncited.json`.
+- **What runs:** Search for support for substantive uncited claims via the same routing chain as Stage 3, plus Open Targets, Consensus, and Exa grey-lit. Verdicts: same as Stage 3.
+- **Validator gate — P8** ([`references/predicates.md`](./references/predicates.md)): for Tier-3 biomedical/mixed audits (and custom audits with `uncited_claims` enabled), every Stage-3 VERIFIED claim MUST be covered by **either** a Scite-tally cherry-picking finding (`OVERGENERALIZED`, `USI<0.5`, tag `cherry_picking:<claim_id>`) **or** a `header.coverage_caveats[]` entry of shape `cherry_picking:<claim_id>: <reason>` — including the `web_source_no_doi_for_scite_tally` carve-out for web-sourced VERIFIED claims.
+- **Detail:** [`references/stages/stage_4_uncited.md`](./references/stages/stage_4_uncited.md) (web-evidence whitelist rules W1/W2/W3a/W3b, USI computation, carve-outs).
+- **Artifact:** `04_uncited.json`.
 
 ### Stage 5 — Quotation verification
 
@@ -139,7 +147,15 @@ Deterministic checks via `scripts/reconcile_references.py` (bibliography ↔ inl
 
 ### Stage 8 — Synthesis and reporting
 
-**MUST** call `scripts/validate_finding.py --batch findings.json --document-type <type> --domain <domain> --stage <originating-stage>` on every finding (P1–P5, P7). Then **MUST** call `scripts/validate_audit_report.py audit_report.json --intake intake.json` (P8). On any validator failure, loop back to the offending stage. Render via `scripts/render_report.py` (`generate_report(audit_report_dict, intake=...) → str`); rendering itself invokes `validate_audit_report.run_p8(...)` transitively, so the markdown cannot render past a P8 violation. Detail (self-audit checklist, artifact merge for resumed audits): [`references/stages/stage_8_synthesis.md`](./references/stages/stage_8_synthesis.md). Final outputs: `audit_report.json` + `report.md`.
+Two validator passes MUST run, in order, before the report can render:
+
+1. `scripts/validate_finding.py --batch findings.json --document-type <type> --domain <domain> --stage <originating-stage>` on every finding (P1–P5, P7).
+2. `scripts/validate_audit_report.py audit_report.json --intake intake.json` (cross-stage P8).
+
+On any validator failure, loop back to the offending stage. Render via `scripts/render_report.py` (`generate_report(audit_report_dict, intake=...) → str`); rendering itself invokes `validate_audit_report.run_p8(...)` transitively, so the markdown cannot render past a P8 violation.
+
+- **Detail:** [`references/stages/stage_8_synthesis.md`](./references/stages/stage_8_synthesis.md) (self-audit checklist, artifact merge for resumed audits).
+- **Final outputs:** `audit_report.json` + `report.md`.
 
 ## Canonical verdicts and severity matrix
 
@@ -147,7 +163,16 @@ The 10-value verdict enum, the 10×7 Verdict×DocumentType severity matrix, `UNV
 
 ## Operating principles (validator-enforced)
 
-Eight numbered predicates **P1–P8** govern every finding and the assembled report. **P1–P5** + **P7** fire per finding (`scripts/validate_finding.py`); **P8** is cross-stage (`scripts/validate_audit_report.py`, also invoked transitively from `render_report.generate_report()`). Stage skeletons above name which predicate fires per stage: Stage 2 → **P7** (Scite probe or `no_doi` web carve-out), Stage 4 → **P8** (cherry-picking sweep over Stage-3 VERIFIED claims), Stage 5 → **P4** (`QUOTE_*` ⇔ direct_quote), Stage 8 → all eight. Failure rejects the finding and forces a loop-back to the offending stage. Full text with failure modes and fix paths: [`references/predicates.md`](./references/predicates.md).
+Seven numbered predicates — **P1–P5, P7, P8** (P6 retired; numbering preserved for stability) — govern every finding and the assembled report. P1–P5 + P7 fire per finding via `scripts/validate_finding.py`; P8 is cross-stage via `scripts/validate_audit_report.py` (also invoked transitively from `render_report.generate_report()`). Failure rejects the finding and forces a loop-back to the offending stage.
+
+| Predicate | Stage of origin | Enforced by | What it checks |
+|---|---|---|---|
+| P1, P2, P3, P5 | Any (per finding) | `validate_finding.py` | Reason+CRITICAL bar (P1), CRITICAL ≥2 paths (P2), resolvable evidence (P3), severity matches matrix (P5) |
+| P4 | Stage 5 | `validate_finding.py` | `QUOTE_*` verdicts ⇔ `claim_type == "direct_quote"` |
+| P7 | Stage 2 | `validate_finding.py --stage 2` | Biomedical Stage-2 findings log a Scite `editorialNotices` probe or `no_doi` web carve-out |
+| P8 | Stage 4 (sweep) → Stage 8 (gate) | `validate_audit_report.py`; transitive via `render_report.generate_report()` | Tier-3 cherry-picking coverage over every Stage-3 VERIFIED claim |
+
+Full text with failure modes and fix paths: [`references/predicates.md`](./references/predicates.md).
 
 ## Output format
 

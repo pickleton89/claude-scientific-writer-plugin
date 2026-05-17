@@ -1,4 +1,4 @@
-# Validator-enforced predicates P1–P8
+# Validator-enforced predicates (P1–P5, P7, P8)
 
 Findings that violate these predicates are **rejected** by the validators in `scripts/`, forcing a Stage-8 loop-back. They are not guidelines — the validator code is the source of truth, and this document mirrors it for reading convenience. The canonical definitions live in [`CONTRACTS.md`](./CONTRACTS.md) §Hard predicates.
 
