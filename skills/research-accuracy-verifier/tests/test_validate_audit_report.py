@@ -274,8 +274,8 @@ class TestP8WebSourceCarveOut:
     convention, not a validator code path. These tests pin the convention so
     a Stage-4 emit regression is caught.
 
-    See skills/research-accuracy-verifier/SKILL.md § Stage 4 — "Web-sourced
-    VERIFIED claims carve-out" for the canonical reason token.
+    See skills/research-accuracy-verifier/references/stages/stage_4_uncited.md
+    § "Web-sourced VERIFIED claims carve-out" for the canonical reason token.
     """
 
     def test_web_source_caveat_with_canonical_reason_passes(self) -> None:

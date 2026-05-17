@@ -42,7 +42,7 @@
         ]
       },
       "uniqueItems": true,
-      "description": "Required when verification_tier == 'custom'. Computed from tier otherwise. prose_quality_audit is a parallel pipeline (writes style_findings[], not verification_matrix); see CONTRACTS.md §STYLE_NONCONFORMING. Tier 3 + custom only. Business rule enforced in validate_intake.py."
+      "description": "Required when verification_tier == 'custom'. Computed from tier otherwise. prose_quality_audit is a parallel pipeline (writes style_findings[], not verification_matrix); see references/CONTRACTS.md §STYLE_NONCONFORMING. Tier 3 + custom only. Business rule enforced in validate_intake.py."
     },
     "domain": {
       "type": "string",

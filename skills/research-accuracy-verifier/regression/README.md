@@ -93,7 +93,7 @@ Use when a seeded error has exactly one canonical detection path.
       "location": { "section": "...", "paragraph": N, "sentence": N },
       "claim_text": "<verbatim from doc>",
       "cited_source": { "doi": "...", "pmid": "...", "title": "..." },
-      "expected_verdict": "<one of CONTRACTS.md verdicts OR style verdict>",
+      "expected_verdict": "<one of references/CONTRACTS.md verdicts OR style verdict>",
       "expected_severity": "CRITICAL" | "MAJOR" | "MINOR" | "INFORMATIONAL",
       "ground_truth_source": "<URL/explanation that establishes truth>"
     }

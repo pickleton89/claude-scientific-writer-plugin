@@ -1,6 +1,6 @@
 """Tests for validate_intake.py and validate_finding.py.
 
-Covers schema validation + business rules + predicates P1-P5 from CONTRACTS.md.
+Covers schema validation + business rules + predicates P1-P5 from references/CONTRACTS.md.
 Two-stage pattern: schema failures must NOT short-circuit predicate checks.
 """
 

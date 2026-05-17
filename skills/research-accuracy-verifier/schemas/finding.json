@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "finding.json",
   "title": "Finding",
-  "description": "One verified or flagged claim with its full evidence trail. Validated by validate_finding.py against schema + predicates P1-P5 from CONTRACTS.md.",
+  "description": "One verified or flagged claim with its full evidence trail. Validated by validate_finding.py against schema + predicates P1-P5 from references/CONTRACTS.md.",
   "type": "object",
   "required": [
     "id",

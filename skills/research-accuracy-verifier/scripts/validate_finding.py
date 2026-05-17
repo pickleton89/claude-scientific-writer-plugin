@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate Finding JSON against schema and predicates P1-P5, P7 from CONTRACTS.md.
+"""Validate Finding JSON against schema and predicates P1-P5, P7 from references/CONTRACTS.md.
 
 Two-stage pattern delegated to `verifier_kit.validate.SchemaValidator`:
   Stage 1: JSON Schema (Draft-07) against schemas/finding.json
@@ -19,7 +19,7 @@ Two-stage pattern delegated to `verifier_kit.validate.SchemaValidator`:
           Silence (no Scite AND no web_search+no_doi) is still a violation.
           A web_search entry that omits the no_doi token raises a
           dedicated carve-out error so the LLM is told *why* P7 failed.
-        — see CONTRACTS.md §Hard predicates and
+        — see references/CONTRACTS.md §Hard predicates and
           skills/shared/references/citable_web_domains.md. Skipped when
           domain or stage is None (back-compat for ad-hoc CLI calls).
 

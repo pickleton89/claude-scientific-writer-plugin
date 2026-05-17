@@ -30,7 +30,7 @@
           "style_verdict": "STYLE_NUMERICAL_INCONSISTENCY",
           "rule_id": "Q5",
           "severity": "CRITICAL",
-          "severity_rationale": "CONTRACTS.md S-P1: Q5 is canonical CRITICAL"
+          "severity_rationale": "references/CONTRACTS.md S-P1: Q5 is canonical CRITICAL"
         }
       ],
       "ground_truth_source": "Direct textual contradiction within the same document about the same fact (total enrollment). No external verification needed; the document contains both numbers verbatim in distinct sections."
@@ -58,7 +58,7 @@
           "style_verdict": "STYLE_NUMERICAL_INCONSISTENCY",
           "rule_id": "Q5",
           "severity": "CRITICAL",
-          "severity_rationale": "CONTRACTS.md S-P1: Q5 is canonical CRITICAL"
+          "severity_rationale": "references/CONTRACTS.md S-P1: Q5 is canonical CRITICAL"
         }
       ],
       "ground_truth_source": "Direct textual contradiction within the same document about the same comparison (one-sample log-rank vs 7.7-month historical median). The two slides describe the same statistical test with different reported significance thresholds. No external verification needed."

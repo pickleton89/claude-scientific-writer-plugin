@@ -43,7 +43,7 @@ TIER3_OR_CUSTOM_ONLY_CHECKS: set[str] = {"prose_quality_audit"}
 
 
 class IntakeValidator:
-    """Validate intake objects with schema + business rules (predicates from CONTRACTS.md)."""
+    """Validate intake objects with schema + business rules (predicates from references/CONTRACTS.md)."""
 
     def __init__(self, schema_path: str | None = None) -> None:
         if schema_path:
