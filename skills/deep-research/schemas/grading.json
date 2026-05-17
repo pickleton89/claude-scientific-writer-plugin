@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "grading.json",
+  "title": "DeepResearchGrading",
+  "description": "Verification sidecar emitted by the deep-research verification agent. Per-source grading (evidence level, T-tier, verification status, predatory flag) referencing paper_ids from sources.json. Validated by skills/deep-research/scripts/validate_sidecar.py + predicates G1-G3.",
+  "type": "object",
+  "required": ["schema_version", "metadata", "gradings"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["1.0"]
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["frozen_at", "mode", "topic_slug", "sources_sidecar"],
+      "properties": {
+        "frozen_at": { "type": "string", "format": "date-time" },
+        "mode": {
+          "type": "string",
+          "enum": ["full", "quick", "lit-review", "systematic-review", "hypothesis", "fact-check", "review"]
+        },
+        "topic_slug": { "type": "string", "minLength": 1 },
+        "sources_sidecar": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Relative path (basename) of the sources.json sidecar this grading references. Compiler/verifier resolve relative to grading.json's directory."
+        }
+      },
+      "additionalProperties": false
+    },
+    "gradings": {
+      "type": "array",
+      "minItems": 0,
+      "items": { "$ref": "#/definitions/Grading" }
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "Grading": {
+      "type": "object",
+      "required": ["paper_id", "verification_status"],
+      "properties": {
+        "paper_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Must match a paper_id in the referenced sources.json. G1 enforces this join."
+        },
+        "evidence_level": {
+          "type": ["string", "null"],
+          "enum": ["I", "II", "III", "IV", "V", "VI", "VII", null],
+          "description": "Oxford/JBI evidence level (I = systematic review of RCTs ... VII = expert opinion). Null when not applicable (e.g. methods paper)."
+        },
+        "t_tier": {
+          "type": ["string", "null"],
+          "enum": ["T1", "T2", "T3", "T4", null],
+          "description": "T-tier mapping per shared/references/evidence_grading.md. Required for biomedical claims."
+        },
+        "verification_status": {
+          "type": "string",
+          "enum": ["VERIFIED", "NOT_FOUND", "PARTIAL"],
+          "description": "VERIFIED = metadata confirmed via primary database; NOT_FOUND = could not resolve; PARTIAL = some fields confirmed (e.g. DOI but not author list)."
+        },
+        "predatory_flag": {
+          "type": "boolean",
+          "default": false,
+          "description": "True if venue is on Beall's list or fails Cabells screening. G2 requires non-null when source.venue is present."
+        },
+        "predatory_evidence": {
+          "type": ["string", "null"],
+          "description": "Required when predatory_flag is true. Cite the screening tool / list version."
+        },
+        "scite_probe": {
+          "type": ["object", "null"],
+          "description": "Optional Scite retraction-context probe (parallel to verifier P7).",
+          "properties": {
+            "probed_at": { "type": "string", "format": "date-time" },
+            "retracted": { "type": "boolean" },
+            "concerns": { "type": ["string", "null"] }
+          },
+          "additionalProperties": false
+        },
+        "notes": {
+          "type": ["string", "null"],
+          "description": "Free-text grading notes (e.g. 'preprint not peer-reviewed', 'small sample n=12')."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

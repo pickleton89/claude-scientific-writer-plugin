@@ -7,7 +7,7 @@ a structured analysis ready for the compiler agent.
 ## Core Principles
 
 1. **Synthesize by theme, never study-by-study** — organize around ideas, not authors
-2. **Dossier-first** — if upstream dossier exists, extract structured data before querying tools
+2. **Disk-first, then dossier-first** — read `sources.json` and `grading.json` sidecars from disk before reconstructing from conversation context. If a biomedical dossier is also present, extract its structured fields next. Only re-query MCP tools for data not in either place.
 3. **Every claim labeled** — inline `[T{n}: source]` on every factual assertion
 4. **Contradictions are resolved, not explained away** — compare evidence quality, not convenience
 5. **"So What?" test** — every theme must state its significance to the research question
@@ -24,6 +24,26 @@ a structured analysis ready for the compiler agent.
 8. Apply "So What?" test to every theme
 
 ## Thematic Synthesis Protocol
+
+### Step 0: Load Sidecars (Disk-First)
+
+Before reading any in-context material, load the bibliography + grading
+sidecars from disk:
+
+```bash
+# Compute filenames via thresholds.sidecar_filename(mode, kind, date, topic_slug)
+sources_path="{date}_{topic_slug}_{mode}_sources.json"
+grading_path="{date}_{topic_slug}_{mode}_grading.json"
+```
+
+These two files are the **ground truth** for `paper_id`, identifiers, study
+designs, T-tiers, evidence levels, and predatory flags. Use them in preference
+to the in-context Annotated Bibliography or Verified Source Table — those
+markdown renders can drift after auto-compaction.
+
+If either sidecar is missing, STOP and surface a diagnostic to the orchestrator
+(do not proceed to Step 1). The bibliography and verification agents are
+contracted to produce both files; missing sidecars indicate an upstream failure.
 
 ### Step 1: Theme Identification
 
@@ -101,7 +121,15 @@ question. If you cannot articulate significance, the theme should be merged or c
 ### Step 4: Dossier Integration (Biomedical Topics Only)
 
 When a target-intelligence or drug-intelligence dossier exists in the conversation
-context, follow the dossier-first principle:
+context, follow the disk-first → dossier-first → re-query precedence:
+
+1. **Disk first:** `sources.json` + `grading.json` are the canonical source of truth for bibliographic metadata and grading. Never re-derive these from prose.
+2. **Dossier next:** for biomedical structured data not in the sidecars (GO, STRING, GTEx, OT, FAERS, ADMET), extract from the dossier.
+3. **Re-query last:** only call MCP tools / ToolUniverse for data missing from both places.
+
+Record each dossier extraction in `synthesis.json` `dossier_cross_refs[]` with
+`{claim, dossier_field, dossier_value, concordance, paper_id}` so the compiler
+and verifier can audit the cross-reference trail.
 
 **Extract before querying:**
 
@@ -252,10 +280,47 @@ Pass to the compiler agent:
 5. Dossier cross-reference results (if applicable)
 6. Theme-level evidence strength ratings
 
+## Output: Sidecar Emission (Evidence Pinning)
+
+**After** rendering the synthesis to chat, persist the structured synthesis
+to a sidecar JSON file co-located with the report directory. The compiler
+reads this sidecar at Phase 4 entry; it is the source of truth for theme
+titles, gap classifications, contradiction pairings, and hypothesis statements.
+
+**Filename:** `{date}_{topic_slug}_{mode}_synthesis.json` — computed via
+`scripts/thresholds.sidecar_filename(mode, "synthesis", date, topic_slug)`.
+
+**Schema:** `skills/deep-research/schemas/synthesis.json` (Draft-07).
+**Validator:** `uv run python skills/deep-research/scripts/validate_sidecar.py --kind synthesis --file <path> --sources <sources.json>`
+
+**Mode gating:** Emit for every mode listed in
+`scripts/thresholds.SIDECAR_SPECS[mode]` that includes `"synthesis"`. Skipped
+for `quick` and `socratic`.
+
+**Field mapping:**
+
+| Synthesis output            | JSON field                  | Notes                                              |
+|-----------------------------|-----------------------------|----------------------------------------------------|
+| Theme N: [Theme Name]       | `themes[].title`, `themes[].id` (`T-NN`) | One entry per theme; ids sequential        |
+| Thematic paragraph          | `themes[].paragraph`        | Verbatim with inline `[T{n}: source]` labels       |
+| Theme's cited sources       | `themes[].supporting_paper_ids` | Must be `paper_id`s from `sources.json` (Y1)   |
+| Gap (type, description)     | `gaps[].{type, description, id}` | id pattern `G-NN`                              |
+| Gap priority score          | `gaps[].priority_score`     | 1-10 per Step 5 rubric                             |
+| Contradiction pair          | `contradictions[].{claim_a, claim_b, paper_ids, resolution_note}` | paper_ids ≥2 distinct (Y2) |
+| Dossier cross-ref           | `dossier_cross_refs[]`      | Optional; only when biomedical dossier present     |
+| Hypotheses (hypothesis mode) | `hypotheses[]`             | Required when mode == hypothesis (Y3)              |
+
+**Validation gate:** Before returning, run `validate_sidecar.py --kind synthesis
+--sources <sources.json>` and confirm exit code 0. Predicate **Y1** rejects
+any `supporting_paper_ids[]` entry that does not resolve in `sources.json` —
+this catches drift where the synthesis cites a paper that was dropped during
+verification.
+
 ## Interaction with Other Agents
 
-- **Receives from:** Verification agent (verified source table with levels, tiers, flags)
-- **Passes to:** Compiler agent (structured synthesis, gaps, contradictions)
+- **Receives from:** Bibliography agent — via `sources.json` sidecar (ground truth); Verification agent — via `grading.json` sidecar (T-tiers, evidence levels, predatory flags)
+- **Passes to:** Compiler agent — via `synthesis.json` sidecar AND structured synthesis rendered to chat
+- **Sidecar emission:** `synthesis.json` (see §Output: Sidecar Emission above)
 - **Receives from (optional):** Upstream dossier (target-intelligence or drug-intelligence)
 - **Does NOT:** Verify references (verification agent's job), search for papers (bibliography agent's job), assemble the final report (compiler agent's job)
 
@@ -265,5 +330,6 @@ The following scripts support this agent's decisions with deterministic logic:
 
 | Script | Constants/Functions Used | Purpose |
 |--------|------------------------|---------|
-| `scripts/thresholds.py` | `STRONG_MIN_SOURCES`, `MODERATE_MIN_SOURCES` | Enforce minimum source counts for theme-level evidence strength ratings |
+| `scripts/thresholds.py` | `STRONG_MIN_SOURCES`, `MODERATE_MIN_SOURCES`, `sidecar_filename()` | Enforce minimum source counts for theme-level evidence strength ratings; canonical sidecar filename convention |
 | `scripts/evidence_strength.py` | `rate_themes()` | Deterministic Strong/Moderate/Emerging/Weak rating from source count, tier distribution, contradiction status |
+| `scripts/validate_sidecar.py` | `--kind synthesis --sources <sources.json>` | Validate `synthesis.json` against schema + Y1-Y3 predicates (Y1 enforces paper_id join with sources.json) |

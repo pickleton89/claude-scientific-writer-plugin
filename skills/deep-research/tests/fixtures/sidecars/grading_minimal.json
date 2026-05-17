@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "metadata": {
+    "frozen_at": "2026-05-17T17:35:00Z",
+    "mode": "quick",
+    "topic_slug": "kras-inhibitors",
+    "sources_sidecar": "sources_minimal.json"
+  },
+  "gradings": [
+    {
+      "paper_id": "10.1056/NEJMoa2103695",
+      "evidence_level": "II",
+      "t_tier": "T2",
+      "verification_status": "VERIFIED",
+      "predatory_flag": false,
+      "predatory_evidence": null,
+      "scite_probe": {
+        "probed_at": "2026-05-17T17:34:00Z",
+        "retracted": false,
+        "concerns": null
+      },
+      "notes": "Single-arm Phase II; FDA approval based on this data."
+    },
+    {
+      "paper_id": "10.1056/NEJMoa2204619",
+      "evidence_level": "II",
+      "t_tier": "T2",
+      "verification_status": "VERIFIED",
+      "predatory_flag": false,
+      "predatory_evidence": null,
+      "scite_probe": null,
+      "notes": null
+    }
+  ]
+}

@@ -44,7 +44,19 @@ The intake answers are emitted as a JSON object validated against [`schemas/inta
                         "prose_quality_audit"],
 
   "domain":            "biomedical" | "general" | "mixed",
-  "flag_threshold":    "conservative" | "standard" | "strict"
+  "flag_threshold":    "conservative" | "standard" | "strict",
+
+  // Optional. Auto-populated when the document under review is a deep-research
+  // report — detected by the leading `<!-- evidence_pinned: true ... -->`
+  // marker. When present, Stage 3 runs in diff-mode (see §Pinned-sidecar
+  // diff-mode below). Do NOT prompt the user for these paths; resolve them
+  // from the marker + conventional sibling filenames.
+  "pinned_sidecars": {
+    "sources_path":   "<path>/{date}_{topic_slug}_{mode}_sources.json",
+    "grading_path":   "<path>/{date}_{topic_slug}_{mode}_grading.json"  | null,
+    "synthesis_path": "<path>/{date}_{topic_slug}_{mode}_synthesis.json" | null,
+    "advocate_path":  "<path>/{date}_{topic_slug}_{mode}_advocate.json"  | null
+  }
 }
 ```
 
@@ -125,6 +137,18 @@ Build a `ClaimInventory` validated against [`schemas/claim_inventory.json`](./sc
 ### Stage 3 — Claim-citation alignment
 
 Verify each cite-claim pair against the source: user-provided text → PubMed abstract → PubTator3 entity pre-filter (biomedical, PMID-anchored claims) → PMC/Paperclip full text → Scite sentiment snippets → OpenAlex citation-network backstop → web URL (whitelist-gated). Verdicts: `VERIFIED | OVERGENERALIZED | CONTRADICTED | MISATTRIBUTED | UNVERIFIED`. Three logic-failure subtypes (correlation-as-causation, overgeneralization, non-sequitur) map to existing verdicts. Cherry-picking is **deferred to Stage 4**. Detail: [`references/stages/stage_3_alignment.md`](./references/stages/stage_3_alignment.md). Artifact: `03_alignment.json`.
+
+**Pinned-sidecar diff-mode (deep-research reports only):** when `intake.pinned_sidecars` is populated (auto-detected via the `<!-- evidence_pinned: true ... -->` marker on the report's first line), Stage 3 runs an additional diff pass in parallel with the standard alignment routing:
+
+1. Load `sources.json` from `pinned_sidecars.sources_path` (validate via `../deep-research/scripts/validate_sidecar.py --kind sources`). On schema failure, drop to standard alignment with a `pinned_sidecars_invalid` carve-out in `header.coverage_caveats[]`.
+2. For each citation-bearing claim, compare against the sidecar's `sources[]` entry by `paper_id` (DOI-first join). Emit `DRIFT_FROM_SIDECAR` findings (verdict `METADATA_MISMATCH`) when:
+   - The report's author / year / title / venue differs from `sources.json`.
+   - The report's quoted statistic differs from the sidecar's `key_findings` value.
+   - The report attributes a claim to a `paper_id` that does not appear in `sources.json` (drift introduced by compaction or hallucination).
+3. When `grading_path` is also populated, additionally diff T-tier and `verification_status` against the report's `[T{n}: source]` inline labels.
+4. When `advocate_path` is populated, fail-loud if the report assembled with any open CRITICAL finding — emit a `compiler_contract_violation` finding at severity CRITICAL.
+
+Diff-mode supplements (does NOT replace) the standard web re-fetch path — both run, and findings from both feed Stage 8. The diff path is strictly cheaper and faster, so it returns first; web re-fetch confirms the diff against the canonical source.
 
 ### Stage 4 — Uncited claim verification
 

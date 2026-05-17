@@ -556,6 +556,78 @@ NOT globally reproducible audit IDs. For durable per-citation reproducibility, r
 Paperclip citation URL alongside each retained paper in the bibliography itself:
 `https://citations.gxl.ai/papers/<doc_id>#L<n1>-L<n2>`.
 
+## Output: Sidecar Emission (Evidence Pinning)
+
+**After** emitting the Annotated Bibliography and Search Log to chat, persist the
+same data to a sidecar JSON file co-located with the report directory. This is
+the ground-truth artifact downstream agents (verification, synthesis, compiler)
+and the `research-accuracy-verifier` skill read from — they must NOT reconstruct
+sources from conversation context, which can drift or be lost to auto-compaction.
+
+**Filename:** `{date}_{topic_slug}_{mode}_sources.json` — computed via
+`scripts/thresholds.sidecar_filename(mode, "sources", date, topic_slug)`.
+
+**Schema:** `skills/deep-research/schemas/sources.json` (Draft-07).
+**Validator:** `uv run python skills/deep-research/scripts/validate_sidecar.py --kind sources --file <path>`
+
+**Mode gating:** Emit for every mode listed in
+`scripts/thresholds.SIDECAR_SPECS[mode]` that includes `"sources"`. The
+`socratic` mode emits no sidecars.
+
+**Field mapping from the markdown bibliography:**
+
+| Markdown field             | JSON field                  | Notes                                              |
+|----------------------------|-----------------------------|----------------------------------------------------|
+| `### [Author et al., Year]` | `authors[0]`, `year`        | Parse the first author and year                    |
+| Title                      | `title`                     | Verbatim                                           |
+| **DOI:**                   | `doi`, `paper_id` (preferred) | DOI without URL prefix                           |
+| **PMID:**                  | `pmid`                      | When present                                       |
+| **Source:**                | `source`                    | Enum: PubMed / bioRxiv / Consensus / ...           |
+| **Study Design:**          | `study_design`              | Free text                                          |
+| **Key Findings:**          | `key_findings`              | 2-3 sentence summary                               |
+| **Relevance:**             | `relevance`                 | High / Medium / Low                                |
+| **Limitations:**           | `limitations`               | Free text                                          |
+| **Reception:**             | `reception.{scite_index, supporting, contrasting, mentioning}` | Null when "Not assessed"      |
+
+`paper_id` selection: prefer `doi`, fall back to `pmid`, fall back to a stable
+slug derived from `{first_author_year_title_first_word}`. This ID is the join
+key for `grading.json`, `synthesis.json`, and `advocate.json`.
+
+**Search log:** transcribe every row from the `## Search Log` markdown table
+into `search_log[]` verbatim. Do NOT paraphrase queries — exact strings are
+reproducibility-critical.
+
+**Canonical example entry:**
+
+```json
+{
+  "paper_id": "10.1056/NEJMoa2103695",
+  "doi": "10.1056/NEJMoa2103695",
+  "pmid": "34096690",
+  "pmcid": null,
+  "title": "Sotorasib for Lung Cancers with KRAS p.G12C Mutation",
+  "authors": ["Skoulidis F", "Li BT", "Dy GK"],
+  "year": 2021,
+  "venue": "New England Journal of Medicine",
+  "source": "PubMed",
+  "study_design": "Phase II single-arm trial",
+  "key_findings": "Objective response rate of 37.1% in pretreated NSCLC with KRAS G12C.",
+  "relevance": "High",
+  "limitations": "Single-arm; modest sample size (n=126).",
+  "reception": {"scite_index": 0.92, "supporting": 412, "contrasting": 3, "mentioning": 1180},
+  "grey_lit_note": null
+}
+```
+
+**Validation gate:** Before returning control to the orchestrator, the agent
+MUST run `validate_sidecar.py --kind sources` and confirm exit code 0.
+A failing sidecar blocks the verification agent from starting (which depends
+on `sources.json` as its `--sources` argument).
+
+**T-tier / evidence_level NOT here:** Per separation of concerns, evidence
+grading lives in `grading.json` (emitted by the verification agent). The
+`sources.json` schema intentionally omits `t_tier` and `evidence_level`.
+
 ## Quantitative Thresholds
 
 From `QUANTIFICATION_THRESHOLDS.md` §1:
@@ -571,8 +643,9 @@ From `QUANTIFICATION_THRESHOLDS.md` §1:
 ## Interaction with Other Agents
 
 - **Receives from:** Phase 1 scoping (RQ, inclusion/exclusion criteria, entity-resolution filters)
-- **Passes to:** Verification agent (annotated bibliography for grading)
-- **Does NOT:** Grade sources (verification agent's job), synthesize findings (synthesis agent's job)
+- **Passes to:** Verification agent — via `{date}_{topic_slug}_{mode}_sources.json` sidecar (ground truth) AND the annotated bibliography rendered to chat
+- **Sidecar emission:** `sources.json` (see §Output: Sidecar Emission above)
+- **Does NOT:** Grade sources (verification agent's job, emits `grading.json`), synthesize findings (synthesis agent's job)
 
 ## Deterministic Utilities
 
@@ -580,5 +653,6 @@ The following scripts support this agent's decisions with deterministic logic:
 
 | Script | Constants/Functions Used | Purpose |
 |--------|------------------------|---------|
-| `scripts/thresholds.py` | `MIN_SOURCES`, `MIN_DATABASES`, `SEARCH_SATURATION` | Enforce minimum source counts, database coverage, and saturation thresholds per mode |
+| `scripts/thresholds.py` | `MIN_SOURCES`, `MIN_DATABASES`, `SEARCH_SATURATION`, `sidecar_filename()` | Enforce minimum source counts, database coverage, saturation thresholds, and sidecar filename convention per mode |
 | `scripts/mode_selector.py` | `select_mode()` | Determine pipeline mode from user input before search strategy selection |
+| `scripts/validate_sidecar.py` | `--kind sources` | Validate `sources.json` against schema + S1-S4 predicates before handing off to verification |

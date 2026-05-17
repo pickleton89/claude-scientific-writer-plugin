@@ -1,0 +1,148 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "sources.json",
+  "title": "DeepResearchSources",
+  "description": "Bibliography sidecar emitted by the deep-research bibliography agent at the end of Phase 2. Ground-truth artifact for downstream synthesis, compiler, and research-accuracy-verifier consumption. Field names mirror skills/research-accuracy-verifier/schemas/intake.json §CitedPaper for cross-skill compatibility. Validated by skills/deep-research/scripts/validate_sidecar.py + predicates S1-S4.",
+  "type": "object",
+  "required": ["schema_version", "metadata", "sources", "search_log"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["1.0"],
+      "description": "Sidecar schema version. Bump on breaking changes."
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["frozen_at", "mode", "topic_slug"],
+      "properties": {
+        "frozen_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO-8601 timestamp when bibliography phase completed."
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["full", "quick", "lit-review", "systematic-review", "hypothesis", "fact-check", "review"],
+          "description": "Active deep-research mode. Drives downstream sidecar gating per SIDECAR_SPECS."
+        },
+        "topic_slug": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Topic slug used in the report filename (e.g. 'kras-inhibitors')."
+        },
+        "search_contract_version": {
+          "type": ["string", "null"],
+          "description": "Version of the search contract from Phase 1, if available."
+        },
+        "rq": {
+          "type": ["string", "null"],
+          "description": "Research question text from Phase 1 contract."
+        }
+      },
+      "additionalProperties": false
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 0,
+      "items": { "$ref": "#/definitions/Source" }
+    },
+    "search_log": {
+      "type": "array",
+      "description": "Per-database search audit (from bibliography agent §Search Documentation).",
+      "items": { "$ref": "#/definitions/SearchLogEntry" }
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "Source": {
+      "type": "object",
+      "description": "One bibliographic entry. paper_id is the join key for downstream sidecars (grading, synthesis, advocate).",
+      "required": ["paper_id", "title", "authors", "year", "source"],
+      "properties": {
+        "paper_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable identifier. Prefer DOI; fallback PMID; fallback slug. Used as join key across all sidecars."
+        },
+        "doi": { "type": ["string", "null"] },
+        "pmid": { "type": ["string", "null"] },
+        "pmcid": { "type": ["string", "null"] },
+        "title": { "type": "string", "minLength": 1 },
+        "authors": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "year": {
+          "type": ["integer", "null"],
+          "minimum": 1800,
+          "maximum": 2100,
+          "description": "Publication year. Null for in-press / undated grey lit (use grey_lit_note then)."
+        },
+        "venue": {
+          "type": ["string", "null"],
+          "description": "Journal, conference, preprint server, or grey-lit publisher."
+        },
+        "source": {
+          "type": "string",
+          "enum": ["PubMed", "bioRxiv", "medRxiv", "Consensus", "OpenAlex", "Scite", "Paperclip", "WebSemantic", "GreyLit", "arXiv", "Crossref"],
+          "description": "Database that surfaced the source. Used for provenance tracking in the Search Log."
+        },
+        "study_design": {
+          "type": ["string", "null"],
+          "description": "Free-text study design (e.g. 'RCT', 'cohort', 'in vitro', 'systematic review'). Drives evidence_level grading."
+        },
+        "key_findings": {
+          "type": ["string", "null"],
+          "description": "2-3 sentence summary of the source's contribution to the RQ."
+        },
+        "relevance": {
+          "type": ["string", "null"],
+          "enum": ["High", "Medium", "Low", null],
+          "description": "Bibliography-agent assessment of relevance to the RQ."
+        },
+        "limitations": {
+          "type": ["string", "null"],
+          "description": "Methodological caveats noted during screening."
+        },
+        "reception": {
+          "type": ["object", "null"],
+          "description": "Scite reception data when available. Null when not assessed.",
+          "properties": {
+            "scite_index": { "type": ["number", "null"] },
+            "supporting": { "type": ["integer", "null"], "minimum": 0 },
+            "contrasting": { "type": ["integer", "null"], "minimum": 0 },
+            "mentioning": { "type": ["integer", "null"], "minimum": 0 }
+          },
+          "additionalProperties": false
+        },
+        "grey_lit_note": {
+          "type": ["string", "null"],
+          "description": "Required when source == 'GreyLit'. Documents publisher / agency / fetch date per citable_web_domains.md."
+        }
+      },
+      "additionalProperties": false
+    },
+    "SearchLogEntry": {
+      "type": "object",
+      "required": ["database", "date", "query", "results"],
+      "properties": {
+        "database": { "type": "string", "minLength": 1 },
+        "date": { "type": "string", "format": "date" },
+        "query": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Verbatim query string as submitted. Reproducibility-critical — do NOT paraphrase."
+        },
+        "filters": { "type": ["string", "null"] },
+        "results": { "type": "integer", "minimum": 0 },
+        "after_dedup": { "type": ["integer", "null"], "minimum": 0 },
+        "trace_id": {
+          "type": ["string", "null"],
+          "description": "Optional session-local trace ID (e.g. Paperclip)."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

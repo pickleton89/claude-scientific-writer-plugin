@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "advocate.json",
+  "title": "DeepResearchAdvocate",
+  "description": "Devil's-advocate sidecar. Cumulative across all 3 advocate runs (own-numbered Checkpoints 1, 2, 3 — mapping to pipeline Phases 1, 3, 5 per agents/advocate.md §3 Mandatory Checkpoints). First run creates the file; subsequent runs append to findings[]. Compiler reads this at Phase 4 to ensure unresolved CRITICAL findings block report assembly. Validated by skills/deep-research/scripts/validate_sidecar.py + predicates A1-A3.",
+  "type": "object",
+  "required": ["schema_version", "metadata", "findings"],
+  "properties": {
+    "schema_version": { "type": "string", "enum": ["1.0"] },
+    "metadata": {
+      "type": "object",
+      "required": ["created_at", "mode", "topic_slug", "sources_sidecar"],
+      "properties": {
+        "created_at": { "type": "string", "format": "date-time" },
+        "last_updated_at": { "type": "string", "format": "date-time" },
+        "mode": {
+          "type": "string",
+          "enum": ["full", "lit-review", "systematic-review", "hypothesis", "fact-check", "review"],
+          "description": "Modes that emit advocate.json per SIDECAR_SPECS. 'quick' and 'socratic' omitted — they do not invoke the advocate agent."
+        },
+        "topic_slug": { "type": "string", "minLength": 1 },
+        "sources_sidecar": { "type": "string", "minLength": 1 },
+        "checkpoints_run": {
+          "type": "array",
+          "items": { "type": "integer", "enum": [1, 2, 3] },
+          "uniqueItems": true,
+          "description": "Which advocate checkpoints have been executed so far. Advocate has 3 own-numbered runs (Checkpoint 1 = post-scoping/Phase 1; Checkpoint 2 = post-analysis/Phase 3; Checkpoint 3 = final review/Phase 5). See agents/advocate.md §3 Mandatory Checkpoints."
+        }
+      },
+      "additionalProperties": false
+    },
+    "findings": {
+      "type": "array",
+      "minItems": 0,
+      "items": { "$ref": "#/definitions/AdvocateFinding" }
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "AdvocateFinding": {
+      "type": "object",
+      "required": ["id", "checkpoint", "category", "description", "severity", "status"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^A-[0-9]{3}$",
+          "description": "Advocate finding ID. Pattern A-NNN, allocated sequentially across checkpoints."
+        },
+        "checkpoint": {
+          "type": "integer",
+          "enum": [1, 2, 3],
+          "description": "Which of the advocate's 3 own-numbered checkpoint runs emitted this finding (Checkpoint 1 = post-scoping/Phase 1; Checkpoint 2 = post-analysis/Phase 3; Checkpoint 3 = final review/Phase 5)."
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "cherry_picking",
+            "selection_bias",
+            "confirmation_bias",
+            "logic_chain",
+            "ethics",
+            "dual_use",
+            "vulnerability",
+            "scope_creep",
+            "evidence_gap"
+          ]
+        },
+        "description": { "type": "string", "minLength": 1 },
+        "affected_paper_ids": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "paper_ids from sources.json that this finding implicates. Optional — some findings (e.g. logic_chain) are document-level."
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["CRITICAL", "MAJOR", "MINOR", "INFORMATIONAL"],
+          "description": "A3: CRITICAL findings with status == 'open' MUST block compiler assembly."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["open", "addressed", "wont_fix", "deferred"]
+        },
+        "resolution_note": {
+          "type": ["string", "null"],
+          "description": "Required when status != 'open'. Documents how the finding was addressed (or why deferred)."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -59,6 +59,31 @@
       "description": "Optional. Pointers to artifacts produced by upstream research-paper-summarizer runs for cited sources. When present, Stage 6 (numerical sanity) joins the document's numerical claims against each entry's stats.json by paper_id, eliminating re-extraction of cited-paper numbers. When absent or when an entry's validate_stats.py fails, Stage 6 falls back to full-text re-extraction. The orchestrator populates this from each summarizer fork-return's summary_paths.{stats,source_meta}; canonical shape mirrored from verifier_kit/schemas/intake.base.json#/$defs/citedPaper (inlined per project convention — see audit_report.json Finding).",
       "items": { "$ref": "#/definitions/CitedPaper" },
       "uniqueItems": true
+    },
+    "pinned_sidecars": {
+      "type": "object",
+      "description": "Optional. Pointers to deep-research sidecar artifacts when the document under review is the markdown report produced by the deep-research skill. When present, the verifier activates *diff-mode* on Stage 3 (claim-citation alignment): in addition to re-fetching cited sources from the web, the verifier diffs report claims against the sidecar values and emits DRIFT_FROM_SIDECAR findings for any mismatch. See references/CONTRACTS.md §Deep-research handoff. The orchestrator populates this from the report's `<!-- evidence_pinned: ... -->` marker plus the conventional sibling filenames; see deep-research/SKILL.md §Evidence Pinning.",
+      "required": ["sources_path"],
+      "properties": {
+        "sources_path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Path to {date}_{topic_slug}_{mode}_sources.json (canonical filename from deep-research/scripts/thresholds.sidecar_filename)."
+        },
+        "grading_path": {
+          "type": ["string", "null"],
+          "description": "Path to {date}_{topic_slug}_{mode}_grading.json. Required for verification-status / T-tier drift detection."
+        },
+        "synthesis_path": {
+          "type": ["string", "null"],
+          "description": "Path to {date}_{topic_slug}_{mode}_synthesis.json. Required for theme / gap / contradiction drift detection."
+        },
+        "advocate_path": {
+          "type": ["string", "null"],
+          "description": "Path to {date}_{topic_slug}_{mode}_advocate.json. Required for open-CRITICAL-finding suppression detection."
+        }
+      },
+      "additionalProperties": false
     }
   },
   "definitions": {

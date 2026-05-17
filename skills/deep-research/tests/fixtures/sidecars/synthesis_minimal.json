@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "metadata": {
+    "frozen_at": "2026-05-17T17:40:00Z",
+    "mode": "full",
+    "topic_slug": "kras-inhibitors",
+    "sources_sidecar": "sources_minimal.json",
+    "grading_sidecar": "grading_minimal.json"
+  },
+  "themes": [
+    {
+      "id": "T-01",
+      "title": "Single-agent KRAS G12C inhibition produces sub-50% ORR in pretreated NSCLC",
+      "paragraph": "Both sotorasib [T2] and adagrasib [T2] showed objective response rates between 37-43% in pretreated NSCLC patients with KRAS G12C mutations, establishing single-agent efficacy but with a ceiling that motivates combination strategies.",
+      "supporting_paper_ids": ["10.1056/NEJMoa2103695", "10.1056/NEJMoa2204619"]
+    }
+  ],
+  "gaps": [
+    {
+      "id": "G-01",
+      "type": "empirical",
+      "description": "No head-to-head randomized comparison between sotorasib and adagrasib has been reported.",
+      "priority_score": 8,
+      "supporting_paper_ids": []
+    }
+  ],
+  "contradictions": [],
+  "dossier_cross_refs": [],
+  "hypotheses": []
+}

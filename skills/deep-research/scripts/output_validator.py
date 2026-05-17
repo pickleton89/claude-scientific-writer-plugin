@@ -28,13 +28,22 @@ from thresholds import (
     CITATION_PATTERN,
     MANDATORY_SECTIONS_ALL,
     MANDATORY_SECTIONS_BY_MODE,
+    SIDECAR_ENFORCEMENT,
+    SIDECAR_SPECS,
     WORD_COUNTS,
+    sidecar_filename,
 )
 
 try:
     from output_contract import OutputContract  # noqa: F401 — used by validate_against_contract
 except ImportError:
     OutputContract = None  # type: ignore[assignment, misc]
+
+try:
+    from validate_sidecar import SidecarValidator, _load_paper_ids
+except ImportError:
+    SidecarValidator = None  # type: ignore[assignment, misc]
+    _load_paper_ids = None  # type: ignore[assignment, misc]
 
 
 @dataclass
@@ -359,10 +368,91 @@ def _fuzzy_heading_match(heading: str, canonical_name: str, threshold: float) ->
     return overlap >= max(1, len(canon_tokens) * threshold)
 
 
+def _check_sidecars(
+    mode: str,
+    report_dir: Path,
+    date: str,
+    topic_slug: str,
+    result: ValidationResult,
+) -> None:
+    """Verify required sidecars exist and validate per SIDECAR_SPECS[mode].
+
+    Side effect: appends to result.errors (when SIDECAR_ENFORCEMENT == 'required')
+    or result.warnings (when 'advisory'). Also enforces the open-CRITICAL
+    advocate block regardless of enforcement mode — that one ALWAYS fails.
+    """
+    if SidecarValidator is None:
+        result.warnings.append(
+            "Sidecar enforcement skipped — validate_sidecar.py not importable"
+        )
+        return
+
+    required = SIDECAR_SPECS.get(mode, ())
+    if not required:
+        return  # socratic, or mode with no sidecars
+
+    sources_path: Path | None = None
+    advocate_data: dict | None = None
+    sink = result.errors if SIDECAR_ENFORCEMENT == "required" else result.warnings
+    prefix = "Sidecar missing/invalid" if SIDECAR_ENFORCEMENT == "required" else "Sidecar advisory"
+
+    for kind in required:
+        filename = sidecar_filename(mode, kind, date, topic_slug)
+        path = report_dir / filename
+        if not path.exists():
+            sink.append(f"{prefix}: {filename} not found in {report_dir}")
+            continue
+        try:
+            data = json.loads(path.read_text())
+        except json.JSONDecodeError as e:
+            sink.append(f"{prefix}: {filename} is not valid JSON ({e})")
+            continue
+
+        known_ids: set[str] | None = None
+        if kind in {"grading", "synthesis"} and sources_path is not None:
+            known_ids = _load_paper_ids(sources_path) if _load_paper_ids else None
+
+        validator = SidecarValidator(kind)
+        ok, errors, warnings = validator.validate(data, known_paper_ids=known_ids)
+        if not ok:
+            for err in errors:
+                sink.append(f"{prefix}: {filename}: {err}")
+        # A3 warnings always passed through as warnings (advisory by nature)
+        for warn in warnings:
+            result.warnings.append(f"Sidecar {filename}: {warn}")
+
+        # Only feed sources.json into downstream paper_id joins when it
+        # validated cleanly. A malformed sources.json would yield an empty
+        # paper_id set and trigger spurious G1/Y1 errors on every grading /
+        # synthesis entry — confusing on top of the already-surfaced sources
+        # error.
+        if kind == "sources" and ok:
+            sources_path = path
+        if kind == "advocate":
+            advocate_data = data
+
+    # Open-CRITICAL advocate findings ALWAYS block, regardless of enforcement
+    # mode. This is the non-negotiable safety gate from agents/advocate.md.
+    if advocate_data is not None:
+        open_critical = [
+            f for f in (advocate_data.get("findings") or [])
+            if f.get("severity") == "CRITICAL" and f.get("status") == "open"
+        ]
+        if open_critical:
+            ids = [f.get("id") for f in open_critical]
+            result.errors.append(
+                f"Open CRITICAL advocate finding(s) {ids} block compiler assembly. "
+                "Address or explicitly defer (with resolution_note) before re-running."
+            )
+
+
 def validate_against_contract(
     markdown: str,
     contract: dict,
     file_count: int = 1,
+    report_dir: str | Path | None = None,
+    date: str | None = None,
+    topic_slug: str | None = None,
 ) -> ValidationResult:
     """
     Contract-based validation of compiler output.
@@ -376,6 +466,10 @@ def validate_against_contract(
     * Per-section word count advisory checks.
     * File count vs. ``file_spec["max_files"]``.
     * LaTeX content detection.
+    * Sidecar presence + schema validation (when ``report_dir``, ``date``, and
+      ``topic_slug`` are supplied). Behavior gated by
+      ``thresholds.SIDECAR_ENFORCEMENT`` ('advisory' or 'required'). Open
+      CRITICAL advocate findings always block assembly regardless of mode.
 
     Args:
         markdown: The compiler output markdown.
@@ -383,6 +477,12 @@ def validate_against_contract(
             (dict with keys ``mode``, ``sections``, ``file_spec``,
             ``total_word_range``, etc.).
         file_count: Number of output files produced (default 1).
+        report_dir: Directory holding the report and sidecar files. When
+            omitted, sidecar checks are skipped (legacy callers preserved).
+        date: Report date string (e.g. '2026-05-17') used to compute sidecar
+            filenames. Required if ``report_dir`` is given.
+        topic_slug: Topic slug used to compute sidecar filenames. Required if
+            ``report_dir`` is given.
 
     Returns:
         :class:`ValidationResult` combining mode-based and contract-based checks.
@@ -526,6 +626,14 @@ def validate_against_contract(
                 f"above target maximum {wmax}"
             )
 
+    # ── (g) Sidecar presence + schema validation ────────────────────────
+    # Gated by report_dir/date/topic_slug. Legacy callers that omit these
+    # skip the sidecar gate (back-compat). When supplied, behavior follows
+    # thresholds.SIDECAR_ENFORCEMENT ('advisory' | 'required'); open
+    # CRITICAL advocate findings always block regardless of mode.
+    if report_dir is not None and date is not None and topic_slug is not None:
+        _check_sidecars(mode, Path(report_dir), date, topic_slug, base_result)
+
     # Recompute overall validity (base errors + new errors).
     base_result.valid = len(base_result.errors) == 0
 
@@ -539,6 +647,9 @@ def validate_contract_from_json(data: dict) -> dict:
         ``markdown`` (str): The compiler output markdown.
         ``contract`` (dict): ``OutputContract`` serialised via ``contract_to_json()``.
         ``file_count`` (int, optional): Number of output files (default 1).
+        ``report_dir`` (str, optional): Directory holding sidecar files.
+        ``date`` (str, optional): Report date for sidecar filename computation.
+        ``topic_slug`` (str, optional): Topic slug for sidecar filename computation.
 
     Returns:
         Dict with ``mode``, ``valid``, ``word_count``, ``errors``, ``warnings``,
@@ -548,6 +659,9 @@ def validate_contract_from_json(data: dict) -> dict:
         markdown=data.get("markdown", ""),
         contract=data.get("contract", {}),
         file_count=data.get("file_count", 1),
+        report_dir=data.get("report_dir"),
+        date=data.get("date"),
+        topic_slug=data.get("topic_slug"),
     )
     return {
         "mode": result.mode,

@@ -79,6 +79,33 @@ class TestIntakeValidator:
         assert any("schema" in e for e in errors), "schema error missing"
         assert any("document_type_other" in e for e in errors), "business rule error missing"
 
+    def test_pinned_sidecars_accepted(self, sample_intake: dict[str, Any]) -> None:
+        """Deep-research handoff: pinned_sidecars is optional and schema-valid."""
+        intake = {
+            **sample_intake,
+            "pinned_sidecars": {
+                "sources_path": "/tmp/2026-05-17_kras-inhibitors_full_sources.json",
+                "grading_path": "/tmp/2026-05-17_kras-inhibitors_full_grading.json",
+                "synthesis_path": None,
+                "advocate_path": None,
+            },
+        }
+        ok, errors, _ = IntakeValidator().validate(intake)
+        assert ok, errors
+
+    def test_pinned_sidecars_requires_sources_path(self, sample_intake: dict[str, Any]) -> None:
+        """sources_path is the one required key under pinned_sidecars."""
+        intake = {
+            **sample_intake,
+            "pinned_sidecars": {
+                "grading_path": "/tmp/grading.json",
+                # sources_path missing
+            },
+        }
+        ok, errors, _ = IntakeValidator().validate(intake)
+        assert not ok
+        assert any("sources_path" in e for e in errors), errors
+
     def test_expand_tier_populates_checks(self, sample_intake: dict[str, Any]) -> None:
         out = IntakeValidator().expand_tier(sample_intake)
         assert out["checks_enabled"] == TIER_CHECKS["2"]

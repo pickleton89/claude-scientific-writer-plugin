@@ -183,10 +183,93 @@ A REVISE verdict means at least one Critical issue blocks progression.
 | "So what?" | Justified/Partially/Unjustified | [brief explanation] |
 ```
 
+## Output: Sidecar Emission (Evidence Pinning)
+
+**After** rendering the Advocate Report to chat at EACH of the 3 checkpoints,
+append findings to a single cumulative sidecar JSON file co-located with the
+report directory. The first invocation (Checkpoint 1) creates the file; later
+invocations (Checkpoints 2, 3) load → append → re-validate → write.
+
+**Filename:** `{date}_{topic_slug}_{mode}_advocate.json` — computed via
+`scripts/thresholds.sidecar_filename(mode, "advocate", date, topic_slug)`.
+
+**Schema:** `skills/deep-research/schemas/advocate.json` (Draft-07).
+**Validator:** `uv run python skills/deep-research/scripts/validate_sidecar.py --kind advocate --file <path>`
+
+**Mode gating:** Emit for every mode listed in
+`scripts/thresholds.SIDECAR_SPECS[mode]` that includes `"advocate"`. Skipped
+for `quick` and `socratic`.
+
+**Cumulative append protocol:**
+
+```python
+# Pseudocode for each invocation
+if file_does_not_exist:
+    data = {
+      "schema_version": "1.0",
+      "metadata": {
+        "created_at": now_iso(),
+        "last_updated_at": now_iso(),
+        "mode": mode, "topic_slug": topic_slug,
+        "sources_sidecar": sources_filename(),
+        "checkpoints_run": [current_checkpoint]
+      },
+      "findings": []
+    }
+else:
+    data = json.load(file)
+    data["metadata"]["last_updated_at"] = now_iso()
+    if current_checkpoint not in data["metadata"]["checkpoints_run"]:
+        data["metadata"]["checkpoints_run"].append(current_checkpoint)
+
+# Allocate A-NNN ids sequentially across all checkpoints
+next_id = max([int(f["id"][2:]) for f in data["findings"]] + [0]) + 1
+for issue in this_checkpoint_issues:
+    data["findings"].append({
+      "id": f"A-{next_id:03d}",
+      "checkpoint": current_checkpoint,
+      "category": issue.category,
+      "description": issue.description,
+      "affected_paper_ids": issue.paper_ids or [],
+      "severity": issue.severity,
+      "status": "open" if current_checkpoint < 3 else issue.status,
+      "resolution_note": issue.resolution_note
+    })
+    next_id += 1
+```
+
+**Severity mapping** from the §Output Format markdown report:
+
+| Markdown bucket            | JSON `severity`     |
+|----------------------------|---------------------|
+| Critical Issues            | CRITICAL            |
+| Major Issues               | MAJOR               |
+| Minor Issues               | MINOR               |
+| Observations               | INFORMATIONAL       |
+
+**Resolution status** (`status` field):
+- Findings emitted by Checkpoint 1 or 2 default to `"open"`. When the user or
+  a later checkpoint addresses them, update `status` to `"addressed"` /
+  `"wont_fix"` / `"deferred"` and populate `resolution_note` (required by **A2**).
+- Checkpoint 3 (final review) findings get a status assigned immediately based
+  on whether the report assembled with the finding addressed.
+
+**Validation gate:** After every append, run `validate_sidecar.py --kind advocate`
+and confirm exit code 0. Predicate **A1** rejects duplicate `id`s (catches
+append-race bugs); **A2** rejects closed-status findings without a resolution
+note; **A3** emits a warning when any open `CRITICAL` exists — the compiler
+treats this warning as blocking.
+
+**Compiler interaction:** At Phase 4 entry, the compiler loads `advocate.json`
+and refuses to assemble the report if any finding has `severity == "CRITICAL"
+AND status == "open"`. This makes critical-finding suppression visible to the
+verifier and auditable post-hoc.
+
 ## Interaction with Other Agents
 
 - **Invoked at:** Phase 1 (Checkpoint 1), Phase 3 (Checkpoint 2), Phase 5 (Checkpoint 3)
 - **Reviews output from:** Scoping decisions (Phase 1), Synthesis agent (Phase 3), Compiler agent (Phase 5)
+- **Sidecar emission:** `advocate.json` — CUMULATIVE across all 3 checkpoints (see §Output: Sidecar Emission above)
 - **Does NOT:** Search for papers, synthesize findings, or write the report
 - **Collaborates with:** Mentor agent in socratic mode (advocate challenges at Layer 2 and Layer 4)
-- **Critical findings** block the pipeline until the user addresses them
+- **Critical findings** block the pipeline until the user addresses them — enforced both in-chat (REVISE verdict) and in `advocate.json` (open CRITICAL → compiler refuses assembly)

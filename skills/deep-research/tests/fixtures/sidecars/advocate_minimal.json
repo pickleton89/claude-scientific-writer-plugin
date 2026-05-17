@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "metadata": {
+    "created_at": "2026-05-17T17:20:00Z",
+    "last_updated_at": "2026-05-17T17:42:00Z",
+    "mode": "full",
+    "topic_slug": "kras-inhibitors",
+    "sources_sidecar": "sources_minimal.json",
+    "checkpoints_run": [1, 2]
+  },
+  "findings": [
+    {
+      "id": "A-001",
+      "checkpoint": 1,
+      "category": "scope_creep",
+      "description": "RQ initially proposed comparing all KRAS inhibitors across all cancers — narrowed to G12C in NSCLC.",
+      "affected_paper_ids": [],
+      "severity": "MINOR",
+      "status": "addressed",
+      "resolution_note": "RQ rescoped during Checkpoint 1 review; user confirmed."
+    },
+    {
+      "id": "A-002",
+      "checkpoint": 2,
+      "category": "cherry_picking",
+      "description": "Initial synthesis foregrounded ORR but omitted PFS data from both pivotal trials.",
+      "affected_paper_ids": ["10.1056/NEJMoa2103695", "10.1056/NEJMoa2204619"],
+      "severity": "MAJOR",
+      "status": "addressed",
+      "resolution_note": "Synthesis updated to include median PFS (6.8 mo sotorasib; 6.5 mo adagrasib)."
+    }
+  ]
+}

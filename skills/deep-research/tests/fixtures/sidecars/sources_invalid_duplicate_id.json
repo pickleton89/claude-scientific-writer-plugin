@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "metadata": {
+    "frozen_at": "2026-05-17T17:30:00Z",
+    "mode": "quick",
+    "topic_slug": "kras-inhibitors"
+  },
+  "sources": [
+    {
+      "paper_id": "10.1056/NEJMoa2103695",
+      "doi": "10.1056/NEJMoa2103695",
+      "title": "Sotorasib for Lung Cancers with KRAS p.G12C Mutation",
+      "authors": ["Skoulidis F"],
+      "year": 2021,
+      "source": "PubMed"
+    },
+    {
+      "paper_id": "10.1056/NEJMoa2103695",
+      "doi": "10.1056/NEJMoa2103695",
+      "title": "Duplicate entry — same DOI as above",
+      "authors": ["Skoulidis F"],
+      "year": 2021,
+      "source": "PubMed"
+    }
+  ],
+  "search_log": []
+}

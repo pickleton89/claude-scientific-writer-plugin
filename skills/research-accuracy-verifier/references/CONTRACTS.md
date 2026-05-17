@@ -106,10 +106,28 @@ P8 (Tier-3 cherry-picking sweep). When `intake.domain ∈ {biomedical, mixed}` A
                               // required iff verification_tier == "custom"
                               // prose_quality_audit: Tier 3 + custom only; parallel pipeline (style_findings[])
     "domain":               { "enum": ["biomedical","general","mixed"] },
-    "flag_threshold":       { "enum": ["conservative","standard","strict"] }
+    "flag_threshold":       { "enum": ["conservative","standard","strict"] },
+    "cited_papers":         { "type": "array", "items": { "$ref": "#/$defs/citedPaper" } },  // optional — research-paper-summarizer handoff
+    "pinned_sidecars":      { "$ref": "#/$defs/pinnedSidecars" }                              // optional — deep-research handoff (Stage 3 diff-mode)
   }
 }
 ```
+
+### Deep-research handoff (`pinned_sidecars`)
+
+When the document under review is a markdown report produced by `deep-research`, the report carries an HTML-comment marker on its first line:
+
+```markdown
+<!-- evidence_pinned: true sidecars: sources.json,grading.json,synthesis.json,advocate.json -->
+```
+
+Detect the marker and populate `intake.pinned_sidecars` from conventional sibling filenames (do NOT prompt the user). The verifier then activates **Stage 3 diff-mode** (see SKILL.md §Stage 3 — Claim-citation alignment). The cooperation contract mirrors the existing `cited_papers[]` handoff with `research-paper-summarizer`:
+
+- **Upstream emits paths, not inline data.** Each sidecar lives at the canonical filename `{date}_{topic_slug}_{mode}_{kind}.json` (computed via `skills/deep-research/scripts/thresholds.sidecar_filename`).
+- **Schemas live with the producer.** Validate with `skills/deep-research/scripts/validate_sidecar.py --kind {sources|grading|synthesis|advocate}` before consumption. On schema failure, drop to standard alignment and append `pinned_sidecars_invalid` to `header.coverage_caveats[]`.
+- **Join key:** `paper_id` (DOI-preferred, PMID fallback) is shared across all four deep-research sidecars and is byte-compatible with the verifier's `Finding.citations[].{doi,pmid}` and `cited_papers[].paper_id` fields.
+- **New verdict:** drift between report claim and sidecar value emits a Stage 3 finding with verdict `METADATA_MISMATCH` and tag `drift_from_sidecar:<paper_id>`. Severity follows the existing matrix.
+- **Compiler-contract violation:** if `advocate.json` contains any finding with `severity == "CRITICAL" AND status == "open"`, emit a single CRITICAL finding with tag `compiler_contract_violation` — the deep-research compiler is contracted to refuse assembly in that state, so its presence in a delivered report indicates the gate was bypassed.
 
 Tier → `checks_enabled` mapping (computed when tier ≠ `custom`):
 - Tier 1 → `["citation_existence"]`

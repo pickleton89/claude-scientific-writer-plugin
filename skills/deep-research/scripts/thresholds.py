@@ -710,6 +710,71 @@ FILE_SPECS: Final[dict[str, dict[str, str | int]]] = {
     "socratic":          {"max_files": 0, "naming": ""},
 }
 
+# ---------------------------------------------------------------------------
+# Sidecar specifications per mode (evidence pinning)
+# ---------------------------------------------------------------------------
+# Each sidecar pins one agent boundary to disk so downstream agents read
+# ground truth instead of reconstructing from conversation context.
+# See SKILL.md §Evidence Pinning (Sidecars).
+#
+# Kinds: "sources" (bibliography), "grading" (verification),
+#        "synthesis" (synthesis), "advocate" (advocate, cumulative).
+# Naming: {date}_{topic_slug}_{mode}_{kind}.json, co-located with the report.
+
+SIDECAR_KINDS: Final[tuple[str, ...]] = ("sources", "grading", "synthesis", "advocate")
+
+SIDECAR_SPECS: Final[dict[str, tuple[str, ...]]] = {
+    "full":              ("sources", "grading", "synthesis", "advocate"),
+    "lit-review":        ("sources", "grading", "synthesis", "advocate"),
+    "systematic-review": ("sources", "grading", "synthesis", "advocate"),
+    "hypothesis":        ("sources", "grading", "synthesis", "advocate"),
+    "fact-check":        ("sources", "grading", "synthesis", "advocate"),
+    "review":            ("sources", "grading", "synthesis", "advocate"),
+    "quick":             ("sources", "grading"),
+    "socratic":          (),
+}
+
+# Feature flag — compiler enforcement of sidecar presence.
+# v1.x (current minor): "advisory" — missing sidecars emit warnings only.
+# v(1.x+1): flip to "required" — missing sidecars block compiler assembly.
+SIDECAR_ENFORCEMENT: Final[str] = "advisory"  # "advisory" | "required"
+
+
+def sidecar_filename(mode: str, kind: str, date: str, topic_slug: str) -> str:
+    """Return the canonical sidecar filename for (mode, kind).
+
+    Args:
+        mode: One of ALL_MODES (socratic returns empty string).
+        kind: One of SIDECAR_KINDS.
+        date: Date in YYYY-MM-DD form (matches FILE_SPECS naming).
+        topic_slug: Topic slug used in the report filename.
+
+    Returns:
+        Filename like "2026-05-17_kras-inhibitors_full_sources.json".
+        Returns empty string for socratic mode (no sidecars).
+
+    Raises:
+        ValueError: If kind is not in SIDECAR_KINDS or mode is unknown.
+        ValueError: If the (mode, kind) pair is not in SIDECAR_SPECS[mode].
+    """
+    if kind not in SIDECAR_KINDS:
+        raise ValueError(f"Unknown sidecar kind: {kind!r}. Expected one of {SIDECAR_KINDS}.")
+    if mode not in SIDECAR_SPECS:
+        raise ValueError(f"Unknown mode: {mode!r}. Expected one of {tuple(SIDECAR_SPECS)}.")
+    if mode == "socratic":
+        return ""
+    if kind not in SIDECAR_SPECS[mode]:
+        raise ValueError(
+            f"Sidecar kind {kind!r} not part of mode {mode!r}. "
+            f"Allowed: {SIDECAR_SPECS[mode]}."
+        )
+    return f"{date}_{topic_slug}_{mode}_{kind}.json"
+
+
+def required_sidecars(mode: str) -> tuple[str, ...]:
+    """Return the tuple of sidecar kinds required for the given mode."""
+    return SIDECAR_SPECS.get(mode, ())
+
 
 # ---------------------------------------------------------------------------
 # Schema ↔ mandatory-sections consistency check
@@ -728,3 +793,20 @@ def _validate_schema_consistency() -> None:
             raise ValueError(f"Schema inconsistency for {mode}: mandatory sections {missing} not in schema")
 
 _validate_schema_consistency()
+
+
+def _validate_sidecar_consistency() -> None:
+    """Verify SIDECAR_SPECS covers every mode and uses only known kinds."""
+    missing_modes = set(ALL_MODES) - set(SIDECAR_SPECS)
+    if missing_modes:
+        raise ValueError(f"SIDECAR_SPECS missing modes: {missing_modes}")
+    for mode, kinds in SIDECAR_SPECS.items():
+        unknown = set(kinds) - set(SIDECAR_KINDS)
+        if unknown:
+            raise ValueError(f"SIDECAR_SPECS[{mode!r}] has unknown kinds: {unknown}")
+    if SIDECAR_ENFORCEMENT not in {"advisory", "required"}:
+        raise ValueError(
+            f"SIDECAR_ENFORCEMENT must be 'advisory' or 'required', got {SIDECAR_ENFORCEMENT!r}"
+        )
+
+_validate_sidecar_consistency()

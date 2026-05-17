@@ -643,5 +643,121 @@ class TestContractValidation:
         assert result.citation_count > 0
 
 
+# ──────────────────────────────────────────────────────────────────────
+# Sidecar enforcement (evidence pinning)
+# ──────────────────────────────────────────────────────────────────────
+
+
+def _copy_fixture_sidecars(dest: Path, mode: str, date: str, topic_slug: str) -> None:
+    """Materialize fixture sidecars under canonical filenames in dest."""
+    import shutil
+    from thresholds import SIDECAR_SPECS, sidecar_filename
+
+    fixtures = Path(__file__).parent / "fixtures" / "sidecars"
+    kind_to_fixture = {
+        "sources": "sources_minimal.json",
+        "grading": "grading_minimal.json",
+        "synthesis": "synthesis_minimal.json",
+        "advocate": "advocate_minimal.json",
+    }
+    for kind in SIDECAR_SPECS[mode]:
+        src = fixtures / kind_to_fixture[kind]
+        dst = dest / sidecar_filename(mode, kind, date, topic_slug)
+        shutil.copy(src, dst)
+
+
+class TestSidecarEnforcement:
+    """Validate the evidence-pinning gate in validate_against_contract."""
+
+    def test_no_sidecar_params_means_no_check(self, tmp_path):
+        """Back-compat: omitting report_dir/date/topic_slug skips sidecar checks."""
+        md, contract_json = _make_contract_compliant_md("full")
+        result = validate_against_contract(markdown=md, contract=contract_json, file_count=1)
+        # No sidecar-related entries
+        assert not any("Sidecar" in e for e in result.errors)
+        assert not any("Sidecar" in w for w in result.warnings)
+
+    def test_advisory_warns_on_missing_sidecars(self, tmp_path):
+        """When sidecars are missing under 'advisory' enforcement → warnings, not errors."""
+        from thresholds import SIDECAR_ENFORCEMENT
+        if SIDECAR_ENFORCEMENT != "advisory":
+            pytest.skip("Test assumes advisory enforcement (current default)")
+        md, contract_json = _make_contract_compliant_md("full")
+        result = validate_against_contract(
+            markdown=md,
+            contract=contract_json,
+            file_count=1,
+            report_dir=tmp_path,
+            date="2026-05-17",
+            topic_slug="test-topic",
+        )
+        # Errors should not include sidecar-missing entries (advisory mode)
+        assert not any("Sidecar missing" in e for e in result.errors)
+        # Warnings SHOULD include advisory entries
+        assert any("Sidecar advisory" in w for w in result.warnings), result.warnings
+
+    def test_quick_mode_only_requires_two_sidecars(self, tmp_path):
+        md, contract_json = _make_contract_compliant_md("quick")
+        _copy_fixture_sidecars(tmp_path, "quick", "2026-05-17", "kras-inhibitors")
+        result = validate_against_contract(
+            markdown=md,
+            contract=contract_json,
+            file_count=1,
+            report_dir=tmp_path,
+            date="2026-05-17",
+            topic_slug="kras-inhibitors",
+        )
+        # All 2 sidecars present → no sidecar warnings/errors
+        sidecar_warns = [w for w in result.warnings if "Sidecar" in w and "advisory" in w]
+        assert sidecar_warns == [], sidecar_warns
+
+    def test_socratic_skips_sidecar_check(self, tmp_path):
+        md, contract_json = _make_contract_compliant_md("socratic")
+        # Socratic has empty SIDECAR_SPECS, so nothing should be checked
+        result = validate_against_contract(
+            markdown=md,
+            contract=contract_json,
+            file_count=0,
+            report_dir=tmp_path,
+            date="2026-05-17",
+            topic_slug="x",
+        )
+        assert not any("Sidecar" in e for e in result.errors)
+
+    def test_open_critical_always_blocks(self, tmp_path):
+        """Open CRITICAL advocate finding → assembly blocked even in advisory mode."""
+        import json
+        from thresholds import sidecar_filename
+
+        md, contract_json = _make_contract_compliant_md("full")
+        _copy_fixture_sidecars(tmp_path, "full", "2026-05-17", "kras-inhibitors")
+
+        # Inject an open CRITICAL into the advocate sidecar
+        adv_path = tmp_path / sidecar_filename("full", "advocate", "2026-05-17", "kras-inhibitors")
+        adv = json.loads(adv_path.read_text())
+        adv["findings"].append({
+            "id": "A-999",
+            "checkpoint": 3,
+            "category": "ethics",
+            "description": "Dual-use concern unresolved.",
+            "severity": "CRITICAL",
+            "status": "open",
+            "resolution_note": None,
+        })
+        adv_path.write_text(json.dumps(adv))
+
+        result = validate_against_contract(
+            markdown=md,
+            contract=contract_json,
+            file_count=1,
+            report_dir=tmp_path,
+            date="2026-05-17",
+            topic_slug="kras-inhibitors",
+        )
+        # Open CRITICAL must surface as ERROR regardless of enforcement mode
+        assert any("Open CRITICAL" in e and "A-999" in e for e in result.errors), result.errors
+        assert result.valid is False
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

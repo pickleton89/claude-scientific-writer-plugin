@@ -66,6 +66,77 @@ step), fall back to the mode-specific templates below. Follow the template
 structure exactly — do not improvise based on the user prompt's format
 directives.
 
+## Sidecar Authority (Evidence Pinning)
+
+**The sidecar files written by upstream agents are the ground truth for every
+factual claim in the final report. The conversation transcript is informational
+only — it tells you WHICH facts to surface, not WHAT they say.**
+
+### Required sidecars at Phase 4 entry
+
+Compute the required sidecar set from `scripts/thresholds.SIDECAR_SPECS[mode]`.
+For each required kind (`sources`, `grading`, `synthesis`, `advocate`):
+
+1. **Load from disk** using the canonical filename:
+   `{date}_{topic_slug}_{mode}_{kind}.json` — see
+   `scripts/thresholds.sidecar_filename()`.
+
+2. **Schema-validate** via
+   `uv run python skills/deep-research/scripts/validate_sidecar.py --kind {kind} --file <path>`
+   (pass `--sources <sources.json>` when validating `grading` or `synthesis`
+   so cross-sidecar `paper_id` joins are enforced).
+
+3. **Enforcement mode** — read `scripts/thresholds.SIDECAR_ENFORCEMENT`:
+   - `"advisory"` (current default): missing or invalid sidecars emit
+     warnings; assembly proceeds. Used during the v1.x rollout window.
+   - `"required"`: missing or invalid sidecars BLOCK assembly. The compiler
+     surfaces the missing/failing sidecar list to the user and refuses to
+     produce the report until the upstream agent re-runs. This is the
+     post-rollout enforcement level (flip the constant in `thresholds.py`).
+
+4. **Open CRITICAL findings block assembly** — regardless of enforcement
+   mode, if `advocate.json` is present and contains any finding with
+   `severity == "CRITICAL"` AND `status == "open"`, the compiler MUST
+   refuse to assemble until the user addresses or explicitly defers each
+   open CRITICAL. This makes critical-finding suppression visible and
+   auditable.
+
+### Fact-rendering rule (the pinning contract)
+
+When writing any claim attributable to a source, the compiler MUST source
+the following fields from the sidecars, NOT from in-context paraphrase:
+
+| Field type                           | Source sidecar           | Field path                            |
+|--------------------------------------|--------------------------|---------------------------------------|
+| DOI, PMID, PMCID                     | `sources.json`           | `sources[].{doi,pmid,pmcid}`          |
+| Author list, title, year, venue      | `sources.json`           | `sources[].{authors,title,year,venue}` |
+| Numeric statistics, exact quotes     | `sources.json`           | `sources[].key_findings` (verbatim)    |
+| T-tier, evidence level               | `grading.json`           | `gradings[].{t_tier,evidence_level}`   |
+| Predatory / retraction status        | `grading.json`           | `gradings[].{predatory_flag,scite_probe}` |
+| Theme titles, gap classifications, hypothesis text | `synthesis.json` | `themes[]`, `gaps[]`, `hypotheses[]` |
+
+**Direct numbers, exact quotes, and DOIs come from the sidecar; the
+in-context synthesis informs *which* facts to surface, not *what* they say.**
+
+If a number or quote you intend to write does not appear in the sidecar,
+either (a) update the relevant sidecar via the upstream agent, or (b) drop
+the claim. Do NOT paste from chat memory — that's exactly the drift this
+contract is designed to prevent.
+
+### Evidence-pinned marker
+
+Every report assembled with sidecar grounding MUST include an HTML comment
+on the first line of the file:
+
+```markdown
+<!-- evidence_pinned: true sidecars: sources.json,grading.json,synthesis.json,advocate.json -->
+```
+
+The `research-accuracy-verifier` skill detects this comment to switch into
+diff-mode, comparing report claims against the sidecar values (rather than
+only re-fetching from the web). Reports without this marker fall back to
+verifier's standard web-re-fetch path.
+
 ## Responsibilities
 
 1. Select output template based on mode

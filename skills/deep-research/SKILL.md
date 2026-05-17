@@ -110,17 +110,64 @@ explicit section lists, word count requests, or file structure directives):
 - **Naming convention**: Output file follows `FILE_SPECS` from
   `scripts/thresholds.py`: `{date}_{topic_slug}_{mode}_report.md`
 
+## Evidence Pinning (Sidecars)
+
+Every search-running mode persists structured artifacts to disk at each agent
+boundary, co-located with the final report. These **sidecars** are the
+ground-truth source for downstream agents and the `research-accuracy-verifier`
+skill — agents read from disk rather than reconstructing from conversation
+context, which can drift or be lost to auto-compaction.
+
+**Filename convention:** `{date}_{topic_slug}_{mode}_{kind}.json` — computed
+via `scripts/thresholds.sidecar_filename(mode, kind, date, topic_slug)`.
+
+**Schemas:** `skills/deep-research/schemas/` (Draft-07).
+**Validator:** `scripts/validate_sidecar.py --kind {sources|grading|synthesis|advocate}`
+
+| Kind        | Emitted by    | Contains                                                                   |
+|-------------|---------------|----------------------------------------------------------------------------|
+| `sources`   | Bibliography  | Per-source metadata + per-database search log                              |
+| `grading`   | Verification  | Per-source T-tier, evidence level, verification status, predatory flag     |
+| `synthesis` | Synthesis     | Themes, gap classifications, contradictions, dossier cross-refs, hypotheses |
+| `advocate`  | Advocate      | Cumulative findings across all 3 checkpoint runs                           |
+
+**Mode gating** (`scripts/thresholds.SIDECAR_SPECS`):
+
+| Mode | sources | grading | synthesis | advocate |
+|------|:---:|:---:|:---:|:---:|
+| full, lit-review, systematic-review, hypothesis, fact-check, review | ✓ | ✓ | ✓ | ✓ |
+| quick | ✓ | ✓ | — | — |
+| socratic | — | — | — | — |
+
+**Enforcement** (`scripts/thresholds.SIDECAR_ENFORCEMENT`): currently
+`"advisory"` — missing sidecars emit warnings. Will flip to `"required"`
+after one minor-version bake-in. Open CRITICAL advocate findings ALWAYS
+block compiler assembly regardless of enforcement mode.
+
+**Marker on the final report:** the compiler prepends an HTML comment to the
+first line so the verifier can detect pinned runs and switch to diff-mode:
+
+```markdown
+<!-- evidence_pinned: true sidecars: sources.json,grading.json,synthesis.json,advocate.json -->
+```
+
+**Compaction recovery:** because every fact a claim depends on lives on disk,
+a run that loses context to auto-compaction can be resumed by re-loading the
+sidecars and re-invoking the compiler — no re-search required.
+
+See [research-accuracy-verifier/references/CONTRACTS.md](../research-accuracy-verifier/references/CONTRACTS.md#deep-research-handoff-pinned_sidecars) for the cross-skill cooperation contract.
+
 ## Agent Team
 
-| Agent | File | Role |
-|-------|------|------|
-| **Bibliography** | `agents/bibliography.md` | Multi-database search via MCP tools, collision-aware queries, DOI dedup |
-| **Verification** | `agents/verification.md` | Source grading (Level I-VII → T1-T4), anti-hallucination, predatory detection |
-| **Synthesis** | `agents/synthesis.md` | Thematic synthesis, dossier integration, gap analysis, T1-T4 labeling |
-| **Advocate** | `agents/advocate.md` | Devil's advocate at 3 checkpoints: cherry-picking, bias, logic chain |
-| **Mentor** | `agents/mentor.md` | Socratic 5-layer dialogue with SCR protocol and convergence detection |
-| **Ethics** | `agents/ethics.md` | AI disclosure, attribution integrity, dual-use screening |
-| **Compiler** | `agents/compiler.md` | Mode-specific report assembly, citation formatting, limitations |
+| Agent | File | Role | Sidecar |
+|-------|------|------|---------|
+| **Bibliography** | `agents/bibliography.md` | Multi-database search via MCP tools, collision-aware queries, DOI dedup | emits `sources.json` |
+| **Verification** | `agents/verification.md` | Source grading (Level I-VII → T1-T4), anti-hallucination, predatory detection | reads `sources.json`; emits `grading.json` |
+| **Synthesis** | `agents/synthesis.md` | Thematic synthesis, dossier integration, gap analysis, T1-T4 labeling | reads `sources.json` + `grading.json`; emits `synthesis.json` |
+| **Advocate** | `agents/advocate.md` | Devil's advocate at 3 checkpoints: cherry-picking, bias, logic chain | reads `sources.json`; appends to `advocate.json` (cumulative) |
+| **Mentor** | `agents/mentor.md` | Socratic 5-layer dialogue with SCR protocol and convergence detection | — (socratic mode has no sidecars) |
+| **Ethics** | `agents/ethics.md` | AI disclosure, attribution integrity, dual-use screening | — |
+| **Compiler** | `agents/compiler.md` | Mode-specific report assembly, citation formatting, limitations | reads ALL sidecars; refuses assembly on missing/invalid sidecars (when enforcement = `required`) or open CRITICAL advocate findings (always) |
 
 ## Agents Active per Mode
 

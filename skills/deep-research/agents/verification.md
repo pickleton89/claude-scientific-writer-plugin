@@ -208,10 +208,70 @@ Produce a summary table for the synthesis agent:
 - T4: 3 sources (13%)
 ```
 
+## Output: Sidecar Emission (Evidence Pinning)
+
+**After** producing the Verified Source Table in chat, persist the grading data
+to a sidecar JSON file co-located with the report directory. Downstream agents
+(synthesis, compiler) and the `research-accuracy-verifier` skill read from this
+sidecar — they MUST NOT re-derive grades from conversation context.
+
+**Filename:** `{date}_{topic_slug}_{mode}_grading.json` — computed via
+`scripts/thresholds.sidecar_filename(mode, "grading", date, topic_slug)`.
+
+**Schema:** `skills/deep-research/schemas/grading.json` (Draft-07).
+**Validator:** `uv run python skills/deep-research/scripts/validate_sidecar.py --kind grading --file <path> --sources <sources.json>`
+
+**Prerequisites:**
+- `sources.json` (from bibliography agent) MUST exist on disk before this agent runs.
+- Load `sources.json` at the start of Step 1 (Verify Citations); use it as the
+  source of truth for `paper_id`, DOI, PMID, title, and authors. Do NOT re-parse
+  the in-context annotated bibliography for these fields.
+
+**Mode gating:** Emit for every mode listed in
+`scripts/thresholds.SIDECAR_SPECS[mode]` that includes `"grading"`.
+
+**Field mapping:** for each row in the Verified Source Table, emit one
+`gradings[]` entry keyed by `paper_id`:
+
+| Verified Source Table column | JSON field              | Notes                                   |
+|------------------------------|-------------------------|-----------------------------------------|
+| DOI                          | `paper_id`              | Must match a `paper_id` in sources.json |
+| Verified                     | `verification_status`   | VERIFIED / NOT_FOUND / PARTIAL          |
+| Level                        | `evidence_level`        | I-VII enum                              |
+| Tier                         | `t_tier`                | T1-T4 enum (null if N/A)                |
+| Flags                        | `predatory_flag`, `notes` | Predatory list → boolean; other flags → notes |
+| (Scite probe)                | `scite_probe.{retracted, concerns}` | Optional retraction probe record |
+
+**Canonical example entry:**
+
+```json
+{
+  "paper_id": "10.1056/NEJMoa2103695",
+  "evidence_level": "II",
+  "t_tier": "T2",
+  "verification_status": "VERIFIED",
+  "predatory_flag": false,
+  "predatory_evidence": null,
+  "scite_probe": {
+    "probed_at": "2026-05-17T17:34:00Z",
+    "retracted": false,
+    "concerns": null
+  },
+  "notes": "Single-arm Phase II; FDA approval based on this data."
+}
+```
+
+**Validation gate:** Before returning control to the orchestrator, run
+`validate_sidecar.py --kind grading --sources <sources.json>` and confirm
+exit code 0. Predicate **G1** rejects any `paper_id` that does not resolve
+in `sources.json` — this catches drift where a verified paper was silently
+renamed or dropped.
+
 ## Interaction with Other Agents
 
-- **Receives from:** Bibliography agent (annotated bibliography with DOIs, study types, relevance, and Scite reception data from Step 4b when available — reuse rather than re-fetch)
-- **Passes to:** Synthesis agent (verified source table with levels, tiers, flags, spot-check results)
+- **Receives from:** Bibliography agent — via `sources.json` sidecar (ground truth) AND the annotated bibliography rendered to chat (Scite reception data from Step 4b stays in-context; reuse rather than re-fetch)
+- **Passes to:** Synthesis agent — via `grading.json` sidecar AND the verified source table rendered to chat
+- **Sidecar emission:** `grading.json` (see §Output: Sidecar Emission above)
 - **Does NOT:** Search for papers (bibliography agent's job), synthesize findings (synthesis agent's job)
 - **Blocks on:** If >20% of sources are NOT_FOUND, halt and request bibliography agent to re-search
 
@@ -238,5 +298,6 @@ The following scripts support this agent's decisions with deterministic logic:
 
 | Script | Constants/Functions Used | Purpose |
 |--------|------------------------|---------|
-| `scripts/thresholds.py` | `SPOT_CHECK_RATES`, `TIER_ORDER` | Enforce spot-check percentages per topic type and canonical tier ordering |
+| `scripts/thresholds.py` | `SPOT_CHECK_RATES`, `TIER_ORDER`, `sidecar_filename()` | Enforce spot-check percentages per topic type, canonical tier ordering, and sidecar filename convention |
 | `scripts/tier_assigner.py` | `assign_tiers()` | Deterministic T1-T4 assignment from claim type, study design, GRADE certainty, or lab evidence type |
+| `scripts/validate_sidecar.py` | `--kind grading --sources <sources.json>` | Validate `grading.json` against schema + G1-G3 predicates (G1 enforces paper_id join with sources.json) |
