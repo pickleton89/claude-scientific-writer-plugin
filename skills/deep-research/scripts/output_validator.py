@@ -382,9 +382,19 @@ def _check_sidecars(
     advocate block regardless of enforcement mode — that one ALWAYS fails.
     """
     if SidecarValidator is None:
-        result.warnings.append(
-            "Sidecar enforcement skipped — validate_sidecar.py not importable"
+        # Fail closed in 'required' mode — a misconfigured environment must NOT
+        # silently bypass the gate. Advisory mode keeps the soft-fail so debug
+        # runs from a stripped-down venv aren't blocked.
+        msg = (
+            "Sidecar enforcement could not run — validate_sidecar.py not "
+            "importable (likely missing jsonschema in this Python environment). "
+            "Invoke via `uv run skills/deep-research/scripts/validate_sidecar.py` "
+            "or activate a venv with jsonschema installed."
         )
+        if SIDECAR_ENFORCEMENT == "required":
+            result.errors.append(msg)
+        else:
+            result.warnings.append(msg)
         return
 
     required = SIDECAR_SPECS.get(mode, ())

@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#   "jsonschema>=4.20",
+# ]
+# ///
 """Validate Finding JSON against schema and predicates P1-P5, P7 from references/CONTRACTS.md.
 
 Two-stage pattern delegated to `verifier_kit.validate.SchemaValidator`:

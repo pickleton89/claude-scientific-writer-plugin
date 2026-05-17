@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#   "jsonschema>=4.20",
+# ]
+# ///
 """Validate deep-research sidecar artifacts (sources / grading / synthesis / advocate).
 
 Two-stage validation per the shared verifier_kit pattern:

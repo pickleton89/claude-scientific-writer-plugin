@@ -735,9 +735,15 @@ SIDECAR_SPECS: Final[dict[str, tuple[str, ...]]] = {
 }
 
 # Feature flag — compiler enforcement of sidecar presence.
-# v1.x (current minor): "advisory" — missing sidecars emit warnings only.
-# v(1.x+1): flip to "required" — missing sidecars block compiler assembly.
-SIDECAR_ENFORCEMENT: Final[str] = "advisory"  # "advisory" | "required"
+# "required" — missing or invalid sidecars block compiler assembly.
+# "advisory" — missing or invalid sidecars emit warnings only.
+# Flipped from advisory → required after a controlled dry-run validated
+# the end-to-end pipeline (all 4 sidecars present and valid produce zero
+# sidecar errors/warnings; perturbations correctly fire G1, S4, A3, and
+# the always-blocks gate). PEP-723 metadata on validate_sidecar.py +
+# validate_finding.py removed the venv-dependency that would have made
+# "required" mode fragile from non-plugin cwds.
+SIDECAR_ENFORCEMENT: Final[str] = "required"  # "advisory" | "required"
 
 
 def sidecar_filename(mode: str, kind: str, date: str, topic_slug: str) -> str:

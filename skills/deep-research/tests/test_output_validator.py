@@ -677,11 +677,14 @@ class TestSidecarEnforcement:
         assert not any("Sidecar" in e for e in result.errors)
         assert not any("Sidecar" in w for w in result.warnings)
 
-    def test_advisory_warns_on_missing_sidecars(self, tmp_path):
-        """When sidecars are missing under 'advisory' enforcement → warnings, not errors."""
-        from thresholds import SIDECAR_ENFORCEMENT
-        if SIDECAR_ENFORCEMENT != "advisory":
-            pytest.skip("Test assumes advisory enforcement (current default)")
+    def test_advisory_warns_on_missing_sidecars(self, tmp_path, monkeypatch):
+        """Under 'advisory' enforcement → missing sidecars produce warnings, not errors.
+
+        Monkeypatches the module-level constant so the test is independent of
+        the default in thresholds.py.
+        """
+        import output_validator
+        monkeypatch.setattr(output_validator, "SIDECAR_ENFORCEMENT", "advisory")
         md, contract_json = _make_contract_compliant_md("full")
         result = validate_against_contract(
             markdown=md,
@@ -695,6 +698,24 @@ class TestSidecarEnforcement:
         assert not any("Sidecar missing" in e for e in result.errors)
         # Warnings SHOULD include advisory entries
         assert any("Sidecar advisory" in w for w in result.warnings), result.warnings
+
+    def test_required_errors_on_missing_sidecars(self, tmp_path, monkeypatch):
+        """Under 'required' enforcement → missing sidecars produce errors that fail the run."""
+        import output_validator
+        monkeypatch.setattr(output_validator, "SIDECAR_ENFORCEMENT", "required")
+        md, contract_json = _make_contract_compliant_md("full")
+        result = validate_against_contract(
+            markdown=md,
+            contract=contract_json,
+            file_count=1,
+            report_dir=tmp_path,
+            date="2026-05-17",
+            topic_slug="test-topic",
+        )
+        # Errors SHOULD include the missing-sidecar entries
+        assert any("Sidecar missing/invalid" in e for e in result.errors), result.errors
+        # And valid must be False
+        assert result.valid is False
 
     def test_quick_mode_only_requires_two_sidecars(self, tmp_path):
         md, contract_json = _make_contract_compliant_md("quick")
@@ -723,6 +744,37 @@ class TestSidecarEnforcement:
             topic_slug="x",
         )
         assert not any("Sidecar" in e for e in result.errors)
+
+    def test_required_fails_closed_when_validator_unimportable(self, tmp_path, monkeypatch):
+        """If validate_sidecar.py can't be imported (broken env), required mode MUST fail closed.
+
+        Simulates the import failure by setting output_validator.SidecarValidator to None.
+        Required mode should produce an error (not a warning) so a misconfigured
+        environment can never silently bypass the gate.
+        """
+        import output_validator
+        monkeypatch.setattr(output_validator, "SidecarValidator", None)
+        monkeypatch.setattr(output_validator, "SIDECAR_ENFORCEMENT", "required")
+        md, contract_json = _make_contract_compliant_md("full")
+        result = validate_against_contract(
+            markdown=md, contract=contract_json, file_count=1,
+            report_dir=tmp_path, date="2026-05-17", topic_slug="x",
+        )
+        assert any("could not run" in e and "validate_sidecar.py" in e for e in result.errors), result.errors
+        assert result.valid is False
+
+    def test_advisory_warns_when_validator_unimportable(self, tmp_path, monkeypatch):
+        """Same scenario as above but advisory mode: warning, not error."""
+        import output_validator
+        monkeypatch.setattr(output_validator, "SidecarValidator", None)
+        monkeypatch.setattr(output_validator, "SIDECAR_ENFORCEMENT", "advisory")
+        md, contract_json = _make_contract_compliant_md("full")
+        result = validate_against_contract(
+            markdown=md, contract=contract_json, file_count=1,
+            report_dir=tmp_path, date="2026-05-17", topic_slug="x",
+        )
+        assert any("could not run" in w for w in result.warnings), result.warnings
+        assert not any("could not run" in e for e in result.errors), result.errors
 
     def test_open_critical_always_blocks(self, tmp_path):
         """Open CRITICAL advocate finding → assembly blocked even in advisory mode."""

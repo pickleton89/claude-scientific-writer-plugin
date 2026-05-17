@@ -87,12 +87,12 @@ For each required kind (`sources`, `grading`, `synthesis`, `advocate`):
    so cross-sidecar `paper_id` joins are enforced).
 
 3. **Enforcement mode** — read `scripts/thresholds.SIDECAR_ENFORCEMENT`:
-   - `"advisory"` (current default): missing or invalid sidecars emit
-     warnings; assembly proceeds. Used during the v1.x rollout window.
-   - `"required"`: missing or invalid sidecars BLOCK assembly. The compiler
-     surfaces the missing/failing sidecar list to the user and refuses to
-     produce the report until the upstream agent re-runs. This is the
-     post-rollout enforcement level (flip the constant in `thresholds.py`).
+   - `"required"` (current default): missing or invalid sidecars BLOCK
+     assembly. The compiler surfaces the missing/failing sidecar list to the
+     user and refuses to produce the report until the upstream agent re-runs.
+   - `"advisory"`: missing or invalid sidecars emit warnings; assembly
+     proceeds. Available for debugging by editing the constant in
+     `thresholds.py`.
 
 4. **Open CRITICAL findings block assembly** — regardless of enforcement
    mode, if `advocate.json` is present and contains any finding with

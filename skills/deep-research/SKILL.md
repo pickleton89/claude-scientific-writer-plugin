@@ -139,10 +139,11 @@ via `scripts/thresholds.sidecar_filename(mode, kind, date, topic_slug)`.
 | quick | ✓ | ✓ | — | — |
 | socratic | — | — | — | — |
 
-**Enforcement** (`scripts/thresholds.SIDECAR_ENFORCEMENT`): currently
-`"advisory"` — missing sidecars emit warnings. Will flip to `"required"`
-after one minor-version bake-in. Open CRITICAL advocate findings ALWAYS
-block compiler assembly regardless of enforcement mode.
+**Enforcement** (`scripts/thresholds.SIDECAR_ENFORCEMENT`): `"required"` —
+missing or invalid sidecars block compiler assembly. Open CRITICAL advocate
+findings ALWAYS block regardless of enforcement mode (non-negotiable safety
+gate). The `"advisory"` mode (warnings only) remains available for debugging
+by editing the constant.
 
 **Marker on the final report:** the compiler prepends an HTML comment to the
 first line so the verifier can detect pinned runs and switch to diff-mode:
