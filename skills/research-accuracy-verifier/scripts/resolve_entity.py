@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = []
+# ///
 """Thin delegation surface for Stage-6 named-entity sanity checks.
 
 The `entity-resolution` skill (skills/entity-resolution/) is the canonical

@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = []
+# ///
 """Thin wrapper / delegation surface for citation existence checks.
 
 Stage 2 cites this script as the canonical entry point for citation existence

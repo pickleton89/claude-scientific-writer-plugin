@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = []
+# ///
 """Stage-2 journal-volume-year impossibility checker.
 
 Detects citation hallucinations of the form "Journal X, volume V, year Y" where

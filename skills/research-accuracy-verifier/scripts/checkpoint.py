@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#   "jsonschema>=4.20",
+# ]
+# ///
 """Stage-boundary checkpointing for resumable Tier-3 audits.
 
 Multi-hour audits with many MCP calls can exhaust the context window. To make

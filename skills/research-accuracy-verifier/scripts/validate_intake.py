@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#   "jsonschema>=4.20",
+# ]
+# ///
 """Validate intake JSON against schema and business rules.
 
 Two-stage pattern (continue past schema failure so business rules also report):

@@ -296,3 +296,30 @@ Prose:
 - Real-world dry-run / perturbation matrix — gates Phase 3 per plan §7.3.
 
 **Ready for the dry-run audit** (plan §7.3, prerequisite to Phase 3 enforcement flip).
+
+---
+
+### 2026-05-18 — Phase 4: PEP-723 self-bootstrap chore
+
+**Plan ref:** §8 (Phase 4 — PEP-723 self-bootstrap cleanup)
+
+**Decision:** Converted 10 remaining CLI scripts in `skills/research-accuracy-verifier/scripts/` to the PEP-723 inline-metadata pattern. Library-only modules (`thresholds.py`, `_text_norm.py`, `output_contract.py`, `__init__.py`) were deliberately skipped — no CLI entry point, conversion would add noise without benefit. Plan §8.1 listed 15 scripts; 5 of those already had the block from their Phase 1/2 introduction commits.
+
+**Dependency classification:**
+
+- **`jsonschema>=4.20`** — `validate_intake.py` (direct), `validate_audit_report.py` (transitive via `verifier_kit.validate.SchemaValidator`), `checkpoint.py` (transitive via `validate_finding` + `verifier_kit.checkpoint`), `render_report.py` (transitive via `validate_audit_report`).
+- **`dependencies = []`** — `verify_exact_quote.py`, `resolve_citation.py`, `reconcile_references.py`, `scan_acronyms.py`, `check_journal_volume.py`, `resolve_entity.py` (stdlib only).
+
+Transitive deps were chased through sibling imports — `uv run --script foo.py` only installs deps from `foo.py`'s metadata block, not from sibling modules `foo.py` imports, so anything reached via the import graph must be listed in the entry script's block.
+
+**Memory note correction:** The pre-Phase-4 plan memo cited commit `af98f2f` as the "prior PEP-723 conversion" — that commit is actually a SKILL.md docs polish unrelated to this work. The five already-converted scripts had their blocks added at original introduction time (Phase 1 / Phase 2 commits `1005f68` / `b003594`), not in a separate retrofit.
+
+**Rationale:** Phase 4 was deferred to chore status because deep-research had already validated the pattern. The two-line cost per script (shebang + 4-line metadata block) is repaid the first time someone runs a verifier script from a fresh checkout without `pip install jsonschema` working.
+
+**Trade-off:** None functional. The metadata block is invisible to direct `python script.py` invocation (it's a comment) and only activated by `uv run --script`. Adds a small documentation surface to the file head.
+
+**Validation:** Per plan §11.1 — `uv run --script <script>.py --help` returns `rc=0` for all 10 converted scripts. `uv` installs deps on first run and caches them per-script (visible as `Installed 5 packages in 14ms` in the smoke-test output for the four jsonschema-using scripts). The 315-test verifier suite passes unchanged (existing tests bypass the metadata block entirely — they import scripts as modules rather than executing them as scripts).
+
+**Documentation:** New §Script invocation subsection in `skills/research-accuracy-verifier/SKILL.md` (under §Pinned artifacts) documents the convention + conversion template. Single canonical location per plan §8.3.
+
+**Phase 4 COMPLETE — closes the mellow-bumblebee plan.** Outstanding follow-ups carried forward to other tracks: regression-manifest column wiring (plan §11.3), bidirectional marker detection for diff-mode in consuming skills (peer-review, scientific-writing).

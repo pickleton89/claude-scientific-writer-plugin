@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = []
+# ///
 """Stage-5 quote verification: exact-string + whitespace-normalized match.
 
 Pure deterministic check. Returns one of QUOTE_VERIFIED / QUOTE_PARAPHRASED /

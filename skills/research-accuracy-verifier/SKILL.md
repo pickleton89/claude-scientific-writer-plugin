@@ -204,6 +204,30 @@ On any validator failure, loop back to the offending stage. Render via `scripts/
 - **Detail:** [`references/stages/stage_8_synthesis.md`](./references/stages/stage_8_synthesis.md) (self-audit checklist, artifact merge for resumed audits).
 - **Final outputs:** `audit_report.json` + `report.md`.
 
+## Script invocation
+
+All CLI scripts under `scripts/` are PEP-723 self-bootstrapping — they declare their own dependencies inline and run via `uv run --script <path>` from a clean checkout without venv setup. Mirrors the convention used by `skills/deep-research/scripts/`.
+
+```bash
+uv run --script scripts/validate_intake.py intake.json --json
+uv run --script scripts/render_report.py --audit-dir research/audits/<slug>
+```
+
+When adding a new script, prepend the metadata block:
+
+```python
+#!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#   "jsonschema>=4.20",  # only if used directly or via verifier_kit / sibling import
+# ]
+# ///
+"""…"""
+```
+
+Library-only modules (`thresholds.py`, `_text_norm.py`, `output_contract.py`, `__init__.py`) are not converted — they have no CLI entry point.
+
 ## Canonical verdicts and severity matrix
 
 The 10-value verdict enum, the 10×7 Verdict×DocumentType severity matrix, `UNVERIFIED.reason` enum, and the `flag_threshold` modifier are defined in [`references/CONTRACTS.md`](./references/CONTRACTS.md) and consumed by `schemas/severity_matrix.values.json` + `scripts/validate_finding.py`. Severity is **computed**, not assigned — the validator rejects findings whose `severity` does not match the matrix.

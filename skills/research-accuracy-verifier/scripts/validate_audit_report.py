@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#   "jsonschema>=4.20",
+# ]
+# ///
 """Validate an assembled audit_report.json against schema, P8, and R1–R6.
 
 Two-stage pattern delegated to `verifier_kit.validate.SchemaValidator`:

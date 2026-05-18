@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#   "jsonschema>=4.20",
+# ]
+# ///
 """Render an AuditReport (validated against schemas/audit_report.json) to markdown.
 
 Pattern model: skills/peer-review/scripts/calculate_scores.py generate_report().

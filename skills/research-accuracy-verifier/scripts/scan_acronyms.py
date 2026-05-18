@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = []
+# ///
 """Stage-7 acronym scan: detect undefined-on-first-use and expansion drift.
 
 Heuristics:
