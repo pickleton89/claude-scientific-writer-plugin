@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "external_evidence.json",
+  "title": "ExternalEvidence",
+  "description": "Append-only ledger of external tool calls (Scite, PubTator3, OpenAlex, PubMed, Exa, Crossref) made during an audit. Each entry records the canonicalized query, a SHA-256 query_hash for cache lookup, the fetched_at timestamp, and a structured response_digest (≤512 chars). Stages 2-4 route every external call through scripts/external_evidence.lookup_or_fetch so retraction / venue / entity probes are memoized within freshness windows (see thresholds.ARTIFACT_FRESHNESS_DAYS). Validated by scripts/validate_artifact.py --kind external_evidence against schema + predicates E1/E2/E3. Cross-artifact predicate R5 (validate_audit_report.py) enforces that every probe step in audit_report.findings[].verification_path[] has a corresponding ledger entry.",
+  "type": "object",
+  "required": ["schema_version", "metadata", "entries"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["1.0"]
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["audit_slug", "opened_at"],
+      "properties": {
+        "audit_slug": {
+          "type": "string",
+          "minLength": 1
+        },
+        "opened_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the ledger file was first created for this audit. Entries[] are appended chronologically thereafter."
+        }
+      },
+      "additionalProperties": false
+    },
+    "entries": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/Entry" },
+      "description": "Append-only. Entries are added in fetched_at order; E3 emits an advisory warning if any pair is out-of-order."
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "Entry": {
+      "type": "object",
+      "required": [
+        "id",
+        "tool",
+        "method",
+        "query_hash",
+        "query_params",
+        "fetched_at",
+        "response_digest"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^E\\d{4,}$",
+          "description": "Sequential per-audit ID, zero-padded to at least 4 digits (E0001, E0002, ...)."
+        },
+        "tool": {
+          "type": "string",
+          "enum": ["scite", "pubtator3", "openalex", "pubmed", "exa", "crossref"],
+          "description": "Source tool the call routed through. Mirrors keys of thresholds.ARTIFACT_FRESHNESS_DAYS."
+        },
+        "method": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Tool-specific method label (e.g. 'scite_context', 'pubtator3_entity_check', 'openalex_venue_quality'). R5 uses this to match verification_path[] steps to ledger entries."
+        },
+        "query_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "SHA-256 hex (lowercase) of canonicalized query_params (sorted keys, lowercase string values, JSON serialization). Drives cache lookup."
+        },
+        "query_params": {
+          "type": "object",
+          "description": "Free-form per-tool params (doi, pmid, query string, etc.). Stored verbatim for diagnostic readability; the cache key is query_hash, not this field."
+        },
+        "paper_id": {
+          "type": ["string", "null"],
+          "description": "DOI-preferred join key when the call is paper-scoped (matches resolved_sources.sources[].paper_id). Null for non-paper calls (e.g. free-text Exa search)."
+        },
+        "fetched_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO-8601 timestamp of the actual tool call (not of cache reuse). TTL comparison in lookup_or_fetch uses this field."
+        },
+        "response_digest": {
+          "type": "string",
+          "maxLength": 512,
+          "description": "Structured summary of the tool response, capped at 512 chars. Per-tool conventions documented in stage prose. Not the raw response body."
+        },
+        "consumed_by_findings": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Finding IDs (claim_inventory.json items[].id format) that reused this entry. Populated via external_evidence.record_consumption as stages reuse cached probes."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

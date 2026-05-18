@@ -106,7 +106,7 @@ R3 (Finding.citations[].key resolves in reference_map). When `reference_map.json
 
 R4 (Finding.claim_verbatim matches document at location). When `document_inventory.json` AND the normalized document text are supplied, every `findings[].claim_verbatim` MUST appear as a substring of the paragraph addressed by `findings[].location.{section, paragraph}` (after QuoteVerifier whitespace + unicode normalization).
 
-R5 (reserved for Phase 2 — external-evidence ledger consistency).
+R5 (verification_path probes have matching external-evidence ledger entries). When `external_evidence.json` is supplied, every `findings[].verification_path[]` step whose `method` is a ledger-routed method (`scite_context`, `pubtator3_entity_check`) MUST have a matching `external_evidence.entries[]` row with the same `(tool, paper_id)`. Method → tool mapping lives in `validate_audit_report._LEDGER_METHODS`. Failure mode: probe text was hallucinated rather than executed via `external_evidence.lookup_or_fetch`.
 
 R6 (verification_matrix[].claim_id resolves in claim_inventory). When `claim_inventory.json` is supplied, every `verification_matrix[].claim_id` MUST equal some `items[].id`.
 

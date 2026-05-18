@@ -216,3 +216,83 @@ Six issues surfaced by `/fresh-eyes`; all addressed before `/ship`:
 - `ruff check` clean across all scripts.
 - Full verifier test suite: 265/265 pass.
 - End-to-end CLI on minimal fixture: `VALID (enforcement=advisory, P8: n/a, R1:pass R2:pass R3:pass R4:pass R6:pass)`.
+
+### 2026-05-18 — Phase 2 implementation (external-evidence ledger + R5)
+
+**Plan ref:** §6 (Phase 2).
+
+**Decisions diverging from / extending the plan:**
+
+1. **Cache key includes `paper_id` scope** (plan implied only `query_hash`).
+   - `lookup_or_fetch` matches `(tool, query_hash, paper_id)` together, not just `(tool, query_hash)`.
+   - **Why:** the same `query_params` may return paper-scoped vs free-text data depending on whether `paper_id` is set. Conflating the two would surface false cache hits.
+   - **Trade-off:** a tool called twice with the same query but different `paper_id` scopes produces two ledger entries (correct but slightly more storage).
+
+2. **`canonicalize_query` lowercases string VALUES only, not keys.**
+   - Considered lowercasing keys too. Decided against: API param names (`PMID` vs `pmid`) are case-sensitive at the tool layer; the same caller will reliably pass the same key convention, so key case isn't a real cache-miss risk. Value case (DOI casing) is the realistic case-insensitive axis.
+   - Documented inline.
+
+3. **E3 sort-order check is advisory-only** (plan §6.5 marked it `(advisory)`).
+   - Append-only writes via `lookup_or_fetch` produce sorted ledgers by construction. Out-of-order entries imply manual edit or clock skew — worth flagging, not blocking. Matches user's pre-impl choice.
+
+4. **`_LEDGER_METHODS` registry hard-coded in `validate_audit_report.py`** (instead of `thresholds.py`).
+   - Considered colocating with `ARTIFACT_FRESHNESS_DAYS`. Decided to keep the method→tool mapping next to its sole consumer (R5) to avoid coupling the runtime helper (`external_evidence.py`) to the predicate's concept of "ledger-routed methods". Matches user's pre-impl choice.
+   - Two entries land in Phase 2: `scite_context → scite`, `pubtator3_entity_check → pubtator3`. The `verification_path[].method` enum in `schemas/finding.json` already includes both — no schema change needed.
+   - Future ledger methods (e.g., a hypothetical `openalex_venue_quality`) will need: enum addition + `_LEDGER_METHODS` entry + `ARTIFACT_FRESHNESS_DAYS` entry. Documented in predicates.md §R5.
+
+5. **`external_evidence.py` is library-only** (no CLI).
+   - Plan §6.2 didn't specify a CLI; matches user's pre-impl choice. Stages 2-4 import the helper directly. A future debugging CLI (`external_evidence.py list --slug X`) is a candidate follow-up.
+
+6. **`R5` uses set-membership matching** (any of a finding's `evidence[].paper_id`s matches a ledger entry → R5 passes for that step).
+   - A finding can carry multiple `evidence[]` entries with different `paper_id`s (e.g., a cross-paper alignment finding). R5 fires only if NONE of them have a matching ledger row for the probe's tool.
+   - **Trade-off:** could miss a partial-probe-coverage case (probe ran for paper A but not paper B in the same finding). Acceptable for Phase 2 — the alternative (per-`paper_id` enforcement) would over-fire on legitimate cross-paper findings.
+
+7. **`record_consumption` is idempotent and silent on missing entries** (returns `False`, doesn't raise).
+   - Not in plan §6.2 — added because stages may attempt to record consumption against a stale entry_id if the ledger was rewritten. Silent-no-op is safer than raising.
+
+8. **Fixture ledger added at `tests/fixtures/audit_minimal/external_evidence.json`.**
+   - The existing fixture's `audit_report.json` has a `scite_context` step against `paper_id=10.1126/science.1258096`. The new ledger ships one E0001 entry that matches it so the happy-path suite still prints VALID on all six R-predicates.
+
+**Test deltas (+33 net):**
+- `tests/test_external_evidence.py` — 21 new (canonicalize / lookup_or_fetch / record_consumption).
+- `tests/test_validate_artifact.py` — +6 (TestExternalEvidence{HappyPath:1, E1:1, E2:2, E3:2}).
+- `tests/test_validate_audit_report.py` — +5 (TestR5ExternalEvidenceLedger × 5) + 1 (TestRequiredModeFlip.test_required_mode_promotes_r5_to_error).
+- Phase 1 + Phase 2 total: **298 passed**.
+
+**End-to-end CLI on `tests/fixtures/audit_minimal/`:**
+
+```
+audit_report.json: VALID (enforcement=advisory, P8: n/a, R1:pass R2:pass R3:pass R4:pass R5:pass R6:pass)
+```
+
+**New file inventory (Phase 2):**
+
+Schemas:
+- `schemas/external_evidence.json`
+
+Scripts:
+- `scripts/external_evidence.py` — `lookup_or_fetch`, `record_consumption`, `canonicalize_query`, `query_hash`
+- `scripts/validate_artifact.py` — `_external_evidence_predicates` (E1-E3); dropped Phase-1 `NotImplementedError` gate; docstring updated
+- `scripts/validate_audit_report.py` — `_run_r5`, `_LEDGER_METHODS`, `--external-evidence` CLI flag, R5 added to `_R_PREDICATES`
+
+Tests:
+- `tests/test_external_evidence.py` (21 tests)
+- `tests/test_validate_artifact.py` — +TestExternalEvidence{HappyPath,E1,E2,E3} (7 tests)
+- `tests/test_validate_audit_report.py` — +TestR5ExternalEvidenceLedger (5 tests) + R5 case in TestRequiredModeFlip
+
+Fixtures:
+- `tests/fixtures/audit_minimal/external_evidence.json` — 1 entry matching the fixture's scite_context probe
+
+Prose:
+- `SKILL.md` §Pinned artifacts — ledger row promoted from "deferred" to "Stage 2+ append-only"; predicate list updated to include E1-E3
+- `references/CONTRACTS.md` §Cross-artifact predicates — R5 prose fleshed out (was "reserved for Phase 2")
+- `references/predicates.md` — new §R5 section + §Ledger predicates (E1-E3) section
+- `references/stages/stage_2_citation_existence.md` — new §Route Scite + OpenAlex probes through the external-evidence ledger
+- `references/stages/stage_3_alignment.md` — new §Route PubTator3 entity-check through the external-evidence ledger
+- `references/stages/stage_4_uncited.md` — Stage 4 §Cherry-picking finding emitted updated to route through `lookup_or_fetch` (memoization payoff inline)
+
+**Phase 2 deferred (in plan but not landed):**
+- E4 cross-artifact (`consumed_by_findings[]` ↔ finding IDs) — explicitly deferred per plan §6.5 to "R5's territory"; not implemented because R5 currently checks the inverse direction (verification_path → ledger), not (ledger → findings). Could land in Phase 3 as a paired check if dry-run shows orphaned consumption records.
+- Real-world dry-run / perturbation matrix — gates Phase 3 per plan §7.3.
+
+**Ready for the dry-run audit** (plan §7.3, prerequisite to Phase 3 enforcement flip).

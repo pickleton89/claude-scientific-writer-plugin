@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "metadata": {
+    "audit_slug": "audit_minimal",
+    "opened_at": "2026-05-18T10:00:00Z"
+  },
+  "entries": [
+    {
+      "id": "E0001",
+      "tool": "scite",
+      "method": "scite_context",
+      "query_hash": "1531fc8b8195948dbdfb51e09547ca29bee826ad617684dd6b9b3c5f16119bce",
+      "query_params": { "doi": "10.1126/science.1258096" },
+      "paper_id": "10.1126/science.1258096",
+      "fetched_at": "2026-05-18T10:00:05Z",
+      "response_digest": "editorialNotices: none (Scite returned no record for DOI)",
+      "consumed_by_findings": []
+    }
+  ]
+}

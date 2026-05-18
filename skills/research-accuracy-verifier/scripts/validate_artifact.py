@@ -44,7 +44,11 @@ Predicates by kind:
         finding, not a resolved entry.
 
   external_evidence.json
-    (Phase 2 — predicates E1-E3 land with the ledger.)
+    E1. Every entries[].id is unique.
+    E2. Every entries[].query_hash is a well-formed lowercase 64-char SHA-256
+        hex string.
+    E3. (advisory) Every entries[].fetched_at is parseable ISO-8601, not in
+        the future, and entries[] is sorted ascending by fetched_at.
 
 Usage:
     uv run python validate_artifact.py --kind document_inventory --file PATH
@@ -77,13 +81,14 @@ KIND_TO_SCHEMA = {
     "document_inventory": "document_inventory.json",
     "reference_map": "reference_map.json",
     "resolved_sources": "resolved_sources.json",
-    "external_evidence": "external_evidence.json",  # Phase 2 (schema not yet present)
+    "external_evidence": "external_evidence.json",
 }
 
 _DOI_RE = re.compile(r"^10\.\d{4,9}/[-._;()/:A-Z0-9]+$", re.IGNORECASE)
 _PMID_RE = re.compile(r"^\d{1,9}$")
 _PMCID_RE = re.compile(r"^PMC\d+$", re.IGNORECASE)
 _OVERRIDE_PATH_RE = re.compile(r"^(sections|paragraphs)\[(\d+)\](?:\.(\w+))?$")
+_SHA256_HEX_RE = re.compile(r"^[0-9a-f]{64}$")
 
 
 def _parse_iso8601(s: str) -> datetime | None:
@@ -105,15 +110,7 @@ class ArtifactValidator(SchemaValidator):
         self.kind = kind
         base = Path(__file__).resolve().parent.parent / "schemas"
         resolved = schema_path if schema_path else base / KIND_TO_SCHEMA[kind]
-        # external_evidence schema lands in Phase 2; give a clear error if a
-        # Phase-1 caller tries to instantiate this validator before then.
         if not resolved.exists():
-            if kind == "external_evidence":
-                raise NotImplementedError(
-                    "external_evidence artifact validation is not implemented in "
-                    "Phase 1. Schema lands in Phase 2 (external-evidence ledger). "
-                    f"Expected schema at {resolved}."
-                )
             raise FileNotFoundError(
                 f"Schema not found for kind={kind!r}: {resolved}"
             )
@@ -133,7 +130,8 @@ class ArtifactValidator(SchemaValidator):
             self._reference_map_predicates(record, errors, warnings)
         elif self.kind == "resolved_sources":
             self._resolved_sources_predicates(record, errors, warnings)
-        # external_evidence predicates land in Phase 2.
+        elif self.kind == "external_evidence":
+            self._external_evidence_predicates(record, errors, warnings)
 
     # ── document_inventory ────────────────────────────────────────────────
     def _document_inventory_predicates(
@@ -370,6 +368,67 @@ class ArtifactValidator(SchemaValidator):
                     f"resolved source?"
                 )
 
+    # ── external_evidence ────────────────────────────────────────────────
+    def _external_evidence_predicates(
+        self, record: dict[str, Any], errors: list[str], warnings: list[str]
+    ) -> None:
+        entries = record.get("entries") or []
+
+        # E1: unique entry ids.
+        seen: dict[str, int] = {}
+        for i, e in enumerate(entries):
+            eid = e.get("id")
+            if not eid:
+                continue
+            if eid in seen:
+                errors.append(
+                    f"E1: duplicate entries[].id {eid!r} at entries[{i}] "
+                    f"(first at entries[{seen[eid]}])"
+                )
+            else:
+                seen[eid] = i
+
+        # E2: query_hash well-formed SHA-256 hex.
+        for i, e in enumerate(entries):
+            qh = e.get("query_hash")
+            if qh is None:
+                continue
+            if not (isinstance(qh, str) and _SHA256_HEX_RE.match(qh)):
+                errors.append(
+                    f"E2: entries[{i}].query_hash={qh!r} is not a 64-char "
+                    f"lowercase SHA-256 hex string"
+                )
+
+        # E3: fetched_at parseable + not in future; entries sorted ascending
+        # by fetched_at (advisory).
+        now = datetime.now(timezone.utc)
+        prev_ts: datetime | None = None
+        unsorted_flagged = False
+        for i, e in enumerate(entries):
+            fa = e.get("fetched_at")
+            if not fa:
+                continue
+            ts = _parse_iso8601(fa)
+            if ts is None:
+                errors.append(
+                    f"E3: entries[{i}].fetched_at={fa!r} is not parseable ISO-8601"
+                )
+                continue
+            if ts.tzinfo is None:
+                ts = ts.replace(tzinfo=timezone.utc)
+            if ts > now:
+                errors.append(
+                    f"E3: entries[{i}].fetched_at={fa!r} is in the future"
+                )
+            if prev_ts is not None and ts < prev_ts and not unsorted_flagged:
+                warnings.append(
+                    f"E3 advisory: entries[{i}].fetched_at={fa!r} is earlier "
+                    f"than the prior entry — ledger should be append-only and "
+                    f"chronological"
+                )
+                unsorted_flagged = True
+            prev_ts = ts
+
 
 # ---------------------------------------------------------------------------
 # CLI
@@ -406,7 +465,7 @@ def main() -> None:
         validator = ArtifactValidator(
             args.kind, Path(args.schema) if args.schema else None
         )
-    except (ValueError, FileNotFoundError, NotImplementedError) as e:
+    except (ValueError, FileNotFoundError) as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(2)
 

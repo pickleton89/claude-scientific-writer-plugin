@@ -85,3 +85,16 @@ In addition to the per-stage findings artifact, Stage 2 emits the **canonical re
 6. Validate the emitted artifact via `scripts/validate_artifact.py --kind resolved_sources --file PATH`. Predicates S1 (unique paper_id), S2 (at least one identifier), S4 (frozen_at not in future), V1 (fetched_at parseable + not in future), V2 (at least one non-UNVERIFIED outcome) gate the write.
 
 These artifacts power the cross-artifact predicates R2 (evidence paper_id resolution) and R3 (citation key resolution) in `validate_audit_report.py` — see [`../predicates.md`](../predicates.md).
+
+## Route Scite + OpenAlex probes through the external-evidence ledger
+
+Every Scite `editorialNotices` probe and OpenAlex `check_venue_quality` call MUST be routed through `scripts/external_evidence.lookup_or_fetch(ledger_path, tool, method, query_params, paper_id, fetcher, freshness_days=None)` so probes are memoized within their per-tool TTL (`thresholds.ARTIFACT_FRESHNESS_DAYS`: scite 7d, openalex 30d). Two payoffs:
+
+1. **Resume cost** — a compaction-recovery re-entry into Stage 2 does NOT re-fetch already-probed papers (probe state lives on disk).
+2. **Stage 4 memoization** — the Tier-3 cherry-picking sweep (Stage 4) reuses the Stage-2 Scite entry for the same paper_id instead of re-calling Scite (see [`stage_4_uncited.md`](./stage_4_uncited.md)).
+
+The `verification_path[]` entry recorded against the finding is unchanged in shape — but the `result_summary` text now reflects either the live or cached digest (`lookup_or_fetch` returns `(digest, was_cached)`). The corresponding ledger row is the audit trail; R5 (validate_audit_report.py) confirms that every `scite_context` step in `verification_path[]` has a matching ledger entry with the same `(tool, paper_id)` — a missing entry indicates a hallucinated probe.
+
+**Digest convention (important):** because the cache key is `(tool, query_hash, paper_id)` — `method` is NOT part of the key — Stage 2's `editorialNotices` probe and Stage 4's cherry-picking tally on the same DOI will share a single ledger row (they hit the same `mcp__scite__search_literature` call). The first caller's `response_digest` is what subsequent callers read back. So Stage-2's fetcher MUST serialize a **structured digest** that includes BOTH the `editorialNotices` field AND the citation tally (`supporting`, `contrasting`, `mentioning`) — for example `{"editorialNotices": "none", "supporting": 12, "contrasting": 3, "mentioning": 5}` — so Stage 4 can parse the USI from the cached row. A digest that drops Stage-4's fields will break the cherry-picking sweep when it cache-hits.
+
+Validate the ledger via `scripts/validate_artifact.py --kind external_evidence --file PATH`. Predicates E1 (unique entries[].id), E2 (well-formed SHA-256 query_hash), E3 (fetched_at parseable + not in future, chronological — advisory).

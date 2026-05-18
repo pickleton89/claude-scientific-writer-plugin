@@ -69,7 +69,17 @@ P8_DOMAINS = {"biomedical", "mixed"}
 _USI_RE = re.compile(r"USI\s*=", re.IGNORECASE)
 
 # R-predicate identifiers, used to prefix advisory warnings vs errors.
-_R_PREDICATES = ("R1", "R2", "R3", "R4", "R6")
+_R_PREDICATES = ("R1", "R2", "R3", "R4", "R5", "R6")
+
+# Mapping of verification_path[].method values to external-evidence
+# ledger tool names. A finding whose verification_path[] contains one of
+# these methods MUST (per R5) have a matching ledger entry with the same
+# (tool, paper_id). Keep in sync with schemas/finding.json verification_path
+# method enum and thresholds.ARTIFACT_FRESHNESS_DAYS.
+_LEDGER_METHODS: dict[str, str] = {
+    "scite_context": "scite",
+    "pubtator3_entity_check": "pubtator3",
+}
 
 
 def _p8_active(intake: dict[str, Any]) -> bool:
@@ -130,7 +140,7 @@ def _caveat_covers_claim(caveats: list[Any], claim_id: str) -> bool:
 
 
 class AuditReportValidator(SchemaValidator):
-    """Validate audit_report.json with schema + predicate P8 + R1–R4/R6."""
+    """Validate audit_report.json with schema + predicate P8 + R1–R6."""
 
     def __init__(self, schema_path: str | None = None) -> None:
         base = Path(__file__).parent.parent / "schemas"
@@ -162,6 +172,7 @@ class AuditReportValidator(SchemaValidator):
         self._run_r2(record, intake, artifacts, r_bucket, warnings)
         self._run_r3(record, artifacts, r_bucket, warnings)
         self._run_r4(record, artifacts, document_text, r_bucket, warnings)
+        self._run_r5(record, artifacts, r_bucket, warnings)
         self._run_r6(record, artifacts, r_bucket, warnings)
 
     def validate(  # type: ignore[override]
@@ -416,6 +427,64 @@ class AuditReportValidator(SchemaValidator):
                     f"overlap={mr.overlap_ratio})"
                 )
 
+    # ── R5 ────────────────────────────────────────────────────────────────
+    def _run_r5(
+        self,
+        record: dict[str, Any],
+        artifacts: dict[str, Any],
+        bucket: list[str],
+        warnings: list[str],
+    ) -> None:
+        """For every finding whose verification_path[] mentions a
+        ledger-routed method (Scite/PubTator3/...), confirm that
+        external_evidence.json has a matching entry with the same
+        (tool, paper_id). Failure mode: probe text was hallucinated rather
+        than executed.
+        """
+        ee = artifacts.get("external_evidence")
+        if ee is None:
+            warnings.append(
+                "R5 skipped: external_evidence.json not provided to validator"
+            )
+            return
+        # Index ledger by (tool, paper_id) for O(1) probe-match lookup.
+        ledger_keys: set[tuple[str, str | None]] = set()
+        for entry in ee.get("entries") or []:
+            if not isinstance(entry, dict):
+                continue
+            tool = entry.get("tool")
+            pid = entry.get("paper_id")
+            if isinstance(tool, str):
+                ledger_keys.add((tool, pid or None))
+
+        for f in record.get("findings") or []:
+            if not isinstance(f, dict):
+                continue
+            fid = f.get("id")
+            # Collect paper_ids from this finding's evidence[].
+            paper_ids: set[str | None] = set()
+            for e in f.get("evidence") or []:
+                if isinstance(e, dict):
+                    paper_ids.add(e.get("paper_id") or None)
+            for step in f.get("verification_path") or []:
+                if not isinstance(step, dict):
+                    continue
+                method = step.get("method")
+                tool = _LEDGER_METHODS.get(method) if isinstance(method, str) else None
+                if tool is None:
+                    continue
+                # Match if ANY of the finding's evidence paper_ids has a
+                # ledger entry for this tool. If none do, fire R5.
+                matched = any((tool, pid) in ledger_keys for pid in paper_ids)
+                if not matched:
+                    bucket.append(
+                        f"R5: findings[id={fid!r}].verification_path step "
+                        f"method={method!r} has no matching "
+                        f"external_evidence.entries[] entry "
+                        f"(tool={tool!r}, paper_id ∈ {sorted(p for p in paper_ids if p) or '<none>'}) — "
+                        f"probe text may have been hallucinated rather than executed"
+                    )
+
     # ── R6 ────────────────────────────────────────────────────────────────
     def _run_r6(
         self,
@@ -476,7 +545,7 @@ def run_r_predicates(
     artifacts: dict[str, dict[str, Any]] | None = None,
     document_text: str | None = None,
 ) -> tuple[dict[str, str], list[str], list[str]]:
-    """Run R1–R4 + R6 without schema validation.
+    """Run R1–R6 without schema validation.
 
     Returns
     -------
@@ -517,7 +586,7 @@ def run_r_predicates(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Validate an audit_report.json (schema + P8 + R1–R4/R6)."
+        description="Validate an audit_report.json (schema + P8 + R1–R6)."
     )
     parser.add_argument("report_file", help="Path to audit_report.json")
     parser.add_argument(
@@ -546,6 +615,11 @@ def main() -> None:
         "--document",
         help="Path to the document text (or <document>-wrapped file). Enables R4 paragraph-text substring check.",
     )
+    parser.add_argument(
+        "--external-evidence",
+        dest="external_evidence",
+        help="Path to external_evidence.json (enables R5 — ledger probe ↔ verification_path[] consistency).",
+    )
     parser.add_argument("--json", action="store_true", help="Emit JSON result")
     args = parser.parse_args()
 
@@ -567,6 +641,7 @@ def main() -> None:
         ("reference_map", args.reference_map),
         ("resolved_sources", args.resolved_sources),
         ("document_inventory", args.document_inventory),
+        ("external_evidence", args.external_evidence),
     ]:
         if path_arg:
             p = Path(path_arg)

@@ -242,6 +242,85 @@ class TestResolvedSourcesV2:
 
 
 # ---------------------------------------------------------------------------
+# external_evidence
+# ---------------------------------------------------------------------------
+
+
+class TestExternalEvidenceHappyPath:
+    def test_valid_fixture(self) -> None:
+        v = ArtifactValidator("external_evidence")
+        ok, errs, warns = v.validate(_load("external_evidence.json"))
+        assert ok, f"errors: {errs}"
+        assert errs == []
+
+
+class TestExternalEvidenceE1:
+    """E1: entries[].id is unique."""
+
+    def test_duplicate_id_fails(self) -> None:
+        rec = _load("external_evidence.json")
+        dup = copy.deepcopy(rec["entries"][0])
+        dup["fetched_at"] = "2026-05-18T10:01:00Z"
+        rec["entries"].append(dup)
+        v = ArtifactValidator("external_evidence")
+        ok, errs, _ = v.validate(rec)
+        assert not ok
+        assert any(e.startswith("E1:") for e in errs)
+
+
+class TestExternalEvidenceE2:
+    """E2: query_hash must be 64-char lowercase SHA-256 hex."""
+
+    def test_uppercase_hash_fails_schema(self) -> None:
+        rec = _load("external_evidence.json")
+        rec["entries"][0]["query_hash"] = (
+            "ABCD" + rec["entries"][0]["query_hash"][4:]
+        )
+        v = ArtifactValidator("external_evidence")
+        ok, errs, _ = v.validate(rec)
+        assert not ok
+        # Stage 1 schema catches uppercase via the regex pattern.
+        assert any("query_hash" in e for e in errs)
+
+    def test_short_hash_caught_by_predicate(self) -> None:
+        # Bypass schema by patching post-load via the predicate runner.
+        rec = _load("external_evidence.json")
+        rec["entries"][0]["query_hash"] = "deadbeef"
+        v = ArtifactValidator("external_evidence")
+        ok, errs, _ = v.validate(rec)
+        assert not ok
+        # Either schema or E2 surfaces — both acceptable; we just want
+        # the validator to refuse.
+        assert any("query_hash" in e or e.startswith("E2:") for e in errs)
+
+
+class TestExternalEvidenceE3:
+    """E3: fetched_at parseable + not in future; ordering is advisory."""
+
+    def test_future_fetched_at_fails(self) -> None:
+        rec = _load("external_evidence.json")
+        rec["entries"][0]["fetched_at"] = "2099-01-01T00:00:00Z"
+        v = ArtifactValidator("external_evidence")
+        ok, errs, _ = v.validate(rec)
+        assert not ok
+        assert any(e.startswith("E3:") and "future" in e for e in errs)
+
+    def test_out_of_order_is_advisory(self) -> None:
+        rec = _load("external_evidence.json")
+        e1 = copy.deepcopy(rec["entries"][0])
+        e1["id"] = "E0002"
+        e1["query_hash"] = "f" * 64
+        # Earlier than the prior entry → unsorted.
+        e1["fetched_at"] = "2026-05-18T09:00:00Z"
+        rec["entries"].append(e1)
+        v = ArtifactValidator("external_evidence")
+        ok, errs, warns = v.validate(rec)
+        # Schema is fine; predicate emits advisory warning only.
+        assert ok, f"errors: {errs}"
+        assert any(w.startswith("E3 advisory:") for w in warns)
+
+
+# ---------------------------------------------------------------------------
 # Constructor edge cases
 # ---------------------------------------------------------------------------
 

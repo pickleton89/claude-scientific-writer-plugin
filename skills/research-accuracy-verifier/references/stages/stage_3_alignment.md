@@ -40,6 +40,12 @@ These distinguish *how to repair* a flagged claim — no new vocabulary:
 
 Cherry-picking — where the cite-claim pair itself is verified but the document selectively suppressed contradicting literature — is **not** a Stage 3 concern (the cited source genuinely supports the claim) and is handled in [Stage 4](./stage_4_uncited.md).
 
+## Route PubTator3 entity-check through the external-evidence ledger
+
+The pre-filter call described above (`pubtator3.py annotations --pmids <PMID>`) MUST be routed through `scripts/external_evidence.lookup_or_fetch(ledger_path, tool="pubtator3", method="pubtator3_entity_check", query_params={"pmid": <PMID>}, paper_id=<paper_id>, fetcher, freshness_days=None)`. The 7-day TTL (`thresholds.ARTIFACT_FRESHNESS_DAYS["pubtator3"]`) reuses the entity tally across findings that cite the same paper.
+
+The `verification_path[]` entry retains its existing shape (`method: "pubtator3_entity_check"`, `tool: "pubtator3"`, `result_summary: <entity_tally_digest>`). R5 (validate_audit_report.py) cross-checks that this step has a matching ledger entry — a missing entry indicates the entity tally was fabricated.
+
 ## On stage completion
 
 Persist via `checkpoint.py write --stage 3` (same shape as Stage 2).

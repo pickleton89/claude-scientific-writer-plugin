@@ -445,6 +445,7 @@ class TestRPredicatesHappyPath:
             "reference_map": _fix("reference_map.json"),
             "resolved_sources": _fix("resolved_sources.json"),
             "document_inventory": _fix("document_inventory.json"),
+            "external_evidence": _fix("external_evidence.json"),
         }
         v = AuditReportValidator()
         ok, errors, warnings = v.validate(
@@ -452,7 +453,10 @@ class TestRPredicatesHappyPath:
         )
         assert ok, f"errors: {errors}, warnings: {warnings}"
         # No R: errors and no R: skipped warnings (all artifacts supplied).
-        assert not any(e.startswith(("R1:", "R2:", "R3:", "R4:", "R6:")) for e in errors)
+        assert not any(
+            e.startswith(("R1:", "R2:", "R3:", "R4:", "R5:", "R6:"))
+            for e in errors
+        )
         assert not any("skipped:" in w for w in warnings)
 
 
@@ -561,6 +565,85 @@ class TestR4ClaimVerbatimMatchesDocument:
         assert any(w.startswith("R4 skipped:") for w in warnings)
 
 
+class TestR5ExternalEvidenceLedger:
+    """R5: every verification_path step with a ledger-routed method MUST have a
+    matching external_evidence.json entry with (tool, paper_id)."""
+
+    def test_failure_when_probe_has_no_ledger_entry(self) -> None:
+        report = _fix("audit_report.json")
+        intake = _fix("intake.json")
+        ee = _fix("external_evidence.json")
+        # Drop all ledger entries — the fixture has a scite_context step that
+        # will no longer have a match.
+        ee["entries"] = []
+        v = AuditReportValidator()
+        ok, errors, warnings = v.validate(
+            report, intake, artifacts={"external_evidence": ee}
+        )
+        assert ok  # advisory mode
+        assert any(w.startswith("R5:") for w in warnings)
+
+    def test_failure_when_ledger_paper_id_mismatches(self) -> None:
+        report = _fix("audit_report.json")
+        intake = _fix("intake.json")
+        ee = _fix("external_evidence.json")
+        # Same tool, wrong paper_id → R5 fires.
+        ee["entries"][0]["paper_id"] = "10.1/somewhere-else"
+        v = AuditReportValidator()
+        ok, errors, warnings = v.validate(
+            report, intake, artifacts={"external_evidence": ee}
+        )
+        assert ok
+        assert any(w.startswith("R5:") for w in warnings)
+
+    def test_passes_when_ledger_has_matching_entry(self) -> None:
+        report = _fix("audit_report.json")
+        intake = _fix("intake.json")
+        ee = _fix("external_evidence.json")
+        v = AuditReportValidator()
+        ok, errors, warnings = v.validate(
+            report, intake, artifacts={"external_evidence": ee}
+        )
+        assert ok
+        assert not any(w.startswith("R5:") for w in warnings)
+        assert not any(w.startswith("R5 skipped:") for w in warnings)
+
+    def test_skipped_when_ledger_missing(self) -> None:
+        report = _fix("audit_report.json")
+        intake = _fix("intake.json")
+        v = AuditReportValidator()
+        ok, errors, warnings = v.validate(report, intake, artifacts={})
+        assert ok
+        assert any(w.startswith("R5 skipped:") for w in warnings)
+
+    def test_non_ledger_methods_dont_require_entry(self) -> None:
+        """A finding with only doi_lookup / exact_quote_match in its
+        verification_path must not trigger R5."""
+        report = _fix("audit_report.json")
+        intake = _fix("intake.json")
+        ee = _fix("external_evidence.json")
+        ee["entries"] = []
+        # Strip the scite_context step from every finding.
+        for f in report["findings"]:
+            f["verification_path"] = [
+                s for s in f["verification_path"]
+                if s.get("method") not in {"scite_context", "pubtator3_entity_check"}
+            ]
+            # verification_path schema requires minItems: 1 — ensure at least one.
+            if not f["verification_path"]:
+                f["verification_path"] = [{
+                    "method": "doi_lookup",
+                    "tool": "Crossref",
+                    "result_summary": "ok",
+                }]
+        v = AuditReportValidator()
+        ok, errors, warnings = v.validate(
+            report, intake, artifacts={"external_evidence": ee}
+        )
+        assert ok
+        assert not any(w.startswith("R5:") for w in warnings)
+
+
 class TestR6MatrixClaimIdResolves:
     def test_failure_when_matrix_claim_dangling(self) -> None:
         report = _fix("audit_report.json")
@@ -611,3 +694,19 @@ class TestRequiredModeFlip:
         )
         assert not ok
         assert any(e.startswith("R1:") for e in errors)
+
+    def test_required_mode_promotes_r5_to_error(self) -> None:
+        import thresholds, validate_audit_report, importlib
+        thresholds.ARTIFACT_ENFORCEMENT = "required"
+        importlib.reload(validate_audit_report)
+        from validate_audit_report import AuditReportValidator as V
+
+        report = _fix("audit_report.json")
+        intake = _fix("intake.json")
+        ee = _fix("external_evidence.json")
+        ee["entries"] = []  # forces R5 to fire on the fixture's scite probe
+        ok, errors, warnings = V().validate(
+            report, intake, artifacts={"external_evidence": ee}
+        )
+        assert not ok
+        assert any(e.startswith("R5:") for e in errors)

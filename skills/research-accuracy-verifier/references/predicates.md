@@ -115,7 +115,23 @@ When `claim_inventory.json` is supplied, every `verification_matrix[].claim_id` 
 - **Fix:** same as R1 — ensure matrix claim IDs are drawn from the inventory.
 - **Skipped when:** `claim_inventory.json` is not supplied.
 
-(R5 is reserved for Phase 2 — external-evidence ledger consistency.)
+## R5 — verification_path probes have matching external-evidence ledger entries
+
+When `external_evidence.json` is supplied, every `findings[].verification_path[]` step whose `method` is one of the **ledger-routed methods** (`scite_context`, `pubtator3_entity_check`) MUST have a matching `external_evidence.entries[]` row with the same `(tool, paper_id)` — where `tool` is derived from `method` per the `_LEDGER_METHODS` registry in `validate_audit_report.py` (`scite_context → scite`, `pubtator3_entity_check → pubtator3`) and `paper_id` is drawn from the finding's `evidence[].paper_id` set.
+
+- **Validator:** `validate_audit_report.py` `_run_r5`
+- **Failure mode:** P7 / Stage 4 narrative says "Scite probe ran" but the ledger has no Scite entry for that paper_id. Indicates the probe text was hallucinated rather than executed.
+- **Fix:** route the probe through `external_evidence.lookup_or_fetch` so the call is logged (and memoized) on the ledger; re-emit the finding.
+- **Skipped when:** `external_evidence.json` is not supplied.
+- **Future tool methods:** when adding a new ledger-routed method to `schemas/finding.json` `verification_path.method` enum, also extend `_LEDGER_METHODS` and `thresholds.ARTIFACT_FRESHNESS_DAYS`.
+
+## Ledger predicates (E1–E3 — artifact-local)
+
+Run by `scripts/validate_artifact.py --kind external_evidence`. Not transitive at Stage 8 (`audit_report.json` doesn't embed the ledger).
+
+- **E1 — unique `entries[].id`.** Sequential IDs are assigned by `external_evidence.lookup_or_fetch`; duplicates indicate manual editing or a races-around-the-rename bug.
+- **E2 — `query_hash` is well-formed 64-char lowercase SHA-256 hex.** Stage 1 schema also enforces the pattern; the predicate guards against malformed entries that bypass schema.
+- **E3 — (advisory)** `fetched_at` is parseable ISO-8601 and not in the future; `entries[]` is sorted ascending by `fetched_at`. Append-only writes via `lookup_or_fetch` produce sorted ledgers by construction — out-of-order entries flag a manual edit or clock skew.
 
 ## Operating principles (validator-enforced, not predicates)
 

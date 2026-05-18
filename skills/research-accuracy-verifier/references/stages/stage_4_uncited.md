@@ -30,7 +30,7 @@ Tier 3 biomedical/mixed audits, and custom audits with `uncited_claims` enabled.
 
 ### 1. Cherry-picking finding emitted
 
-Call `mcp__scite__search_literature` with `dois=[<cited DOI>]` (no `term`) to fetch the citation tally. Compute `USI = supporting / (supporting + contrasting)`. If `USI < 0.5` (matches deep-research's `[CONTESTED]` threshold), emit a Stage-4 finding with:
+Call `mcp__scite__search_literature` with `dois=[<cited DOI>]` (no `term`) to fetch the citation tally — **routed through the external-evidence ledger**. Wrap the call as `external_evidence.lookup_or_fetch(ledger_path, tool="scite", method="scite_context", query_params={"doi": <DOI>}, paper_id=<paper_id>, fetcher, freshness_days=None)`. Within the 7-day Scite TTL, the Stage-2 `editorialNotices` probe entry for this paper_id and the Stage-4 cherry-picking tally entry **share the same ledger row** when their `query_params` canonicalize identically — this is the headline memoization payoff: the Tier-3 sweep adds no incremental Scite API calls beyond what Stage 2 already issued. For this to work, the Stage-2 fetcher MUST emit a structured digest containing both `editorialNotices` AND the citation tally (`supporting` / `contrasting` / `mentioning`) so Stage 4 can extract USI from a cache hit — see [`stage_2_citation_existence.md`](./stage_2_citation_existence.md) §Digest convention. Compute `USI = supporting / (supporting + contrasting)`. If `USI < 0.5` (matches deep-research's `[CONTESTED]` threshold), emit a Stage-4 finding with:
 
 - `verdict == "OVERGENERALIZED"`
 - `verification_path[]` containing at least one `method == "scite_context"` entry
