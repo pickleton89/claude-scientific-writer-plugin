@@ -491,3 +491,15 @@ Each mutation applied to a fresh temp copy of the audit; validator re-run with a
 ### Phase 3 gate verdict
 
 R1–R6 baseline pass + 6/6 perturbations fire exactly as specified ⇒ Phase 3 enforcement flip (`ARTIFACT_ENFORCEMENT = "required"`) is **unblocked** from the §7.3 prerequisite. Outstanding Phase 3 work per plan §7.1–7.5: marker on rendered report, CLI `--no-enforce-artifacts` escape hatch, `validate_audit_report.py` enforcement-mode behavior, `checkpoint.py` stage-8 gate, `README_migration.md`, and unit tests.
+
+### Flip shipped — 2026-05-18
+
+`ARTIFACT_ENFORCEMENT = "required"` shipped in the Phase 3 commit on 2026-05-18 (see CHANGELOG). Behavioral changes summarized:
+
+- `validate_audit_report.py`: R-predicate failures AND missing-artifact "skipped" messages now land in `errors` (`ok=False`). Both `--no-enforce-artifacts` CLI flag and `enforcement="advisory"` kwarg force a single-run downgrade for migration scenarios.
+- `render_report.py`: new `--audit-dir` CLI flag (and `artifact_paths` + `audit_dir` + `enforcement` kwargs on `generate_report()`). When supplied, prepends the `<!-- audit_evidence_pinned: true ... -->` marker as the first line. In required mode, refuses to render when the artifact set is incomplete.
+- `checkpoint.finalize_audit(slug, *, audits_root, enforcement="auto")`: new pre-render gate — validates the 4-artifact set against schemas + predicates via `validate_artifact.validate_artifact(kind, path)`. Raises `ValueError` in required mode when incomplete or invalid. Library-only this phase.
+- `scripts/thresholds.ARTIFACT_ENFORCEMENT` constant flipped from `"advisory"` to `"required"`.
+- Test infrastructure: `tests/conftest.py` autouse fixture pins the constant to `"advisory"` for legacy tests; new required-mode tests pass `enforcement="required"` explicitly.
+
+Migration guidance for in-flight pre-flip audits lives in `references/README_migration.md`.

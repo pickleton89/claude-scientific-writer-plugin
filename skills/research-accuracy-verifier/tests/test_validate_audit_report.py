@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+import pytest
+
 from validate_audit_report import AuditReportValidator, run_p8
 
 
@@ -710,3 +712,68 @@ class TestRequiredModeFlip:
         )
         assert not ok
         assert any(e.startswith("R5:") for e in errors)
+
+    def test_required_mode_promotes_missing_artifact_to_error(self) -> None:
+        """In required mode, missing artifacts hard-error (no artifacts
+        supplied → all 6 R-predicates skip → 6 errors)."""
+        from validate_audit_report import AuditReportValidator as V
+
+        report = _fix("audit_report.json")
+        intake = _fix("intake.json")
+        ok, errors, warnings = V().validate(
+            report, intake, enforcement="required"
+        )
+        assert not ok
+        # P8 may also fire; just confirm every R-predicate skip lands in errors.
+        for pred in ("R1", "R2", "R3", "R4", "R5", "R6"):
+            assert any(
+                e.startswith(f"{pred} skipped:") for e in errors
+            ), f"{pred} skip-message must land in errors under required mode"
+        assert warnings == []
+
+    def test_advisory_kwarg_overrides_required_constant(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """`enforcement='advisory'` kwarg downgrades a required-by-constant
+        run to advisory — the `--no-enforce-artifacts` CLI behavior in
+        programmatic form."""
+        import thresholds
+        monkeypatch.setattr(thresholds, "ARTIFACT_ENFORCEMENT", "required")
+        from validate_audit_report import AuditReportValidator as V
+
+        report = _fix("audit_report.json")
+        intake = _fix("intake.json")
+        # No artifacts. With enforcement="advisory", missing-artifact messages
+        # land in warnings → ok stays True (modulo other predicates).
+        ok, errors, warnings = V().validate(
+            report, intake, enforcement="advisory"
+        )
+        # Filter to R-predicate skips only — P8 may still fire as an error.
+        r_skip_errors = [e for e in errors if "skipped:" in e]
+        r_skip_warns = [w for w in warnings if "skipped:" in w]
+        assert r_skip_errors == [], (
+            "advisory override must NOT promote R-skips to errors"
+        )
+        assert len(r_skip_warns) >= 6, (
+            "advisory override must route R-skips to warnings"
+        )
+
+    def test_r_status_n_a_detected_in_required_mode(self) -> None:
+        """`_derive_r_status` must scan both errors AND warnings for the
+        `skipped:` prefix so n/a is detected even when skip messages
+        land in errors (required mode)."""
+        from validate_audit_report import (
+            AuditReportValidator as V,
+            _derive_r_status,
+        )
+
+        report = _fix("audit_report.json")
+        intake = _fix("intake.json")
+        _, errors, warnings = V().validate(
+            report, intake, enforcement="required"
+        )
+        status = _derive_r_status(errors, warnings)
+        for pred in ("R1", "R2", "R3", "R4", "R5", "R6"):
+            assert status[pred] == "n/a", (
+                f"{pred} must be n/a (skipped) even when skip lives in errors"
+            )

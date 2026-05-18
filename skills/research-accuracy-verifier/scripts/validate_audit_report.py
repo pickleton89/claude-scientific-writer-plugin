@@ -51,7 +51,7 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 _SHARED_DIR = Path(__file__).resolve().parents[2] / "shared"
 if str(_SHARED_DIR) not in sys.path:
@@ -62,7 +62,7 @@ from verifier_kit.validate import SchemaValidator  # noqa: E402
 # Make sibling scripts importable for reusing QuoteVerifier (R4) and
 # thresholds (R-predicate enforcement mode).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from thresholds import ARTIFACT_ENFORCEMENT  # noqa: E402
+from thresholds import resolve_enforcement  # noqa: E402
 from verify_exact_quote import QuoteVerifier  # noqa: E402
 
 P8_DOMAINS = {"biomedical", "mixed"}
@@ -80,6 +80,8 @@ _LEDGER_METHODS: dict[str, str] = {
     "scite_context": "scite",
     "pubtator3_entity_check": "pubtator3",
 }
+
+Enforcement = Literal["auto", "advisory", "required"]
 
 
 def _p8_active(intake: dict[str, Any]) -> bool:
@@ -163,17 +165,21 @@ class AuditReportValidator(SchemaValidator):
         # P8 — Tier-3 cherry-picking sweep (always hard error when active).
         self._run_p8(record, intake, errors)
 
-        # R1–R4 / R6 — cross-artifact join integrity. Failure mode controlled
-        # by ARTIFACT_ENFORCEMENT (advisory = warnings; required = errors).
+        # R1–R6 — cross-artifact join integrity. Failure-mode AND skip-bucket
+        # both controlled by enforcement: in required mode a missing artifact
+        # is a hard error too (you can't validate against an artifact set the
+        # caller didn't supply when the gate is required).
         artifacts = ctx.get("artifacts") or {}
         document_text = ctx.get("document_text")
-        r_bucket = errors if ARTIFACT_ENFORCEMENT == "required" else warnings
-        self._run_r1(record, artifacts, r_bucket, warnings)
-        self._run_r2(record, intake, artifacts, r_bucket, warnings)
-        self._run_r3(record, artifacts, r_bucket, warnings)
-        self._run_r4(record, artifacts, document_text, r_bucket, warnings)
-        self._run_r5(record, artifacts, r_bucket, warnings)
-        self._run_r6(record, artifacts, r_bucket, warnings)
+        enforcement = resolve_enforcement(ctx.get("enforcement") or "auto")
+        bucket = errors if enforcement == "required" else warnings
+        skip_bucket = bucket  # same destination — keeps "skipped:" prefix detectable
+        self._run_r1(record, artifacts, bucket, skip_bucket)
+        self._run_r2(record, intake, artifacts, bucket, skip_bucket)
+        self._run_r3(record, artifacts, bucket, skip_bucket)
+        self._run_r4(record, artifacts, document_text, bucket, skip_bucket)
+        self._run_r5(record, artifacts, bucket, skip_bucket)
+        self._run_r6(record, artifacts, bucket, skip_bucket)
 
     def validate(  # type: ignore[override]
         self,
@@ -182,12 +188,14 @@ class AuditReportValidator(SchemaValidator):
         *,
         artifacts: dict[str, dict[str, Any]] | None = None,
         document_text: str | None = None,
+        enforcement: Enforcement = "auto",
     ) -> tuple[bool, list[str], list[str]]:
         return super().validate(
             report,
             intake=intake,
             artifacts=artifacts or {},
             document_text=document_text,
+            enforcement=enforcement,
         )
 
     # ── P8 ────────────────────────────────────────────────────────────────
@@ -235,11 +243,11 @@ class AuditReportValidator(SchemaValidator):
         record: dict[str, Any],
         artifacts: dict[str, Any],
         bucket: list[str],
-        warnings: list[str],
+        skip_bucket: list[str],
     ) -> None:
         ci = artifacts.get("claim_inventory")
         if ci is None:
-            warnings.append(
+            skip_bucket.append(
                 "R1 skipped: claim_inventory.json not provided to validator"
             )
             return
@@ -265,13 +273,13 @@ class AuditReportValidator(SchemaValidator):
         intake: dict[str, Any],
         artifacts: dict[str, Any],
         bucket: list[str],
-        warnings: list[str],
+        skip_bucket: list[str],
     ) -> None:
         if intake.get("sources_available") == "none":
             return  # No sources → no paper_id resolution possible.
         rs = artifacts.get("resolved_sources")
         if rs is None:
-            warnings.append(
+            skip_bucket.append(
                 "R2 skipped: resolved_sources.json not provided to validator"
             )
             return
@@ -302,11 +310,11 @@ class AuditReportValidator(SchemaValidator):
         record: dict[str, Any],
         artifacts: dict[str, Any],
         bucket: list[str],
-        warnings: list[str],
+        skip_bucket: list[str],
     ) -> None:
         rm = artifacts.get("reference_map")
         if rm is None:
-            warnings.append(
+            skip_bucket.append(
                 "R3 skipped: reference_map.json not provided to validator"
             )
             return
@@ -336,11 +344,11 @@ class AuditReportValidator(SchemaValidator):
         artifacts: dict[str, Any],
         document_text: str | None,
         bucket: list[str],
-        warnings: list[str],
+        skip_bucket: list[str],
     ) -> None:
         di = artifacts.get("document_inventory")
         if di is None or document_text is None:
-            warnings.append(
+            skip_bucket.append(
                 "R4 skipped: document_inventory.json and/or document text "
                 "not provided to validator"
             )
@@ -433,7 +441,7 @@ class AuditReportValidator(SchemaValidator):
         record: dict[str, Any],
         artifacts: dict[str, Any],
         bucket: list[str],
-        warnings: list[str],
+        skip_bucket: list[str],
     ) -> None:
         """For every finding whose verification_path[] mentions a
         ledger-routed method (Scite/PubTator3/...), confirm that
@@ -443,7 +451,7 @@ class AuditReportValidator(SchemaValidator):
         """
         ee = artifacts.get("external_evidence")
         if ee is None:
-            warnings.append(
+            skip_bucket.append(
                 "R5 skipped: external_evidence.json not provided to validator"
             )
             return
@@ -491,11 +499,11 @@ class AuditReportValidator(SchemaValidator):
         record: dict[str, Any],
         artifacts: dict[str, Any],
         bucket: list[str],
-        warnings: list[str],
+        skip_bucket: list[str],
     ) -> None:
         ci = artifacts.get("claim_inventory")
         if ci is None:
-            warnings.append(
+            skip_bucket.append(
                 "R6 skipped: claim_inventory.json not provided to validator"
             )
             return
@@ -544,6 +552,7 @@ def run_r_predicates(
     *,
     artifacts: dict[str, dict[str, Any]] | None = None,
     document_text: str | None = None,
+    enforcement: Enforcement = "auto",
 ) -> tuple[dict[str, str], list[str], list[str]]:
     """Run R1–R6 without schema validation.
 
@@ -551,9 +560,11 @@ def run_r_predicates(
     -------
     (per_predicate_status, errors, warnings): per_predicate_status maps each
     predicate name to "pass" | "fail" | "n/a". "n/a" means the predicate's
-    required artifact (or intake setting) wasn't supplied.
+    required artifact (or intake setting) wasn't supplied — in required mode
+    that's also surfaced as an error in `errors`.
 
-    Failure-mode (errors vs warnings) tracks ARTIFACT_ENFORCEMENT.
+    Failure-mode and skip-mode bucket-routing both controlled by enforcement
+    (defaults to `thresholds.ARTIFACT_ENFORCEMENT`).
     """
     validator = AuditReportValidator()
     errors: list[str] = []
@@ -566,22 +577,37 @@ def run_r_predicates(
         intake=intake,
         artifacts=artifacts or {},
         document_text=document_text,
+        enforcement=enforcement,
     )
-    # Strip P8 entries; only report R-status.
-    r_status: dict[str, str] = {}
+    r_status = _derive_r_status(errors, warnings)
+    # Filter outputs to drop the P8 line (run_p8 owns it).
+    r_errors = [e for e in errors if not e.startswith("P8:")]
+    return r_status, r_errors, warnings
+
+
+def _derive_r_status(
+    errors: list[str], warnings: list[str]
+) -> dict[str, str]:
+    """Compute the per-predicate status dict from collected messages.
+
+    Scans BOTH errors and warnings for "{pred} skipped:" and "{pred}:" lines
+    — in required mode the skip message lands in errors, in advisory mode it
+    lands in warnings. "n/a" wins over "fail" when both prefixes appear (a
+    skipped predicate has not actually run).
+    """
     combined = [m for m in errors + warnings if not m.startswith("P8:")]
+    r_status: dict[str, str] = {}
     for pred in _R_PREDICATES:
-        skipped = any(
-            m.startswith(f"{pred} skipped:") for m in warnings
+        skipped = any(m.startswith(f"{pred} skipped:") for m in combined)
+        failed = any(
+            m.startswith(f"{pred}:") and not m.startswith(f"{pred} skipped:")
+            for m in combined
         )
-        failed = any(m.startswith(f"{pred}:") for m in combined)
         if skipped:
             r_status[pred] = "n/a"
         else:
             r_status[pred] = "fail" if failed else "pass"
-    # Filter outputs to drop the P8 line (run_p8 owns it).
-    r_errors = [e for e in errors if not e.startswith("P8:")]
-    return r_status, r_errors, warnings
+    return r_status
 
 
 def main() -> None:
@@ -621,6 +647,16 @@ def main() -> None:
         help="Path to external_evidence.json (enables R5 — ledger probe ↔ verification_path[] consistency).",
     )
     parser.add_argument("--json", action="store_true", help="Emit JSON result")
+    parser.add_argument(
+        "--no-enforce-artifacts",
+        dest="no_enforce_artifacts",
+        action="store_true",
+        help=(
+            "Force advisory mode regardless of thresholds.ARTIFACT_ENFORCEMENT. "
+            "Migration escape hatch for audits started before the required-mode "
+            "flip (see references/README_migration.md)."
+        ),
+    )
     args = parser.parse_args()
 
     report_path = Path(args.report_file)
@@ -659,33 +695,30 @@ def main() -> None:
         raw = Path(args.document).read_text(encoding="utf-8")
         document_text = normalize_text(strip_document_wrapper(raw))
 
+    enforcement: Enforcement = "advisory" if args.no_enforce_artifacts else "auto"
+    effective_enforcement = resolve_enforcement(enforcement)
+
     validator = AuditReportValidator(args.schema)
     ok, errors, warnings = validator.validate(
-        report, intake, artifacts=artifacts, document_text=document_text
+        report,
+        intake,
+        artifacts=artifacts,
+        document_text=document_text,
+        enforcement=enforcement,
     )
     if not _p8_active(intake):
         p8_status = "n/a"
     else:
         p8_status = "pass" if not any(e.startswith("P8:") for e in errors) else "fail"
 
-    # Derive R-predicate statuses for display.
-    r_status: dict[str, str] = {}
-    for pred in _R_PREDICATES:
-        if any(w.startswith(f"{pred} skipped:") for w in warnings):
-            r_status[pred] = "n/a"
-        elif any(
-            m.startswith(f"{pred}:") for m in errors + warnings
-        ):
-            r_status[pred] = "fail"
-        else:
-            r_status[pred] = "pass"
+    r_status = _derive_r_status(errors, warnings)
 
     if args.json:
         print(
             json.dumps(
                 {
                     "valid": ok,
-                    "enforcement": ARTIFACT_ENFORCEMENT,
+                    "enforcement": effective_enforcement,
                     "p8_status": p8_status,
                     "r_status": r_status,
                     "errors": errors,
@@ -698,7 +731,7 @@ def main() -> None:
         tag = "VALID" if ok else "INVALID"
         rs = " ".join(f"{k}:{v}" for k, v in r_status.items())
         print(
-            f"{report_path.name}: {tag} (enforcement={ARTIFACT_ENFORCEMENT}, "
+            f"{report_path.name}: {tag} (enforcement={effective_enforcement}, "
             f"P8: {p8_status}, {rs})"
         )
         for e in errors:

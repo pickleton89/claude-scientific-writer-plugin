@@ -58,6 +58,17 @@ STAGE_NAMES: dict[int, str] = {
 
 DEFAULT_AUDITS_ROOT = Path("research/audits")
 
+# Filenames of the 4 evidence-pinned artifacts that Phase 3's required-mode
+# gate refuses to ship without. Kept in sync with render_report._ARTIFACT_KINDS
+# (the renderer enumerates these in the first-line marker) and validate_artifact
+# (which knows how to schema+predicate-check each one).
+FINALIZE_ARTIFACT_FILENAMES: tuple[str, ...] = (
+    "document_inventory.json",
+    "reference_map.json",
+    "resolved_sources.json",
+    "external_evidence.json",
+)
+
 
 @dataclass
 class ResumeState:
@@ -159,6 +170,104 @@ def write_stage_artifact(
         document_type,
         stage_one_payload=claim_inventory,
     )
+
+
+def finalize_audit(
+    slug: str,
+    *,
+    audits_root: Path = DEFAULT_AUDITS_ROOT,
+    enforcement: str = "auto",
+) -> dict[str, Any]:
+    """Pre-ship gate: confirm the audit's full evidence-pinned artifact set
+    is present and individually valid before the audit_report.json is
+    rendered or handed off to a downstream skill.
+
+    Behavior:
+      - `enforcement="auto"` (default): reads `thresholds.ARTIFACT_ENFORCEMENT`.
+      - `enforcement="required"`: every artifact in
+        `FINALIZE_ARTIFACT_FILENAMES` must exist AND validate against its
+        schema + predicates. Missing or invalid artifacts raise `ValueError`.
+      - `enforcement="advisory"`: returns a status dict listing missing /
+        invalid artifacts; never raises.
+
+    Returns a dict shaped::
+
+        {
+          "slug": str,
+          "audit_dir": str,
+          "enforcement": "advisory" | "required",
+          "ok": bool,
+          "artifact_status": {
+            "document_inventory": {"present": bool, "valid": bool|None,
+                                   "errors": [str], "warnings": [str]},
+            ...
+          },
+        }
+
+    `valid` is None when the artifact is absent (no validation attempted).
+    Library-only this phase — no CLI surface added in Phase 3. Stages 1-7
+    continue to use `write_stage_artifact`; this is the new gate that sits
+    between stage-7 completion and audit_report.json assembly/render.
+    """
+    # Import validate_artifact lazily — only the finalize path needs the
+    # schema validator surface; the legacy stages-1-7 callers (write_stage_artifact /
+    # load_resume_state) never touch it.
+    from validate_artifact import validate_artifact  # noqa: PLC0415
+    from thresholds import resolve_enforcement  # noqa: PLC0415
+
+    effective = resolve_enforcement(enforcement)
+
+    audit_dir = Path(audits_root) / slug
+    status: dict[str, dict[str, Any]] = {}
+    overall_ok = True
+    for fname in FINALIZE_ARTIFACT_FILENAMES:
+        kind = fname.removesuffix(".json")
+        path = audit_dir / fname
+        if not path.exists():
+            status[kind] = {
+                "present": False,
+                "valid": None,
+                "errors": [f"{fname} not found at {path}"],
+                "warnings": [],
+            }
+            overall_ok = False
+            continue
+        try:
+            ok, errs, warns = validate_artifact(kind, path)
+        except Exception as e:  # noqa: BLE001 — surface the failure shape uniformly
+            ok, errs, warns = False, [f"validation crashed: {e}"], []
+        status[kind] = {
+            "present": True,
+            "valid": ok,
+            "errors": list(errs),
+            "warnings": list(warns),
+        }
+        if not ok:
+            overall_ok = False
+
+    result = {
+        "slug": slug,
+        "audit_dir": str(audit_dir),
+        "enforcement": effective,
+        "ok": overall_ok,
+        "artifact_status": status,
+    }
+
+    if effective == "required" and not overall_ok:
+        lines = [
+            f"Audit {slug!r} cannot be finalized — required artifact set "
+            f"incomplete or invalid:",
+        ]
+        for kind, s in status.items():
+            if s["valid"] is True:
+                continue
+            tag = "MISSING" if not s["present"] else "INVALID"
+            lines.append(f"  - {kind}: {tag}")
+            for e in s["errors"][:3]:
+                lines.append(f"      {e}")
+        raise ValueError("\n".join(lines))
+
+    return result
 
 
 def load_resume_state(

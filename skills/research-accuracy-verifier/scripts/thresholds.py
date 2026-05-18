@@ -74,9 +74,35 @@ CUSTOM_ARTIFACT_DEPENDENCIES: Final[dict[str, tuple[str, ...]]] = {
 # "required" — missing or invalid artifacts block report rendering;
 #              R-predicate failures become hard errors.
 #
-# Phase 1 ships as advisory. Phase 3 flips to "required" after an
-# end-to-end dry-run validates the perturbation matrix.
-ARTIFACT_ENFORCEMENT: Final[str] = "advisory"
+# Phase 1 shipped as advisory. Phase 3 (2026-05-18) flipped to "required"
+# after the dry-run + perturbation matrix on audit 06
+# (see references/CONTRACTS.md §Dry-run validation + §Flip shipped).
+# Migration escape hatch for pre-flip audits: --no-enforce-artifacts CLI flag
+# on validate_audit_report.py / render_report.py + enforcement="advisory"
+# kwarg programmatically. Guidance: references/README_migration.md.
+ARTIFACT_ENFORCEMENT: Final[str] = "required"
+
+
+def resolve_enforcement(enforcement: str) -> str:
+    """Resolve "auto" → the current value of `ARTIFACT_ENFORCEMENT`.
+
+    Explicit "advisory" / "required" pass through unchanged. Shared by both
+    `validate_audit_report.AuditReportValidator.run_predicates` and
+    `checkpoint.finalize_audit` so the auto-resolution rule lives in exactly
+    one place.
+
+    Reads the module-level `ARTIFACT_ENFORCEMENT` at call time (not at import
+    time) so a test that monkeypatches `thresholds.ARTIFACT_ENFORCEMENT` sees
+    the patched value when "auto" is passed.
+    """
+    if enforcement == "auto":
+        return ARTIFACT_ENFORCEMENT
+    if enforcement not in {"advisory", "required"}:
+        raise ValueError(
+            f"enforcement must be 'auto' | 'advisory' | 'required', "
+            f"got {enforcement!r}"
+        )
+    return enforcement
 
 # Per-tool freshness windows for the external-evidence ledger (Phase 2).
 # A cached probe entry is reused when (now - fetched_at) ≤ freshness_days.

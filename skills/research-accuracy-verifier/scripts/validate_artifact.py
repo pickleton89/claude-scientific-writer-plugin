@@ -435,6 +435,22 @@ class ArtifactValidator(SchemaValidator):
 # ---------------------------------------------------------------------------
 
 
+def validate_artifact(
+    kind: str, path: Path | str, schema_path: Path | None = None
+) -> tuple[bool, list[str], list[str]]:
+    """Validate a single artifact file by kind. Library wrapper around the
+    CLI's per-kind validator construction; used by `checkpoint.finalize_audit`
+    to gate the audit's full artifact set before render. Raises FileNotFoundError
+    if the file is absent so callers can distinguish missing from invalid.
+    """
+    target = Path(path)
+    if not target.exists():
+        raise FileNotFoundError(f"artifact not found: {target}")
+    record = json.loads(target.read_text(encoding="utf-8"))
+    validator = ArtifactValidator(kind, schema_path)
+    return validator.validate(record)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Validate a research-accuracy-verifier pinned artifact"

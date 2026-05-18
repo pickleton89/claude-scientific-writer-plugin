@@ -10,6 +10,8 @@ import pytest
 
 from checkpoint import (
     DEFAULT_AUDITS_ROOT,
+    FINALIZE_ARTIFACT_FILENAMES,
+    finalize_audit,
     load_resume_state,
     slugify,
     write_stage_artifact,
@@ -276,3 +278,86 @@ class TestLoadResumeState:
     def test_default_audits_root_is_research_audits(self) -> None:
         # Sanity-check the documented default — important for SKILL.md prose
         assert DEFAULT_AUDITS_ROOT == Path("research/audits")
+
+
+# Helpers for finalize_audit fixtures —————————————————————————————————————
+
+_AUDIT_06 = (
+    Path(__file__).resolve().parents[1]
+    / "research/audits/06_lit_review_cited_paper_numerical"
+)
+
+
+def _seed_finalize_fixture(audit_dir: Path) -> None:
+    """Copy the audit-06 evidence-pinned artifact set into `audit_dir`.
+
+    audit-06 is the dry-run reference audit (its 4 Phase 1+2 artifacts
+    validate clean against their schemas+predicates per the §Dry-run
+    validation section of CONTRACTS.md), so reusing it here keeps the
+    finalize-gate tests aligned with the canonical "audit ready to ship"
+    state.
+    """
+    audit_dir.mkdir(parents=True, exist_ok=True)
+    for fname in FINALIZE_ARTIFACT_FILENAMES:
+        src = _AUDIT_06 / fname
+        (audit_dir / fname).write_text(src.read_text())
+
+
+class TestFinalizeAudit:
+    def test_happy_path_required(self, tmp_path: Path) -> None:
+        slug = "demo"
+        _seed_finalize_fixture(tmp_path / slug)
+        result = finalize_audit(slug, audits_root=tmp_path, enforcement="required")
+        assert result["ok"] is True
+        assert result["enforcement"] == "required"
+        for kind in ("document_inventory", "reference_map",
+                     "resolved_sources", "external_evidence"):
+            assert result["artifact_status"][kind]["present"] is True
+            assert result["artifact_status"][kind]["valid"] is True
+
+    def test_required_raises_on_missing(self, tmp_path: Path) -> None:
+        (tmp_path / "demo").mkdir()  # empty audit dir
+        with pytest.raises(ValueError, match="cannot be finalized"):
+            finalize_audit("demo", audits_root=tmp_path, enforcement="required")
+
+    def test_advisory_returns_status_no_raise(self, tmp_path: Path) -> None:
+        (tmp_path / "demo").mkdir()
+        result = finalize_audit(
+            "demo", audits_root=tmp_path, enforcement="advisory"
+        )
+        assert result["ok"] is False
+        assert result["enforcement"] == "advisory"
+        for kind in ("document_inventory", "reference_map",
+                     "resolved_sources", "external_evidence"):
+            assert result["artifact_status"][kind]["present"] is False
+            assert result["artifact_status"][kind]["valid"] is None
+
+    def test_required_raises_on_invalid_artifact(self, tmp_path: Path) -> None:
+        slug = "demo"
+        _seed_finalize_fixture(tmp_path / slug)
+        # Corrupt one artifact's schema.
+        bad = tmp_path / slug / "document_inventory.json"
+        data = json.loads(bad.read_text())
+        data["schema_version"] = "999.0"  # not in enum
+        bad.write_text(json.dumps(data))
+        with pytest.raises(ValueError, match="document_inventory: INVALID"):
+            finalize_audit(slug, audits_root=tmp_path, enforcement="required")
+
+    def test_auto_reads_thresholds_constant(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """`enforcement="auto"` must read thresholds.ARTIFACT_ENFORCEMENT at
+        call time, not at import time — so a test that monkeypatches the
+        constant sees the patched value."""
+        import thresholds
+        slug = "demo"
+        _seed_finalize_fixture(tmp_path / slug)
+        monkeypatch.setattr(thresholds, "ARTIFACT_ENFORCEMENT", "required")
+        result = finalize_audit(slug, audits_root=tmp_path, enforcement="auto")
+        assert result["enforcement"] == "required"
+
+    def test_invalid_enforcement_value_raises(self, tmp_path: Path) -> None:
+        with pytest.raises(ValueError, match="enforcement must be"):
+            finalize_audit(
+                "demo", audits_root=tmp_path, enforcement="bogus"
+            )

@@ -15,6 +15,30 @@ SCHEMAS_DIR = Path(__file__).parent.parent / "schemas"
 sys.path.insert(0, str(SCRIPTS_DIR))
 
 
+@pytest.fixture(autouse=True)
+def _pin_artifact_enforcement_advisory(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Pin `ARTIFACT_ENFORCEMENT` to "advisory" for the duration of each test.
+
+    Phase 3 flipped the on-disk default to "required"; the pre-Phase-3 test
+    suite was written against advisory semantics (R-predicate failures emit
+    warnings, missing artifacts emit warnings). Rather than rewrite every
+    fixture to supply the full artifact set, this autouse fixture restores the
+    legacy default per test.
+
+    Only `thresholds.ARTIFACT_ENFORCEMENT` is patched — `thresholds.resolve_enforcement`
+    reads the constant from its own module at call time, so all downstream
+    callers (`validate_audit_report.run_predicates`, `checkpoint.finalize_audit`,
+    `render_report.generate_report`) see the patched value automatically.
+
+    Tests that exercise required-mode behavior should pass
+    `enforcement="required"` explicitly to the validator (preferred), or
+    re-monkeypatch `thresholds.ARTIFACT_ENFORCEMENT` within the test body.
+    """
+    import thresholds  # noqa: PLC0415
+
+    monkeypatch.setattr(thresholds, "ARTIFACT_ENFORCEMENT", "advisory")
+
+
 @pytest.fixture
 def severity_matrix() -> dict[str, dict[str, str]]:
     return json.loads((SCHEMAS_DIR / "severity_matrix.values.json").read_text())["matrix"]

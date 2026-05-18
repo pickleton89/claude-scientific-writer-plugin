@@ -4,7 +4,13 @@
 Pattern model: skills/peer-review/scripts/calculate_scores.py generate_report().
 
 Public API:
-    generate_report(report: dict, *, intake: dict | None = None) -> str
+    generate_report(
+        report: dict,
+        *,
+        intake: dict | None = None,
+        artifact_paths: dict[str, Path | str] | None = None,
+        enforcement: Literal["auto","advisory","required"] = "auto",
+    ) -> str
 
 When `intake` is supplied, the renderer also enforces predicate P8 (Tier-3
 cherry-picking sweep) via `validate_audit_report.run_p8(...)` before
@@ -15,9 +21,20 @@ intake goes through the gate. When `intake is None`, P8 is skipped
 (back-compat for legacy callers and tests that render synthetic reports
 without an intake context).
 
+When `artifact_paths` is supplied, prepends an evidence-pinned marker as
+the first line of the rendered markdown — mirrors deep-research's
+`evidence_pinned: true` marker (`skills/deep-research/agents/compiler.md
+§Evidence-pinned marker`). Downstream consumers (peer-review,
+scientific-writing) can detect the marker to switch into diff-mode against
+the artifact set. When effective enforcement (after resolving `"auto"` via
+`thresholds.ARTIFACT_ENFORCEMENT`) is `"required"`, also refuses to render
+if any path is missing or non-existent — raises `ValueError`.
+
 Usage:
     uv run python render_report.py report.json
     uv run python render_report.py report.json --intake intake.json --out report.md
+    uv run python render_report.py report.json --intake intake.json \\
+        --audit-dir research/audits/my-slug/ --out report.md
 """
 
 from __future__ import annotations
@@ -28,7 +45,18 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from validate_audit_report import run_p8
+from thresholds import resolve_enforcement
+from validate_audit_report import Enforcement, run_p8
+
+# Artifact-set the marker enumerates. Order matches plan §7.1 marker spec.
+_ARTIFACT_KINDS: tuple[str, ...] = (
+    "document_inventory",
+    "reference_map",
+    "resolved_sources",
+    "external_evidence",
+)
+_ARTIFACT_FILENAMES: dict[str, str] = {kind: f"{kind}.json" for kind in _ARTIFACT_KINDS}
+_MARKER_SCHEMA_VERSION = "1.0"
 
 SEVERITY_ORDER = ["CRITICAL", "MAJOR", "MINOR", "INFORMATIONAL"]
 P8_PASS_NOTE = (
@@ -159,8 +187,62 @@ def _section_methodology(report: dict[str, Any]) -> str:
     return f"## Methodology\n\n{report['methodology_note']}\n"
 
 
+def _build_marker(
+    artifact_paths: dict[str, Path | str], audit_dir: Path | str | None
+) -> str:
+    """Build the `<!-- audit_evidence_pinned: ... -->` first-line marker.
+
+    Format mirrors plan §7.1:
+        <!-- audit_evidence_pinned: true artifacts: A,B,C,D
+             audit_dir: research/audits/<slug>/ schema_version: 1.0 -->
+    Filenames listed in the canonical `_ARTIFACT_KINDS` order.
+    """
+    filenames = ",".join(_ARTIFACT_FILENAMES[k] for k in _ARTIFACT_KINDS)
+    if audit_dir is None:
+        # Derive from any supplied artifact path — they should all share a parent.
+        sample = next(iter(artifact_paths.values()), None)
+        audit_dir = Path(sample).parent if sample else Path(".")
+    audit_dir_str = str(audit_dir).rstrip("/") + "/"
+    return (
+        f"<!-- audit_evidence_pinned: true artifacts: {filenames} "
+        f"audit_dir: {audit_dir_str} schema_version: {_MARKER_SCHEMA_VERSION} -->"
+    )
+
+
+def _validate_artifact_paths(
+    artifact_paths: dict[str, Path | str], enforcement: str
+) -> None:
+    """In required mode, refuse to render if any path is missing/nonexistent.
+
+    Only checks file presence — full schema/predicate validation is the
+    responsibility of `scripts/validate_artifact.py`, which Stage-8
+    finalization (or the upstream test fixture) is expected to have run.
+    """
+    if enforcement != "required":
+        return
+    missing: list[str] = []
+    for kind in _ARTIFACT_KINDS:
+        p = artifact_paths.get(kind)
+        if p is None:
+            missing.append(f"{kind} (path not provided)")
+            continue
+        path = Path(p)
+        if not path.exists():
+            missing.append(f"{kind} ({path} not found)")
+    if missing:
+        raise ValueError(
+            "Cannot render in required-enforcement mode — artifact set "
+            "incomplete:\n  - " + "\n  - ".join(missing)
+        )
+
+
 def generate_report(
-    report: dict[str, Any], *, intake: dict[str, Any] | None = None
+    report: dict[str, Any],
+    *,
+    intake: dict[str, Any] | None = None,
+    artifact_paths: dict[str, Path | str] | None = None,
+    audit_dir: Path | str | None = None,
+    enforcement: Enforcement = "auto",
 ) -> str:
     """Render an AuditReport dict to markdown.
 
@@ -168,6 +250,12 @@ def generate_report(
     raises `ValueError` if any Stage-3 VERIFIED claim lacks a cherry-picking
     finding or a `cherry_picking:<claim_id>: <reason>` coverage caveat. When
     `intake is None`, P8 is skipped (back-compat).
+
+    When `artifact_paths` is supplied, prepends the evidence-pinned marker
+    as the first line. In required-enforcement mode, refuses to render if
+    the artifact set is incomplete (any path missing or file nonexistent).
+    `audit_dir` is the slug directory; when omitted, derived from the
+    parent of the first artifact_paths value.
     """
     p8_status: str | None = None
     if intake is not None:
@@ -180,13 +268,19 @@ def generate_report(
                 + "\n  ".join(p8_errors)
             )
 
-    sections = [
+    if artifact_paths is not None:
+        _validate_artifact_paths(artifact_paths, resolve_enforcement(enforcement))
+
+    sections: list[str] = []
+    if artifact_paths is not None:
+        sections.append(_build_marker(artifact_paths, audit_dir) + "\n")
+    sections.extend([
         _section_header(report),
         _section_executive_summary(report),
         _section_findings(report),
         _section_matrix(report),
         _section_methodology(report),
-    ]
+    ])
     if p8_status == "pass":
         sections.append(f"> {P8_PASS_NOTE}\n")
     return "\n".join(sections)
@@ -201,6 +295,27 @@ def main() -> None:
             "Path to intake.json. When supplied, enforces P8 "
             "(Tier-3 cherry-picking sweep) before rendering and raises on "
             "failure. Omit to render without P8 enforcement."
+        ),
+    )
+    parser.add_argument(
+        "--audit-dir",
+        dest="audit_dir",
+        help=(
+            "Path to the audit directory (e.g. research/audits/<slug>/). "
+            "When supplied, auto-resolves the 4 evidence-pinned artifacts "
+            "(document_inventory.json, reference_map.json, "
+            "resolved_sources.json, external_evidence.json) and prepends the "
+            "evidence-pinned marker as the first line of the output."
+        ),
+    )
+    parser.add_argument(
+        "--no-enforce-artifacts",
+        dest="no_enforce_artifacts",
+        action="store_true",
+        help=(
+            "Force advisory mode regardless of thresholds.ARTIFACT_ENFORCEMENT. "
+            "Allows rendering an audit whose artifact set is incomplete "
+            "(migration escape hatch — see references/README_migration.md)."
         ),
     )
     parser.add_argument("--out", help="Write to file instead of stdout")
@@ -220,8 +335,25 @@ def main() -> None:
             sys.exit(1)
         intake = json.loads(ip.read_text())
 
+    artifact_paths: dict[str, Path | str] | None = None
+    audit_dir: Path | None = None
+    if args.audit_dir:
+        audit_dir = Path(args.audit_dir)
+        artifact_paths = {
+            kind: audit_dir / fname
+            for kind, fname in _ARTIFACT_FILENAMES.items()
+        }
+
+    enforcement: Enforcement = "advisory" if args.no_enforce_artifacts else "auto"
+
     try:
-        md = generate_report(report, intake=intake)
+        md = generate_report(
+            report,
+            intake=intake,
+            artifact_paths=artifact_paths,
+            audit_dir=audit_dir,
+            enforcement=enforcement,
+        )
     except ValueError as e:
         print(f"Render aborted: {e}", file=sys.stderr)
         sys.exit(1)
