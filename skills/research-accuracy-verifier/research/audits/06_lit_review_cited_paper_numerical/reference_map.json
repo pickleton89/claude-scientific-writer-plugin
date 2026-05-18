@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "metadata": {
+    "frozen_at": "2026-05-18T19:00:12+00:00",
+    "audit_slug": "06_lit_review_cited_paper_numerical",
+    "sources_available": "uploaded_files"
+  },
+  "citations": [
+    {
+      "key": "Smith 2024",
+      "paper_id": "10.0001/jtor.fixture.smith2024",
+      "doi": "10.0001/jtor.fixture.smith2024",
+      "pmid": null,
+      "pmcid": null,
+      "raw_text": "Smith JR, Patel A, Ng S, Williams T, Okafor C, Lee H, et al. Pembrolizumab plus carboplatin/pemetrexed in PD-L1\u2013high advanced non-squamous NSCLC: a single-center phase II investigator-initiated study. Journal of Thoracic Oncology Reports 2024; 12(4): 287-301. DOI: 10.0001/jtor.fixture.smith2024",
+      "occurrences": [
+        {
+          "section_id": "S002",
+          "paragraph_id": "P003",
+          "line": 9
+        },
+        {
+          "section_id": "S002",
+          "paragraph_id": "P004",
+          "line": 11
+        },
+        {
+          "section_id": "S002",
+          "paragraph_id": "P004",
+          "line": 11
+        }
+      ]
+    }
+  ],
+  "bibliography_orphans": []
+}

@@ -430,3 +430,64 @@ def validate(self, data) -> tuple[bool, list[str], list[str]]:
 ```
 
 Pattern model: `skills/scientific-slides/scripts/validate_slide_plan.py` AFTER the Apr-22 fix (the version on `master` short-circuits at line 106 — do **not** copy that). The fix lives on the migrate branch; replicate the *intent*, not the master implementation.
+
+---
+
+## Dry-run validation (Phase 3 enforcement-flip prerequisite)
+
+An end-to-end dry-run of Phases 1+2 on a real audit, plus a perturbation matrix confirming each R-predicate fires exactly when its invariant is broken, is the prerequisite for flipping `ARTIFACT_ENFORCEMENT` from `"advisory"` to `"required"`. The dry-run spec (§7.3 audit-selection prerequisite + §11.2 perturbation matrix) lives in the project plan `~/.claude/plans/let-s-put-together-a-mellow-bumblebee.md` (user-scoped, outside the repo); for in-repo Phase 1+2 history see `EVIDENCE_PINNING_DECISIONS.md` at the repo root.
+
+### Audit under test
+
+- **Audit:** `research/audits/06_lit_review_cited_paper_numerical/`
+- **Document:** `regression/docs/06_lit_review_cited_paper_numerical.md` (lit review excerpt; one cited paper — fixture DOI `10.0001/jtor.fixture.smith2024`)
+- **Driver:** `scratch/dry_run_perturbations.py` (run with `uv run python scratch/dry_run_perturbations.py` from the verifier root)
+- **Dry-run date:** 2026-05-18
+
+### Phase 1+2 artifacts back-generated for the dry-run
+
+Audit 06 was produced before Phases 1+2 shipped, so artifacts were back-generated from existing stage JSONs to reach the Phase-2 expected state. Each artifact validates clean against its schema + predicates.
+
+| Artifact | Origin |
+|---|---|
+| `document_inventory.json` | `parse_document.py --document <doc> --slug ... --document-type lit_review` (parser baseline; no overrides needed) |
+| `reference_map.json` | Manually backfilled — the document uses `(Smith 2024)` without the comma required by `extract_reference_map.py`'s author-year regex, so the parser baseline contained zero citations. In a live audit, the LLM patches this; here we mirror that patch (one citation `Smith 2024` keyed to paper_id `10.0001/jtor.fixture.smith2024` with 3 inline occurrences). |
+| `resolved_sources.json` | Synthesized from `regression/sources/smith2024_pembro_nsclc/smith2024_pembro_nsclc_source_meta.json` + Stage 2 `VERIFIED` outcome via `intake.cited_papers source_meta.json` resolution path. |
+| `external_evidence.json` | Initialized empty — audit 06 used only user-provided sources (`abstract_check`, `doi_lookup`, `ref_reconcile`); no Scite or PubTator3 probes. R5 passes vacuously. |
+| `intake.json` | Created: `lit_review`, `uploaded_files`, tier `3`, `biomedical`, `standard` flag threshold. |
+
+### Baseline result
+
+```
+R1: pass  R2: pass  R3: pass  R4: pass  R5: pass  R6: pass
+P8: fail  (pre-existing; orthogonal to evidence pinning)
+```
+
+R1–R6 all pass — the Phase 3 enforcement flip can proceed without breaking this audit's R-predicate posture.
+
+P8 failure is a **pre-existing** issue with audit 06 unrelated to evidence pinning: the audit lacks Stage-4 cherry-picking probes (`OVERGENERALIZED` with `scite_context` method) that P8 requires for every Stage-3 `VERIFIED` `citation_bearing` claim in biomedical tier-3 audits. This is a known gap in the audit itself, not a regression introduced by Phase 1+2.
+
+### Perturbation matrix outcomes
+
+Each mutation applied to a fresh temp copy of the audit; validator re-run with all artifacts; exactly one expected R-predicate fires per mutation, no cross-contamination.
+
+| ID | Mutation | Expected fail | Actual fail | OK |
+|---|---|---|---|---|
+| P1 | Drop `Smith 2024` from `reference_map.citations[]` | R3 | R3 | ✓ |
+| P2 | Mutate `resolved_sources.sources[0].paper_id` (+ backfill C001 `evidence[0].paper_id` first to lift to Phase-2 state) | R2 | R2 | ✓ |
+| P3 | Replace C001 `claim_verbatim` with text not in the paragraph | R4 | R4 | ✓ |
+| P4 | Augment C001 `verification_path[]` with a `scite_context` step + matching `evidence[].paper_id`, then leave the ledger empty | R5 | R5 | ✓ |
+| P5 | Delete `C001` from `claim_inventory.items[]` | R1, R6 | R1, R6 | ✓ |
+| P6 | Drop section `S002` (and its paragraphs) from `document_inventory.json` | R4 | R4 | ✓ |
+
+**Result: MATRIX OK.** All six perturbations produce the expected R-predicate failure and only the expected failure.
+
+### Notes for future re-runs
+
+- P2 + P4 each apply a small audit-side augmentation before the perturbation, because audit 06 predates Phase 2 (null `evidence[].paper_id` throughout, no ledger-routed verification methods). Future audits produced under Phase 1+2 will not need these augmentations.
+- The augmentations live only in the temp copy created by the driver; `research/audits/06_lit_review_cited_paper_numerical/` on disk is untouched by the perturbation runs.
+- The driver script is self-contained at `scratch/dry_run_perturbations.py`. To re-run after any validator/schema change, simply execute it; non-zero exit means a perturbation diverged from the expected R-pattern.
+
+### Phase 3 gate verdict
+
+R1–R6 baseline pass + 6/6 perturbations fire exactly as specified ⇒ Phase 3 enforcement flip (`ARTIFACT_ENFORCEMENT = "required"`) is **unblocked** from the §7.3 prerequisite. Outstanding Phase 3 work per plan §7.1–7.5: marker on rendered report, CLI `--no-enforce-artifacts` escape hatch, `validate_audit_report.py` enforcement-mode behavior, `checkpoint.py` stage-8 gate, `README_migration.md`, and unit tests.

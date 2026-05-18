@@ -1,0 +1,112 @@
+{
+  "schema_version": "1.0",
+  "metadata": {
+    "frozen_at": "2026-05-18T18:58:41+00:00",
+    "source_sha256": "171a8b944ccec5d7fc15151c6e15b5d9a4c24543ad18019fcd32a8158809d38a",
+    "audit_slug": "06_lit_review_cited_paper_numerical",
+    "document_type": "lit_review",
+    "parser_version": "1.0.0"
+  },
+  "sections": [
+    {
+      "id": "S001",
+      "name": "Front-Line Pembrolizumab Combinations in PD-L1\u2013High Advanced NSCLC: A Brief Literature Review",
+      "level": 1,
+      "char_start": 0,
+      "char_end": 175,
+      "paragraph_ids": [
+        "P001",
+        "P002"
+      ]
+    },
+    {
+      "id": "S002",
+      "name": "2. Single-arm phase II evidence for pembrolizumab + platinum-doublet",
+      "level": 2,
+      "char_start": 175,
+      "char_end": 1210,
+      "paragraph_ids": [
+        "P003",
+        "P004",
+        "P005",
+        "P006"
+      ]
+    },
+    {
+      "id": "S003",
+      "name": "References",
+      "level": 2,
+      "char_start": 1210,
+      "char_end": 1522,
+      "paragraph_ids": [
+        "P007"
+      ]
+    }
+  ],
+  "paragraphs": [
+    {
+      "id": "P001",
+      "section_id": "S001",
+      "ordinal": 1,
+      "char_start": 97,
+      "char_end": 168,
+      "line_start": 3,
+      "line_end": 3
+    },
+    {
+      "id": "P002",
+      "section_id": "S001",
+      "ordinal": 2,
+      "char_start": 170,
+      "char_end": 173,
+      "line_start": 5,
+      "line_end": 5
+    },
+    {
+      "id": "P003",
+      "section_id": "S002",
+      "ordinal": 1,
+      "char_start": 248,
+      "char_end": 638,
+      "line_start": 9,
+      "line_end": 9
+    },
+    {
+      "id": "P004",
+      "section_id": "S002",
+      "ordinal": 2,
+      "char_start": 640,
+      "char_end": 1043,
+      "line_start": 11,
+      "line_end": 11
+    },
+    {
+      "id": "P005",
+      "section_id": "S002",
+      "ordinal": 3,
+      "char_start": 1045,
+      "char_end": 1203,
+      "line_start": 13,
+      "line_end": 13
+    },
+    {
+      "id": "P006",
+      "section_id": "S002",
+      "ordinal": 4,
+      "char_start": 1205,
+      "char_end": 1208,
+      "line_start": 15,
+      "line_end": 15
+    },
+    {
+      "id": "P007",
+      "section_id": "S003",
+      "ordinal": 1,
+      "char_start": 1225,
+      "char_end": 1522,
+      "line_start": 19,
+      "line_end": 19
+    }
+  ],
+  "overrides": []
+}
