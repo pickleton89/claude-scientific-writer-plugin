@@ -87,6 +87,35 @@ P8 (Tier-3 cherry-picking sweep). When `intake.domain ∈ {biomedical, mixed}` A
 
 ---
 
+## Cross-artifact predicates (R1–R6)
+
+R-predicates are cross-artifact post-conditions enforced by `validate_audit_report.py` when the relevant artifacts are supplied via the `artifacts={}` kwarg (or via the CLI `--claim-inventory / --reference-map / --resolved-sources / --document-inventory / --document` flags). They run alongside P8 at Stage 8. Phase 1 ships Stage-8-only enforcement; Phase 3 adds transitive invocation from `render_report.generate_report()` (matching how P8 is enforced today) so audits cannot render past an R-violation.
+
+**Enforcement** is gated by `scripts/thresholds.ARTIFACT_ENFORCEMENT`:
+
+- `"advisory"` (Phase 1) — R-failures emit warnings; `ok=True`.
+- `"required"` (Phase 3) — R-failures emit errors; `ok=False`; render blocked.
+
+P1–P8 are always hard errors regardless of mode.
+
+R1 (Finding.id resolves in claim_inventory). When `claim_inventory.json` is supplied, every `findings[].id` MUST equal some `items[].id`.
+
+R2 (Finding.evidence[].paper_id resolves in resolved_sources). When `resolved_sources.json` is supplied AND `intake.sources_available != "none"`, every non-null `findings[].evidence[].paper_id` MUST equal some `sources[].paper_id`. `paper_id: null` is permitted (web-sourced no-DOI evidence).
+
+R3 (Finding.citations[].key resolves in reference_map). When `reference_map.json` is supplied, every `findings[].citations[].key` MUST equal some `citations[].key`.
+
+R4 (Finding.claim_verbatim matches document at location). When `document_inventory.json` AND the normalized document text are supplied, every `findings[].claim_verbatim` MUST appear as a substring of the paragraph addressed by `findings[].location.{section, paragraph}` (after QuoteVerifier whitespace + unicode normalization).
+
+R5 (reserved for Phase 2 — external-evidence ledger consistency).
+
+R6 (verification_matrix[].claim_id resolves in claim_inventory). When `claim_inventory.json` is supplied, every `verification_matrix[].claim_id` MUST equal some `items[].id`.
+
+When the relevant artifact is NOT supplied, the predicate is **skipped** with an advisory warning of shape `R<n> skipped: <artifact>.json not provided to validator`. A skipped R-predicate is not a failure.
+
+The `paper_id` join key is byte-compatible with `deep-research/schemas/sources.json#paper_id` — DOI-preferred, PMID fallback, slug last resort. This enables a future v2 optimization where `intake.pinned_sidecars.sources_path` (from deep-research) can be consumed in lieu of running the verifier's own Stage-2 resolution.
+
+---
+
 ## Intake JSON schema (locked field shape)
 
 ```jsonc

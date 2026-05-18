@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "metadata": {
+    "frozen_at": "2026-05-18T17:16:57+00:00",
+    "audit_slug": "audit-minimal",
+    "sources_available": "bibliography_only"
+  },
+  "citations": [
+    {
+      "key": "1",
+      "paper_id": "10.1126/science.1258096",
+      "doi": "10.1126/science.1258096",
+      "pmid": "25430774",
+      "pmcid": null,
+      "raw_text": "Doudna J, Charpentier E (2014). The new frontier of genome engineering with CRISPR-Cas9. Science 346:1258096.",
+      "occurrences": [
+        {
+          "section_id": "S001",
+          "paragraph_id": "P001",
+          "line": 3
+        },
+        {
+          "section_id": "S002",
+          "paragraph_id": "P003",
+          "line": 9
+        }
+      ]
+    },
+    {
+      "key": "Smith et al. 2019",
+      "paper_id": null,
+      "doi": null,
+      "pmid": null,
+      "pmcid": null,
+      "raw_text": "",
+      "occurrences": [
+        {
+          "section_id": "S001",
+          "paragraph_id": "P002",
+          "line": 5
+        }
+      ]
+    }
+  ],
+  "bibliography_orphans": []
+}

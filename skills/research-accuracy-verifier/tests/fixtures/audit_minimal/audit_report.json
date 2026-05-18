@@ -1,0 +1,55 @@
+{
+  "header": {
+    "document_title": "audit-minimal test fixture",
+    "document_type": "manuscript",
+    "date_checked": "2026-05-18",
+    "verification_tier": "1",
+    "sources_consulted": ["PubMed MCP"],
+    "overall_confidence": "high",
+    "confidence_justification": "Minimal fixture: single VERIFIED citation existence finding; no contradictions or unverified claims.",
+    "coverage_caveats": []
+  },
+  "executive_summary": "Minimal fixture audit. One citation (Doudna & Charpentier 2014, Science 346:1258096) was verified via PubMed. No quality concerns, no retraction notices, and no contradicted claims were identified in the document.",
+  "findings": [
+    {
+      "id": "C001",
+      "location": { "section": "Introduction", "paragraph": 1, "line": null },
+      "claim_verbatim": "CRISPR-Cas9 systems enable precise genome editing",
+      "claim_type": "citation_bearing",
+      "citations": [
+        { "key": "1", "doi": "10.1126/science.1258096", "pmid": "25430774", "raw_text": "[1]" }
+      ],
+      "verification_path": [
+        {
+          "method": "doi_lookup",
+          "tool": "PubMed MCP",
+          "query": "10.1126/science.1258096",
+          "result_summary": "DOI resolves to Doudna J & Charpentier E (2014). Science 346:1258096."
+        },
+        {
+          "method": "scite_context",
+          "tool": "Scite MCP (search_literature)",
+          "query": "10.1126/science.1258096",
+          "result_summary": "editorialNotices: none (Scite returned no record for DOI)"
+        }
+      ],
+      "evidence": [
+        {
+          "source": "PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/25430774",
+          "snippet": "Doudna J, Charpentier E. The new frontier of genome engineering with CRISPR-Cas9.",
+          "paper_id": "10.1126/science.1258096"
+        }
+      ],
+      "verdict": "VERIFIED",
+      "severity": "INFORMATIONAL",
+      "recommended_action": "No action required.",
+      "confidence": "high"
+    }
+  ],
+  "verification_matrix": [
+    { "claim_id": "C001", "verdict": "VERIFIED", "severity": "INFORMATIONAL", "stage": "2" },
+    { "claim_id": "C002", "verdict": "UNVERIFIED", "severity": "INFORMATIONAL", "stage": "2" }
+  ],
+  "methodology_note": "Tier-1 audit. Citation existence verified via PubMed MCP DOI lookup; Scite editorialNotices probed."
+}

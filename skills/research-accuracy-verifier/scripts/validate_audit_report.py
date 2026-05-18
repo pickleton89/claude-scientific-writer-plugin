@@ -1,25 +1,47 @@
 #!/usr/bin/env python3
-"""Validate an assembled audit_report.json against schema and predicate P8.
+"""Validate an assembled audit_report.json against schema, P8, and R1–R6.
 
 Two-stage pattern delegated to `verifier_kit.validate.SchemaValidator`:
   Stage 1: JSON Schema (Draft-07) against schemas/audit_report.json
-  Stage 2: Predicate P8 (this module's `run_predicates`)
+  Stage 2: Predicates (this module's `run_predicates`)
+
     P8 (Tier-3 cherry-picking sweep). Intake-domain ∈ {biomedical,mixed} AND
        (tier == "3" OR (tier == "custom" AND "uncited_claims" ∈ checks_enabled))
        ⟹ every (stage="3", verdict="VERIFIED") matrix entry MUST be covered
-       by either:
-         (a) a findings[] entry whose verification_path[*].result_summary
-             contains the tag `cherry_picking:<claim_id>` AND `USI=` AND has
-             at least one method=="scite_context" entry; OR
-         (b) a header.coverage_caveats[] string of shape
-             `cherry_picking:<claim_id>: <reason>`.
+       by either a Stage-4 OVERGENERALIZED cherry-picking finding OR a
+       `cherry_picking:<claim_id>: <reason>` coverage caveat.
 
-P8 is also enforced transitively from `render_report.generate_report()` so an
-audit cannot render past a violation even if this CLI is skipped.
+    R1 (findings ids resolve in claim_inventory). When `claim_inventory.json`
+       is supplied via ctx, every `findings[].id` must appear in items[].id.
+    R2 (evidence paper_ids resolve in resolved_sources). When
+       `resolved_sources.json` is supplied AND intake.sources_available != "none",
+       every non-null `findings[].evidence[].paper_id` must resolve.
+    R3 (citation keys resolve in reference_map). When `reference_map.json` is
+       supplied, every `findings[].citations[].key` must appear in
+       citations[].key.
+    R4 (claim_verbatim equality vs document_inventory). When
+       `document_inventory.json` + the normalized document text are supplied,
+       every `findings[].claim_verbatim` must appear as a substring of the
+       text within the paragraph addressed by `findings[].location` (after
+       QuoteVerifier whitespace + unicode normalization).
+    R6 (matrix claim_ids resolve in claim_inventory). When
+       `claim_inventory.json` is supplied, every `verification_matrix[].claim_id`
+       must appear in items[].id.
+
+P8 + R1–R6 are also enforced transitively from `render_report.generate_report()`
+so an audit cannot render past a violation even if this CLI is skipped.
+
+Enforcement mode (from scripts/thresholds.ARTIFACT_ENFORCEMENT):
+  "advisory" — R-predicate failures emit warnings; validation still ok=True.
+  "required" — R-predicate failures emit errors; ok=False (Phase 3 default).
+P8 always emits errors regardless of enforcement (it's an existing hard gate).
 
 Usage:
     uv run python validate_audit_report.py audit_report.json --intake intake.json
-    uv run python validate_audit_report.py audit_report.json --intake intake.json --json
+    uv run python validate_audit_report.py audit_report.json --intake intake.json \\
+        --claim-inventory ci.json --reference-map rm.json \\
+        --resolved-sources rs.json --document-inventory di.json \\
+        --document doc.txt --json
 """
 
 from __future__ import annotations
@@ -37,8 +59,17 @@ if str(_SHARED_DIR) not in sys.path:
 
 from verifier_kit.validate import SchemaValidator  # noqa: E402
 
+# Make sibling scripts importable for reusing QuoteVerifier (R4) and
+# thresholds (R-predicate enforcement mode).
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from thresholds import ARTIFACT_ENFORCEMENT  # noqa: E402
+from verify_exact_quote import QuoteVerifier  # noqa: E402
+
 P8_DOMAINS = {"biomedical", "mixed"}
 _USI_RE = re.compile(r"USI\s*=", re.IGNORECASE)
+
+# R-predicate identifiers, used to prefix advisory warnings vs errors.
+_R_PREDICATES = ("R1", "R2", "R3", "R4", "R6")
 
 
 def _p8_active(intake: dict[str, Any]) -> bool:
@@ -99,7 +130,7 @@ def _caveat_covers_claim(caveats: list[Any], claim_id: str) -> bool:
 
 
 class AuditReportValidator(SchemaValidator):
-    """Validate audit_report.json with schema + predicate P8."""
+    """Validate audit_report.json with schema + predicate P8 + R1–R4/R6."""
 
     def __init__(self, schema_path: str | None = None) -> None:
         base = Path(__file__).parent.parent / "schemas"
@@ -119,8 +150,41 @@ class AuditReportValidator(SchemaValidator):
             errors.append("internal: run_predicates requires intake")
             return
 
+        # P8 — Tier-3 cherry-picking sweep (always hard error when active).
+        self._run_p8(record, intake, errors)
+
+        # R1–R4 / R6 — cross-artifact join integrity. Failure mode controlled
+        # by ARTIFACT_ENFORCEMENT (advisory = warnings; required = errors).
+        artifacts = ctx.get("artifacts") or {}
+        document_text = ctx.get("document_text")
+        r_bucket = errors if ARTIFACT_ENFORCEMENT == "required" else warnings
+        self._run_r1(record, artifacts, r_bucket, warnings)
+        self._run_r2(record, intake, artifacts, r_bucket, warnings)
+        self._run_r3(record, artifacts, r_bucket, warnings)
+        self._run_r4(record, artifacts, document_text, r_bucket, warnings)
+        self._run_r6(record, artifacts, r_bucket, warnings)
+
+    def validate(  # type: ignore[override]
+        self,
+        report: dict[str, Any],
+        intake: dict[str, Any],
+        *,
+        artifacts: dict[str, dict[str, Any]] | None = None,
+        document_text: str | None = None,
+    ) -> tuple[bool, list[str], list[str]]:
+        return super().validate(
+            report,
+            intake=intake,
+            artifacts=artifacts or {},
+            document_text=document_text,
+        )
+
+    # ── P8 ────────────────────────────────────────────────────────────────
+    def _run_p8(
+        self, record: dict[str, Any], intake: dict[str, Any], errors: list[str]
+    ) -> None:
         if not _p8_active(intake):
-            return  # P8 trigger conditions not met; skip silently.
+            return
 
         matrix = record.get("verification_matrix") or []
         findings = record.get("findings") or []
@@ -154,12 +218,232 @@ class AuditReportValidator(SchemaValidator):
                 "header.coverage_caveats[]."
             )
 
-    def validate(  # type: ignore[override]
+    # ── R1 ────────────────────────────────────────────────────────────────
+    def _run_r1(
         self,
-        report: dict[str, Any],
+        record: dict[str, Any],
+        artifacts: dict[str, Any],
+        bucket: list[str],
+        warnings: list[str],
+    ) -> None:
+        ci = artifacts.get("claim_inventory")
+        if ci is None:
+            warnings.append(
+                "R1 skipped: claim_inventory.json not provided to validator"
+            )
+            return
+        valid_ids = {
+            item.get("id")
+            for item in (ci.get("items") or [])
+            if isinstance(item, dict) and item.get("id")
+        }
+        for f in record.get("findings") or []:
+            if not isinstance(f, dict):
+                continue
+            fid = f.get("id")
+            if fid and fid not in valid_ids:
+                bucket.append(
+                    f"R1: findings[id={fid!r}] does not resolve in "
+                    f"claim_inventory.json items[]"
+                )
+
+    # ── R2 ────────────────────────────────────────────────────────────────
+    def _run_r2(
+        self,
+        record: dict[str, Any],
         intake: dict[str, Any],
-    ) -> tuple[bool, list[str], list[str]]:
-        return super().validate(report, intake=intake)
+        artifacts: dict[str, Any],
+        bucket: list[str],
+        warnings: list[str],
+    ) -> None:
+        if intake.get("sources_available") == "none":
+            return  # No sources → no paper_id resolution possible.
+        rs = artifacts.get("resolved_sources")
+        if rs is None:
+            warnings.append(
+                "R2 skipped: resolved_sources.json not provided to validator"
+            )
+            return
+        valid_paper_ids = {
+            src.get("paper_id")
+            for src in (rs.get("sources") or [])
+            if isinstance(src, dict) and src.get("paper_id")
+        }
+        for f in record.get("findings") or []:
+            if not isinstance(f, dict):
+                continue
+            fid = f.get("id")
+            for j, e in enumerate(f.get("evidence") or []):
+                if not isinstance(e, dict):
+                    continue
+                pid = e.get("paper_id")
+                if pid is None:
+                    continue  # null permitted (web-sourced no-DOI evidence)
+                if pid not in valid_paper_ids:
+                    bucket.append(
+                        f"R2: findings[id={fid!r}].evidence[{j}].paper_id={pid!r} "
+                        f"does not resolve in resolved_sources.json sources[]"
+                    )
+
+    # ── R3 ────────────────────────────────────────────────────────────────
+    def _run_r3(
+        self,
+        record: dict[str, Any],
+        artifacts: dict[str, Any],
+        bucket: list[str],
+        warnings: list[str],
+    ) -> None:
+        rm = artifacts.get("reference_map")
+        if rm is None:
+            warnings.append(
+                "R3 skipped: reference_map.json not provided to validator"
+            )
+            return
+        valid_keys = {
+            c.get("key")
+            for c in (rm.get("citations") or [])
+            if isinstance(c, dict) and c.get("key")
+        }
+        for f in record.get("findings") or []:
+            if not isinstance(f, dict):
+                continue
+            fid = f.get("id")
+            for j, c in enumerate(f.get("citations") or []):
+                if not isinstance(c, dict):
+                    continue
+                k = c.get("key")
+                if k and k not in valid_keys:
+                    bucket.append(
+                        f"R3: findings[id={fid!r}].citations[{j}].key={k!r} "
+                        f"does not resolve in reference_map.json citations[]"
+                    )
+
+    # ── R4 ────────────────────────────────────────────────────────────────
+    def _run_r4(
+        self,
+        record: dict[str, Any],
+        artifacts: dict[str, Any],
+        document_text: str | None,
+        bucket: list[str],
+        warnings: list[str],
+    ) -> None:
+        di = artifacts.get("document_inventory")
+        if di is None or document_text is None:
+            warnings.append(
+                "R4 skipped: document_inventory.json and/or document text "
+                "not provided to validator"
+            )
+            return
+
+        verifier = QuoteVerifier()
+        # Index sections by case-insensitive name for fuzzy name match;
+        # paragraphs by section_id for ordinal lookup.
+        sections = di.get("sections") or []
+        paragraphs = di.get("paragraphs") or []
+        section_by_name_lower = {}
+        for s in sections:
+            if isinstance(s, dict) and s.get("name"):
+                section_by_name_lower.setdefault(s["name"].strip().lower(), s)
+        paragraphs_by_section: dict[str, list[dict[str, Any]]] = {}
+        for p in paragraphs:
+            if isinstance(p, dict) and p.get("section_id"):
+                paragraphs_by_section.setdefault(p["section_id"], []).append(p)
+        # Sort each section's paragraphs by ordinal.
+        for plist in paragraphs_by_section.values():
+            plist.sort(key=lambda x: x.get("ordinal", 0))
+
+        for f in record.get("findings") or []:
+            if not isinstance(f, dict):
+                continue
+            fid = f.get("id")
+            loc = f.get("location") or {}
+            section_name = (loc.get("section") or "").strip().lower()
+            paragraph_ordinal = loc.get("paragraph")
+            claim = f.get("claim_verbatim") or ""
+            if not claim:
+                continue
+            # Find section by exact-or-prefix match on name (handles
+            # "Significance, paragraph 3" → "Significance"). Require ≥3-char
+            # overlap to prevent one-letter section names from collapsing
+            # into false-positive matches (e.g., section "A" matching any
+            # location string starting with "a").
+            section = section_by_name_lower.get(section_name)
+            if section is None:
+                for name_lower, s in section_by_name_lower.items():
+                    overlap = min(len(name_lower), len(section_name))
+                    if overlap < 3:
+                        continue
+                    if section_name.startswith(name_lower) or name_lower.startswith(
+                        section_name
+                    ):
+                        section = s
+                        break
+            if section is None:
+                bucket.append(
+                    f"R4: findings[id={fid!r}].location.section={loc.get('section')!r} "
+                    f"does not match any section in document_inventory.json"
+                )
+                continue
+            plist = paragraphs_by_section.get(section.get("id"), [])
+            if not (
+                isinstance(paragraph_ordinal, int)
+                and 1 <= paragraph_ordinal <= len(plist)
+            ):
+                bucket.append(
+                    f"R4: findings[id={fid!r}].location.paragraph="
+                    f"{paragraph_ordinal!r} out of range for section "
+                    f"{section.get('id')!r} ({len(plist)} paragraphs)"
+                )
+                continue
+            para = plist[paragraph_ordinal - 1]
+            cs, ce = para.get("char_start"), para.get("char_end")
+            if not (
+                isinstance(cs, int)
+                and isinstance(ce, int)
+                and 0 <= cs <= ce <= len(document_text)
+            ):
+                bucket.append(
+                    f"R4: findings[id={fid!r}] paragraph {para.get('id')!r} "
+                    f"has out-of-range char offsets vs supplied document"
+                )
+                continue
+            paragraph_text = document_text[cs:ce]
+            mr = verifier.match(claim, paragraph_text)
+            if mr.verdict != "QUOTE_VERIFIED":
+                bucket.append(
+                    f"R4: findings[id={fid!r}].claim_verbatim does not appear "
+                    f"in paragraph {para.get('id')!r} (matched_form={mr.matched_form!r}, "
+                    f"overlap={mr.overlap_ratio})"
+                )
+
+    # ── R6 ────────────────────────────────────────────────────────────────
+    def _run_r6(
+        self,
+        record: dict[str, Any],
+        artifacts: dict[str, Any],
+        bucket: list[str],
+        warnings: list[str],
+    ) -> None:
+        ci = artifacts.get("claim_inventory")
+        if ci is None:
+            warnings.append(
+                "R6 skipped: claim_inventory.json not provided to validator"
+            )
+            return
+        valid_ids = {
+            item.get("id")
+            for item in (ci.get("items") or [])
+            if isinstance(item, dict) and item.get("id")
+        }
+        for j, m in enumerate(record.get("verification_matrix") or []):
+            if not isinstance(m, dict):
+                continue
+            cid = m.get("claim_id")
+            if cid and cid not in valid_ids:
+                bucket.append(
+                    f"R6: verification_matrix[{j}].claim_id={cid!r} does not "
+                    f"resolve in claim_inventory.json items[]"
+                )
 
 
 def run_p8(
@@ -181,14 +465,59 @@ def run_p8(
         return "n/a", []
     validator = AuditReportValidator()
     errors: list[str] = []
-    warnings: list[str] = []
-    validator.run_predicates(report, errors, warnings, intake=intake)
+    validator._run_p8(report, intake, errors)
     return ("pass" if not errors else "fail"), errors
+
+
+def run_r_predicates(
+    report: dict[str, Any],
+    intake: dict[str, Any],
+    *,
+    artifacts: dict[str, dict[str, Any]] | None = None,
+    document_text: str | None = None,
+) -> tuple[dict[str, str], list[str], list[str]]:
+    """Run R1–R4 + R6 without schema validation.
+
+    Returns
+    -------
+    (per_predicate_status, errors, warnings): per_predicate_status maps each
+    predicate name to "pass" | "fail" | "n/a". "n/a" means the predicate's
+    required artifact (or intake setting) wasn't supplied.
+
+    Failure-mode (errors vs warnings) tracks ARTIFACT_ENFORCEMENT.
+    """
+    validator = AuditReportValidator()
+    errors: list[str] = []
+    warnings: list[str] = []
+    # Run all R-predicates by invoking the unified run_predicates with intake.
+    validator.run_predicates(
+        report,
+        errors,
+        warnings,
+        intake=intake,
+        artifacts=artifacts or {},
+        document_text=document_text,
+    )
+    # Strip P8 entries; only report R-status.
+    r_status: dict[str, str] = {}
+    combined = [m for m in errors + warnings if not m.startswith("P8:")]
+    for pred in _R_PREDICATES:
+        skipped = any(
+            m.startswith(f"{pred} skipped:") for m in warnings
+        )
+        failed = any(m.startswith(f"{pred}:") for m in combined)
+        if skipped:
+            r_status[pred] = "n/a"
+        else:
+            r_status[pred] = "fail" if failed else "pass"
+    # Filter outputs to drop the P8 line (run_p8 owns it).
+    r_errors = [e for e in errors if not e.startswith("P8:")]
+    return r_status, r_errors, warnings
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Validate an audit_report.json (schema + P8)."
+        description="Validate an audit_report.json (schema + P8 + R1–R4/R6)."
     )
     parser.add_argument("report_file", help="Path to audit_report.json")
     parser.add_argument(
@@ -197,6 +526,26 @@ def main() -> None:
         help="Path to the intake.json from the same audit (carries domain + tier).",
     )
     parser.add_argument("--schema", help="Custom audit_report.json schema path")
+    parser.add_argument(
+        "--claim-inventory",
+        help="Path to claim_inventory.json (enables R1 + R6).",
+    )
+    parser.add_argument(
+        "--reference-map",
+        help="Path to reference_map.json (enables R3).",
+    )
+    parser.add_argument(
+        "--resolved-sources",
+        help="Path to resolved_sources.json (enables R2 when intake.sources_available != 'none').",
+    )
+    parser.add_argument(
+        "--document-inventory",
+        help="Path to document_inventory.json (enables R4 — must pair with --document).",
+    )
+    parser.add_argument(
+        "--document",
+        help="Path to the document text (or <document>-wrapped file). Enables R4 paragraph-text substring check.",
+    )
     parser.add_argument("--json", action="store_true", help="Emit JSON result")
     args = parser.parse_args()
 
@@ -212,24 +561,58 @@ def main() -> None:
     report = json.loads(report_path.read_text())
     intake = json.loads(intake_path.read_text())
 
-    # validator.validate() runs schema + P8 (via run_predicates). We compute
-    # p8_status separately only for the display badge: when the trigger
-    # conditions aren't met (general domain, Tier-1/2, etc.) we want to
-    # surface "n/a" rather than the binary VALID/INVALID. _p8_active() is
-    # a single dict lookup, so this is cheaper than re-running run_p8.
+    artifacts: dict[str, dict[str, Any]] = {}
+    for kind, path_arg in [
+        ("claim_inventory", args.claim_inventory),
+        ("reference_map", args.reference_map),
+        ("resolved_sources", args.resolved_sources),
+        ("document_inventory", args.document_inventory),
+    ]:
+        if path_arg:
+            p = Path(path_arg)
+            if not p.exists():
+                print(f"Error: file not found: {p}", file=sys.stderr)
+                sys.exit(2)
+            artifacts[kind] = json.loads(p.read_text())
+
+    document_text: str | None = None
+    if args.document:
+        # Normalize using the same rules as parse_document so R4 char-offset
+        # lookups align with the document_inventory.
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from _text_norm import normalize_text, strip_document_wrapper  # noqa: E402
+        raw = Path(args.document).read_text(encoding="utf-8")
+        document_text = normalize_text(strip_document_wrapper(raw))
+
     validator = AuditReportValidator(args.schema)
-    ok, errors, warnings = validator.validate(report, intake)
+    ok, errors, warnings = validator.validate(
+        report, intake, artifacts=artifacts, document_text=document_text
+    )
     if not _p8_active(intake):
         p8_status = "n/a"
     else:
         p8_status = "pass" if not any(e.startswith("P8:") for e in errors) else "fail"
+
+    # Derive R-predicate statuses for display.
+    r_status: dict[str, str] = {}
+    for pred in _R_PREDICATES:
+        if any(w.startswith(f"{pred} skipped:") for w in warnings):
+            r_status[pred] = "n/a"
+        elif any(
+            m.startswith(f"{pred}:") for m in errors + warnings
+        ):
+            r_status[pred] = "fail"
+        else:
+            r_status[pred] = "pass"
 
     if args.json:
         print(
             json.dumps(
                 {
                     "valid": ok,
+                    "enforcement": ARTIFACT_ENFORCEMENT,
                     "p8_status": p8_status,
+                    "r_status": r_status,
                     "errors": errors,
                     "warnings": warnings,
                 },
@@ -238,7 +621,11 @@ def main() -> None:
         )
     else:
         tag = "VALID" if ok else "INVALID"
-        print(f"{report_path.name}: {tag} (P8: {p8_status})")
+        rs = " ".join(f"{k}:{v}" for k, v in r_status.items())
+        print(
+            f"{report_path.name}: {tag} (enforcement={ARTIFACT_ENFORCEMENT}, "
+            f"P8: {p8_status}, {rs})"
+        )
         for e in errors:
             print(f"  ERROR: {e}")
         for w in warnings:

@@ -1,0 +1,139 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "document_inventory.json",
+  "title": "DocumentInventory",
+  "description": "Parsed document structure (sections + paragraphs + char/line offsets) for the <document> wrapper content. Emitted at Stage 1 by scripts/parse_document.py with empty overrides[]; the LLM may append override entries to correct parser errors without editing the baseline sections/paragraphs. Validated by scripts/validate_artifact.py --kind document_inventory against schema + predicates D1-D4.",
+  "type": "object",
+  "required": ["schema_version", "metadata", "sections", "paragraphs"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["1.0"],
+      "description": "Artifact schema version. Bump on breaking change (mirrors deep-research convention)."
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["frozen_at", "source_sha256", "audit_slug", "parser_version"],
+      "properties": {
+        "frozen_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO-8601 instant when Stage 1 finalized the inventory (including LLM overrides)."
+        },
+        "source_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 hex digest of normalized <document> content. Normalization: LF line endings, trailing whitespace stripped per line, NFC unicode. Re-derivable for tamper detection."
+        },
+        "audit_slug": {
+          "type": "string",
+          "minLength": 1
+        },
+        "document_type": {
+          "type": ["string", "null"],
+          "enum": ["grant", "manuscript", "lit_review", "slides", "report", "memo", "other", null]
+        },
+        "parser_version": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Version of scripts/parse_document.py that produced the baseline. Used to invalidate inventories built with outdated parsers."
+        }
+      },
+      "additionalProperties": false
+    },
+    "sections": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/Section" }
+    },
+    "paragraphs": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/Paragraph" }
+    },
+    "overrides": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/Override" },
+      "description": "LLM corrections to the parser baseline. Empty array when the parser was correct. Apply via document_inventory.resolve_location()."
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "Section": {
+      "type": "object",
+      "required": ["id", "name", "level", "char_start", "char_end", "paragraph_ids"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^S\\d{3,}$",
+          "description": "Stable section ID. Pattern S001, S002, ... assigned sequentially by parser."
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "level": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 6,
+          "description": "Heading level (1=H1 ... 6=H6). For plaintext without markdown, parser assigns 1 to top-level all-caps headings."
+        },
+        "char_start": { "type": "integer", "minimum": 0 },
+        "char_end": { "type": "integer", "minimum": 0 },
+        "paragraph_ids": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Ordered list of paragraph IDs belonging to this section. Convenience index — authoritative join is paragraphs[].section_id."
+        }
+      },
+      "additionalProperties": false
+    },
+    "Paragraph": {
+      "type": "object",
+      "required": ["id", "section_id", "ordinal", "char_start", "char_end", "line_start", "line_end"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^P\\d{3,}$",
+          "description": "Stable paragraph ID. Pattern P001, P002, ... assigned sequentially across the entire document."
+        },
+        "section_id": {
+          "type": "string",
+          "description": "Authoritative section join. Refers to sections[].id."
+        },
+        "ordinal": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "1-indexed paragraph number WITHIN the parent section. Mirrors Finding.location.paragraph semantics."
+        },
+        "char_start": { "type": "integer", "minimum": 0 },
+        "char_end": { "type": "integer", "minimum": 0 },
+        "line_start": { "type": "integer", "minimum": 1 },
+        "line_end": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "Override": {
+      "type": "object",
+      "required": ["kind", "path", "after", "reason"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["section_name", "section_boundary", "paragraph_boundary"]
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "JSON-pointer-like path into sections/paragraphs. Examples: 'sections[2].name', 'paragraphs[5].section_id'. Resolved by validate_artifact.py D3."
+        },
+        "before": {
+          "description": "Original value (any JSON). Optional — present for diff readability; not required for override application."
+        },
+        "after": {
+          "description": "Corrected value (any JSON). Required."
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Free-text explanation of the correction. Required so future readers understand why the LLM overrode the parser."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

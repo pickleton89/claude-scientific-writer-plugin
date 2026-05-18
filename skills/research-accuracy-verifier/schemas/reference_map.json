@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "reference_map.json",
+  "title": "ReferenceMap",
+  "description": "Bibliography + inline-citation map for the document under audit. Emitted at Stage 1 by scripts/extract_reference_map.py with paper_id null on every citation; Stage 2 fills paper_id back in after identifier resolution succeeds (via checkpoint.update_reference_map_paper_ids). bibliography_orphans[] is populated at Stage 1 (cheap deterministic check, no API calls) — bib entries with zero inline occurrences. Validated by scripts/validate_artifact.py --kind reference_map against schema + predicates M1-M3.",
+  "type": "object",
+  "required": ["schema_version", "metadata", "citations"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["1.0"]
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["frozen_at", "audit_slug", "sources_available"],
+      "properties": {
+        "frozen_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "audit_slug": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sources_available": {
+          "type": "string",
+          "enum": ["uploaded_files", "bibliography_only", "none"],
+          "description": "Mirrors intake.sources_available. Drives M-predicate gating."
+        }
+      },
+      "additionalProperties": false
+    },
+    "citations": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/Citation" }
+    },
+    "bibliography_orphans": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Bibliography entry keys with zero inline occurrences in the document. Stage 7 internal-consistency input."
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "Citation": {
+      "type": "object",
+      "required": ["key", "raw_text", "occurrences"],
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Citation key as it appears in the document. BibTeX key ('Smith2019'), numeric bracket ('[12]'), or author-year ('Smith et al., 2019')."
+        },
+        "paper_id": {
+          "type": ["string", "null"],
+          "description": "Stable join key. DOI-preferred, PMID fallback, slug last resort. Null until Stage 2 resolves. Byte-compatible with deep-research/schemas/sources.json#paper_id and resolved_sources.json#paper_id."
+        },
+        "doi": { "type": ["string", "null"] },
+        "pmid": { "type": ["string", "null"] },
+        "pmcid": { "type": ["string", "null"] },
+        "raw_text": {
+          "type": "string",
+          "description": "Verbatim bibliography entry text (when available). Empty string when only inline mentions exist (no bib entry parsed)."
+        },
+        "occurrences": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Occurrence" },
+          "description": "Locations where this citation appears inline. Empty when this is a bibliography-only entry with no inline reference (becomes a bibliography_orphan if also absent)."
+        }
+      },
+      "additionalProperties": false
+    },
+    "Occurrence": {
+      "type": "object",
+      "required": ["section_id", "paragraph_id"],
+      "properties": {
+        "section_id": {
+          "type": "string",
+          "description": "Refers to document_inventory.sections[].id."
+        },
+        "paragraph_id": {
+          "type": "string",
+          "description": "Refers to document_inventory.paragraphs[].id."
+        },
+        "line": {
+          "type": ["integer", "null"],
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

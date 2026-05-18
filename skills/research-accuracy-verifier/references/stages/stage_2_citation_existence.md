@@ -72,3 +72,16 @@ See [`../CONTRACTS.md`](../CONTRACTS.md) for canonical verdict definitions.
 Call `checkpoint.py write --slug <slug> --stage 2 --findings <path> --matrix <path> --document-type <type>`. Findings are validated against `schemas/finding.json` before write; on validation failure, fix the offending finding and retry.
 
 **Artifact:** `research/audits/<slug>/02_existence.json`.
+
+## Emit `resolved_sources.json` + backfill `reference_map.json` paper_ids
+
+In addition to the per-stage findings artifact, Stage 2 emits the **canonical resolved-metadata sidecar** (`resolved_sources.json`) AND backfills resolved identifiers into the Stage-1 `reference_map.json`:
+
+1. For every successfully resolved citation, append a `sources[]` entry to `resolved_sources.json` with shape `{paper_id, doi, pmid, pmcid, title, authors, year, venue, resolution_paths[], editorial_notices, venue_quality}`. The `paper_id` is DOI-preferred (PMID fallback, slug last resort) and is **byte-compatible with `deep-research/schemas/sources.json#paper_id`** so cross-skill diff-mode (`intake.pinned_sidecars`) can read either artifact interchangeably.
+2. Every resolution attempt (PubMed → Crossref → OpenAlex) is logged in `resolution_paths[]` with `tool`, `outcome ∈ {VERIFIED, METADATA_MISMATCH, UNSUPPORTED, UNVERIFIED}`, and `fetched_at`. At least one entry is required (`minItems: 1`).
+3. P7 Scite probes populate `editorial_notices` — when the probe ran and found nothing, encode as `{type: "NONE", fetched_at: ...}` (NOT `null`) so the audit trail records the probe attempt distinctly from "never probed".
+4. OpenAlex `check_venue_quality` populates `venue_quality` with the same NONE-sentinel convention.
+5. Backfill identifiers into `reference_map.json` via `extract_reference_map.update_paper_ids(reference_map, {citation_key: {paper_id, doi, pmid, pmcid}})` so downstream stages can join `findings[].citations[].key` ↔ `findings[].evidence[].paper_id` ↔ `resolved_sources.sources[].paper_id`.
+6. Validate the emitted artifact via `scripts/validate_artifact.py --kind resolved_sources --file PATH`. Predicates S1 (unique paper_id), S2 (at least one identifier), S4 (frozen_at not in future), V1 (fetched_at parseable + not in future), V2 (at least one non-UNVERIFIED outcome) gate the write.
+
+These artifacts power the cross-artifact predicates R2 (evidence paper_id resolution) and R3 (citation key resolution) in `validate_audit_report.py` — see [`../predicates.md`](../predicates.md).

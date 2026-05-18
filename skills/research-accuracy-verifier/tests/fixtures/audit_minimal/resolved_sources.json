@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "metadata": {
+    "frozen_at": "2026-05-18T17:00:00+00:00",
+    "audit_slug": "audit-minimal",
+    "document_type": "manuscript"
+  },
+  "sources": [
+    {
+      "paper_id": "10.1126/science.1258096",
+      "doi": "10.1126/science.1258096",
+      "pmid": "25430774",
+      "title": "The new frontier of genome engineering with CRISPR-Cas9",
+      "authors": ["Doudna J", "Charpentier E"],
+      "year": 2014,
+      "venue": "Science",
+      "resolution_paths": [
+        {
+          "tool": "PubMed MCP",
+          "outcome": "VERIFIED",
+          "fetched_at": "2026-05-18T16:00:00+00:00",
+          "metadata_mismatch_fields": []
+        }
+      ],
+      "editorial_notices": {
+        "type": "NONE",
+        "fetched_at": "2026-05-18T16:00:00+00:00"
+      },
+      "venue_quality": null
+    }
+  ]
+}

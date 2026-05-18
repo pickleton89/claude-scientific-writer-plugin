@@ -407,3 +407,207 @@ class TestNoStage3VerifiedClaims:
         assert status == "pass"
 
 
+
+
+# ===========================================================================
+# Cross-artifact predicates R1–R4, R6 (Phase 1 — advisory mode)
+# ===========================================================================
+
+import copy
+import json
+from pathlib import Path
+from validate_audit_report import AuditReportValidator
+
+FIXTURE_DIR = Path(__file__).parent / "fixtures" / "audit_minimal"
+
+
+def _fix(name: str) -> dict:
+    return json.loads((FIXTURE_DIR / name).read_text())
+
+
+def _doc_text() -> str:
+    # Normalize the same way parse_document does so R4's char offsets align.
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
+    from parse_document import normalize_text, strip_document_wrapper
+    raw = (FIXTURE_DIR / "document.md").read_text()
+    return normalize_text(strip_document_wrapper(raw))
+
+
+class TestRPredicatesHappyPath:
+    """Full artifact suite on minimal fixture should pass with no R-failures."""
+
+    def test_all_r_predicates_pass(self) -> None:
+        report = _fix("audit_report.json")
+        intake = _fix("intake.json")
+        artifacts = {
+            "claim_inventory": _fix("claim_inventory.json"),
+            "reference_map": _fix("reference_map.json"),
+            "resolved_sources": _fix("resolved_sources.json"),
+            "document_inventory": _fix("document_inventory.json"),
+        }
+        v = AuditReportValidator()
+        ok, errors, warnings = v.validate(
+            report, intake, artifacts=artifacts, document_text=_doc_text()
+        )
+        assert ok, f"errors: {errors}, warnings: {warnings}"
+        # No R: errors and no R: skipped warnings (all artifacts supplied).
+        assert not any(e.startswith(("R1:", "R2:", "R3:", "R4:", "R6:")) for e in errors)
+        assert not any("skipped:" in w for w in warnings)
+
+
+class TestR1FindingIdResolves:
+    def test_failure_when_finding_id_missing_from_inventory(self) -> None:
+        report = _fix("audit_report.json")
+        intake = _fix("intake.json")
+        ci = _fix("claim_inventory.json")
+        # Remove the only item — C001 in findings now orphan.
+        ci["items"] = []
+        v = AuditReportValidator()
+        ok, errors, warnings = v.validate(
+            report, intake, artifacts={"claim_inventory": ci}
+        )
+        # Advisory mode: surfaces as warning, ok still True.
+        assert ok
+        assert any(w.startswith("R1:") for w in warnings)
+
+    def test_skipped_when_artifact_missing(self) -> None:
+        report = _fix("audit_report.json")
+        intake = _fix("intake.json")
+        v = AuditReportValidator()
+        ok, errors, warnings = v.validate(report, intake, artifacts={})
+        assert ok
+        assert any(w.startswith("R1 skipped:") for w in warnings)
+
+
+class TestR2EvidencePaperIdResolves:
+    def test_failure_when_paper_id_unknown(self) -> None:
+        report = _fix("audit_report.json")
+        intake = _fix("intake.json")
+        rs = _fix("resolved_sources.json")
+        rs["sources"] = []
+        v = AuditReportValidator()
+        ok, errors, warnings = v.validate(
+            report, intake, artifacts={"resolved_sources": rs}
+        )
+        assert ok  # advisory
+        assert any(w.startswith("R2:") for w in warnings)
+
+    def test_null_paper_id_permitted(self) -> None:
+        report = _fix("audit_report.json")
+        intake = _fix("intake.json")
+        report["findings"][0]["evidence"][0]["paper_id"] = None
+        rs = _fix("resolved_sources.json")
+        v = AuditReportValidator()
+        ok, errors, warnings = v.validate(
+            report, intake, artifacts={"resolved_sources": rs}
+        )
+        assert ok
+        # No R2 failures emitted — null is allowed.
+        assert not any(w.startswith("R2:") for w in warnings if not w.startswith("R2 skipped"))
+
+    def test_skipped_when_sources_available_none(self) -> None:
+        report = _fix("audit_report.json")
+        intake = _fix("intake.json")
+        intake["sources_available"] = "none"
+        rs = _fix("resolved_sources.json")
+        rs["sources"] = []  # would normally trigger R2
+        v = AuditReportValidator()
+        ok, errors, warnings = v.validate(
+            report, intake, artifacts={"resolved_sources": rs}
+        )
+        assert ok
+        # sources_available == "none" → R2 returns silently (no error, no skip msg).
+        assert not any(w.startswith("R2:") for w in warnings)
+
+
+class TestR3CitationKeyResolves:
+    def test_failure_when_key_dangling(self) -> None:
+        report = _fix("audit_report.json")
+        intake = _fix("intake.json")
+        rm = _fix("reference_map.json")
+        rm["citations"] = []
+        v = AuditReportValidator()
+        ok, errors, warnings = v.validate(
+            report, intake, artifacts={"reference_map": rm}
+        )
+        assert ok
+        assert any(w.startswith("R3:") for w in warnings)
+
+
+class TestR4ClaimVerbatimMatchesDocument:
+    def test_failure_when_claim_drifts(self) -> None:
+        report = _fix("audit_report.json")
+        intake = _fix("intake.json")
+        di = _fix("document_inventory.json")
+        # Mutate claim_verbatim to text that's not in the document.
+        report["findings"][0]["claim_verbatim"] = "This text does not appear anywhere in the doc."
+        v = AuditReportValidator()
+        ok, errors, warnings = v.validate(
+            report, intake, artifacts={"document_inventory": di}, document_text=_doc_text()
+        )
+        assert ok
+        assert any(w.startswith("R4:") for w in warnings)
+
+    def test_skipped_when_doc_text_missing(self) -> None:
+        report = _fix("audit_report.json")
+        intake = _fix("intake.json")
+        di = _fix("document_inventory.json")
+        v = AuditReportValidator()
+        ok, errors, warnings = v.validate(
+            report, intake, artifacts={"document_inventory": di}, document_text=None
+        )
+        assert ok
+        assert any(w.startswith("R4 skipped:") for w in warnings)
+
+
+class TestR6MatrixClaimIdResolves:
+    def test_failure_when_matrix_claim_dangling(self) -> None:
+        report = _fix("audit_report.json")
+        intake = _fix("intake.json")
+        ci = _fix("claim_inventory.json")
+        # Add a matrix entry with a claim_id not in inventory.
+        report["verification_matrix"].append({
+            "claim_id": "C999",
+            "verdict": "VERIFIED",
+            "severity": "INFORMATIONAL",
+            "stage": "2",
+        })
+        v = AuditReportValidator()
+        ok, errors, warnings = v.validate(
+            report, intake, artifacts={"claim_inventory": ci}
+        )
+        assert ok
+        assert any(w.startswith("R6:") for w in warnings)
+
+
+class TestRequiredModeFlip:
+    """Confirm that flipping ARTIFACT_ENFORCEMENT to required makes R-failures
+    hard errors. Restores constant after each test."""
+
+    def setup_method(self) -> None:
+        import thresholds
+        self._original = thresholds.ARTIFACT_ENFORCEMENT
+
+    def teardown_method(self) -> None:
+        import thresholds, validate_audit_report
+        thresholds.ARTIFACT_ENFORCEMENT = self._original
+        # Re-import to refresh the module-level constant binding.
+        import importlib
+        importlib.reload(validate_audit_report)
+
+    def test_required_mode_promotes_r1_to_error(self) -> None:
+        import thresholds, validate_audit_report, importlib
+        thresholds.ARTIFACT_ENFORCEMENT = "required"
+        importlib.reload(validate_audit_report)
+        from validate_audit_report import AuditReportValidator as V
+
+        report = _fix("audit_report.json")
+        intake = _fix("intake.json")
+        ci = _fix("claim_inventory.json")
+        ci["items"] = []
+        ok, errors, warnings = V().validate(
+            report, intake, artifacts={"claim_inventory": ci}
+        )
+        assert not ok
+        assert any(e.startswith("R1:") for e in errors)

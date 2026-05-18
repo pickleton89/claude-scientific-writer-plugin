@@ -113,7 +113,11 @@
             "minLength": 1,
             "description": "Resolvable URL, DOI string, or PMID. P3 enforces presence; reachability check is a soft warning."
           },
-          "snippet": { "type": "string" }
+          "snippet": { "type": "string" },
+          "paper_id": {
+            "type": ["string", "null"],
+            "description": "Stable join key into resolved_sources.json (DOI-preferred, PMID fallback, slug). Byte-compatible with deep-research/schemas/sources.json#paper_id. Optional in advisory mode; predicate R2 resolves non-null values against resolved_sources.sources[].paper_id. Null is permitted for web-sourced (no-DOI) evidence and for findings emitted before resolved_sources exists."
+          }
         },
         "additionalProperties": false
       }

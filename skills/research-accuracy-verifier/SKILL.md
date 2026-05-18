@@ -117,7 +117,26 @@ flowchart TD
     K -->|Yes| L[Deliver report]
 ```
 
-Each stage writes a `0N_<stage>.json` artifact to `research/audits/<slug>/` via `scripts/checkpoint.py write --stage N`. Validator gates run at Stage 2 (P7), Stage 4 (P8), and Stage 8 (P1–P5, P7, P8). On validator failure the pipeline loops back to the offending stage. Per-stage routing detail lives in [`references/stages/`](./references/stages/).
+Each stage writes a `0N_<stage>.json` artifact to `research/audits/<slug>/` via `scripts/checkpoint.py write --stage N`. Validator gates run at Stage 2 (P7), Stage 4 (P8), and Stage 8 (P1–P5, P7, P8 + cross-artifact R1–R6). On validator failure the pipeline loops back to the offending stage. Per-stage routing detail lives in [`references/stages/`](./references/stages/).
+
+## Pinned artifacts (evidence pinning)
+
+In addition to the per-stage `0N_<stage>.json` checkpoints, Stages 1 and 2 emit **pinned artifacts** — structured JSON sidecars that downstream stages and the assembled report read from disk rather than reconstructing from conversation context. These artifacts give the verifier the same compaction-recovery property the deep-research skill ships: a mid-audit context loss is recoverable because every cross-stage fact lives on disk.
+
+| Kind | Emitted by | Filename | Contains |
+|------|------------|----------|----------|
+| `document_inventory` | Stage 1 (`parse_document.py` baseline + LLM overrides) | `document_inventory.json` | Sections, paragraphs, char/line offsets, SHA-256 of normalized doc text. |
+| `reference_map` | Stage 1 (`extract_reference_map.py`); Stage 2 backfills `paper_id` | `reference_map.json` | Citation keys, occurrences `(section_id, paragraph_id, line)`, bibliography keys + raw text. |
+| `resolved_sources` | Stage 2 (citation existence) | `resolved_sources.json` | Canonical metadata per cited source, all resolution paths logged, editorial-notices probe, venue-quality probe. |
+| `external_evidence` | Phase 2 — Stage 2+ append-only ledger | `external_evidence.json` | Memoized Scite / PubTator3 / OpenAlex responses (deferred to Phase 2). |
+
+**Join key:** `paper_id` (DOI-preferred, PMID fallback, slug last resort) flows across `reference_map.citations[].paper_id`, `resolved_sources.sources[].paper_id`, and `findings[].evidence[].paper_id`. Byte-compatible with `deep-research/schemas/sources.json#paper_id` — enables future cross-skill diff-mode optimization.
+
+**Specs:** `scripts/thresholds.ARTIFACT_SPECS_BY_TIER` (Tier 1+: inventory + map + sources; Tier 2+: adds ledger).
+
+**Validation:** `scripts/validate_artifact.py --kind {document_inventory|reference_map|resolved_sources|external_evidence}` runs schema + per-artifact predicates (D1–D4, M1–M3, S1/S2/S4/V1/V2). Cross-artifact predicates (**R1–R6**) live in `scripts/validate_audit_report.py` and run at Stage 8 when artifacts are supplied via CLI flags or `validate()` kwargs. Phase 3 will wire R1–R6 into `render_report.generate_report()` for transitive enforcement at render time (today only P8 is transitive). See [`references/predicates.md`](./references/predicates.md).
+
+**Enforcement** (`scripts/thresholds.ARTIFACT_ENFORCEMENT`): `"advisory"` in Phase 1 — R-predicate failures emit warnings only. Flipped to `"required"` in Phase 3 after end-to-end dry-run validation. See [`EVIDENCE_PINNING_DECISIONS.md`](../../EVIDENCE_PINNING_DECISIONS.md) (plugin root) for implementation decisions.
 
 ### Stage 0 — Resume detection (always runs first)
 

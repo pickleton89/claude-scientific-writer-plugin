@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0",
+  "metadata": {
+    "frozen_at": "2026-05-18T17:16:57+00:00",
+    "source_sha256": "8e1d7ba78abe5089a418119cbb9bcef772a6e73ef65f70bb142ac1f81b9e9083",
+    "audit_slug": "audit-minimal",
+    "document_type": "manuscript",
+    "parser_version": "1.0.0"
+  },
+  "sections": [
+    {
+      "id": "S001",
+      "name": "Introduction",
+      "level": 1,
+      "char_start": 0,
+      "char_end": 274,
+      "paragraph_ids": [
+        "P001",
+        "P002"
+      ]
+    },
+    {
+      "id": "S002",
+      "name": "Methods",
+      "level": 1,
+      "char_start": 274,
+      "char_end": 347,
+      "paragraph_ids": [
+        "P003"
+      ]
+    }
+  ],
+  "paragraphs": [
+    {
+      "id": "P001",
+      "section_id": "S001",
+      "ordinal": 1,
+      "char_start": 16,
+      "char_end": 142,
+      "line_start": 3,
+      "line_end": 3
+    },
+    {
+      "id": "P002",
+      "section_id": "S001",
+      "ordinal": 2,
+      "char_start": 144,
+      "char_end": 272,
+      "line_start": 5,
+      "line_end": 5
+    },
+    {
+      "id": "P003",
+      "section_id": "S002",
+      "ordinal": 1,
+      "char_start": 285,
+      "char_end": 347,
+      "line_start": 9,
+      "line_end": 9
+    }
+  ],
+  "overrides": []
+}

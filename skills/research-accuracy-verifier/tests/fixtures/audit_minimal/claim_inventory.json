@@ -1,0 +1,22 @@
+{
+  "items": [
+    {
+      "id": "C001",
+      "location": { "section": "Introduction", "paragraph": 1 },
+      "claim_text": "CRISPR-Cas9 systems enable precise genome editing",
+      "claim_type": "citation_bearing",
+      "citations": [
+        { "key": "1", "doi": null, "pmid": null, "raw_text": "[1]" }
+      ]
+    },
+    {
+      "id": "C002",
+      "location": { "section": "Introduction", "paragraph": 2 },
+      "claim_text": "off-target rates of 1-3% under standard protocols",
+      "claim_type": "numerical",
+      "citations": [
+        { "key": "Smith et al. 2019", "doi": null, "pmid": null, "raw_text": "Smith et al. (2019)" }
+      ]
+    }
+  ]
+}
