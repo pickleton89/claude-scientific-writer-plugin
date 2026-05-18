@@ -11,9 +11,14 @@ REGRESSION_DIR = Path(__file__).parent.parent / "regression"
 sys.path.insert(0, str(REGRESSION_DIR))
 
 from score import (  # noqa: E402
+    DocScore,
     _evidence_pin_satisfied,
     _finding_matches_expectation,
+    _ledger_hit_rate,
     _needle_in_haystack,
+    aggregate,
+    extract_artifact_coverage,
+    extract_r_predicate_audit,
     seeded_error_satisfied,
 )
 
@@ -250,3 +255,256 @@ class TestSeededErrorSatisfied:
         }
         finding = _finding_with_evidence(FALLBACK_EVIDENCE)
         assert seeded_error_satisfied(seeded, [finding], []) is False
+
+
+# ----- artifact coverage extraction ------------------------------------------
+
+
+def _write_sidecars(run_dir: Path, *, files: dict[str, dict]) -> None:
+    import json as _json
+    run_dir.mkdir(parents=True, exist_ok=True)
+    for name, payload in files.items():
+        (run_dir / name).write_text(_json.dumps(payload))
+
+
+class TestLedgerHitRate:
+    def test_no_ledger(self):
+        assert _ledger_hit_rate(None) == (0, None)
+
+    def test_no_entries(self):
+        assert _ledger_hit_rate({"entries": []}) == (0, None)
+
+    def test_all_misses_no_reuse(self):
+        ledger = {"entries": [
+            {"id": "E1", "consumed_by_findings": ["F1"]},
+            {"id": "E2", "consumed_by_findings": ["F2"]},
+        ]}
+        n, rate = _ledger_hit_rate(ledger)
+        assert n == 2
+        assert rate == 0.0
+
+    def test_reuse_yields_hits(self):
+        ledger = {"entries": [
+            {"id": "E1", "consumed_by_findings": ["F1", "F2", "F3"]},
+            {"id": "E2", "consumed_by_findings": ["F4"]},
+        ]}
+        n, rate = _ledger_hit_rate(ledger)
+        assert n == 2
+        assert rate == pytest.approx(2 / 4)
+
+    def test_unconsumed_entries_ignored_in_total(self):
+        ledger = {"entries": [
+            {"id": "E1", "consumed_by_findings": []},
+            {"id": "E2", "consumed_by_findings": ["F1", "F2"]},
+        ]}
+        n, rate = _ledger_hit_rate(ledger)
+        assert n == 2
+        assert rate == pytest.approx(1 / 2)
+
+
+class TestArtifactCoverageExtraction:
+    def test_all_artifacts_present(self, tmp_path):
+        _write_sidecars(tmp_path, files={
+            "document_inventory.json": {"x": 1},
+            "reference_map.json": {"x": 1},
+            "resolved_sources.json": {"x": 1},
+            "external_evidence.json": {"entries": [
+                {"id": "E1", "consumed_by_findings": ["F1", "F2"]},
+            ]},
+        })
+        cov = extract_artifact_coverage(tmp_path)
+        assert cov["document_inventory_present"] is True
+        assert cov["reference_map_present"] is True
+        assert cov["resolved_sources_present"] is True
+        assert cov["external_evidence_entries"] == 1
+        assert cov["ledger_hit_rate"] == pytest.approx(0.5)
+
+    def test_partial_artifacts_present(self, tmp_path):
+        _write_sidecars(tmp_path, files={
+            "document_inventory.json": {"x": 1},
+            "external_evidence.json": {"entries": []},
+        })
+        cov = extract_artifact_coverage(tmp_path)
+        assert cov["document_inventory_present"] is True
+        assert cov["reference_map_present"] is False
+        assert cov["resolved_sources_present"] is False
+        assert cov["external_evidence_entries"] == 0
+        assert cov["ledger_hit_rate"] is None
+
+    def test_all_artifacts_absent(self, tmp_path):
+        cov = extract_artifact_coverage(tmp_path)
+        assert cov["document_inventory_present"] is False
+        assert cov["reference_map_present"] is False
+        assert cov["resolved_sources_present"] is False
+        assert cov["external_evidence_entries"] == 0
+        assert cov["ledger_hit_rate"] is None
+
+    def test_ledger_with_zero_consumption(self, tmp_path):
+        _write_sidecars(tmp_path, files={
+            "external_evidence.json": {"entries": [
+                {"id": "E1", "consumed_by_findings": []},
+            ]},
+        })
+        cov = extract_artifact_coverage(tmp_path)
+        assert cov["external_evidence_entries"] == 1
+        assert cov["ledger_hit_rate"] is None
+
+    def test_ledger_with_high_reuse(self, tmp_path):
+        _write_sidecars(tmp_path, files={
+            "external_evidence.json": {"entries": [
+                {"id": "E1", "consumed_by_findings": ["F1", "F2", "F3", "F4"]},
+            ]},
+        })
+        cov = extract_artifact_coverage(tmp_path)
+        assert cov["ledger_hit_rate"] == pytest.approx(0.75)
+
+    def test_malformed_ledger_not_a_dict(self, tmp_path):
+        (tmp_path / "external_evidence.json").write_text("[1, 2, 3]")
+        cov = extract_artifact_coverage(tmp_path)
+        assert cov["external_evidence_entries"] == 0
+        assert cov["ledger_hit_rate"] is None
+
+
+# ----- R-predicate audit extraction ------------------------------------------
+
+
+class TestRPredicateAuditExtraction:
+    def test_all_pass(self):
+        audit = {"audit_meta": {"r_predicate_status": {
+            "R1": "pass", "R2": "pass", "R3": "pass",
+            "R4": "pass", "R5": "pass", "R6": "pass",
+        }}}
+        result = extract_r_predicate_audit(audit)
+        assert result == {
+            "R1": "pass", "R2": "pass", "R3": "pass",
+            "R4": "pass", "R5": "pass", "R6": "pass",
+        }
+
+    def test_mixed_pass_fail(self):
+        audit = {"audit_meta": {"r_predicate_status": {
+            "R1": "pass", "R2": "fail", "R3": "pass",
+            "R4": "fail", "R5": "pass", "R6": "pass",
+        }}}
+        result = extract_r_predicate_audit(audit)
+        assert result["R2"] == "fail"
+        assert result["R4"] == "fail"
+        assert result["R1"] == "pass"
+
+    def test_all_fail(self):
+        audit = {"audit_meta": {"r_predicate_status": {
+            name: "fail" for name in ("R1", "R2", "R3", "R4", "R5", "R6")
+        }}}
+        result = extract_r_predicate_audit(audit)
+        assert all(v == "fail" for v in result.values())
+
+    def test_mixed_with_na(self):
+        audit = {"audit_meta": {"r_predicate_status": {
+            "R1": "pass", "R2": "n/a", "R3": "fail",
+            "R4": "n/a", "R5": "pass",
+        }}}
+        result = extract_r_predicate_audit(audit)
+        assert result["R2"] == "n/a"
+        assert result["R4"] == "n/a"
+        assert result["R6"] == "n/a"
+
+    def test_legacy_field_name(self):
+        audit = {"audit_meta": {"r_predicates": {
+            "R1": "pass", "R2": "fail",
+        }}}
+        result = extract_r_predicate_audit(audit)
+        assert result["R1"] == "pass"
+        assert result["R2"] == "fail"
+        assert result["R3"] == "n/a"
+
+    def test_missing_audit_meta(self):
+        result = extract_r_predicate_audit({})
+        assert result == {name: "n/a" for name in ("R1", "R2", "R3", "R4", "R5", "R6")}
+
+    def test_invalid_status_value_coerced_to_na(self):
+        audit = {"audit_meta": {"r_predicate_status": {"R1": "maybe", "R2": "pass"}}}
+        result = extract_r_predicate_audit(audit)
+        assert result["R1"] == "n/a"
+        assert result["R2"] == "pass"
+
+
+# ----- aggregate() new outputs -----------------------------------------------
+
+
+def _docscore_with(coverage_rows: list[dict], r_rows: list[dict]) -> DocScore:
+    s = DocScore(doc_id="d", arm="post_fork")
+    s.artifact_coverage_per_run = coverage_rows
+    s.r_predicate_audit_per_run = r_rows
+    s.verdict_tuples_per_run = [set()] * len(coverage_rows)
+    return s
+
+
+class TestAggregateNewColumns:
+    def test_artifact_coverage_rate_all_present(self):
+        rows = [
+            {
+                "document_inventory_present": True,
+                "reference_map_present": True,
+                "resolved_sources_present": True,
+                "external_evidence_entries": 3,
+                "ledger_hit_rate": 0.5,
+            },
+            {
+                "document_inventory_present": True,
+                "reference_map_present": True,
+                "resolved_sources_present": True,
+                "external_evidence_entries": 2,
+                "ledger_hit_rate": 0.25,
+            },
+        ]
+        s = _docscore_with(rows, [{"R1": "pass"} for _ in rows])
+        agg = aggregate([s])
+        assert agg["artifact_coverage_rate"] == 1.0
+        assert agg["ledger_hit_rate_median"] == pytest.approx(0.375)
+        assert agg["ledger_hit_rate_max"] == 0.5
+        assert agg["ledger_hit_rate_min"] == 0.25
+
+    def test_artifact_coverage_rate_partial(self):
+        rows = [
+            {
+                "document_inventory_present": True,
+                "reference_map_present": True,
+                "resolved_sources_present": True,
+                "external_evidence_entries": 1,
+                "ledger_hit_rate": 0.0,
+            },
+            {
+                "document_inventory_present": False,
+                "reference_map_present": True,
+                "resolved_sources_present": True,
+                "external_evidence_entries": 0,
+                "ledger_hit_rate": None,
+            },
+        ]
+        s = _docscore_with(rows, [{} for _ in rows])
+        agg = aggregate([s])
+        assert agg["artifact_coverage_rate"] == 0.5
+
+    def test_r_predicate_pass_rate_ignores_na(self):
+        rows = [
+            {"R1": "pass", "R2": "fail", "R3": "n/a", "R4": "pass", "R5": "pass", "R6": "n/a"},
+            {"R1": "pass", "R2": "pass", "R3": "n/a", "R4": "fail", "R5": "pass", "R6": "n/a"},
+        ]
+        coverage_rows = [
+            {
+                "document_inventory_present": True,
+                "reference_map_present": True,
+                "resolved_sources_present": True,
+                "external_evidence_entries": 1,
+                "ledger_hit_rate": None,
+            }
+            for _ in rows
+        ]
+        s = _docscore_with(coverage_rows, rows)
+        agg = aggregate([s])
+        rates = agg["r_predicate_pass_rate"]
+        assert rates["R1"] == 1.0
+        assert rates["R2"] == 0.5
+        assert rates["R3"] is None
+        assert rates["R4"] == 0.5
+        assert rates["R5"] == 1.0
+        assert rates["R6"] is None

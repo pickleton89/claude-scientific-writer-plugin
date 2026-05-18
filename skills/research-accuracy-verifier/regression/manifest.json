@@ -1,6 +1,6 @@
 {
-  "$comment": "Registry of regression documents. Each entry maps a doc to its document_type, verification_tier, checks_enabled override (if any), and ground-truth file. score.py iterates this list to drive baseline + post_fork runs.",
-  "version": "1.0",
+  "$comment": "Registry of regression documents. Each entry maps a doc to its document_type, verification_tier, checks_enabled override (if any), and ground-truth file. score.py iterates this list to drive baseline + post_fork runs. v1.1 (plan §11.3): score.py now emits `artifact_coverage` (document_inventory/reference_map/resolved_sources presence + external_evidence_entries + ledger_hit_rate) and `r_predicate_audit` (R1..R6 → pass/fail/n/a) as per-run output columns, plus matching aggregates (artifact_coverage_rate, ledger_hit_rate_{median,max,min}, r_predicate_pass_rate). These are outputs, not config — no schema change to documents[] entries.",
+  "version": "1.1",
   "documents": [
     {
       "doc_id": "01_grant_fabricated_doi",

@@ -45,6 +45,15 @@ ARMS = ("baseline", "post_fork")
 RUNS_PER_DOC = 3
 
 
+R_PREDICATE_NAMES = ("R1", "R2", "R3", "R4", "R5", "R6")
+ARTIFACT_SIDECARS = (
+    "document_inventory.json",
+    "reference_map.json",
+    "resolved_sources.json",
+    "external_evidence.json",
+)
+
+
 @dataclass
 class DocScore:
     doc_id: str
@@ -55,6 +64,8 @@ class DocScore:
     ground_truth_total: int = 0
     schema_passes: list[bool] = field(default_factory=list)
     predicate_audit_fails: list[bool] = field(default_factory=list)
+    artifact_coverage_per_run: list[dict] = field(default_factory=list)
+    r_predicate_audit_per_run: list[dict] = field(default_factory=list)
 
 
 def load_json(path: Path) -> dict | list | None:
@@ -162,6 +173,82 @@ def seeded_error_satisfied(err: dict, findings: list, style_findings: list) -> b
     )
 
 
+def _ledger_hit_rate(ledger: dict | None) -> tuple[int, float | None]:
+    """Return (entry_count, hit_rate).
+
+    Cache hits are not persisted directly. Each ledger entry is one fresh
+    fetch (a miss). `consumed_by_findings` records every finding that used
+    that entry; reuse after the first consumer is a cache hit. So:
+
+        total_calls  = Σ len(consumed_by_findings)
+        cache_misses = number of ledger entries that were consumed at all
+        cache_hits   = max(0, total_calls − cache_misses)
+        hit_rate     = cache_hits / total_calls  (None if total_calls == 0)
+    """
+    if not isinstance(ledger, dict):
+        return 0, None
+    entries = ledger.get("entries", [])
+    if not isinstance(entries, list):
+        return 0, None
+    entry_count = len(entries)
+    consumption_counts = [
+        len(e.get("consumed_by_findings", []))
+        for e in entries
+        if isinstance(e, dict)
+    ]
+    total_calls = sum(consumption_counts)
+    if total_calls == 0:
+        return entry_count, None
+    cache_misses = sum(1 for c in consumption_counts if c > 0)
+    cache_hits = max(0, total_calls - cache_misses)
+    return entry_count, cache_hits / total_calls
+
+
+def extract_artifact_coverage(run_dir: Path) -> dict:
+    """Derive artifact_coverage column from run-dir sidecar files.
+
+    Plan §11.3 hypothesized `header.evidence_pinning` on audit_report.json,
+    but the post-Phase-3 audit_report header carries no such field. The
+    sidecar files are the canonical evidence of artifact coverage, so we
+    derive presence from the filesystem and ledger stats from
+    external_evidence.json directly.
+    """
+    ledger = load_json(run_dir / "external_evidence.json")
+    entries_count, hit_rate = _ledger_hit_rate(ledger if isinstance(ledger, dict) else None)
+    return {
+        "document_inventory_present": (run_dir / "document_inventory.json").exists(),
+        "reference_map_present": (run_dir / "reference_map.json").exists(),
+        "resolved_sources_present": (run_dir / "resolved_sources.json").exists(),
+        "external_evidence_entries": entries_count,
+        "ledger_hit_rate": hit_rate,
+    }
+
+
+def extract_r_predicate_audit(audit: dict | None) -> dict:
+    """Derive r_predicate_audit column from audit_meta sidecar fields.
+
+    Mirrors the existing audit_meta.predicate_audit pattern: regression
+    runners attach `audit_meta.r_predicate_status` (or legacy
+    `audit_meta.r_predicates`) — a dict mapping R1..R6 → "pass"/"fail"/"n/a".
+    Missing keys default to "n/a" so the column shape is stable.
+    """
+    if not isinstance(audit, dict):
+        return {name: "n/a" for name in R_PREDICATE_NAMES}
+    audit_meta = audit.get("audit_meta", {}) if isinstance(audit, dict) else {}
+    statuses = (
+        audit_meta.get("r_predicate_status")
+        or audit_meta.get("r_predicates")
+        or {}
+    )
+    if not isinstance(statuses, dict):
+        statuses = {}
+    out: dict[str, str] = {}
+    for name in R_PREDICATE_NAMES:
+        val = statuses.get(name, "n/a")
+        out[name] = val if val in ("pass", "fail", "n/a") else "n/a"
+    return out
+
+
 def collect_run(doc_id: str, arm: str, run_idx: int, gt: dict, score: DocScore) -> None:
     run_dir = RUNS_DIR / arm / doc_id / f"run{run_idx}"
     if not run_dir.exists():
@@ -182,6 +269,9 @@ def collect_run(doc_id: str, arm: str, run_idx: int, gt: dict, score: DocScore) 
     audit = load_json(run_dir / "audit_report.json")
     if audit is None:
         return
+
+    score.artifact_coverage_per_run.append(extract_artifact_coverage(run_dir))
+    score.r_predicate_audit_per_run.append(extract_r_predicate_audit(audit if isinstance(audit, dict) else None))
 
     findings = audit.get("findings", []) if isinstance(audit, dict) else []
     style_findings = audit.get("style_findings", []) if isinstance(audit, dict) else []
@@ -231,6 +321,47 @@ def consistency_rate(per_run_tuples: list[set[tuple[str, str]]]) -> float:
     return len(intersection) / len(universe)
 
 
+def _aggregate_artifact_coverage(scores: list[DocScore]) -> dict:
+    rows = [row for s in scores for row in s.artifact_coverage_per_run]
+    if not rows:
+        return {
+            "coverage_rate": None,
+            "ledger_hit_rate": {"median": None, "max": None, "min": None, "n": 0},
+            "n_runs": 0,
+        }
+    all_present_count = sum(
+        1
+        for r in rows
+        if r["document_inventory_present"]
+        and r["reference_map_present"]
+        and r["resolved_sources_present"]
+        and r["external_evidence_entries"] > 0
+    )
+    hit_rates = [r["ledger_hit_rate"] for r in rows if r["ledger_hit_rate"] is not None]
+    return {
+        "coverage_rate": all_present_count / len(rows),
+        "ledger_hit_rate": {
+            "median": statistics.median(hit_rates) if hit_rates else None,
+            "max": max(hit_rates) if hit_rates else None,
+            "min": min(hit_rates) if hit_rates else None,
+            "n": len(hit_rates),
+        },
+        "n_runs": len(rows),
+    }
+
+
+def _aggregate_r_predicate_audit(scores: list[DocScore]) -> dict:
+    rows = [row for s in scores for row in s.r_predicate_audit_per_run]
+    pass_rates: dict[str, float | None] = {}
+    for name in R_PREDICATE_NAMES:
+        considered = [r.get(name, "n/a") for r in rows if r.get(name, "n/a") != "n/a"]
+        if not considered:
+            pass_rates[name] = None
+        else:
+            pass_rates[name] = sum(1 for v in considered if v == "pass") / len(considered)
+    return {"pass_rate": pass_rates, "n_runs": len(rows)}
+
+
 def aggregate(scores: list[DocScore]) -> dict:
     if not scores:
         return {"empty": True}
@@ -243,6 +374,9 @@ def aggregate(scores: list[DocScore]) -> dict:
             recalls.append(statistics.mean(s.ground_truth_hits) / s.ground_truth_total)
     schema_signals = [p for s in scores for p in s.schema_passes]
     predicate_fails = [f for s in scores for f in s.predicate_audit_fails]
+
+    coverage = _aggregate_artifact_coverage(scores)
+    r_audit = _aggregate_r_predicate_audit(scores)
 
     return {
         "doc_count": len(scores),
@@ -262,6 +396,11 @@ def aggregate(scores: list[DocScore]) -> dict:
         "predicate_audit_fail_rate": (
             sum(predicate_fails) / len(predicate_fails) if predicate_fails else None
         ),
+        "artifact_coverage_rate": coverage["coverage_rate"],
+        "ledger_hit_rate_median": coverage["ledger_hit_rate"]["median"],
+        "ledger_hit_rate_max": coverage["ledger_hit_rate"]["max"],
+        "ledger_hit_rate_min": coverage["ledger_hit_rate"]["min"],
+        "r_predicate_pass_rate": r_audit["pass_rate"],
     }
 
 
@@ -340,6 +479,8 @@ def main() -> int:
                 "main_context_tokens": score.main_context_tokens,
                 "schema_pass_runs": sum(score.schema_passes),
                 "predicate_fail_runs": sum(score.predicate_audit_fails),
+                "artifact_coverage": score.artifact_coverage_per_run,
+                "r_predicate_audit": score.r_predicate_audit_per_run,
             }
 
     for arm in ARMS:

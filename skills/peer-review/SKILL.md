@@ -59,6 +59,18 @@ Beyond methodology and statistics, peer review must evaluate prose quality again
 pip install pymupdf
 ```
 
+### Detecting research-accuracy-verifier audit markers
+
+Read the first line of any input document or audit report. If it matches the form
+
+```
+<!-- audit_evidence_pinned: true artifacts: ... audit_dir: ... schema_version: 1.0 -->
+```
+
+parse the `audit_dir` path and the comma-separated `artifacts` list, then populate `intake.pinned_audit_artifacts` from conventional sibling filenames under `audit_dir` (do NOT prompt the user). The canonical set is `document_inventory.json`, `reference_map.json`, `resolved_sources.json`, `external_evidence.json`. This is the symmetric counterpart to the verifier's own detection of deep-research's `<!-- evidence_pinned: true ... -->` marker (see `research-accuracy-verifier/SKILL.md` §Stage 3 and `references/CONTRACTS.md` §Deep-research handoff).
+
+Asymmetry: peer-review only reads this marker — it never emits one. Reviews are not audits and do not produce pinned artifacts of their own.
+
 ## Visual Enhancement with Scientific Schematics
 
 **When creating documents with this skill, always consider adding scientific diagrams and schematics to enhance visual communication.**
@@ -732,3 +744,5 @@ The fork's final message to the caller is a single JSON object capped at ~800 to
 **Forbidden in fork return:** raw manuscript text, quoted excerpts of the manuscript or grant under review, full reviewer narrative paragraphs, intermediate scoring tables, raw `calculate_scores.py` stdout, full reporting-guideline checklists. All of that lives in the persisted artifacts under `review_dir`. The caller follows up with targeted reads — for example, `!\`jq '.dimensions.reproducibility' research/reviews/<slug>/scoring_report.json\`` or `!\`grep -A 5 "## Major Concerns" research/reviews/<slug>/review.md\`` — to surface specific sections on demand at zero token cost in the main context.
 
 **If the review cannot complete:** still return the JSON shape with `concern_counts` reflecting what was assessed before the abort, `recommendation: "not_applicable"`, and a `next_actions` entry explaining what blocked completion (e.g., `"resume after providing supplementary statistical methods"`, `"manuscript section §Results unreadable — request clean copy"`). Partial state remains in `review_dir` for follow-up runs.
+
+**Consuming pinned audit artifacts.** When `intake.pinned_audit_artifacts` was populated from an upstream `<!-- audit_evidence_pinned: true ... -->` marker (see §Prerequisites), prefer reading those sidecars on disk over re-deriving the same facts during review. `resolved_sources.json` carries canonical per-source metadata plus the Scite editorial-notices probe, so reviewer checks on retraction/correction status and venue quality can cite the audit's `resolved_sources.sources[].paper_id` directly instead of re-asking "what cites this paper?". For figure-integrity and quoted-claim checks, join `claim_inventory.json` (Stage 1 pinned artifact emitted by `research-accuracy-verifier`, per its SKILL.md §Pinned artifacts and §Stage 1) against the manuscript on `location.{section,paragraph}` — any divergence between the audit's extracted claim text and what the manuscript actually says is itself a reviewable concern (claim_inventory drift) and should surface as a `category: figures` or `category: writing` entry in `top_concerns`.

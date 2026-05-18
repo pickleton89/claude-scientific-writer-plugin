@@ -58,6 +58,18 @@ python {baseDir}/scripts/readability_score.py manuscript.md
 
 **No external dependencies required** - all scripts use Python standard library only.
 
+### Detecting research-accuracy-verifier audit markers
+
+Read the first line of any input document or audit report. If it matches the form
+
+```
+<!-- audit_evidence_pinned: true artifacts: ... audit_dir: ... schema_version: 1.0 -->
+```
+
+parse the `audit_dir` path and the comma-separated `artifacts` list, then populate `intake.pinned_audit_artifacts` from conventional sibling filenames under `audit_dir` (do NOT prompt the user). The canonical set is `document_inventory.json`, `reference_map.json`, `resolved_sources.json`, `external_evidence.json`. This is the symmetric counterpart to the verifier's own detection of deep-research's `<!-- evidence_pinned: true ... -->` marker (see `research-accuracy-verifier/SKILL.md` §Stage 3 and `references/CONTRACTS.md` §Deep-research handoff).
+
+When pinned artifacts are present, writing-side improvements should defer to them rather than re-extracting facts from running prose. `claim_inventory.json` (Stage 1 pinned artifact, per the verifier's SKILL.md §Pinned artifacts and §Stage 1) gives authoritative claim text + `location.{section,paragraph}` anchors for every cite-bearing and uncited claim; `resolved_sources.json` gives canonical metadata, venue-quality, and editorial-notices status per cited paper. Rewrites for clarity, terminology consistency (Banana Rule), or citation re-styling can read those sidecars instead of re-parsing the manuscript's reference list and bibliography. If the verifier also emits an edits-to-claims map alongside the audit (when present in `audit_dir`), it provides a "what changed" view between revisions without re-diffing the prose.
+
 ---
 
 ## Core Philosophy
