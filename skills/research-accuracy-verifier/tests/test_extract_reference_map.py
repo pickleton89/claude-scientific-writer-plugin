@@ -93,6 +93,34 @@ class TestAuthorYear:
         keys = {c["key"] for c in rm["citations"]}
         assert any("Smith" in k and "2019" in k for k in keys)
 
+    def test_paren_form_no_comma(self) -> None:
+        doc = "# A\n\nA result (Smith 2019) is here.\n"
+        inv = _build_inventory(doc)
+        rm = erm.build_reference_map(doc, inv, audit_slug="t", sources_available="bibliography_only")
+        keys = {c["key"] for c in rm["citations"]}
+        assert any("Smith" in k and "2019" in k for k in keys)
+
+    def test_et_al_no_comma(self) -> None:
+        doc = "# A\n\nA result (Smith et al. 2019) is here.\n"
+        inv = _build_inventory(doc)
+        rm = erm.build_reference_map(doc, inv, audit_slug="t", sources_available="bibliography_only")
+        keys = {c["key"] for c in rm["citations"]}
+        assert any("Smith et al" in k for k in keys)
+
+    def test_and_form_no_comma(self) -> None:
+        doc = "# A\n\nA result (Smith and Jones 2019) is here.\n"
+        inv = _build_inventory(doc)
+        rm = erm.build_reference_map(doc, inv, audit_slug="t", sources_available="bibliography_only")
+        keys = {c["key"] for c in rm["citations"]}
+        assert any("Smith and Jones" in k for k in keys)
+
+    def test_rejects_concatenated_no_space(self) -> None:
+        doc = "# A\n\nA result (Smith2019) is here.\n"
+        inv = _build_inventory(doc)
+        rm = erm.build_reference_map(doc, inv, audit_slug="t", sources_available="bibliography_only")
+        keys = {c["key"] for c in rm["citations"]}
+        assert not any("Smith" in k and "2019" in k for k in keys)
+
 
 class TestOccurrences:
     def test_records_multiple_occurrences(self) -> None:

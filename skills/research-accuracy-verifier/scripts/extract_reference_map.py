@@ -55,11 +55,15 @@ SCHEMA_VERSION = "1.0"
 # Citation pattern regexes. Each captures the citation "key" group.
 _NUMERIC_BRACKET = re.compile(r"\[(\d+(?:\s*[,\-]\s*\d+)*)\]")
 _CITE_COMMAND = re.compile(r"\\cite[a-zA-Z]*\{([^}]+)\}")
-# Author-year: matches "(Smith, 2019)" or "(Smith et al., 2019)" or
-# "(Smith and Jones, 2019)". Year is 4 digits. Conservative on the left
-# side — must be inside parentheses.
+# Author-year: matches "(Smith, 2019)", "(Smith et al., 2019)",
+# "(Smith and Jones, 2019)", and the comma-less variants
+# "(Smith 2019)" / "(Smith et al. 2019)" / "(Smith and Jones 2019)".
+# Year is 4 digits. Conservative on the left side — must be inside
+# parentheses. The separator between author and year is `,?\s+` —
+# comma is optional but at least one whitespace character is required
+# to prevent "Smith2024" from matching.
 _AUTHOR_YEAR_PAREN = re.compile(
-    r"\(([A-Z][A-Za-z\-']+(?:\s+(?:et\s+al\.?|and\s+[A-Z][A-Za-z\-']+))?),\s*(\d{4})\)"
+    r"\(([A-Z][A-Za-z\-']+(?:\s+(?:et\s+al\.?|and\s+[A-Z][A-Za-z\-']+))?),?\s+(\d{4})\)"
 )
 # Narrative form: "Smith et al. (2019)" — Author capitalized, optional "et al",
 # year in parens immediately after.
