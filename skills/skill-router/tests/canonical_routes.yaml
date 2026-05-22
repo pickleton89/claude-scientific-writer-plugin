@@ -1,5 +1,5 @@
 # Canonical Routing Test Cases
-# Version: 1.4.0
+# Version: 1.5.0
 # Purpose: Validate deterministic routing produces expected results
 #
 # Test case structure:
@@ -153,6 +153,47 @@ paperbanana_cases:
     expected_skill: paperbanana
     min_confidence: 0.3
     category: visual
+
+# ============================================================
+# VISUAL CREATION - svg-figure-maker
+# ============================================================
+
+svg_figure_maker_cases:
+  - request: "Create an SVG figure for my paper"
+    expected_skill: svg-figure-maker
+    min_confidence: 0.5
+    category: visual
+    notes: "Explicit SVG medium + figure noun routes to the SVG primitive"
+
+  - request: "Hand-author a custom SVG illustration of the experimental concept"
+    expected_skill: svg-figure-maker
+    min_confidence: 0.6
+    category: visual
+    notes: "Custom + hand-authored + SVG = the svg-figure-maker sweet spot"
+
+  - request: "Make a parametric 4-panel SVG figure using drawsvg"
+    expected_skill: svg-figure-maker
+    min_confidence: 0.7
+    category: visual
+    notes: "Programmatic path: drawsvg + parametric panels"
+
+  - request: "Build a multi-panel SVG showing the system overview"
+    expected_skill: svg-figure-maker
+    min_confidence: 0.5
+    category: visual
+    notes: "Multi-panel SVG layout"
+
+  - request: "Generate an SVG diagram of our custom apparatus"
+    expected_skill: svg-figure-maker
+    min_confidence: 0.5
+    category: visual
+    notes: "Custom SVG diagram (no standard schematic type named)"
+
+  - request: "Annotate this SVG with arrows and callouts"
+    expected_skill: svg-figure-maker
+    min_confidence: 0.1
+    category: visual
+    notes: "Annotated overlay use case; low conf is expected (trigger-only)"
 
 # ============================================================
 # VISUAL CREATION - generate-image
@@ -1058,6 +1099,30 @@ negative_cases:
     not_expected: research-accuracy-verifier
     min_confidence: 0.3
     notes: "Plain summarization MUST NOT trigger accuracy-verifier (regression guard for the new skill)"
+
+  - request: "Create a scatter plot of expression data"
+    expected_skill: plotting-libraries
+    not_expected: svg-figure-maker
+    min_confidence: 0.5
+    notes: "Data plot MUST NOT route to svg-figure-maker even though plots emit SVG"
+
+  - request: "Draw a Mermaid flowchart of the pipeline"
+    expected_skill: scientific-schematics
+    not_expected: svg-figure-maker
+    min_confidence: 0.5
+    notes: "Standard structured diagram type MUST NOT route to svg-figure-maker"
+
+  - request: "Make a graphical abstract from this paper text"
+    expected_skill: paperbanana
+    not_expected: svg-figure-maker
+    min_confidence: 0.3
+    notes: "AI text-to-visual MUST NOT route to svg-figure-maker"
+
+  - request: "Generate a photorealistic image of a mitochondrion"
+    expected_skill: generate-image
+    not_expected: svg-figure-maker
+    min_confidence: 0.5
+    notes: "Photorealistic raster MUST NOT route to svg-figure-maker"
 
 # ============================================================
 # RESEARCH WORKFLOW - research-paper-summarizer

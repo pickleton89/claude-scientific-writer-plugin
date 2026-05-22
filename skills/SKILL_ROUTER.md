@@ -69,18 +69,36 @@ User wants to create a visual
 │                   │         ├─ "Explain this visually"
 │                   │         └─ Workflow from prose description
 │                   │
-│                   └─ NO → Is it PHOTOREALISTIC or AI-GENERATED imagery?
+│                   └─ NO → Is it a NOVEL / CUSTOM SVG, PARAMETRIC layout,
+│                            or ANNOTATED OVERLAY on an existing image?
 │                            │
-│                            ├─ YES → generate-image
+│                            ├─ YES → svg-figure-maker
 │                            │         │
-│                            │         ├─ Scientific illustration → Claude/DALL-E
-│                            │         ├─ Artistic/creative → Image generation models
-│                            │         └─ Photo-style → Photorealistic models
+│                            │         ├─ Hand-written SVG XML for one-off
+│                            │         │  custom illustrations / conceptual
+│                            │         │  diagrams not covered by other skills
+│                            │         ├─ Programmatic (drawsvg) for parametric
+│                            │         │  / repeated N-panel layouts
+│                            │         ├─ Annotated overlays (arrows, callouts,
+│                            │         │  labels) layered on existing SVG/image
+│                            │         │
+│                            │         └─ Ships with render→inspect→fix loop,
+│                            │            preflight linter, and brand-pinned
+│                            │            sidecar metadata (low-level SVG
+│                            │            primitive for the plugin)
 │                            │
-│                            └─ NO → visual-design (general guidance)
+│                            └─ NO → Is it PHOTOREALISTIC or AI-GENERATED imagery?
 │                                     │
-│                                     └─ Provides: color theory, typography,
-│                                        layout principles, accessibility
+│                                     ├─ YES → generate-image
+│                                     │         │
+│                                     │         ├─ Scientific illustration → Claude/DALL-E
+│                                     │         ├─ Artistic/creative → Image generation models
+│                                     │         └─ Photo-style → Photorealistic models
+│                                     │
+│                                     └─ NO → visual-design (general guidance)
+│                                              │
+│                                              └─ Provides: color theory, typography,
+│                                                 layout principles, accessibility
 ```
 
 ### Figure Creation: Quick Selection
@@ -95,6 +113,9 @@ User wants to create a visual
 | Visual executive summary | paperbanana | executive-summary |
 | Methodology overview figure | paperbanana | visual-design |
 | "Explain this visually" | paperbanana | visual-design |
+| Custom / novel SVG illustration | svg-figure-maker | oligon-brand, visual-design |
+| Parametric N-panel SVG (drawsvg) | svg-figure-maker | oligon-brand |
+| Annotated SVG overlay (arrows, callouts) | svg-figure-maker | visual-design |
 | Conceptual illustration | generate-image | visual-design |
 | Infographic elements | visual-design | generate-image |
 
@@ -748,6 +769,7 @@ User has content ready for final document format
 | Data visualization | plotting-libraries | + visual-design |
 | Schematic/diagram | scientific-schematics | + visual-design |
 | Text-to-visual (graphical abstract, visual summary) | paperbanana | + visual-design |
+| Custom / novel SVG, parametric panels, annotated overlays | svg-figure-maker | + oligon-brand, visual-design |
 | AI-generated image | generate-image | + visual-design |
 | Design guidance | visual-design | (supporting role) |
 | **Brand** | | |

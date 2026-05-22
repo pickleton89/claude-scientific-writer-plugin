@@ -1,6 +1,6 @@
 # Skill Trigger Registry
-# Version: 1.6.0
-# Purpose: Deterministic keyword-based routing for the 30-skill scientific writing library
+# Version: 1.7.0
+# Purpose: Deterministic keyword-based routing for the scientific writing skill library
 #
 # Structure:
 #   keywords: Common terms that indicate this skill (weighted equally)
@@ -207,6 +207,75 @@ skills:
       - mermaid
       - nodes
       - edges
+
+  svg-figure-maker:
+    description: Deterministic, brand-aware SVG figure authoring — novel/custom SVG, parametric (drawsvg) layouts, annotated SVG overlays; ships with render→inspect→fix loop. The plugin's low-level SVG primitive.
+    category: visual
+    priority: 5  # Wins ties when "svg" is the explicit medium for a custom figure
+    keywords:
+      - svg figure
+      - svg figures
+      - svg diagram
+      - svg illustration
+      - svg drawing
+      - svg authoring
+      - svg primitive
+      - svg panel
+      - svg panels
+      - svg overlay
+      - svg annotation
+      - svg callout
+      - svg callouts
+      - custom svg
+      - hand-written svg
+      - hand-authored svg
+      - hand author svg
+      - parametric figure
+      - parametric svg
+      - parametric panel
+      - multi-panel figure
+      - multi-panel svg
+      - 4-panel figure
+      - 4-panel svg
+      - annotated overlay
+      - annotated svg
+      - novel illustration
+      - custom illustration
+      - drawsvg
+    triggers:
+      - "(?:make|create|draw|author|build|generate).*\\bsvg\\b.*(figure|diagram|illustration|panel|overlay|drawing)"
+      - "\\bsvg\\b.*(figure|diagram|illustration|panel|overlay)"
+      - "hand[- ]?(?:write|written|author|authored).*svg"
+      - "(?:parametric|multi[- ]?panel|repeated[- ]?panel).*(figure|svg|layout|panel)"
+      - "drawsvg"
+      - "annotated.*(?:overlay|svg)"
+      - "(?:annotate|add.*callouts?|add.*arrows?).*\\bsvg\\b"
+      - "custom.*svg.*(figure|illustration|diagram|drawing)"
+      - "novel.*(?:svg|illustration).*figure"
+      - "low[- ]?level.*svg"
+    output_formats: [svg, png]
+    negative_keywords:
+      - bar chart
+      - scatter plot
+      - histogram
+      - heatmap
+      - volcano plot
+      - violin plot
+      - box plot
+      - line plot
+      - matplotlib
+      - seaborn
+      - ggplot
+      - ggplot2
+      - plotly
+      - mermaid
+      - graphical abstract
+      - visual abstract
+      - visual summary
+      - photorealistic
+      - dall-e
+      - ai generated
+      - ai-generated
 
   visual-design:
     description: Design guidance, color theory, typography, layout, accessibility
