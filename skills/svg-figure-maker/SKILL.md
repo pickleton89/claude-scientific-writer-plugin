@@ -413,14 +413,14 @@ Schema: `schemas/figure_metadata.schema.json`. Excerpt:
 | `references/svg_authoring_standards.md` | viewBox conventions, units, group naming, accessibility tags |
 | `references/grid_and_layout.md` | 8px-grid discipline; coord-divisibility rule; alignment patterns |
 | `references/anti_patterns.md` | Banned attributes; "AI slop" markers; expanded checklist with examples |
-| `references/visual_critique_checklist.md` | Vision-loop critique rubric (Phase 3 deliverable) |
+| `references/visual_critique_checklist.md` | Vision-loop critique rubric — 7 categories with `principle_ref` anchors and the schema-compatible finding shape |
 | `references/figure_type_catalog.md` | Routing table for SVG figures across visual skills (Phase 6 deliverable) |
 | `references/programmatic_authoring.md` | `drawsvg` patterns for parametric figures (Phase 4 deliverable) |
 | `templates/single_panel.svg` | Single-panel SVG template |
 | `templates/two_panel_horizontal.svg` | Two-panel horizontal-comparison template |
 | `scripts/preflight_check.py` | Deterministic SVG linter → JSON findings |
-| `scripts/render_and_inspect.py` | Render-loop orchestration (Phase 3 deliverable) |
-| `scripts/finalize.py` | Finalization → three-file deliverable (Phase 3 deliverable) |
+| `scripts/render_and_inspect.py` | Render-loop orchestration: runs preflight + `render_svg_preview.sh`, emits unified iteration report with `next_step` hint and critique-category seed |
+| `scripts/finalize.py` | Stage 7 finalization: emits `figure.svg` + `figure.preview.png` + `figure.json`; sidecar validated against `figure_metadata.schema.json` before write |
 | `schemas/figure_metadata.schema.json` | Sidecar `figure.json` shape |
 | `schemas/critique_finding.schema.json` | Vision-loop finding shape |
 
