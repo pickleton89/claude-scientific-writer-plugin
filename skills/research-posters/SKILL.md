@@ -608,6 +608,7 @@ Accessibility:
 | Skill | Relationship |
 |-------|-------------|
 | `scientific-schematics` | Generate 2-3 figures BEFORE populating poster |
+| `svg-figure-maker` | Author custom panels not produced by other skills (decorative scientific elements, conceptual sub-illustrations, annotated overlays bridging data panels, schematic headers). See `svg-figure-maker/references/figure_type_catalog.md` for the routing rule |
 | `scientific-slides` | Use for presentations (not posters) |
 | `plotting-libraries` | Generate data visualizations for results |
 | `venue-templates` | Conference-specific formatting requirements |

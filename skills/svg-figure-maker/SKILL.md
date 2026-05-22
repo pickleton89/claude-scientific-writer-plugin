@@ -415,7 +415,7 @@ Schema: `schemas/figure_metadata.schema.json`. Excerpt:
 | `references/grid_and_layout.md` | 8px-grid discipline; coord-divisibility rule; alignment patterns |
 | `references/anti_patterns.md` | Banned attributes; "AI slop" markers; expanded checklist with examples |
 | `references/visual_critique_checklist.md` | Vision-loop critique rubric — 7 categories with `principle_ref` anchors and the schema-compatible finding shape |
-| `references/figure_type_catalog.md` | Routing table for SVG figures across visual skills (Phase 6 deliverable) |
+| `references/figure_type_catalog.md` | Routing table for SVG figures across visual skills + leak-investigation findings for the four neighbour skills (scientific-schematics, plotting-libraries, research-posters, paperbanana/generate-image) |
 | `references/programmatic_authoring.md` | `drawsvg` patterns for parametric figures — palette loading, grid arithmetic, determinism rules, accessibility scaffolding, and the root-dimension strip |
 | `templates/parametric_4panel.py` | Canonical drawsvg worked example: PEP-723 self-bootstrap, 4-panel grid, byte-identical across runs, passes preflight 15/15 zero-warn |
 | `templates/single_panel.svg` | Single-panel SVG template |
