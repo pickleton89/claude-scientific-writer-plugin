@@ -612,6 +612,7 @@ Accessibility:
 | `plotting-libraries` | Generate data visualizations for results |
 | `venue-templates` | Conference-specific formatting requirements |
 | `oligon-brand` | Brand colors and styling for Oligon posters |
+| `shared/references/figure_design_principles.md` | Shared figure-making principles — typography (§2), multi-panel layout (§6.2), legend placement (§6.3), whitespace and padding (§6.4), anti-patterns (§7). Essential for poster panel composition |
 | `paper-2-web` | Auto-generate poster from existing paper |
 
 **Skill Selection:**

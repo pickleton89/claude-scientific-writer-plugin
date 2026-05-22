@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oligon.io/schemas/svg-figure-maker/critique_finding.schema.json",
+  "title": "Vision-loop critique finding",
+  "description": "One finding emitted at Stage 5 (visual critique) of the svg-figure-maker workflow.",
+  "type": "object",
+  "required": [
+    "id",
+    "severity",
+    "category",
+    "principle_ref",
+    "location",
+    "message",
+    "suggested_fix"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique finding ID within a critique pass.",
+      "pattern": "^F[0-9]{3}$"
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["fail", "warn", "info"],
+      "description": "'fail' blocks delivery; 'warn' is non-blocking but should be addressed; 'info' is observational."
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "text_legibility",
+        "hierarchy",
+        "alignment",
+        "color_rendering",
+        "line_crispness",
+        "composition_balance",
+        "accessibility",
+        "other"
+      ],
+      "description": "Critique category — keyed to the vision-loop checklist."
+    },
+    "principle_ref": {
+      "type": "string",
+      "description": "Section reference into figure_design_principles.md (e.g., '§6.2', '§3.2', '§6.2.1') or 'N/A' if not directly mapped. Any depth of subsection is allowed.",
+      "pattern": "^(§[0-9]+(\\.[0-9]+)*|N/A)$"
+    },
+    "location": {
+      "type": "object",
+      "description": "Where in the SVG the issue lives.",
+      "properties": {
+        "group_id": {
+          "type": "string",
+          "description": "The id of the enclosing <g> group, if applicable."
+        },
+        "element_selector": {
+          "type": "string",
+          "description": "CSS/XPath-style selector for the offending element."
+        },
+        "coords": {
+          "type": "array",
+          "items": {"type": "number"},
+          "minItems": 2,
+          "maxItems": 4,
+          "description": "[x, y] or [x, y, width, height] in viewBox units."
+        }
+      }
+    },
+    "message": {
+      "type": "string",
+      "description": "Human-readable description of the issue.",
+      "minLength": 1
+    },
+    "suggested_fix": {
+      "type": "string",
+      "description": "Concrete action to resolve the finding.",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": false
+}

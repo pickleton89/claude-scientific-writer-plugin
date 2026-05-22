@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oligon.io/schemas/svg-figure-maker/figure_metadata.schema.json",
+  "title": "Figure metadata sidecar",
+  "description": "Sidecar JSON that accompanies every figure.svg + figure.preview.png deliverable from svg-figure-maker. Records brand provenance, palette, iteration log, and a reproducibility hash.",
+  "type": "object",
+  "required": [
+    "figure_id",
+    "version",
+    "brand_variant",
+    "tokens_hash",
+    "palette",
+    "font_family",
+    "font_size_ladder_pt",
+    "grid_unit_px",
+    "dimensions_px",
+    "iterations",
+    "final_iteration",
+    "status"
+  ],
+  "properties": {
+    "figure_id": {
+      "type": "string",
+      "description": "Short identifier for the figure (used as filename stem)."
+    },
+    "version": {
+      "type": "string",
+      "description": "Schema/skill version that produced this sidecar.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "brand_variant": {
+      "type": "string",
+      "description": "Brand variant name (e.g., 'oligon', 'generic', or a project-specific override).",
+      "minLength": 1
+    },
+    "tokens_hash": {
+      "type": "string",
+      "description": "SHA-256 hash of the canonical token subset used at Stage 1.",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "palette": {
+      "type": "array",
+      "description": "All hex colors used in the figure. Subset of the brand-tokens palette.",
+      "items": {
+        "type": "string",
+        "pattern": "^#[0-9A-Fa-f]{6}$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "font_family": {
+      "type": "string",
+      "description": "Font-family stack declared on text elements.",
+      "minLength": 1
+    },
+    "font_size_ladder_pt": {
+      "type": "array",
+      "description": "The size ladder applied to text elements (typically [10, 12, 14, 16]).",
+      "items": {
+        "type": "number",
+        "minimum": 6
+      },
+      "minItems": 1
+    },
+    "grid_unit_px": {
+      "type": "integer",
+      "description": "Grid unit in user-units (typically 8 for figures, 4 for dense diagrams).",
+      "enum": [4, 8]
+    },
+    "dimensions_px": {
+      "type": "array",
+      "description": "viewBox [width, height] in user units.",
+      "items": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "iterations": {
+      "type": "array",
+      "description": "Log of vision-loop iterations.",
+      "items": {
+        "type": "object",
+        "required": ["i", "findings"],
+        "properties": {
+          "i": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "findings": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of critique findings at the start of this iteration."
+          },
+          "primary_fixes": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        }
+      }
+    },
+    "final_iteration": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Iteration number at which the loop converged (0 if converged on first preflight)."
+    },
+    "warn_carry_forward": {
+      "type": "array",
+      "description": "Non-blocking warnings deliberately carried into the final deliverable.",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "status": {
+      "type": "string",
+      "enum": ["complete", "needs_user_input", "failed"],
+      "description": "Final disposition. 'needs_user_input' means the iteration cap was reached without convergence."
+    }
+  },
+  "additionalProperties": false
+}

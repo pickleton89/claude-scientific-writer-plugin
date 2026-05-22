@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480">
+  <!-- BAD: no viewBox, has width/height; no <title> or <desc>; off-palette colors;
+       banned filter; text without font-family; off-ladder font-size; vertical text;
+       <script>; <foreignObject>; CSS named color; currentColor; oversized rounded
+       corners; gradient; color function. -->
+
+  <defs>
+    <filter id="drop-shadow">
+      <feDropShadow dx="2" dy="2" stdDeviation="3"/>
+    </filter>
+    <linearGradient id="bg-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#aabbcc"/>
+      <stop offset="100%" stop-color="#ddeeff"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="640" height="480" fill="lightblue"/>
+
+  <rect x="41" y="37" width="313" height="98" rx="20" ry="20" fill="#3498DB" stroke="currentColor" filter="url(#drop-shadow)"/>
+
+  <rect x="100" y="200" width="200" height="100" fill="rgb(255,0,0)"/>
+
+  <text x="100" y="50" font-size="8pt">No font-family, below 10pt floor</text>
+
+  <text x="200" y="100" font-family="Times New Roman" font-size="11pt">Times + off-ladder font-size</text>
+
+  <text x="300" y="200" font-family="Arial" font-size="12pt" writing-mode="vertical-rl">Vertical writing-mode text</text>
+
+  <script>console.log("banned script");</script>
+
+  <foreignObject x="0" y="400" width="200" height="50">
+    <div xmlns="http://www.w3.org/1999/xhtml">banned foreignObject</div>
+  </foreignObject>
+</svg>

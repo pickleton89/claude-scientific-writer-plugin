@@ -580,6 +580,7 @@ See `oligon-brand` skill for complete brand implementation patterns.
 **Skill Selection:** See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 
 - **[oligon-brand](../oligon-brand/SKILL.md)**: Brand colors and tokens—load before plotting for Oligon-branded figures. See `<styling_integration>` above for usage patterns. The `<design_foundation>` block holds cross-format cognitive-foundation citations (Cleveland-McGill, Crameri, Wilke, Fujii 2026).
+- **[shared/references/figure_design_principles.md](../shared/references/figure_design_principles.md)**: Shared figure-making principles consumed by all visual skills — typography ladder, colorblind palettes, accessibility minimums, anti-patterns, grid discipline. Consult §2 (typography), §3 (color), §5.3 (chart conflict resolution), §7 (anti-patterns) when choosing plot types and palettes.
 - **[visual-design](../visual-design/SKILL.md)**: Design principles and publication specifications
 - **[venue-templates](../venue-templates/SKILL.md)**: Per-journal column widths, DPI floors; cross-cutting font embedding and graphical-abstract specs in `references/figure_specs.md`
 - **[statistical-analysis](../statistical-analysis/SKILL.md)**: Statistics underlying visualizations—see `<statistical_visualization>` above for implementation patterns

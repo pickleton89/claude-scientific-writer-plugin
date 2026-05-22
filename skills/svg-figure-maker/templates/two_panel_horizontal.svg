@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 480">
+  <title>REPLACE: one-line figure title for accessibility</title>
+  <desc>REPLACE: two-sentence alt text. Example: "Panel A shows tumor volume reduction under treatment X (60%) vs control over 12 weeks; panel B shows the additive effect of combination therapy with drug Y (85% reduction)."</desc>
+
+  <g id="canvas-background">
+    <rect x="0" y="0" width="1280" height="480" fill="#FFFFFF"/>
+  </g>
+
+  <!-- Layout arithmetic (see references/grid_and_layout.md "Worked example"):
+       canvas margins 32 on all sides; inter-panel gap 32; each panel 592 × 416
+       panel A origin (32, 32); panel B origin (656, 32)
+  -->
+
+  <g id="panel-a">
+    <g id="panel-a-frame">
+      <rect x="32" y="32" width="592" height="416" fill="#FFFFFF" stroke="#E5E5E5" stroke-width="1"/>
+    </g>
+    <g id="panel-a-content" font-family="Arial, Helvetica, sans-serif">
+      <!-- REPLACE: panel A content here -->
+      <text x="328" y="240" font-size="12pt" text-anchor="middle" fill="#666666">REPLACE: panel A content</text>
+    </g>
+    <text x="40" y="56" font-family="Arial, Helvetica, sans-serif" font-size="14pt" font-weight="bold" fill="#222222">A</text>
+  </g>
+
+  <g id="panel-b">
+    <g id="panel-b-frame">
+      <rect x="656" y="32" width="592" height="416" fill="#FFFFFF" stroke="#E5E5E5" stroke-width="1"/>
+    </g>
+    <g id="panel-b-content" font-family="Arial, Helvetica, sans-serif">
+      <!-- REPLACE: panel B content here -->
+      <text x="952" y="240" font-size="12pt" text-anchor="middle" fill="#666666">REPLACE: panel B content</text>
+    </g>
+    <text x="664" y="56" font-family="Arial, Helvetica, sans-serif" font-size="14pt" font-weight="bold" fill="#222222">B</text>
+  </g>
+</svg>

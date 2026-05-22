@@ -5,6 +5,8 @@
 > Used by: paperbanana, scientific-schematics, research-posters, plotting-libraries, scientific-slides
 >
 > **Each item:** check + cognitive principle or journal rule + verification method.
+>
+> **Companion document:** `figure_design_principles.md` (sibling) — shared design principles (typography, color, accessibility, anti-patterns, grid, layout) consumed across visual skills. This checklist is the *operational gate*; that doc is the *principles registry*. Items here cross-reference principles there where they overlap.
 
 ---
 

@@ -970,6 +970,7 @@ Vertical top-to-bottom layout.
 | `plotting-libraries` | Use for data visualizations (plots, charts); schematics for diagrams |
 | `visual-design` | Consult for design principles before creating schematics |
 | `oligon-brand` | Consult `<design_foundation>` for cognitive-foundation citations (Cleveland, Wagemans, Crameri, Fujii 2026) — complementary to visual-design |
+| `shared/references/figure_design_principles.md` | Shared visual-design principles — typography ladder (§2), colorblind palettes (§3), accessibility (§4), grid discipline (§6.1), complexity budgets (§5.4), diagram anti-patterns (§7). Consult before authoring schematics |
 | `generate-image` | Use for photorealistic images; schematics for diagrams |
 | `paperbanana` | Use for text-to-visual (graphical abstracts, visual summaries); schematics for specified diagrams |
 | `scientific-slides` | Schematics integrates into slide presentations |
