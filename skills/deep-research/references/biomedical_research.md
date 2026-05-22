@@ -32,22 +32,24 @@ The 3-tier preference system from `tool-lookup.yaml`:
 | Article metadata | PubMed MCP | `get_article_metadata` | DOI verification, full metadata |
 | Related articles | PubMed MCP | `find_related_articles` | Citation network expansion |
 | Full text | PubMed MCP | `get_full_text_article` | PMC open access only |
-| Preprint search | bioRxiv MCP | `search_preprints` | Biology + medical preprints |
-| Preprint details | bioRxiv MCP | `get_preprint` | DOI-based retrieval |
+| Preprint + full-text search | Paperclip CLI | `paperclip search` | Full-text across 8-source corpus: PMC + bioRxiv + medRxiv + arXiv + abstracts + FDA + clinical trials + patents. Replaces the retired bioRxiv MCP. |
 | Cross-domain search | Consensus MCP | `search` | AI-synthesized evidence across papers |
 | Citation context | Scite MCP | `search_literature` | Smart Citations: supporting/contrasting/mentioning classification |
 | Citation tallies | Scite MCP | `search_literature` | Per-paper reception breakdown + Scite Index (USI) + editorial notices |
-| Corpus full-text search | Paperclip CLI | `paperclip search` | Full-text across PMC + bioRxiv + medRxiv + arXiv (4 sources); add `-s abstracts` to widen |
 | Corpus map/reduce | Paperclip CLI | `paperclip map` / `paperclip reduce` | Per-paper LLM reader; recommended at 3–10 papers; `m_xxx` map handles |
-| Corpus regex | Paperclip CLI | `paperclip bash 'search ... \| grep ...'` | Sub-second corpus-wide regex; pipes only (no `for`/`while`/`xargs`) |
+| Corpus regex | Paperclip CLI | `paperclip grep` | Sub-second corpus-wide regex; pipes only (no `for`/`while`/`xargs`) |
+| Corpus metadata SQL | Paperclip CLI | `paperclip sql` | Read-only SQL over the documents table (200-row cap) — filter by author/journal/year/source pre-search. |
+| Figure VLM | Paperclip CLI | `paperclip ask-image` | VLM analysis of paper figures (`--fn describe` / `--fn extract-data`); no PDF download required. |
 | Target-disease | Open Targets MCP | `query_open_targets_graphql` | Disease associations, druggability |
 | Entity search | Open Targets MCP | `search_entities` | Target/disease/drug lookup |
 
 **Paperclip caveats:** Invoked via Bash, not MCP. Requires `paperclip install` + `paperclip login`
-(per machine; vendor SKILL.md auto-installed at `.claude/skills/paperclip/SKILL.md`). The 4-source
-corpus does NOT cover full MEDLINE — PubMed MCP remains the primary metadata source. Skip Paperclip
-silently when the binary is absent (CI / sandboxed environments). Capability keys:
-`literature.corpus_search`, `literature.corpus_grep`.
+(per machine; vendor SKILL.md auto-installed at `.claude/skills/paperclip/SKILL.md`). The 8-source
+corpus does NOT cover full MEDLINE — PubMed MCP remains the primary metadata source. The bioRxiv
+index inside Paperclip may trail the direct bioRxiv API by hours; for preprint-heavy domains this
+is an accepted trade-off (v1.7.0). Skip Paperclip silently when the binary is absent (CI /
+sandboxed environments). Capability keys: `literature.corpus_search`, `literature.corpus_grep`,
+`literature.corpus_metadata`, `verification.figure_content`.
 
 ### Tier 2: ToolUniverse (fallback, via `grep_tools` → `execute_tool`)
 
@@ -140,10 +142,17 @@ or drug-intelligence), the synthesis agent MUST:
 - Use `find_related_articles` for citation network expansion
 - Known issue: occasional transient session expiry — retry once
 
-### bioRxiv MCP
-- Preprints are NOT peer-reviewed — always note this in evidence grading
-- `server` parameter: "biorxiv" for biology, "medrxiv" for clinical
-- Use `search_published_preprints` to check if a preprint has been formally published
+### Paperclip CLI (preprint + full-text channel)
+- Replaces the retired bioRxiv MCP (v1.7.0). Use `paperclip search -s biorxiv "<query>"` or
+  `paperclip search -s medrxiv "<query>"` for preprint-only restriction; omit `-s` for the
+  full 8-source corpus (PMC + bioRxiv + medRxiv + arXiv + abstracts + FDA + trials + patents).
+- Preprints are NOT peer-reviewed — always note this in evidence grading.
+- `--since 30d` / `--since 7d` for recent-bias scans (replaces "latest developments" recipes).
+- `paperclip lookup doi <DOI>` is the canonical re-verification path when an identifier is known.
+- Pair with `paperclip map --from <s_id>` (3–10 papers) for synthesis; `paperclip reduce
+  --from <m_id> --strategy {summarize|table|themes|consensus|bullet_points|extract}` for
+  cross-paper aggregation.
+- See `skills/shared/references/paperclip_stateful_workflow.md` for s_id/m_id reuse patterns.
 
 ### Consensus MCP
 - Best for "what does the literature say about X?" synthesis queries

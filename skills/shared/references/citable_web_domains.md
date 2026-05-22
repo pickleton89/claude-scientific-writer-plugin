@@ -130,7 +130,7 @@ Common out-of-whitelist domains the agent will likely encounter:
 - **Sponsor press releases on .com.** When the page is the sponsor's first-party disclosure of trial results (e.g., on a pharma company's investor-relations site), it is the primary record and may be cited as W2-equivalent with the tag `per sponsor disclosure`. The presence of a corresponding ClinicalTrials.gov entry is preferred.
 - **DOI present on a W3b page.** If the news article happens to carry a DOI for its own editorial (some journals issue DOIs for news pieces), the DOI does NOT promote the source above W3b. The page's role as secondary commentary is what places it in W3b, not the absence of an identifier.
 - **Wayback / archive.org URLs.** Known gap. For v1, archive.org and web.archive.org URLs are **out-of-whitelist** (not citable). Inheriting the tier of the embedded original URL would require a regex extractor + recursive whitelist evaluation, and a half-implemented fallback is worse than no fallback for audit-critical code. Revisit if archive URLs become a frequent source in practice.
-- **Preprint servers.** `biorxiv.org`, `medrxiv.org`, `arxiv.org` are **not** on this whitelist because they have their own first-class scholarly channel in the deep-research Search Contract (Paperclip + bioRxiv MCP). Web access to these domains is redundant with the scholarly channels.
+- **Preprint servers.** `biorxiv.org`, `medrxiv.org`, `arxiv.org` are **not** on this whitelist because they have their own first-class scholarly channel in the deep-research Search Contract (Paperclip CLI — covers all three sources as full text). Web access to these domains is redundant with the scholarly channel.
 
 ## Programmatic lookup
 

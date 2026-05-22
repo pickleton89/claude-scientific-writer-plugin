@@ -137,7 +137,7 @@ def test_quick_mode_audit_still_requires_all_required_dbs():
 def test_quick_mode_passes_when_all_four_called():
     contract = _frozen_contract(mode="quick", domain="biomedical")
     result = audit_search(
-        contract, ["PubMed", "Consensus", "bioRxiv", "OpenAlex"]
+        contract, ["PubMed", "Consensus", "Paperclip", "OpenAlex"]
     )
     assert result.passed is True
 
@@ -148,20 +148,20 @@ def test_quick_mode_passes_when_all_four_called():
 
 
 def test_phase_gate_result_serialises_cleanly():
-    result = audit_phase_2_search(["PubMed", "bioRxiv"], ["PubMed"])
+    result = audit_phase_2_search(["PubMed", "Paperclip"], ["PubMed"])
     d = result.to_dict()
     assert d["passed"] is False
     assert d["phase"] == "phase_2_investigation"
-    assert d["required_databases"] == ["PubMed", "bioRxiv"]
+    assert d["required_databases"] == ["PubMed", "Paperclip"]
     assert d["searched_databases"] == ["PubMed"]
-    assert d["missing_databases"] == ["bioRxiv"]
+    assert d["missing_databases"] == ["Paperclip"]
 
 
 def test_format_audit_for_user_marks_failure_clearly():
-    result = audit_phase_2_search(["PubMed", "bioRxiv"], ["PubMed"])
+    result = audit_phase_2_search(["PubMed", "Paperclip"], ["PubMed"])
     rendered = format_audit_for_user(result)
     assert "FAILED" in rendered
-    assert "bioRxiv" in rendered
+    assert "Paperclip" in rendered
     assert "loop back" in rendered
 
 

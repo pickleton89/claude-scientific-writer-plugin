@@ -400,17 +400,18 @@ literature:
     fallback: []  # No equivalent exists elsewhere — gracefully omit if unavailable
 
   corpus_search:
-    description: "Full-text discovery + LLM map/reduce across the Paperclip corpus (PMC + bioRxiv + medRxiv + arXiv)"
+    description: "Full-text discovery + LLM map/reduce across the Paperclip 8-source corpus (PMC + bioRxiv + medRxiv + arXiv + abstracts + FDA + clinical trials + patents)"
     primary:
       - tool: paperclip search  # Paperclip CLI (invoke via Bash)
         notes: >
-          Full-text search across PMC + bioRxiv + medRxiv + arXiv (4 sources). Returns
-          a session-local search ID `s_xxxxxxxx` (consumable by `paperclip results <ID>`
-          and `paperclip map --from <ID>`). Search IDs are local trace handles, not
-          globally reproducible — record citation URLs (`https://citations.gxl.ai/papers/<doc_id>#L<n>`)
-          for durable audit trails. Add `-s abstracts` to widen to abstract-only corpus
-          when full-text hits are sparse. Pair with PubMed MCP — Paperclip does NOT cover
-          full MEDLINE.
+          Full-text search across the 8-source corpus (pmc, biorxiv, medrxiv, arxiv,
+          abstracts, fda, trials, patents — restrict with `-s <source>` or positional
+          source token). Returns a session-local search ID `s_xxxxxxxx` (consumable by
+          `paperclip results <ID>` and `paperclip map --from <ID>`). Search IDs are
+          local trace handles, not globally reproducible — record citation URLs
+          (`https://citations.gxl.ai/papers/<doc_id>#L<n>`) for durable audit trails.
+          Add `-s abstracts` to widen to abstract-only corpus when full-text hits are
+          sparse. Pair with PubMed MCP — Paperclip does NOT cover full MEDLINE.
       - tool: paperclip map  # Paperclip CLI
         notes: >
           `paperclip map --from <s_id> "<question>"` runs a per-paper LLM reader and emits
@@ -418,10 +419,25 @@ literature:
           search). Follow with `paperclip reduce --from <m_id> --strategy {summarize|table|themes|consensus|bullet_points|extract}`.
     tooluniverse: []
     fallback:
-      - tool: search_preprints  # bioRxiv MCP
-        notes: "If Paperclip CLI is absent, use bioRxiv MCP `search_preprints` (preprints) and PubMed MCP `search_articles` + `get_full_text_article` (PMC OA). arXiv full text has no MCP equivalent — falls back to direct WebFetch on arxiv.org."
       - tool: search_articles  # PubMed MCP
-        notes: "PubMed search across MEDLINE; pair with `get_full_text_article` for PMC OA full text. Does not cover preprints — combine with `search_preprints`."
+        notes: "PubMed search across MEDLINE when Paperclip CLI is absent; pair with `get_full_text_article` for PMC OA full text. Does not cover preprints (bioRxiv/medRxiv) or arXiv — those have no MCP equivalent."
+
+  corpus_metadata:
+    description: "Read-only SQL metadata queries over the Paperclip documents table (200-row cap)"
+    primary:
+      - tool: paperclip sql  # Paperclip CLI (invoke via Bash)
+        notes: >
+          `paperclip sql "SELECT ... FROM documents WHERE ..."`. The query is fanned
+          out across the 4 default sources (pmc, abstracts, fda_docs, trials) — each
+          source has its own schema; some columns exist only in specific sources. Use
+          `paperclip sql --tables -s <source>` to inspect available tables (e.g.,
+          `fda_docs` exposes `accelerated_approvals`, `all_documents`, `pediatric_waivers`,
+          ...). Common uses: pre-search coverage check (`SELECT COUNT(*) FROM documents
+          WHERE source='fda' AND year>=2020`), filter by author/journal/license, or
+          confirm a candidate DOI lives in the corpus before paying for `paperclip search`.
+          200-row LIMIT enforced — use aggregation or `--quiet` for bulk counts.
+    tooluniverse: []
+    fallback: []  # No equivalent — degrade to omitting the pre-search filter
 
   corpus_grep:
     description: "Sub-second regex search across the Paperclip corpus (full text), or within a single paper"
@@ -722,8 +738,9 @@ verification:
           `paperclip search "<title>" -n 1`. Read the relevant section files under
           `/papers/<id>/sections/` or grep `content.lines` for the claim phrase.
           Higher-fidelity than Scite snippets for claim-alignment because full
-          context is available. Skip if cited paper is not in Paperclip's 4-source
-          corpus (PMC + bioRxiv + medRxiv + arXiv). See literature.corpus_search.
+          context is available. Skip if cited paper is not in Paperclip's 8-source
+          corpus (PMC + bioRxiv + medRxiv + arXiv + abstracts + FDA + trials + patents).
+          See literature.corpus_search.
       - tool: search_literature  # Scite MCP (mcp__scite__search_literature)
         notes: >
           Call with `dois=[<DOI>] + term=<key claim phrase>` for sentiment-classified
@@ -793,6 +810,23 @@ verification:
     fallback:
       - tool: web_search
         notes: "Quoted-phrase web search when no source provided and Paperclip unavailable / non-biomedical context."
+
+  figure_content:
+    description: "VLM analysis of paper figures via Paperclip ask-image — verify claims of the form 'Figure N shows X'"
+    primary:
+      - tool: paperclip ask-image  # Paperclip CLI (invoke via Bash)
+        notes: >
+          `paperclip ask-image /papers/<id>/figures/<file> "<question>"`. Two built-in
+          fns: `--fn describe` (default question: what does this figure show?) and
+          `--fn extract-data` (tabular data extraction from plots/charts). Use for
+          "Figure N shows downregulation of X" alignment in Stage 3 and for numerical
+          claims read off a figure axis. Cite via the citation URL with the figure
+          file path appended (e.g., `https://citations.gxl.ai/papers/<id>/figures/<file>`).
+          Skip if Paperclip absent, paper outside the 8-source corpus, or `/papers/<id>/figures/`
+          empty. Capability key alternative when no figure exists: fall back to text-only
+          alignment via `verification.claim_alignment`.
+    tooluniverse: []
+    fallback: []  # No equivalent VLM-over-paper-figure tool — degrade to text alignment
 
   entity_sanity:
     description: "Stage 6 named-entity sanity (gene/protein/drug/cell-line/strain) — delegates to entity-resolution"

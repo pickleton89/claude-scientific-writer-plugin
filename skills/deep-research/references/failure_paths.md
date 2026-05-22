@@ -100,7 +100,7 @@ answer the research question.
 
 ### F6: MCP Tool Failure (Primary)
 
-**Trigger:** PubMed MCP, bioRxiv MCP, or Consensus MCP returns an error or times out.
+**Trigger:** PubMed MCP, Paperclip CLI, or Consensus MCP returns an error or times out.
 
 **Symptoms:**
 - MCP tool returns error response
@@ -114,7 +114,7 @@ answer the research question.
 | PubMed MCP `search_articles` | ToolUniverse `EuropePMC_search_articles` | ToolUniverse `SemanticScholar_search_papers` | Document gap |
 | PubMed MCP `get_article_metadata` | ToolUniverse `EuropePMC_search_articles` (with DOI) | ToolUniverse `Crossref_get_work_by_doi` | Mark NOT_FOUND |
 | PubMed MCP `get_full_text_article` | ToolUniverse `EuropePMC_get_fulltext_snippets` | ToolUniverse `SemanticScholar_get_pdf_snippets` | Abstract-only verification |
-| bioRxiv MCP `search_preprints` | ToolUniverse `EuropePMC_search_articles` (source:PPR) | Document gap | — |
+| Paperclip CLI `paperclip search` | ToolUniverse `EuropePMC_search_articles` (PMC OA only; no preprint coverage) | Document gap (no preprint fallback exists post-bioRxiv-MCP retirement) | — |
 | Consensus MCP `search` | ToolUniverse `SemanticScholar_search_papers` | PubMed MCP `search_articles` | Document gap |
 | Scite MCP `search_literature` | No equivalent — Scite's citation context is unique | — | Skip reception assessment |
 | Scite MCP tallies (DOI lookup) | No equivalent — no other tool provides citation sentiment | — | Omit reception data |

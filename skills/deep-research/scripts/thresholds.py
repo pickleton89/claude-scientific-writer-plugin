@@ -65,8 +65,11 @@ MIN_DATABASES: Final[dict[str, int]] = {
     #     = 5 required minimum. Fact-check bumped from 3 → 5 to match (3 tier
     #     slots + OpenAlex + WebSemantic). Systematic-review stays at 5
     #     (WebSemantic is opt-in only; PRISMA-S §S4 disclosure gates
-    #     inclusion). Quick is unchanged at 3 (no WebSemantic, no Paperclip;
-    #     just 3 tier slots).
+    #     inclusion).
+    #   v1.7.0-bioRxiv-retirement: Paperclip now occupies the tertiary tier
+    #     slot in every domain (subsumes bioRxiv MCP). Quick stays at 3 —
+    #     user may strike Paperclip if the binary is not installed, dropping
+    #     to PubMed + Consensus + OpenAlex (= 3, == floor).
     "full": 5,
     "quick": 3,
     "lit-review": 5,

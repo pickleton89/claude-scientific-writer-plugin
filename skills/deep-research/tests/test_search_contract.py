@@ -8,10 +8,10 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 from search_contract import (
+    DATABASE_METADATA,
     NO_SEARCH_MODES,
     OPENALEX_REQUIRED_MODES,
     PAPERCLIP_ELIGIBLE_MODES,
-    PAPERCLIP_PROMOTED_MODES,
     PUBTATOR3_ELIGIBLE_MODES,
     REGULATORY_ENTITY_PATTERN,
     SCITE_ELIGIBLE_MODES,
@@ -26,12 +26,18 @@ from search_contract import (
 
 
 # ---------------------------------------------------------------------------
-# Required databases — Paperclip replaces bioRxiv in heavy/fact-check modes
-# for non-preprint-heavy domains.
+# v1.7.0: bioRxiv MCP retired — Paperclip's 8-source corpus is the canonical
+# full-text channel across every domain and every search-running mode.
 # ---------------------------------------------------------------------------
 
 
-def test_full_mode_biomedical_seats_paperclip_in_place_of_biorxiv():
+def test_no_biorxiv_in_database_metadata():
+    """Regression guard: bioRxiv must not reappear in the metadata registry."""
+    assert "bioRxiv" not in DATABASE_METADATA
+    assert "Paperclip" in DATABASE_METADATA
+
+
+def test_full_mode_biomedical_required_databases():
     """Full + biomedical: PubMed + Consensus + Paperclip + OpenAlex + WebSemantic."""
     # RQ has no named entities → PubTator3 stays optional, not in required.
     # OpenAlex + WebSemantic are required across all heavy modes.
@@ -68,7 +74,7 @@ def test_full_mode_biomedical_with_entities_promotes_pubtator3():
 
 
 def test_cross_domain_promotes_consensus_to_primary():
-    """Cross-domain RQs put Consensus first; bioRxiv → Paperclip in heavy mode."""
+    """Cross-domain RQs put Consensus first; Paperclip occupies the tertiary slot."""
     contract = build_contract(
         mode="full",
         research_question="ML for protein design",
@@ -82,34 +88,32 @@ def test_cross_domain_promotes_consensus_to_primary():
     assert "bioRxiv" not in names
 
 
-def test_preprint_heavy_keeps_biorxiv_primary():
-    """Preprint-heavy domain exempt from bioRxiv → Paperclip swap."""
+def test_preprint_heavy_seats_paperclip_primary():
+    """Preprint-heavy domain: Paperclip is now primary (v1.7.0 — bioRxiv MCP retired)."""
     contract = build_contract(
         mode="full",
         research_question="latest CRISPR base-editing methods",
         domain="preprint-heavy",
         has_named_entities=False,
     )
-    assert contract.required_databases[0].name == "bioRxiv"
+    assert contract.required_databases[0].name == "Paperclip"
     names = contract.required_database_names()
-    assert "bioRxiv" in names
-    # Paperclip available as optional alongside primary bioRxiv
-    optional_names = [d.name for d in contract.optional_databases]
-    assert "Paperclip" in optional_names
+    assert "Paperclip" in names
+    assert "bioRxiv" not in names
 
 
-def test_quick_mode_keeps_biorxiv_in_required():
-    """Quick mode is NOT in PAPERCLIP_PROMOTED_MODES — bioRxiv stays."""
+def test_quick_mode_seats_paperclip():
+    """Quick mode now seats Paperclip in the tertiary tier slot (v1.7.0)."""
     contract = build_contract(
         mode="quick", research_question="x", domain="biomedical"
     )
     names = contract.required_database_names()
-    assert "bioRxiv" in names
-    assert "Paperclip" not in names
+    assert names == ["PubMed", "Consensus", "Paperclip", "OpenAlex"]
+    assert "bioRxiv" not in names
 
 
 def test_fact_check_biomedical_seats_paperclip():
-    """Fact-check is now in PAPERCLIP_PROMOTED_MODES — Paperclip required."""
+    """Fact-check: Paperclip required in the tertiary slot."""
     contract = build_contract(
         mode="fact-check",
         research_question="x",
@@ -126,20 +130,21 @@ def test_fact_check_biomedical_seats_paperclip():
 # ---------------------------------------------------------------------------
 
 
-def test_quick_mode_skips_scite_paperclip_pubtator3():
-    """Quick mode is in none of the eligibility sets."""
+def test_quick_mode_skips_scite_and_pubtator3():
+    """Quick mode is not in SCITE / PUBTATOR3 eligibility sets (v1.7.0:
+    Paperclip is now eligible in quick — moved to required tier table)."""
     contract = build_contract(
         mode="quick", research_question="x", domain="biomedical"
     )
     optional_names = {d.name for d in contract.optional_databases}
     assert "Scite" not in optional_names
-    assert "Paperclip" not in optional_names
     assert "PubTator3" not in optional_names
+    # Paperclip is REQUIRED (tertiary tier slot) in quick mode, not optional.
 
     skipped_names = {d.name for d in contract.skipped_by_mode}
     assert "Scite" in skipped_names
-    assert "Paperclip" in skipped_names
     assert "PubTator3" in skipped_names
+    assert "Paperclip" not in skipped_names
     for entry in contract.skipped_by_mode:
         assert "quick" in entry.skipped_reason
 
@@ -235,17 +240,21 @@ def test_user_strikes_optional_database():
     assert contract.user_struck[0].skipped_reason == "not needed for this RQ"
 
 
-def test_user_strikes_paperclip_in_preprint_heavy():
-    """Preprint-heavy keeps Paperclip optional — user can strike it."""
+def test_user_strikes_paperclip_in_quick_drops_to_floor():
+    """v1.7.0: Paperclip is required in quick (tertiary tier). User may strike
+    it to drop to the floor (PubMed + Consensus + OpenAlex = 3 == MIN_DATABASES)."""
     contract = build_contract(
-        mode="full",
+        mode="quick",
         research_question="x",
-        domain="preprint-heavy",
-        has_named_entities=False,
+        domain="biomedical",
     )
-    assert "Paperclip" in [d.name for d in contract.optional_databases]
+    assert "Paperclip" in contract.required_database_names()
+    assert len(contract.required_databases) == 4
     contract.strike("Paperclip", reason="binary not installed")
-    assert "Paperclip" not in [d.name for d in contract.optional_databases]
+    assert "Paperclip" not in contract.required_database_names()
+    assert len(contract.required_databases) == 3  # at floor
+    struck = [d.name for d in contract.user_struck]
+    assert "Paperclip" in struck
 
 
 def test_strike_below_min_databases_raises():
@@ -342,16 +351,17 @@ def test_eligibility_sets_match_documented_semantics():
     heavy_plus_factcheck = frozenset(
         {"full", "lit-review", "systematic-review", "hypothesis", "fact-check"}
     )
+    all_search_modes = frozenset(
+        {"quick", "full", "lit-review", "systematic-review", "hypothesis", "fact-check"}
+    )
     assert SCITE_ELIGIBLE_MODES == frozenset(
         {"full", "lit-review", "systematic-review", "hypothesis"}
     )
-    assert PAPERCLIP_ELIGIBLE_MODES == heavy_plus_factcheck
+    # v1.7.0: Paperclip eligible in every search-running mode (incl. quick).
+    assert PAPERCLIP_ELIGIBLE_MODES == all_search_modes
     assert PUBTATOR3_ELIGIBLE_MODES == heavy_plus_factcheck
-    assert PAPERCLIP_PROMOTED_MODES == heavy_plus_factcheck
     # OpenAlex covers every mode that runs a search phase.
-    assert OPENALEX_REQUIRED_MODES == frozenset(
-        {"full", "quick", "lit-review", "systematic-review", "hypothesis", "fact-check"}
-    )
+    assert OPENALEX_REQUIRED_MODES == all_search_modes
     # WebSemantic: required in heavy + fact-check, opt-in for systematic-review.
     assert WEBSEMANTIC_REQUIRED_MODES == frozenset(
         {"full", "lit-review", "hypothesis", "fact-check"}
@@ -441,25 +451,27 @@ def test_user_can_strike_openalex_when_above_floor():
 # ---------------------------------------------------------------------------
 
 
-def test_resolve_tier_table_swaps_biorxiv_in_heavy_modes():
-    """Heavy mode + non-preprint-heavy → bioRxiv → Paperclip."""
-    table = _resolve_tier_table("biomedical", "full")
-    assert "bioRxiv" not in table.values()
-    assert "Paperclip" in table.values()
+def test_resolve_tier_table_uniform_across_modes():
+    """v1.7.0: tier table is uniform across modes — Paperclip occupies the
+    full-text slot in every (domain, mode) combination."""
+    for mode in ("full", "quick", "lit-review", "fact-check", "hypothesis"):
+        for domain in ("biomedical", "molecular", "pharmacology",
+                       "cross-domain", "preprint-heavy"):
+            table = _resolve_tier_table(domain, mode)
+            assert "bioRxiv" not in table.values(), (
+                f"bioRxiv leaked into ({domain}, {mode})"
+            )
+            assert "Paperclip" in table.values(), (
+                f"Paperclip missing from ({domain}, {mode})"
+            )
 
 
-def test_resolve_tier_table_preserves_biorxiv_in_quick():
-    """Quick mode preserves bioRxiv even in biomedical domain."""
-    table = _resolve_tier_table("biomedical", "quick")
-    assert "bioRxiv" in table.values()
-    assert "Paperclip" not in table.values()
-
-
-def test_resolve_tier_table_preserves_biorxiv_in_preprint_heavy():
-    """Preprint-heavy domain always keeps bioRxiv."""
+def test_resolve_tier_table_preprint_heavy_seats_paperclip_primary():
+    """Preprint-heavy puts Paperclip in the primary tier slot."""
     table = _resolve_tier_table("preprint-heavy", "full")
-    assert "bioRxiv" in table.values()
-    assert "Paperclip" not in table.values()
+    assert table["primary"] == "Paperclip"
+    table_quick = _resolve_tier_table("preprint-heavy", "quick")
+    assert table_quick["primary"] == "Paperclip"
 
 
 # ---------------------------------------------------------------------------
@@ -584,15 +596,28 @@ def test_missing_paperclip_emits_warning_when_required(monkeypatch):
     assert any("paperclip" in w.lower() for w in contract.warnings)
 
 
-def test_missing_paperclip_no_warning_when_not_required(monkeypatch):
-    """In quick mode (Paperclip not required), no warning even if binary missing."""
+def test_missing_paperclip_emits_warning_in_quick_mode(monkeypatch):
+    """v1.7.0: Paperclip is required in quick too — missing binary must warn."""
     import search_contract
 
     monkeypatch.setattr(search_contract, "_paperclip_available", lambda: False)
     contract = build_contract(
         mode="quick", research_question="x", domain="biomedical"
     )
-    assert not any("paperclip" in w.lower() for w in contract.warnings)
+    assert any("paperclip" in w.lower() for w in contract.warnings)
+
+
+def test_missing_paperclip_no_warning_in_no_search_modes(monkeypatch):
+    """Socratic / review run no search phase — no Paperclip warning even
+    when the binary is absent."""
+    import search_contract
+
+    monkeypatch.setattr(search_contract, "_paperclip_available", lambda: False)
+    for mode in NO_SEARCH_MODES:
+        contract = build_contract(
+            mode=mode, research_question="x", domain="biomedical"
+        )
+        assert not any("paperclip" in w.lower() for w in contract.warnings)
 
 
 # ---------------------------------------------------------------------------

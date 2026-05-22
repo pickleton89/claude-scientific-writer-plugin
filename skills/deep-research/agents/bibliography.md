@@ -32,12 +32,13 @@ search strategy.
 | `get_article_metadata` | PubMed MCP | Verify DOIs, get full metadata | `article_id` (PMID or DOI) |
 | `find_related_articles` | PubMed MCP | Citation network expansion | `article_id` |
 | `get_full_text_article` | PubMed MCP | Full-text retrieval (PMC only) | `article_id` |
-| `search_preprints` | bioRxiv MCP | Cutting-edge preprints, not yet peer-reviewed | `query`, `server` (biorxiv/medrxiv) |
-| `get_preprint` | bioRxiv MCP | Get preprint details by DOI | `doi` |
 | `search` | Consensus MCP | Cross-domain evidence synthesis | `query` |
 | `search_literature` | Scite MCP | Citation-aware full-text search; post-search reception assessment | `term`, `dois` |
-| `paperclip search` | Paperclip CLI | Full-text discovery across PMC + bioRxiv + medRxiv + arXiv | `query`, `-n`, `-s`, `--year`, `--journal` |
+| `paperclip search` | Paperclip CLI | **Preprint + full-text discovery** across 8-source corpus (PMC + bioRxiv + medRxiv + arXiv + abstracts + FDA + clinical trials + patents). Replaces the retired bioRxiv MCP. | `query`, `-n`, `-s`, `--since`, `--year`, `--journal` |
+| `paperclip lookup` | Paperclip CLI | DOI / PMID / arXiv / title lookup — preferred when an identifier is known | `FIELD VALUE` (FIELD ∈ {doi, pmid, arxiv, pmc, title, author, journal, year, ...}) |
 | `paperclip map` | Paperclip CLI | Per-paper LLM reader across 3–10 search hits | `--from <s_id>`, `"<question>"` |
+| `paperclip reduce` | Paperclip CLI | Synthesize a map result set (`m_id`) into themes/table/summary | `--from <m_id>`, `--strategy {summarize\|table\|themes\|consensus\|bullet_points\|extract}` |
+| `paperclip sql` | Paperclip CLI | Read-only metadata SQL (200-row cap) — pre-search coverage / year-journal filters | SQL query string |
 | `pubtator3 search` | PubTator3 wrapper | Entity-grounded discovery (gene/disease/chemical/variant co-mentions) | `--gene`, `--disease`, `--chemical`, `--variant`, `--size`, `--summary` |
 | `pubtator3 annotations` | PubTator3 wrapper | BioC-JSON entity spans for assembled PMID list | `--pmids`, `--summary` |
 | `pubtator3 relations` | PubTator3 wrapper | Co-mention graph for an entity (dossier-style pivots) | `--entity`, `--summary` |
@@ -52,7 +53,7 @@ search strategy.
 | `mcp__exa__web_search_exa` | Exa MCP | **Required WebSemantic channel** for grey-lit discovery (regulatory pages, conference abstracts, registry pages, sponsor disclosures). Natural-language *page-description* queries, not keywords. Filter hits against the W1/W2 whitelist before promoting to bibliography. | `query` (natural-language page description), `numResults` |
 | `mcp__exa__web_fetch_exa` | Exa MCP | Markdown fetch for whitelisted URLs to capture snippet + `fetched_at` ISO-8601 timestamp into the Search Log. Batch URLs in one call. | `urls` (array, batch-friendly) |
 
-**Paperclip is invoked via Bash, not MCP** — requires `paperclip install` + `paperclip login` (per machine). Vendor-managed `SKILL.md` lives at `.claude/skills/paperclip/SKILL.md`. Skip Paperclip silently when the binary is absent (CI / sandboxed environments) — bibliography proceeds with the other databases. Capability keys: `literature.corpus_search`, `literature.corpus_grep`.
+**Paperclip is invoked via Bash, not MCP** — requires `paperclip install` + `paperclip login` (per machine). Vendor-managed `SKILL.md` lives at `.claude/skills/paperclip/SKILL.md`. v1.7.0: Paperclip is the sole preprint + full-text channel (the bioRxiv MCP was retired). Skip Paperclip silently when the binary is absent (CI / sandboxed environments) — bibliography proceeds with the other databases. Capability keys: `literature.corpus_search`, `literature.corpus_grep`, `literature.corpus_metadata`, `verification.figure_content`. See `skills/shared/references/paperclip_stateful_workflow.md` for the s_id/m_id reuse pattern.
 
 **PubTator3 is invoked via Bash:** `uv run python skills/shared/scripts/pubtator3.py <subcommand>`. No auth, NCBI REST. Skip silently when the network call fails (sandboxed environments) — bibliography proceeds with the other databases. Capability keys: `literature.entity_annotation`, `literature.entity_autocomplete`. See `skills/shared/references/pubtator3_quirks.md` for entity-ID format and query syntax.
 
@@ -75,11 +76,10 @@ search strategy.
 | Failure | Detection | Fallback | Max Retries |
 |---------|-----------|----------|-------------|
 | PubMed MCP error/empty | Error response or 0 results for known-good query | ToolUniverse `EuropePMC_search_articles` | 1 |
-| bioRxiv MCP error | Error response or timeout | ToolUniverse `EuropePMC_search_articles` with `src=ppr` | 1 |
 | Consensus MCP rate-limit | 429 or "rate limit" in response | Wait 30s, retry once | 1 |
 | ToolUniverse session expired | "session" or "auth" error from `execute_tool` | Retry `execute_tool` once | 1 |
 | Scite MCP error/timeout | Error response or timeout from `search_literature` | Skip Step 4b reception assessment; no equivalent fallback | 0 |
-| Paperclip CLI error | Non-zero exit / `paperclip: command not found` / OAuth expired | Skip Paperclip channel; proceed with PubMed + bioRxiv MCP + Consensus | 1 |
+| Paperclip CLI error | Non-zero exit / `paperclip: command not found` / OAuth expired | Skip Paperclip channel; proceed with PubMed + Consensus + OpenAlex. No preprint fallback exists post-bioRxiv-MCP retirement — document gap in Search Log. | 1 |
 | PubTator3 wrapper error | Non-zero exit / network error / `requests` not installed | Skip PubTator3 channel; proceed with other databases. No fallback for entity-grounded search. | 1 |
 | OpenAlex MCP error/timeout | Error from `health_check` or any `mcp__openalex__*` call; rate-limit (429) | Re-run `health_check` once; on second failure skip OpenAlex channel and emit DEGRADED-SEARCH advisory (OpenAlex is required, so its loss must be flagged). For citation-graph requests, fall back to PubMed `find_related_articles` (biomedical only) or Scite citation context (sentiment-classified, narrower coverage). | 1 |
 | Exa MCP error/empty | Error from `mcp__exa__web_search_exa` or empty results across all sub-queries | Retry once with the RQ reformulated as a page-description (Exa is semantic). On second failure, skip the WebSemantic channel and emit DEGRADED-SEARCH advisory; record gap in Search Log (no equivalent grey-lit fallback). In `fact-check` with regulatory auto-hardening, treat Exa loss as a HARD GAP and re-open the Search Contract with the user. | 1 |
@@ -164,26 +164,14 @@ If **LOW collision risk** or no identity table: use query as-is.
 Select ≥3 databases based on domain (from `references/biomedical_research.md`):
 
 The required databases are resolved by the **Search Contract** (see
-`scripts/search_contract.py`) and frozen at Checkpoint 1. Two tables below:
-the **base tier table** (used by quick mode and by preprint-heavy across all
-modes), and the **heavy/fact-check tier table** (used by heavy modes +
-fact-check in non-preprint-heavy domains, where Paperclip replaces bioRxiv
-as the full-text discovery channel — Paperclip's corpus already covers PMC
-+ bioRxiv + medRxiv + arXiv).
+`scripts/search_contract.py`) and frozen at Checkpoint 1. v1.7.0 collapsed
+the prior dual tier tables into a single uniform table — Paperclip's
+8-source corpus is the canonical preprint + full-text channel across every
+mode (`quick` / `full` / `lit-review` / `systematic-review` / `hypothesis` /
+`fact-check`) and every domain. The retired bioRxiv MCP slot is filled by
+Paperclip in-place.
 
-**Base tier table** — quick mode and preprint-heavy (all modes):
-
-| Domain | Primary | Secondary | Tertiary | Reception (post-search) |
-|--------|---------|-----------|----------|------------------------|
-| Biomedical/Clinical | PubMed | Consensus | bioRxiv | Scite tallies |
-| Molecular Biology | PubMed | bioRxiv | Consensus | Scite tallies |
-| Drug/Pharmacology | PubMed | Consensus | bioRxiv (medRxiv) | Scite tallies |
-| Cross-Domain | Consensus | PubMed | bioRxiv | Scite tallies |
-| Emerging/Preprint-heavy | bioRxiv | PubMed | Consensus | Scite tallies |
-
-**Heavy modes + fact-check tier table** — `full` / `lit-review` /
-`systematic-review` / `hypothesis` / `fact-check` (non-preprint-heavy
-domains only; preprint-heavy uses the base table above):
+**Domain tier table** (uniform across modes):
 
 | Domain | Primary | Secondary | Tertiary | Reception (post-search) |
 |--------|---------|-----------|----------|------------------------|
@@ -191,30 +179,43 @@ domains only; preprint-heavy uses the base table above):
 | Molecular Biology | PubMed | **Paperclip** | Consensus | Scite tallies |
 | Drug/Pharmacology | PubMed | Consensus | **Paperclip** | Scite tallies |
 | Cross-Domain | Consensus | PubMed | **Paperclip** | Scite tallies |
+| Emerging/Preprint-heavy | **Paperclip** | PubMed | Consensus | Scite tallies |
 
-The bioRxiv slot is replaced by Paperclip in-place (same tier position).
-Preprint-heavy is exempt — direct bioRxiv MCP gives fresher metadata than
-Paperclip's PMC-routed wrapper for hot-off-the-press preprint scans.
+**Preprint-heavy freshness trade-off:** Paperclip's bioRxiv/medRxiv indexes
+may trail the direct API by hours. v1.7.0 accepts this lag in exchange for
+unified routing — if a `quick`-mode RQ needs sub-hour preprint freshness,
+strike Paperclip at Checkpoint 1 and use the bibliography Search Log to
+document the gap.
+
+**Cross-domain full-text:** Paperclip's arXiv index (~3M papers, OCR-processed)
+is the **only** full-text channel for CS / ML / physics / non-biomedical claims
+in the contract — OpenAlex provides metadata + citation graph but not text. When
+a cross-domain RQ touches q-bio.*, cs.LG, cs.AI, or physics subfields, route
+text-needed alignment through `paperclip search -s arxiv "..."` rather than
+falling back to web search.
 
 **Note:** Scite is NOT a 4th discovery database. It is a post-search enrichment step applied
 after the bibliography is assembled (see Step 4b below).
 
-**Paperclip channel (required for heavy modes + fact-check, except in
-preprint-heavy domain):** Run `paperclip search` in the same parallel batch as
-PubMed/Consensus. Full-text discovery across PMC + bioRxiv + medRxiv + arXiv.
-In preprint-heavy domain (bioRxiv stays primary), Paperclip is **optional** —
-useful as a complement, strikable at Checkpoint 1. In quick mode Paperclip is
-not eligible. When the binary is missing, the contract surfaces a Checkpoint 1
-warning rather than hard-failing — the user can install/login or strike the
-channel. Dedupe Paperclip hits by DOI against the other databases. Record in
-the Search Log alongside the other channels (see §Search Log below). For
+**Paperclip channel (required across every search-running mode):** Run
+`paperclip search` in the same parallel batch as PubMed/Consensus. Full-text
+discovery across the 8-source corpus (PMC + bioRxiv + medRxiv + arXiv +
+abstracts + FDA + clinical trials + patents). When the binary is missing,
+the contract surfaces a Checkpoint 1 warning rather than hard-failing — the
+user can install/login or strike the channel (down to the mode floor).
+Dedupe Paperclip hits by DOI against the other databases. Record in the
+Search Log alongside the other channels (see §Search Log below). For
 multi-paper synthesis, follow with `paperclip map --from <s_id>` (3–10
-papers). When the RQ touches a computational subfield (compbio methods, ML
-for biomedical data), include arXiv subject codes as keywords in the
-Paperclip query to tighten relevance — see `references/arxiv_categories.md`
-for q-bio.* and cs.* categories and the native arXiv `cat:` syntax. Record
-any retained arXiv hit's category in the Annotated Bibliography (`Source:
-arXiv (q-bio.QM)`).
+papers) and optionally `paperclip reduce --from <m_id> --strategy themes`
+for cross-paper aggregation. Persist `s_id`/`m_id` to
+`/.gxl/<slug>_paperclip_state.json` so downstream stages (verifier Stage 3,
+synthesis) can consume the same result set without re-querying — see
+`skills/shared/references/paperclip_stateful_workflow.md`. When the RQ
+touches a computational subfield (compbio methods, ML for biomedical data),
+include arXiv subject codes as keywords in the Paperclip query to tighten
+relevance — see `references/arxiv_categories.md` for q-bio.* and cs.*
+categories and the native arXiv `cat:` syntax. Record any retained arXiv
+hit's category in the Annotated Bibliography (`Source: arXiv (q-bio.QM)`).
 
 **PubTator3 entity-grounded channel (required when the RQ names biomedical
 entities; optional otherwise):** Use when the topic includes named
@@ -302,7 +303,7 @@ When using Consensus MCP as a search database, apply domain-appropriate filters:
 - **Recent evidence:** Align date filtering with field currency thresholds (see `references/biomedical_research.md`)
 
 **DOI deduplication workaround:** Consensus free/Pro tier does not return DOIs in results.
-To deduplicate Consensus results against PubMed/bioRxiv:
+To deduplicate Consensus results against PubMed/Paperclip:
 1. For each Consensus result, extract title + first author + year
 2. Cross-reference via PubMed `lookup_article_by_citation` with those fields
 3. If PubMed returns a match with DOI, use that DOI for deduplication
@@ -321,15 +322,15 @@ in `required_databases` MUST be called.
    serialize. Sequential execution ("call PubMed, wait, then call Paperclip")
    is forbidden in this step. Per the user's CLAUDE.md preference, batch
    independent tool calls. The required set typically includes PubMed +
-   Consensus + Paperclip + OpenAlex + WebSemantic (heavy modes + fact-check,
-   non-preprint-heavy) or PubMed + Consensus + bioRxiv + OpenAlex + WebSemantic
-   (preprint-heavy primary); WebSemantic drops out in `quick` (no grey-lit
-   channel there) and in `systematic-review` unless the user opted in at
-   Phase 1. When the RQ names biomedical entities, PubTator3 is also in
-   `required_databases`. Mode-eligible optional channels (Scite Step 4b for
-   non-quick/non-fact-check, Paperclip in preprint-heavy domain, PubTator3
-   when no entities detected) are batched in the same message unless the
-   user struck them at Checkpoint 1.
+   Consensus + Paperclip + OpenAlex + WebSemantic across every domain
+   (preprint-heavy seats Paperclip in the *primary* slot rather than the
+   tertiary slot — same set, different order). WebSemantic drops out in
+   `quick` (no grey-lit channel there) and in `systematic-review` unless
+   the user opted in at Phase 1. When the RQ names biomedical entities,
+   PubTator3 is also in `required_databases`. Mode-eligible optional
+   channels (Scite Step 4b for non-quick/non-fact-check, PubTator3 when no
+   entities detected) are batched in the same message unless the user
+   struck them at Checkpoint 1.
 2. Deduplicate by DOI (remove exact DOI matches across sources).
 3. Count unique results.
 4. If < minimum threshold (15 for full, 5 for quick): expand keywords, broaden
@@ -503,10 +504,10 @@ Block so the user sees contracted-vs-actual at a glance:
 ## Search Contract Compliance
 
 **Audit verdict:** PASSED / FAILED
-**Required databases (from contract):** PubMed, Consensus, bioRxiv
-**Searched databases (from Search Log):** PubMed, Consensus, bioRxiv
+**Required databases (from contract):** PubMed, Consensus, Paperclip, OpenAlex
+**Searched databases (from Search Log):** PubMed, Consensus, Paperclip, OpenAlex
 **Missing:** none / [list]
-**Optional channels invoked:** Scite (reception), Paperclip (corpus)
+**Optional channels invoked:** Scite (reception), PubTator3 (entity discovery)
 **Optional channels skipped:** [list with reasons — mode-ineligible, user-struck, circuit-broken]
 ```
 
@@ -523,7 +524,7 @@ For each included source, document:
 ### [Author et al., Year] Title
 - **DOI:** 10.xxxx/xxxxx
 - **PMID:** XXXXXXXX (if available)
-- **Source:** PubMed / bioRxiv / Consensus
+- **Source:** PubMed / Paperclip / Consensus / OpenAlex
 - **Evidence Level:** I-VII (see verification agent for grading)
 - **T1-T4 Tier:** T1/T2/T3/T4 (biomedical claims only)
 - **Study Design:** RCT / Cohort / Case-control / Review / etc.
@@ -543,9 +544,8 @@ Record for each database searched:
 | Database | Date | Query (verbatim) | Filters | Results | After Dedup | Trace ID |
 |----------|------|-------------------|---------|---------|-------------|----------|
 | PubMed | 2026-03-26 | "(EGFR OR ErbB1) AND resistance" | 5yr, English | 342 | 342 | — |
-| bioRxiv | 2026-03-26 | "EGFR resistance mechanisms" | biology | 28 | 19 | — |
 | Consensus | 2026-03-26 | "EGFR resistance mechanisms in NSCLC" | — | 15 | 8 | — |
-| Paperclip | 2026-03-26 | `search "EGFR resistance NSCLC" -n 50` | PMC+bioRxiv+medRxiv+arXiv | 47 | 31 | s_a3f1b210 (session-local) |
+| Paperclip | 2026-03-26 | `search "EGFR resistance NSCLC" -n 50` | 8-source corpus, default sources | 47 | 31 | s_a3f1b210 (session-local) |
 | **Total** | | | | **432** | **400** | |
 | **Saturation** | Iteration 2 yielded 2.1% new papers (< 5% threshold) | | | | |
 ```
@@ -582,7 +582,7 @@ sources from conversation context, which can drift or be lost to auto-compaction
 | Title                      | `title`                     | Verbatim                                           |
 | **DOI:**                   | `doi`, `paper_id` (preferred) | DOI without URL prefix                           |
 | **PMID:**                  | `pmid`                      | When present                                       |
-| **Source:**                | `source`                    | Enum: PubMed / bioRxiv / Consensus / ...           |
+| **Source:**                | `source`                    | Enum: PubMed / Paperclip / Consensus / OpenAlex / ... |
 | **Study Design:**          | `study_design`              | Free text                                          |
 | **Key Findings:**          | `key_findings`              | 2-3 sentence summary                               |
 | **Relevance:**             | `relevance`                 | High / Medium / Low                                |

@@ -37,50 +37,39 @@ from thresholds import ALL_MODES, MIN_DATABASES, MIN_SOURCES
 # ---------------------------------------------------------------------------
 # Domain → tier table (mirrors agents/bibliography.md Step 3)
 # Keys are canonical domain labels; values map tier → MCP/CLI database name.
-#
-# NOTE: The tier table below is the *default* (used by quick mode and by
-# preprint-heavy across all modes). For heavy modes (full / lit-review /
-# systematic-review / hypothesis) and fact-check, ``_resolve_tier_table``
-# swaps bioRxiv → Paperclip in non-preprint-heavy domains, since Paperclip's
-# corpus already covers PMC + bioRxiv + medRxiv + arXiv as full text. See
-# ``_resolve_tier_table`` for the per-mode resolution logic.
 # ---------------------------------------------------------------------------
 
+# v1.7.0 — bioRxiv MCP retired. Paperclip's 8-source corpus
+# (pmc, biorxiv, medrxiv, arxiv, abstracts, fda, trials, patents) is now the
+# sole preprint / full-text channel across every domain and mode. preprint-heavy
+# index lag vs. the direct bioRxiv API is an accepted trade-off.
 DOMAIN_TIER_TABLE: dict[str, dict[str, str]] = {
     "biomedical": {
         "primary": "PubMed",
         "secondary": "Consensus",
-        "tertiary": "bioRxiv",
+        "tertiary": "Paperclip",
     },
     "molecular": {
         "primary": "PubMed",
-        "secondary": "bioRxiv",
+        "secondary": "Paperclip",
         "tertiary": "Consensus",
     },
     "pharmacology": {
         "primary": "PubMed",
         "secondary": "Consensus",
-        "tertiary": "bioRxiv",
+        "tertiary": "Paperclip",
     },
     "cross-domain": {
         "primary": "Consensus",
         "secondary": "PubMed",
-        "tertiary": "bioRxiv",
+        "tertiary": "Paperclip",
     },
     "preprint-heavy": {
-        "primary": "bioRxiv",
+        "primary": "Paperclip",
         "secondary": "PubMed",
         "tertiary": "Consensus",
     },
 }
-
-# Modes where Paperclip's PMC + bioRxiv + medRxiv + arXiv corpus replaces the
-# bioRxiv MCP slot in the tier table (heavy modes + fact-check). preprint-heavy
-# domain is exempt — direct bioRxiv MCP gives fresher metadata for hot-off-the-
-# press preprint scans there.
-PAPERCLIP_PROMOTED_MODES: frozenset[str] = frozenset(
-    {"full", "lit-review", "systematic-review", "hypothesis", "fact-check"}
-)
 
 DEFAULT_DOMAIN = "biomedical"
 
@@ -95,11 +84,6 @@ DATABASE_METADATA: dict[str, dict[str, str]] = {
     "Consensus": {
         "capability_key": "literature.search",
         "tool": "search",
-        "transport": "MCP",
-    },
-    "bioRxiv": {
-        "capability_key": "literature.search",
-        "tool": "search_preprints",
         "transport": "MCP",
     },
     "Scite": {
@@ -134,11 +118,20 @@ DATABASE_METADATA: dict[str, dict[str, str]] = {
 SCITE_ELIGIBLE_MODES: frozenset[str] = frozenset(
     {"full", "lit-review", "systematic-review", "hypothesis"}
 )
-# Paperclip is now mode-eligible for heavy modes + fact-check. In domains
-# other than preprint-heavy it is *required* (replaces bioRxiv in the tier
-# table); in preprint-heavy it remains *optional* alongside primary bioRxiv.
+# Paperclip is required across every search-running mode (v1.7.0: bioRxiv MCP
+# retired; Paperclip's corpus covers PMC + bioRxiv + medRxiv + arXiv + abstracts
+# + FDA + trials + patents). Eligibility set mirrors ALL_MODES minus
+# NO_SEARCH_MODES — every mode that runs a search uses Paperclip.
+#
+# v1.7.0 note: this constant is no longer threaded through ``build_contract``
+# (Paperclip now sits in the required tier table directly via
+# ``DOMAIN_TIER_TABLE``, so the optional-fallback gate that consumed this set
+# in v1.6 is gone). It is exported for test introspection
+# (``test_eligibility_sets_match_documented_semantics``) and as the canonical
+# answer to "which modes assume Paperclip is available." Keep it in lockstep
+# with ALL_MODES − NO_SEARCH_MODES if a new search-running mode lands.
 PAPERCLIP_ELIGIBLE_MODES: frozenset[str] = frozenset(
-    {"full", "lit-review", "systematic-review", "hypothesis", "fact-check"}
+    {"quick", "full", "lit-review", "systematic-review", "hypothesis", "fact-check"}
 )
 # PubTator3 is mode-eligible for heavy modes + fact-check. Promotes from
 # optional → required when the RQ contains named biomedical entities (gene,
@@ -326,17 +319,11 @@ def _detect_named_entities(research_question: str) -> bool:
 def _resolve_tier_table(domain: str, mode: str) -> dict[str, str]:
     """Return the effective primary/secondary/tertiary tier table.
 
-    For non-preprint-heavy domains in heavy/fact-check modes, swap bioRxiv
-    → Paperclip (Paperclip's corpus already covers PMC + bioRxiv + medRxiv
-    + arXiv as full text). For preprint-heavy or quick mode, return the
-    default tier table unchanged.
+    v1.7.0: bioRxiv MCP retired — the tier table is now uniform across modes.
+    Function retained as a stable API for callers and future per-mode tweaks.
     """
-    base = DOMAIN_TIER_TABLE[domain]
-    if mode not in PAPERCLIP_PROMOTED_MODES:
-        return dict(base)
-    if domain == "preprint-heavy":
-        return dict(base)
-    return {tier: ("Paperclip" if name == "bioRxiv" else name) for tier, name in base.items()}
+    del mode  # currently unused; kept for forward compatibility
+    return dict(DOMAIN_TIER_TABLE[domain])
 
 
 # ---------------------------------------------------------------------------
@@ -562,8 +549,8 @@ def build_contract(
         )
 
     # --- Required databases (per resolved tier table) -------------------------
-    # ``_resolve_tier_table`` swaps bioRxiv → Paperclip in non-preprint-heavy
-    # domains for heavy modes + fact-check.
+    # v1.7.0: tier table is uniform across modes — Paperclip occupies the
+    # full-text slot in every domain (preprint-heavy: primary).
     tier_map = _resolve_tier_table(domain, mode)
     for tier in ("primary", "secondary", "tertiary"):
         db_name = tier_map[tier]
@@ -652,23 +639,9 @@ def build_contract(
         scite_entry.skipped_reason = f"mode '{mode}' not in Scite-eligible modes"
         contract.skipped_by_mode.append(scite_entry)
 
-    # Paperclip — only seat as optional when it is NOT already required (i.e.
-    # preprint-heavy in heavy modes, where bioRxiv MCP stays primary but
-    # Paperclip is still useful as a full-text complement).
-    if not paperclip_in_required:
-        paperclip_entry = _make_entry(
-            name="Paperclip",
-            tier="corpus",
-            purpose="full-text discovery across PMC + bioRxiv + medRxiv + arXiv",
-            starter_query=_starter_query("Paperclip", research_question),
-        )
-        if mode in PAPERCLIP_ELIGIBLE_MODES:
-            contract.optional_databases.append(paperclip_entry)
-        else:
-            paperclip_entry.skipped_reason = (
-                f"mode '{mode}' not in Paperclip-eligible modes"
-            )
-            contract.skipped_by_mode.append(paperclip_entry)
+    # v1.7.0: Paperclip is always in required for any search-running mode
+    # (tier table seats it in every domain). The optional-fallback path that
+    # existed in v1.6 for preprint-heavy is no longer needed.
 
     # PubTator3 — entity-grounded discovery. Promotes from optional → required
     # when (a) mode is eligible AND (b) the RQ contains named biomedical
@@ -733,17 +706,18 @@ def format_contract_for_user(contract: SearchContract) -> str:
     )
     lines.append("")
     lines.append(
-        "_Note: in heavy modes + fact-check, Paperclip replaces bioRxiv as "
-        "the full-text corpus (PMC + bioRxiv + medRxiv + arXiv). Preprint-"
-        "heavy domain keeps bioRxiv MCP primary. PubTator3 is required when "
-        "the RQ names biomedical entities (gene/disease/chemical/variant). "
-        "OpenAlex is required across all domains and modes as the cross-"
-        "disciplinary scholarly_graph channel — it provides 240M+ works "
-        "spanning biomedical and non-biomedical literature plus citation-"
-        "network traversal for snowballing. WebSemantic (Exa-based grey-"
-        "literature discovery) is required across heavy modes + fact-check "
-        "for regulatory letters, conference abstracts, registry pages, and "
-        "sponsor disclosures; systematic-review opts in separately at "
+        "_Note: Paperclip is the canonical full-text corpus across every "
+        "search-running mode and every domain — its 8-source index (PMC + "
+        "bioRxiv + medRxiv + arXiv + abstracts + FDA + clinical trials + "
+        "patents) subsumes the retired bioRxiv MCP. PubTator3 is required "
+        "when the RQ names biomedical entities (gene/disease/chemical/"
+        "variant). OpenAlex is required across all domains and modes as the "
+        "cross-disciplinary scholarly_graph channel — it provides 240M+ "
+        "works spanning biomedical and non-biomedical literature plus "
+        "citation-network traversal for snowballing. WebSemantic (Exa-based "
+        "grey-literature discovery) is required across heavy modes + fact-"
+        "check for regulatory letters, conference abstracts, registry pages, "
+        "and sponsor disclosures; systematic-review opts in separately at "
         "Phase 1 with PRISMA-S §S4 disclosure._"
     )
     lines.append("")

@@ -402,7 +402,7 @@ In every Methods section, document:
 ```markdown
 ### Database Versions and Tools
 - PubMed MCP: queried [YYYY-MM-DD], MEDLINE database
-- bioRxiv MCP: queried [YYYY-MM-DD], bioRxiv/medRxiv preprint servers
+- Paperclip CLI: queried [YYYY-MM-DD], 8-source corpus (PMC + bioRxiv + medRxiv + arXiv + abstracts + FDA + clinical trials + patents)
 - Consensus MCP: queried [YYYY-MM-DD]
 - ToolUniverse: [specific tools used, e.g., EuropePMC, SemanticScholar]
 - Upstream dossier: [target-intelligence/drug-intelligence, if used]

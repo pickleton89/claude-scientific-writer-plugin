@@ -6,6 +6,55 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed (BREAKING) — Retire bioRxiv MCP; Paperclip CLI is the canonical preprint + full-text channel (plugin v1.7.0)
+
+Closes the majestic-lobster plan (`~/.claude/plans/i-like-what-you-majestic-lobster.md`). The deep-research Search Contract maintained a parallel bioRxiv MCP path alongside Paperclip even though Paperclip's 8-source corpus (pmc + biorxiv + medrxiv + arxiv + abstracts + fda + trials + patents) already subsumes bioRxiv + medRxiv as full text. v1.7.0 retires the bioRxiv MCP path entirely, collapses the dual base/heavy tier tables into one uniform table, and makes Paperclip eligible in every search-running mode (including `quick`, where it was previously gated). Net effect: one canonical preprint channel, simpler contract logic, and the full Paperclip surface (sql / ask-image / scan / reduce / lookup / --since) wired into capability keys.
+
+**Breaking changes (contract API):**
+- `DOMAIN_TIER_TABLE` (search_contract.py:49) — every `bioRxiv` entry replaced with `Paperclip`. preprint-heavy domain now seats Paperclip as primary (was bioRxiv primary).
+- `PAPERCLIP_PROMOTED_MODES` constant **deleted** — the bioRxiv-→-Paperclip swap is gone; the tier table is uniform.
+- `PAPERCLIP_ELIGIBLE_MODES` now includes `quick` — Paperclip is required across every search-running mode.
+- `DATABASE_METADATA["bioRxiv"]` **removed** entirely.
+- `_resolve_tier_table()` (search_contract.py:326) simplified to a no-op pass-through; kept for forward compatibility with callers.
+- Test renames + assertion flips: `test_full_mode_biomedical_seats_paperclip_in_place_of_biorxiv` → `test_full_mode_biomedical_required_databases`; `test_preprint_heavy_keeps_biorxiv_primary` → `test_preprint_heavy_seats_paperclip_primary`; `test_quick_mode_keeps_biorxiv_in_required` → `test_quick_mode_seats_paperclip`. New regression guard: `test_no_biorxiv_in_database_metadata`. Test suites updated: `test_search_contract.py` (142/142), `test_search_audit.py` (`audit_phase_2_search` invariants flipped from `bioRxiv` → `Paperclip`).
+
+**Files deleted:**
+- `skills/deep-research/scripts/sources/biorxiv/` — entire directory (search.py 471 lines + references/ + __pycache__/). Confirmed zero importers via `grep "from sources.biorxiv\|import biorxiv"` before deletion.
+
+**Quick-mode trade-off:** Paperclip is now required in `quick` (tertiary tier slot), bringing required count from 3 → 4 (PubMed + Consensus + Paperclip + OpenAlex against `MIN_DATABASES["quick"]=3`). User may strike Paperclip at Checkpoint 1 to drop to the floor (PubMed + Consensus + OpenAlex) if the binary is not installed — verified by `test_user_strikes_paperclip_in_quick_drops_to_floor`.
+
+**Preprint-heavy freshness trade-off:** Paperclip's bioRxiv/medRxiv indexes may trail the direct bioRxiv API by hours. v1.7.0 accepts this lag in exchange for unified routing. If a `quick`-mode RQ needs sub-hour preprint freshness, strike Paperclip at Checkpoint 1 and document the gap.
+
+**Migration:** Users who relied on the bioRxiv MCP must run `paperclip install` + `paperclip login` (one-time, per machine). Skills that route via capability keys (`literature.corpus_search`, `literature.corpus_grep`) need no edits — the capability indirection absorbs the transport change.
+
+### Added — Full Paperclip surface routed via new capability keys
+
+Audit of the plugin's Paperclip usage (against `paperclip.gxl.ai/docs` and gxl.ai blog posts on agentic preference + arXiv/abstracts integration) found `ask-image`, `sql`, `scan`, `reduce`, the stateful `s_id`/`m_id` workflow, the `--since` date filter, and `lookup doi` were all documented in the vendor SKILL.md but not routed anywhere in the plugin. v1.7.0 wires them across the deep-research bibliography agent and the research-accuracy-verifier.
+
+- **`literature.corpus_metadata` (NEW capability)** — `paperclip sql` for read-only metadata queries over the documents table (200-row cap). Use for pre-search coverage checks, year/journal/license filters, and confirming candidate DOIs land in-corpus before paying for `paperclip search`. Per-source schemas (`paperclip sql --tables -s fda_docs` exposes `accelerated_approvals`, `documents_tradenames`, `pediatric_waivers`, ...). Registered in `skills/shared/tool-lookup.yaml`; referenced from the bibliography agent's tool table.
+- **`verification.figure_content` (NEW capability)** — `paperclip ask-image` VLM analysis of paper figures. Two built-in fns: `--fn describe` (default question: what does the figure show?) and `--fn extract-data` (tabular extraction from plots). Routed in `skills/research-accuracy-verifier/references/stages/stage_3_alignment.md` for "Figure N shows X" claims (previously had no path covering figure-content alignment). Also referenced from `skills/research-paper-summarizer/SKILL.md` for figure extraction without re-OCRing.
+- **`paperclip scan` in Stage 3 alignment** — when a claim asserts multiple things about the same paper, `paperclip scan /papers/<id>/content.lines "<phrase1>" "<phrase2>" ...` replaces N sequential `grep` calls with one round-trip. Added to `stage_3_alignment.md`.
+- **`paperclip lookup doi <DOI>`-first** — `search_scenarios.md` and Stage 3 alignment now prefer `paperclip lookup doi` over `paperclip search "<title>" -n 1` when a DOI/PMID/arXiv ID is known. Saves one search call per re-verified citation.
+- **`--since` recency filter** — "Latest Developments" recipe in `search_scenarios.md` swaps `--year 2025` for `--since 30d` / `--since 7d` for weekly scans.
+- **`paperclip reduce` in synthesis** — bibliography agent's tool table now lists `reduce` with all six strategies (`summarize|table|themes|consensus|bullet_points|extract`). Recommended after `paperclip map` lands ≥5 papers.
+- **arXiv as cross-domain full-text backbone** — bibliography.md tier-table description notes that Paperclip's arXiv index (~3M papers) is the only full-text channel for CS / ML / physics / non-biomedical claims (OpenAlex provides metadata + citation graph but not text).
+- **8-source corpus copy** — every "PMC + bioRxiv + medRxiv + arXiv (4 sources)" string updated to "PMC + bioRxiv + medRxiv + arXiv + abstracts + FDA + clinical trials + patents (8 sources)" after probing `paperclip search --help` on a current install (v0.4.2). Sources verified: `pmc, biorxiv, medrxiv, arxiv, abstracts, fda (+ /us/jp/eu), trials (+ /us/cn/jp/eu), patents`.
+- **NEW reference doc** — `skills/shared/references/paperclip_stateful_workflow.md` documents the `s_id`/`m_id` lifecycle, persistence to `/.gxl/<slug>_paperclip_state.json`, the `paperclip results --list` inventory command, and the cross-stage handle-reuse pattern (bibliography emits `s_id`; verifier Stage 3 consumes it via `paperclip results <s_id>` instead of re-querying). Linked from bibliography.md and research-accuracy-verifier/SKILL.md.
+
+**Files modified:**
+- `skills/deep-research/scripts/search_contract.py` + `scripts/thresholds.py`
+- `skills/deep-research/tests/test_search_contract.py`
+- `skills/shared/tool-lookup.yaml` (added `literature.corpus_metadata`, `verification.figure_content`)
+- `skills/deep-research/agents/bibliography.md` + `agents/compiler.md`
+- `skills/deep-research/references/biomedical_research.md` + `references/search_scenarios.md` + `references/failure_paths.md`
+- `skills/research-accuracy-verifier/SKILL.md` + `references/stages/stage_3_alignment.md` + `references/stages/stage_4_uncited.md`
+- `skills/research-paper-summarizer/SKILL.md`
+- `skills/shared/references/citable_web_domains.md`
+- `skills/SKILL_ROUTER.md`
+- `.claude-plugin/plugin.json` + `marketplace.json` — version `1.6.0` → `1.7.0`
+
+**Verification:** `uv run pytest skills/deep-research/tests/test_search_contract.py -v` → 142/142 passing. `uv run pytest skills/skill-router/` → 22/22 passing (bioRxiv keyword triggers still route to deep-research correctly). Smoke-tested `build_contract` across `quick/full/lit-review/fact-check/hypothesis` modes — Paperclip in required list, bioRxiv in none.
+
 ### Added — `svg-figure-maker` Phase 6: leak-investigation routing table + plugin v1.6.0 (closes spicy-stonebraker)
 
 Closes the spicy-stonebraker plan (`~/.claude/plans/i-would-like-to-spicy-stonebraker.md`). Phase 6 is the final non-code deliverable: a routing table the user can scan that documents (1) which skill owns which figure type, (2) the explicit tie-breakers when two skills could apply, and (3) the leak-investigation findings for the four neighbour skills the plan called out by name — `scientific-schematics`, `plotting-libraries`, `research-posters`, and `paperbanana`/`generate-image`. The investigation reaches an opinionated **opt-in, no auto-coupling in v1** verdict for the three skills that actually emit or consume SVG, and a **no leak** verdict for the two raster skills. Net result: zero refactors of neighbour skills land in this commit; three integration paths are documented for if/when the user asks for them.

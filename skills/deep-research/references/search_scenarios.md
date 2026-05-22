@@ -53,8 +53,8 @@ basis of a disease. Trigger phrases: "mechanism of…", "how does X cause Y",
 "role of [pathway] in [disease]".
 
 **Database sequence:** PubMed reviews first → PubMed mechanistic primary
-papers → bioRxiv for emerging mechanism work → Consensus for cross-paper
-synthesis.
+papers → Paperclip for emerging mechanism work across bioRxiv/medRxiv/arXiv
+preprints → Consensus for cross-paper synthesis.
 
 **Worked example** (amyloid-β in Alzheimer's):
 
@@ -66,7 +66,7 @@ Step 2 (mechanistic primary):
   PubMed: "Alzheimer Disease"[MeSH] AND ("amyloid beta-Peptides"[MeSH] OR tau)
           AND mechanism
 Step 3 (preprints):
-  bioRxiv: "amyloid beta tau mechanism Alzheimer" — recent 12 months
+  Paperclip: search "amyloid beta tau mechanism Alzheimer" -s biorxiv -s medrxiv --since 12m
 Step 4 (synthesis):
   Consensus: "What is the current evidence for amyloid-β as the primary driver
               of Alzheimer's pathology?"
@@ -110,19 +110,23 @@ per `references/search_strategy_design.md` §Step 1a is required.
 Trigger phrases: "what's new in…", "latest…", "recent advances", "current
 state".
 
-**Database sequence:** bioRxiv/medRxiv (primary, for unindexed preprints) →
-PubMed with date filter (secondary, for newly indexed) → Consensus
-(synthesis).
+**Database sequence:** Paperclip with `--since` recency filter (primary, for
+unindexed preprints across bioRxiv/medRxiv/arXiv) → PubMed with date filter
+(secondary, for newly indexed) → Consensus (synthesis).
 
 **Worked example** (CAR-T for solid tumors, last 6 months):
 
 ```
-bioRxiv: search_preprints "CAR-T solid tumor" — sort by date, last 6 months
+Paperclip: search "CAR-T solid tumor" -s biorxiv -s medrxiv --since 6m --sort date
 PubMed: "Immunotherapy, Adoptive"[MeSH] AND "Neoplasms"[MeSH]
         AND "solid tumor" AND ("2025/11"[Date - Publication]:"2026/05"[Date - Publication])
 Consensus: "What are the most significant advances in CAR-T therapy for solid
             tumors in the last 6 months?"
 ```
+
+For weekly scans, swap `--since 6m` for `--since 7d`. For DOI-anchored
+re-verification of a specific paper in a recent recipe, prefer
+`paperclip lookup doi <DOI>` over `paperclip search "<title>" -n 1`.
 
 **Output expectations:** ≥40% of sources from preprint servers (acceptable
 deviation from default ≥60% peer-reviewed in `QUANTIFICATION_THRESHOLDS.md`

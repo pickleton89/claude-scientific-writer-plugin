@@ -6,7 +6,7 @@
 
 ## Routing
 
-- **Biomedical:** PubMed → bioRxiv (preprints) → PubTator3 (entity-grounded literature when claim names genes/diseases/chemicals/variants) → Open Targets (target / disease / drug claims) → Consensus (paper discovery; full-text-indexed) → Scite (citation context) → `mcp__exa__web_search_exa` (grey-lit / regulatory / registry pages on the citable-web-domain whitelist; capability key `verification.semantic_web_search`).
+- **Biomedical:** PubMed → Paperclip (preprints + full-text across PMC/bioRxiv/medRxiv/arXiv/FDA/trials/patents) → PubTator3 (entity-grounded literature when claim names genes/diseases/chemicals/variants) → Open Targets (target / disease / drug claims) → Consensus (paper discovery; full-text-indexed) → Scite (citation context) → `mcp__exa__web_search_exa` (grey-lit / regulatory / registry pages on the citable-web-domain whitelist; capability key `verification.semantic_web_search`).
 - **General scientific:** Crossref / OpenAlex → `mcp__exa__web_search_exa` (semantic web search; capability key `verification.semantic_web_search`) → `WebSearch` (deeper fallback when Exa returns empty).
 
 ## Web-evidence routing rules

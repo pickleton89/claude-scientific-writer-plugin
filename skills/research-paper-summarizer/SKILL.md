@@ -206,6 +206,7 @@ Ask: "What type of article is this?"
 2. **Never output to current working directory** - always use the source document's parent directory
 3. **Figures subdirectory** - extracted figures go in `{filename}_figures/` alongside the source PDF
 4. **Absolute paths preferred** - when in doubt, use the full absolute path to the source document
+5. **Paperclip-corpus papers** - if the paper is already in the Paperclip 8-source corpus (PMC/bioRxiv/medRxiv/arXiv/FDA/trials/patents), prefer `paperclip lookup doi <DOI>` to land directly in `/papers/<id>/` rather than re-OCRing a downloaded PDF. Figures live at `/papers/<id>/figures/` and can be analyzed via `paperclip ask-image <figure> --fn extract-data` (numerical extraction) or `--fn describe` (descriptive caption) without a separate VLM pipeline. Capability key: `verification.figure_content`.
 
 ### Example
 

@@ -369,7 +369,7 @@ User needs research/information support
 | "Generate ideas for X using cross-domain inspiration" | scientific-brainstorming (Biomimicry) | Nature-inspired or random-input forced associations |
 | "Find papers on X" | deep-research (quick) | Quick to medium search, 1-50 papers |
 | "Search PubMed for..." | deep-research (quick) | PubMed MCP primary |
-| "Find preprints on..." | deep-research (quick) | bioRxiv MCP primary |
+| "Find preprints on..." | deep-research (quick) | Paperclip (`-s biorxiv` / `-s medrxiv`) |
 | "Comprehensive literature review" | deep-research (lit-review) | Systematic, 50+ papers with thematic synthesis |
 | "Systematic review with PRISMA" | deep-research (systematic-review) | PRISMA 2020 compliant review |
 | "Generate hypotheses for..." | deep-research (hypothesis) | 3-5 competing hypotheses with experimental designs |
