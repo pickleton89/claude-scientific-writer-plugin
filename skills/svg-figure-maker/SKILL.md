@@ -36,7 +36,7 @@ Do NOT use this skill when:
 | The request involves… | Authoring mode | Skill |
 |---|---|---|
 | Novel / custom one-off figure (custom illustration, annotated overlay, conceptual diagram, panel composition not covered by other skills) | **Hand-written SVG XML** | This skill |
-| Parametric / repeated layout (N panels with identical structure, varying content) | **Programmatic (drawsvg)** | This skill (see `references/programmatic_authoring.md` — Phase 4) |
+| Parametric / repeated layout (N panels with identical structure, varying content) | **Programmatic (drawsvg)** | This skill (see `references/programmatic_authoring.md` + `templates/parametric_4panel.py`) |
 | Data-driven plot (scatter, bar, box, violin, histogram, heatmap, volcano, forest, ECDF, KDE) | matplotlib / ggplot2 | `plotting-libraries` |
 | Standard structured diagram (flowchart, sequence, ER, swimlane, biological pathway, signal mechanism, network) | Mermaid + AI | `scientific-schematics` |
 | AI text-to-visual graphical abstract | AI (Gemini) | `paperbanana` |
@@ -112,7 +112,7 @@ Is the figure a one-off custom illustration?
 
 **Steps:**
 1. **Hand-written path:** copy the closest `templates/*.svg` into the working directory; rename to `figure.svg`; Edit content while preserving template invariants (viewBox, font-family declarations, group structure, `<title>` and `<desc>` for accessibility)
-2. **Programmatic path:** see `references/programmatic_authoring.md` for `drawsvg` patterns (Phase 4)
+2. **Programmatic path:** copy `templates/parametric_4panel.py` as the starting point; see `references/programmatic_authoring.md` for the `drawsvg` patterns and determinism contract
 3. READ `design_practices_index.md` §2 → `references/svg_authoring_standards.md` (viewBox, units, group naming, accessibility) and `references/grid_and_layout.md` (8px grid)
 4. Apply the typography ladder from §2.1 of `shared/references/figure_design_principles.md` to every text element
 
@@ -330,12 +330,13 @@ Use the templates as the source of truth for invariants (viewBox, font-family de
 <templates>
 ## Output Templates
 
-This skill ships with two SVG templates (more deferred to later phases). Each carries the canonical invariants: viewBox in 8px-grid-aligned units, `font-family="Arial, Helvetica, sans-serif"` on every text element, `<title>` and `<desc>` placeholders for accessibility, `<g>` group structure for logical sub-elements.
+This skill ships with two hand-written SVG templates plus one programmatic (`drawsvg`) template. Each carries the canonical invariants: viewBox in 8px-grid-aligned units, `font-family="Arial, Helvetica, sans-serif"` on every text element, `<title>` and `<desc>` placeholders for accessibility, `<g>` group structure for logical sub-elements.
 
-| Template | Use when |
-|---|---|
-| `templates/single_panel.svg` | One panel, one focal subject, dimensions ~640×480px |
-| `templates/two_panel_horizontal.svg` | Two-panel comparison (e.g., before/after, method A vs. method B), dimensions ~800×400px with A on the left, B on the right |
+| Template | Path | Use when |
+|---|---|---|
+| Single panel | `templates/single_panel.svg` | One panel, one focal subject, dimensions ~640×480px |
+| Two-panel horizontal | `templates/two_panel_horizontal.svg` | Two-panel comparison (e.g., before/after, method A vs. method B), dimensions ~800×400px with A on the left, B on the right |
+| Parametric 4-panel (drawsvg) | `templates/parametric_4panel.py` | N panels with identical structure varying only in data. PEP-723 self-bootstrap; byte-identical across runs; canonical worked example for `references/programmatic_authoring.md` |
 
 Deferred to later phases: `two_panel_vertical.svg`, `three_panel_grid.svg`, `annotated_overlay.svg`.
 
@@ -415,7 +416,8 @@ Schema: `schemas/figure_metadata.schema.json`. Excerpt:
 | `references/anti_patterns.md` | Banned attributes; "AI slop" markers; expanded checklist with examples |
 | `references/visual_critique_checklist.md` | Vision-loop critique rubric — 7 categories with `principle_ref` anchors and the schema-compatible finding shape |
 | `references/figure_type_catalog.md` | Routing table for SVG figures across visual skills (Phase 6 deliverable) |
-| `references/programmatic_authoring.md` | `drawsvg` patterns for parametric figures (Phase 4 deliverable) |
+| `references/programmatic_authoring.md` | `drawsvg` patterns for parametric figures — palette loading, grid arithmetic, determinism rules, accessibility scaffolding, and the root-dimension strip |
+| `templates/parametric_4panel.py` | Canonical drawsvg worked example: PEP-723 self-bootstrap, 4-panel grid, byte-identical across runs, passes preflight 15/15 zero-warn |
 | `templates/single_panel.svg` | Single-panel SVG template |
 | `templates/two_panel_horizontal.svg` | Two-panel horizontal-comparison template |
 | `scripts/preflight_check.py` | Deterministic SVG linter → JSON findings |
