@@ -255,12 +255,6 @@ Skills are automatically invoked based on your request. The routing system selec
 → Uses: deep-research (hypothesis mode) + target biology context via ToolUniverse
 ```
 
-## Commands
-
-| Command | Description |
-|---------|-------------|
-| `/scientific-writer-init` | Initialize a scientific writing project |
-
 ## Architecture & Documentation
 
 The plugin uses shared infrastructure across all skills:

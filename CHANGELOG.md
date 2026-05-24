@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Removed — Dead `/scientific-writer-init` command
+
+- **`commands/scientific-writer-init.md` deleted.** The command was inherited from upstream `K-Dense-AI/claude-scientific-writer` and copied a 1,362-line `CLAUDE.scientific-writer.md` template into the user's project as a project-level `CLAUDE.md`. The template was never bundled in this fork — verified missing from the source repo and from all three installed plugin versions (1.5.0 / 1.6.0 / 1.7.0). Hardcoded fallback path pointed at an unrelated developer's home directory (`/Users/vinayak/...`). Running the command would always fail at the locate-template step.
+- **`README.md` updated** — removed the `## Commands` section (its only row referenced the deleted command).
+- Historical CHANGELOG and `docs/` mentions left intact as a record.
+
 ### Changed (BREAKING) — Retire bioRxiv MCP; Paperclip CLI is the canonical preprint + full-text channel (plugin v1.7.0)
 
 Closes the majestic-lobster plan (`~/.claude/plans/i-like-what-you-majestic-lobster.md`). The deep-research Search Contract maintained a parallel bioRxiv MCP path alongside Paperclip even though Paperclip's 8-source corpus (pmc + biorxiv + medrxiv + arxiv + abstracts + fda + trials + patents) already subsumes bioRxiv + medRxiv as full text. v1.7.0 retires the bioRxiv MCP path entirely, collapses the dual base/heavy tier tables into one uniform table, and makes Paperclip eligible in every search-running mode (including `quick`, where it was previously gated). Net effect: one canonical preprint channel, simpler contract logic, and the full Paperclip surface (sql / ask-image / scan / reduce / lookup / --since) wired into capability keys.
