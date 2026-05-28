@@ -1,10 +1,10 @@
-# Validator-enforced predicates (P1–P5, P7, P8, R1–R6)
+# Validator-enforced predicates (P1–P5, P7, P8, P9, R1–R6)
 
 Findings that violate these predicates are **rejected** by the validators in `scripts/`, forcing a Stage-8 loop-back. They are not guidelines — the validator code is the source of truth, and this document mirrors it for reading convenience. The canonical definitions live in [`CONTRACTS.md`](./CONTRACTS.md) §Hard predicates.
 
-P1–P5 and P7 are per-finding predicates enforced by [`scripts/validate_finding.py`](../scripts/validate_finding.py). P8 + R1–R6 are cross-stage / cross-artifact post-conditions enforced by [`scripts/validate_audit_report.py`](../scripts/validate_audit_report.py). **P8** is invoked transitively from `render_report.generate_report()` so audits cannot render past a P8 violation. **R1–R6** run at Stage 8 only in Phase 1 — Phase 3 adds the same transitive-from-render enforcement (see [`CONTRACTS.md`](./CONTRACTS.md) §Cross-artifact predicates).
+P1–P5, P7, and P9 are per-finding predicates enforced by [`scripts/validate_finding.py`](../scripts/validate_finding.py). P8 + R1–R6 are cross-stage / cross-artifact post-conditions enforced by [`scripts/validate_audit_report.py`](../scripts/validate_audit_report.py). **P8** is invoked transitively from `render_report.generate_report()` so audits cannot render past a P8 violation. **R1–R6** run at Stage 8 only in Phase 1 — Phase 3 adds the same transitive-from-render enforcement (see [`CONTRACTS.md`](./CONTRACTS.md) §Cross-artifact predicates).
 
-**Enforcement modes.** P1–P8 are hard errors regardless of mode. R1–R6 follow the `ARTIFACT_ENFORCEMENT` constant in [`scripts/thresholds.py`](../scripts/thresholds.py): `"advisory"` (Phase 1 default) → R-failures emit warnings only; `"required"` (Phase 3 target) → R-failures emit errors and block rendering.
+**Enforcement modes.** P1–P9 are hard errors regardless of mode. R1–R6 follow the `ARTIFACT_ENFORCEMENT` constant in [`scripts/thresholds.py`](../scripts/thresholds.py): `"advisory"` (Phase 1 default) → R-failures emit warnings only; `"required"` (Phase 3 target) → R-failures emit errors and block rendering.
 
 ## P1 — UNVERIFIED requires reason and bars CRITICAL
 
@@ -69,6 +69,20 @@ For every Stage-3 `VERIFIED` claim in a biomedical/mixed Tier-3 audit (or `custo
 - **Validator:** `validate_audit_report.py` `run_p8` (also invoked transitively by `render_report.generate_report()` — markdown cannot render past a P8 violation)
 - **Failure mode:** silence — a Stage-3 VERIFIED claim with no matching finding AND no `cherry_picking:<claim_id>:` caveat
 - **Fix:** complete the Stage-4 Scite tally sweep (USI = supporting / (supporting + contrasting); USI < 0.5 → emit finding) or emit a coverage caveat with the canonical reason token (e.g., `scite_doi_not_indexed`, `api_timeout`, `tally_uncontested_USI=0.83`, or `web_source_no_doi_for_scite_tally` for web-grounded VERIFIED claims). See [`stages/stage_4_uncited.md`](./stages/stage_4_uncited.md)
+
+## P9 — Stage-2 VERIFIED requires an author/title cross-check
+
+`stage == 2 AND verdict == VERIFIED AND verification_path[] contains a scholarly-resolution method (∈ {doi_lookup, pmid_lookup, crossref_search, pubmed_search, pmc_fetch}) ⟹ verification_path[] MUST contain a metadata_agreement entry, AND that entry MUST NOT record author_match=false or title_match=false`
+
+- **Validator:** `validate_finding.py` `_p9_metadata_agreement` (inlined in `run_predicates`; skipped when `stage` is None — back-compat for ad-hoc CLI calls)
+- **Why it exists:** a "do all DOIs resolve?" check structurally cannot catch a **wrong-but-valid DOI** — an identifier that resolves cleanly to a *real but different* paper. Resolution proves a record EXISTS; it does not prove the record IS the cited paper. The highest-value Stage-2 catch (a DOI resolving to a different author's paper) is only reachable by cross-checking the resolved record's authors + title against the citation. P9 makes that cross-check load-bearing: `VERIFIED` is unreachable without it.
+- **Failure modes:**
+  - **Silence:** a scholarly identifier resolved and the verdict is `VERIFIED`, but no `metadata_agreement` entry documents the author/title comparison.
+  - **Contradiction:** a `metadata_agreement` entry records `author_match=false` (or `title_match=false`) yet the verdict is still `VERIFIED` — a recorded mismatch means the DOI points at a different paper, so the verdict MUST be `METADATA_MISMATCH`.
+- **Fix:** after identifier resolution, compare the resolved record's authors (at least first + last) and title against the citation, and log a `verification_path[]` entry with `method == "metadata_agreement"` whose `result_summary` carries the tokens `author_match=<true|false>; title_match=<true|false>` (year/venue optional). If either is false, assign `METADATA_MISMATCH`, not `VERIFIED`.
+- **Domain-independent:** unlike P7, P9 fires for `general` domain too — wrong-but-valid DOIs occur in general-science writing (Crossref / OpenAlex resolution) as readily as in biomedical.
+- **Web-source exemption:** purely web-sourced findings (no scholarly-resolution method in `verification_path[]`) are exempt — there is no resolved scholarly record to compare authors/title against. Their integrity is governed by the P7 web-source carve-out (page-matches-claim framing) instead.
+- **Related:** [`stages/stage_2_citation_existence.md`](./stages/stage_2_citation_existence.md) (metadata-agreement step + token convention), CONTRACTS.md §Hard predicates.
 
 ## R1 — Finding.id resolves in claim_inventory.json
 

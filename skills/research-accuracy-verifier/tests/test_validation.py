@@ -77,7 +77,9 @@ class TestIntakeValidator:
         assert not ok
         # Both schema and business rule errors must appear
         assert any("schema" in e for e in errors), "schema error missing"
-        assert any("document_type_other" in e for e in errors), "business rule error missing"
+        assert any("document_type_other" in e for e in errors), (
+            "business rule error missing"
+        )
 
     def test_pinned_sidecars_accepted(self, sample_intake: dict[str, Any]) -> None:
         """Deep-research handoff: pinned_sidecars is optional and schema-valid."""
@@ -93,7 +95,9 @@ class TestIntakeValidator:
         ok, errors, _ = IntakeValidator().validate(intake)
         assert ok, errors
 
-    def test_pinned_sidecars_requires_sources_path(self, sample_intake: dict[str, Any]) -> None:
+    def test_pinned_sidecars_requires_sources_path(
+        self, sample_intake: dict[str, Any]
+    ) -> None:
         """sources_path is the one required key under pinned_sidecars."""
         intake = {
             **sample_intake,
@@ -119,7 +123,9 @@ class TestIntakeValidator:
         ok, errors, _ = IntakeValidator().validate(intake)
         assert ok, errors
 
-    def test_cited_papers_valid_entry_passes(self, sample_intake: dict[str, Any]) -> None:
+    def test_cited_papers_valid_entry_passes(
+        self, sample_intake: dict[str, Any]
+    ) -> None:
         intake = dict(sample_intake)
         intake["cited_papers"] = [
             {
@@ -188,9 +194,7 @@ class TestIntakeValidator:
         ok, errors, _ = IntakeValidator().validate(intake)
         assert ok, errors
 
-    def test_cited_papers_non_array_fails(
-        self, sample_intake: dict[str, Any]
-    ) -> None:
+    def test_cited_papers_non_array_fails(self, sample_intake: dict[str, Any]) -> None:
         intake = dict(sample_intake)
         intake["cited_papers"] = "not_an_array"
         ok, errors, _ = IntakeValidator().validate(intake)
@@ -225,7 +229,9 @@ class TestFindingValidator:
     def test_valid_critical_finding_passes(
         self, sample_finding_critical: dict[str, Any]
     ) -> None:
-        ok, errors, _ = FindingValidator().validate(sample_finding_critical, "manuscript")
+        ok, errors, _ = FindingValidator().validate(
+            sample_finding_critical, "manuscript"
+        )
         assert ok, errors
 
     def test_p1_unverified_critical_fails(
@@ -245,7 +251,11 @@ class TestFindingValidator:
             "claim_verbatim": "claim",
             "claim_type": "uncited",
             "verification_path": [
-                {"method": "web_search", "tool": "WebSearch", "result_summary": "no hits"}
+                {
+                    "method": "web_search",
+                    "tool": "WebSearch",
+                    "result_summary": "no hits",
+                }
             ],
             "evidence": [{"source": "WebSearch", "url": "https://example.com"}],
             "verdict": "UNVERIFIED",
@@ -268,7 +278,9 @@ class TestFindingValidator:
         assert not ok
         assert any("P2" in e for e in errors)
 
-    def test_p3_evidence_required(self, sample_finding_critical: dict[str, Any]) -> None:
+    def test_p3_evidence_required(
+        self, sample_finding_critical: dict[str, Any]
+    ) -> None:
         """P3: ≥1 evidence with resolvable URL/PMID/DOI."""
         bad = dict(sample_finding_critical)
         bad["evidence"] = [{"source": "ghost", "url": "  "}]  # blank URL
@@ -311,7 +323,9 @@ class TestFindingValidator:
     def test_quote_verified_finding_passes(
         self, sample_finding_quote_verified: dict[str, Any]
     ) -> None:
-        ok, errors, _ = FindingValidator().validate(sample_finding_quote_verified, "manuscript")
+        ok, errors, _ = FindingValidator().validate(
+            sample_finding_quote_verified, "manuscript"
+        )
         assert ok, errors
 
     def test_schema_failure_does_not_short_circuit_predicates(self) -> None:
@@ -331,7 +345,9 @@ class TestFindingValidator:
         ok, errors, _ = FindingValidator().validate(finding, "manuscript")
         assert not ok
         assert any("schema" in e for e in errors), "schema error missing"
-        assert any("P3" in e for e in errors), "P3 predicate not run after schema failure"
+        assert any("P3" in e for e in errors), (
+            "P3 predicate not run after schema failure"
+        )
 
     def test_matrix_lookup_covers_all_70_cells(self) -> None:
         v = FindingValidator()
@@ -347,12 +363,24 @@ class TestFindingValidator:
             "QUOTE_FABRICATED",
             "UNVERIFIED",
         ]
-        doc_types = ["grant", "manuscript", "lit_review", "slides", "report", "memo", "other"]
+        doc_types = [
+            "grant",
+            "manuscript",
+            "lit_review",
+            "slides",
+            "report",
+            "memo",
+            "other",
+        ]
         cells = 0
         for dt in doc_types:
             for vd in verdicts:
                 sev = v.expected_severity(dt, vd)
-                assert sev in {"CRITICAL", "MAJOR", "MINOR", "INFORMATIONAL"}, (dt, vd, sev)
+                assert sev in {"CRITICAL", "MAJOR", "MINOR", "INFORMATIONAL"}, (
+                    dt,
+                    vd,
+                    sev,
+                )
                 cells += 1
         assert cells == 70
 
@@ -360,15 +388,31 @@ class TestFindingValidator:
 # ---------- P7: Stage-2 Scite retraction probe ----------------------------
 
 
-def _stage2_verified_finding(*, with_scite: bool, scite_via_tool: bool = False) -> dict[str, Any]:
-    """Build a minimal valid Stage-2 VERIFIED finding for P7 tests.
+def _stage2_verified_finding(
+    *,
+    with_scite: bool,
+    scite_via_tool: bool = False,
+    with_metadata_agreement: bool = True,
+) -> dict[str, Any]:
+    """Build a minimal valid Stage-2 VERIFIED finding for P7 / P9 tests.
 
     `with_scite=True` includes a Scite verification_path entry; `scite_via_tool`
     chooses between method=='scite_context' (False) and tool ~ /scite/i (True).
+    `with_metadata_agreement=True` (default) includes the author/title
+    cross-check entry P9 requires for scholarly Stage-2 VERIFIED findings;
+    set it False to exercise the P9 violation path.
     """
     paths: list[dict[str, Any]] = [
         {"method": "doi_lookup", "tool": "Crossref", "result_summary": "DOI resolved"},
     ]
+    if with_metadata_agreement:
+        paths.append(
+            {
+                "method": "metadata_agreement",
+                "tool": "Crossref",
+                "result_summary": "author_match=true; title_match=true; year_match=true",
+            }
+        )
     if with_scite:
         if scite_via_tool:
             paths.append(
@@ -610,9 +654,7 @@ class TestP7WebSourceCarveOut:
         """When Scite is also probed, the web entry's no_doi token is moot —
         Scite alone satisfies P7. This covers hybrid findings where the web
         entry is supplementary, not the primary evidence."""
-        finding = _stage2_web_finding(
-            with_no_doi_token=False, scite_also_present=True
-        )
+        finding = _stage2_web_finding(with_no_doi_token=False, scite_also_present=True)
         ok, errors, _ = FindingValidator().validate(
             finding, "manuscript", domain="biomedical", stage=2
         )
@@ -672,3 +714,123 @@ class TestP7WebSourceCarveOut:
         p7_errors = [e for e in errors if "P7" in e]
         assert any("carve-out" not in e for e in p7_errors)  # generic P7 present
         assert any("no_doi" in e for e in p7_errors)  # mentions carve-out
+
+
+# ---------- P9: Stage-2 metadata-agreement gate ---------------------------
+
+
+class TestP9MetadataAgreement:
+    """P9: a Stage-2 VERIFIED finding that resolved a scholarly identifier
+    MUST log an author/title cross-check (metadata_agreement). This closes
+    the wrong-but-valid-DOI hole — a DOI that resolves to a real BUT
+    DIFFERENT paper passes 'does it resolve?' yet fails the author check.
+    """
+
+    def test_p9_verified_without_metadata_agreement_fails(self) -> None:
+        finding = _stage2_verified_finding(
+            with_scite=True, with_metadata_agreement=False
+        )
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="biomedical", stage=2
+        )
+        assert not ok
+        assert any("P9" in e for e in errors)
+
+    def test_p9_verified_with_metadata_agreement_passes(self) -> None:
+        finding = _stage2_verified_finding(
+            with_scite=True, with_metadata_agreement=True
+        )
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="biomedical", stage=2
+        )
+        assert ok, errors
+
+    def test_p9_recorded_author_mismatch_blocks_verified(self) -> None:
+        """The F-04 case: DOI resolves to a real but different paper. The
+        recorded author_match=false must block a VERIFIED verdict."""
+        finding = _stage2_verified_finding(
+            with_scite=True, with_metadata_agreement=True
+        )
+        for entry in finding["verification_path"]:
+            if entry["method"] == "metadata_agreement":
+                entry["result_summary"] = "author_match=false; title_match=true"
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="biomedical", stage=2
+        )
+        assert not ok
+        assert any("P9" in e and "METADATA_MISMATCH" in e for e in errors)
+
+    def test_p9_recorded_title_mismatch_blocks_verified(self) -> None:
+        finding = _stage2_verified_finding(
+            with_scite=True, with_metadata_agreement=True
+        )
+        for entry in finding["verification_path"]:
+            if entry["method"] == "metadata_agreement":
+                entry["result_summary"] = "author_match=true; title_match=false"
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="biomedical", stage=2
+        )
+        assert not ok
+        assert any("P9" in e for e in errors)
+
+    def test_p9_token_whitespace_insensitive(self) -> None:
+        """'author_match = false' (spaces around =) is still caught."""
+        finding = _stage2_verified_finding(
+            with_scite=True, with_metadata_agreement=True
+        )
+        for entry in finding["verification_path"]:
+            if entry["method"] == "metadata_agreement":
+                entry["result_summary"] = "author_match = false ; title_match = true"
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="biomedical", stage=2
+        )
+        assert not ok
+        assert any("P9" in e for e in errors)
+
+    def test_p9_fires_in_general_domain(self) -> None:
+        """Unlike P7, P9 is domain-independent — wrong-but-valid DOIs occur
+        in general-domain documents too (Crossref/OpenAlex resolution)."""
+        finding = _stage2_verified_finding(
+            with_scite=False, with_metadata_agreement=False
+        )
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="general", stage=2
+        )
+        assert not ok
+        assert any("P9" in e for e in errors)
+        # P7 does NOT fire in general domain — P9 is the only blocker.
+        assert not any("P7" in e for e in errors)
+
+    def test_p9_web_only_finding_exempt(self) -> None:
+        """Purely web-sourced findings have no resolved scholarly record to
+        cross-check, so P9 does not apply (P7 carve-out governs them)."""
+        finding = _stage2_web_finding(with_no_doi_token=True)
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="biomedical", stage=2
+        )
+        assert ok, errors
+        assert not any("P9" in e for e in errors)
+
+    def test_p9_skipped_without_stage(self) -> None:
+        """Back-compat: ad-hoc callers omitting stage opt out of P9."""
+        finding = _stage2_verified_finding(
+            with_scite=True, with_metadata_agreement=False
+        )
+        ok, errors, _ = FindingValidator().validate(finding, "manuscript")
+        assert ok, errors
+
+    def test_p9_skipped_for_non_verified_verdict(self) -> None:
+        """P9 only gates VERIFIED — METADATA_MISMATCH already implies the
+        comparison was performed and found a disagreement."""
+        finding = _stage2_verified_finding(
+            with_scite=True, with_metadata_agreement=False
+        )
+        finding["verdict"] = "METADATA_MISMATCH"
+        finding["severity"] = "MAJOR"  # matrix[manuscript][METADATA_MISMATCH]
+        ok, errors, _ = FindingValidator().validate(
+            finding, "manuscript", domain="biomedical", stage=2
+        )
+        # P7 still requires a Scite probe (present via with_scite=True); P9
+        # must NOT fire on METADATA_MISMATCH.
+        assert ok, errors
+        assert not any("P9" in e for e in errors)

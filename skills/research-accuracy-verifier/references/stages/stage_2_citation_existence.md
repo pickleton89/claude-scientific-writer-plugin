@@ -2,7 +2,7 @@
 
 **Purpose:** For every cited reference, attempt at least two independent identifier paths before assigning a verdict that downgrades the citation. A single failed lookup is not sufficient — APIs fail intermittently and bad metadata can hide a real paper.
 
-**Predicate enforced:** P7 (Scite retraction probe — see [`../predicates.md`](../predicates.md)) for biomedical/mixed domains.
+**Predicates enforced:** P7 (Scite retraction probe — see [`../predicates.md`](../predicates.md)) for biomedical/mixed domains; **P9 (metadata-agreement gate)** for every `VERIFIED` finding that resolved a scholarly identifier, all domains.
 
 ## Routing
 
@@ -11,6 +11,24 @@
 - **No identifier exists at all — citation is a bare URL** (e.g., `[12] FDA approval letter, https://www.fda.gov/...`, or a citation to a registry / society / preregistration page): the URL itself IS the canonical record. Resolve it via `mcp__exa__web_fetch_exa` (or directly if already known) and verify the page resolves + matches the claim's framing of it (correct date, correct agency, correct action). Satisfy P7 via the **web-source carve-out** (see below — `verification_path[]` entry with `method == "web_search"` + `result_summary` containing the literal token `no_doi`). The URL MUST be on the citable-web-domain whitelist (`../../shared/references/citable_web_domains.md` — i.e., `skills/shared/references/citable_web_domains.md`); out-of-whitelist URLs fall through to `UNSUPPORTED` with `reason: web_evidence_uncitable_tier`. Capability key: `verification.semantic_web_search`.
 - Verify all metadata fields agree: authors (at least first and last), year, journal, volume, pages, DOI.
 - For journal-volume-year impossibility (e.g., volume X did not exist in year Y), call `scripts/check_journal_volume.py` (capability key: `verification.citation_existence`).
+
+## Metadata-agreement check (P9 — validator-enforced)
+
+**A resolving DOI is not a verified citation.** Resolution proves a record *exists*; it does not prove the record *is the cited paper*. The single highest-value Stage-2 catch is a **wrong-but-valid DOI** — an identifier that resolves cleanly to a *real but different* paper. A "do all DOIs resolve?" check structurally cannot catch this; only cross-checking the resolved record's authors + title against the citation can.
+
+After identifier resolution succeeds for a scholarly record (any of `doi_lookup`, `pmid_lookup`, `crossref_search`, `pubmed_search`, `pmc_fetch`), compare the resolved record against the citation and **log the comparison as a dedicated `verification_path[]` entry**:
+
+```jsonc
+{ "method": "metadata_agreement", "tool": "Crossref",
+  "result_summary": "author_match=true; title_match=true; year_match=true" }
+```
+
+- The literal tokens **`author_match=<true|false>`** and **`title_match=<true|false>`** are what the validator parses (whitespace-insensitive — `author_match = false` is caught too). `year_match` / `venue_match` are optional supplementary tokens.
+- If author OR title disagree → record `author_match=false` (or `title_match=false`) AND assign verdict **`METADATA_MISMATCH`**, naming the divergent field(s) in `result_summary` and (optionally) in `resolved_sources.sources[].resolution_paths[].metadata_mismatch_fields`. A `metadata_agreement` entry recording a mismatch on a `VERIFIED` finding is a **P9 violation**.
+- A `VERIFIED` finding that resolved a scholarly identifier but carries **no** `metadata_agreement` entry is a **P9 violation** — `validate_finding.py` rejects it when invoked with `--stage 2` (or transitively via `checkpoint.py write --stage 2`).
+- **Web-sourced (no-DOI) findings are exempt** — there is no resolved scholarly record to compare against. Their integrity is governed by the P7 web-source carve-out (the URL resolves and the page matches the claim's framing).
+
+P9 is **domain-independent** (unlike P7): wrong-but-valid DOIs occur in general-science writing via Crossref / OpenAlex as readily as in biomedical. See [`../predicates.md`](../predicates.md) §P9.
 
 ## Retraction / correction check (P7 — validator-enforced)
 
@@ -35,8 +53,8 @@ Capability key: `verification.venue_quality`. AFTER citation existence resolves 
 
 | Condition | Verdict |
 |---|---|
-| Record exists, all metadata matches | `VERIFIED` |
-| Record exists, ≥1 field disagrees | `METADATA_MISMATCH` |
+| Record exists **and the resolved authors + title match the citation** (metadata_agreement logged with `author_match=true; title_match=true`) | `VERIFIED` |
+| Record exists, ≥1 field disagrees — **including author or title** (wrong-but-valid DOI: resolves to a real but different paper) | `METADATA_MISMATCH` |
 | Record exists, `editorialNotices` non-empty (retraction / correction / expression of concern) | `METADATA_MISMATCH` (`result_summary` MUST name notice type + reason) |
 | Record exists, OpenAlex `check_venue_quality` flags predatory / non-indexed venue | `METADATA_MISMATCH` with `result_summary` sub-reason `venue_quality_concern` |
 | No record found via any identifier path (PubMed → Crossref → OpenAlex `batch_resolve_references`) | `UNSUPPORTED` |

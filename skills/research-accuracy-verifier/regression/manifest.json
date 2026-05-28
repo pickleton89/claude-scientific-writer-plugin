@@ -103,6 +103,18 @@
           "pmcid": "PMC10769801"
         }
       ]
+    },
+    {
+      "doc_id": "08_lit_review_wrong_but_valid_doi",
+      "doc_path": "docs/08_lit_review_wrong_but_valid_doi.md",
+      "ground_truth_path": "ground_truth/08_lit_review_wrong_but_valid_doi.json",
+      "document_type": "lit_review",
+      "verification_tier": "3",
+      "domain": "biomedical",
+      "flag_threshold": "standard",
+      "checks_enabled": null,
+      "primary_seeded_error_kind": "wrong_but_valid_doi",
+      "content_status": "authored"
     }
   ]
 }

@@ -12,7 +12,7 @@ The canonical vocabulary used by every stage. No stage may invent a parallel ver
 
 | Verdict | Origin stage | Meaning |
 |---|---|---|
-| `VERIFIED` | 2 | Citation exists; all metadata fields agree |
+| `VERIFIED` | 2 | Citation exists **and the resolved record IS the cited paper** — all metadata fields agree, including an explicit author + title cross-check (predicate P9). DOI resolution alone is insufficient: a wrong-but-valid DOI resolves to a real but different paper and is `METADATA_MISMATCH`, not `VERIFIED`. |
 | `METADATA_MISMATCH` | 2 | Citation exists; ≥1 field disagrees (year, journal, volume, pages, authors) — OR the venue itself is flagged predatory / non-indexed by OpenAlex `check_venue_quality` (`result_summary` sub-reason `venue_quality_concern`) — OR the citation has a non-empty Scite `editorialNotices` (retraction / correction / expression of concern) |
 | `UNSUPPORTED` | 2/3 | No identifier path resolves; or cited source does not contain the claim |
 | `OVERGENERALIZED` | 3 | Source supports a weaker / narrower version of the claim |
@@ -74,7 +74,7 @@ Severity ∈ `{CRITICAL, MAJOR, MINOR, INFORMATIONAL}`. Cells abbreviate: `CRIT`
 
 ## Hard predicates
 
-P1–P5 and P7 are per-finding predicates enforced by `validate_finding.py`. P8 is a cross-stage post-condition enforced by `validate_audit_report.py` (also invoked transitively from `render_report.generate_report()` so audits cannot render past a P8 violation).
+P1–P5, P7, and P9 are per-finding predicates enforced by `validate_finding.py`. P8 is a cross-stage post-condition enforced by `validate_audit_report.py` (also invoked transitively from `render_report.generate_report()` so audits cannot render past a P8 violation).
 
 P1. `verdict == UNVERIFIED ⟹ reason ∈ Reason AND severity != CRITICAL`
 P2. `severity == CRITICAL ⟹ len(verification_path) >= 2`
@@ -84,6 +84,7 @@ P5. `severity == SeverityMatrix[document_type][verdict]` — severity is **compu
 P6 (advisory, not code-enforced). Verdict glyphs (✅⚠️❌❓) MUST NOT appear as verdict markers in any rendered AuditReport, finding table, or schema enum. Severity is rendered as text. Glyphs may appear in `SKILL.md` / `CONTRACTS.md` only as documentation that they are deprecated.
 P7 (Stage-2 Scite retraction probe). When `domain ∈ {biomedical, mixed}` AND `stage == 2` AND `verdict ∈ {VERIFIED, METADATA_MISMATCH, UNSUPPORTED}`, `verification_path[]` MUST contain either (a) an entry with `method == "scite_context"` whose `result_summary` records the editorialNotices outcome (notices found, or empty/no record), OR (b) an entry whose `tool` field matches `/scite/i` and whose `result_summary` documents the probe failure mode (api_timeout / empty_response / not_indexed / other). Silence — no Scite entry at all — is a P7 violation. Validator inputs: `domain`, `stage` are passed as keyword args to `FindingValidator.validate(...)`; when either is `None` the predicate is skipped (back-compat for ad-hoc callers).
 P8 (Tier-3 cherry-picking sweep). When `intake.domain ∈ {biomedical, mixed}` AND (`intake.verification_tier == "3"` OR (`intake.verification_tier == "custom"` AND `"uncited_claims" ∈ intake.checks_enabled`)), every `verification_matrix[]` entry satisfying `stage == "3" AND verdict == "VERIFIED"` MUST be covered by one of: (a) a `findings[]` entry whose `id`-or-`claim_ref` links to the same `claim_id`, with `stage == "4"`, `verdict == "OVERGENERALIZED"`, at least one `verification_path[]` entry with `method == "scite_context"`, and a `result_summary` matching `/USI\s*=/` (cherry-picking finding); OR (b) a `header.coverage_caveats[]` string of shape `cherry_picking:<claim_id>: <reason>` (parseable tag prefix `cherry_picking:` immediately followed by the matrix claim_id, a colon, a space, and a free-form reason). Coverage caveats with this tag prefix are auto-detected by `validate_audit_report.py`.
+P9 (Stage-2 metadata-agreement gate). When `stage == 2` AND `verdict == VERIFIED` AND `verification_path[]` contains a scholarly-resolution method (`∈ {doi_lookup, pmid_lookup, crossref_search, pubmed_search, pmc_fetch}`), `verification_path[]` MUST contain an entry with `method == "metadata_agreement"`, AND that entry's `result_summary` MUST NOT record `author_match=false` or `title_match=false` (whitespace-insensitive). Resolution proves a record EXISTS; it does not prove the record IS the cited paper — a **wrong-but-valid DOI** (resolves to a real but *different* paper) passes existence yet must fail the author/title cross-check. A recorded mismatch ⟹ verdict is `METADATA_MISMATCH`, not `VERIFIED`. Domain-independent (unlike P7). Purely web-sourced findings (no scholarly-resolution method) are exempt — no resolved record to compare against; governed instead by the P7 web-source carve-out. Validator input: `stage` keyword arg to `FindingValidator.validate(...)`; when `None` the predicate is skipped (back-compat for ad-hoc callers).
 
 ---
 
@@ -96,7 +97,7 @@ R-predicates are cross-artifact post-conditions enforced by `validate_audit_repo
 - `"advisory"` (Phase 1) — R-failures emit warnings; `ok=True`.
 - `"required"` (Phase 3) — R-failures emit errors; `ok=False`; render blocked.
 
-P1–P8 are always hard errors regardless of mode.
+P1–P9 are always hard errors regardless of mode.
 
 R1 (Finding.id resolves in claim_inventory). When `claim_inventory.json` is supplied, every `findings[].id` MUST equal some `items[].id`.
 
@@ -213,7 +214,8 @@ Tier → `checks_enabled` mapping (computed when tier ≠ `custom`):
                           "required": ["method","tool","result_summary"],
                           "properties": {
                             "method":         { "enum": ["doi_lookup","pmid_lookup","crossref_search",
-                                                "pubmed_search","pmc_fetch","exact_quote_match",
+                                                "pubmed_search","pmc_fetch","metadata_agreement",
+                                                "exact_quote_match",
                                                 "scite_context","web_search","abstract_check",
                                                 "ref_reconcile","acronym_scan","journal_volume_check",
                                                 "entity_resolve","pubtator3_entity_check"] },

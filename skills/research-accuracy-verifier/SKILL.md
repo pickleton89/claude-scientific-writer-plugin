@@ -1,7 +1,7 @@
 ---
 name: research-accuracy-verifier
 version: 0.1.0
-description: Verify factual, citation, quotation, and numerical accuracy of LLM-generated research documents (lit reviews, grant sections, manuscripts, slides, reports) where citations may be hallucinated, misattributed, or misaligned with the claims they support. Triggers on "fact-check", "verify the citations", "audit this lit review", "did the AI make this up", "check for accuracy" — or whenever the user shows AI-generated scholarly content and wants to confirm cited papers exist, quotes are real, numbers check out, and sources actually support the claims. Defaults to biomedical sourcing (PubMed, Paperclip, PMC, Open Targets, Scite) with Crossref/OpenAlex/Exa fallback for general scientific writing. Produces a deterministic audit with a canonical 10-value verdict enum, a Verdict×DocumentType severity matrix, and JSON-schema-validated findings (validator-enforced predicates P1–P5, P7, P8).
+description: Verify factual, citation, quotation, and numerical accuracy of LLM-generated research documents (lit reviews, grant sections, manuscripts, slides, reports) where citations may be hallucinated, misattributed, or misaligned with the claims they support. Triggers on "fact-check", "verify the citations", "audit this lit review", "did the AI make this up", "check for accuracy" — or whenever the user shows AI-generated scholarly content and wants to confirm cited papers exist, quotes are real, numbers check out, and sources actually support the claims. Defaults to biomedical sourcing (PubMed, Paperclip, PMC, Open Targets, Scite) with Crossref/OpenAlex/Exa fallback for general scientific writing. Produces a deterministic audit with a canonical 10-value verdict enum, a Verdict×DocumentType severity matrix, and JSON-schema-validated findings (validator-enforced predicates P1–P5, P7, P8, P9).
 allowed-tools: [Read, Write, Bash, WebSearch, WebFetch]
 shared-thresholds: "../QUANTIFICATION_THRESHOLDS.md"
 context: fork
@@ -117,7 +117,7 @@ flowchart TD
     K -->|Yes| L[Deliver report]
 ```
 
-Each stage writes a `0N_<stage>.json` artifact to `research/audits/<slug>/` via `scripts/checkpoint.py write --stage N`. Validator gates run at Stage 2 (P7), Stage 4 (P8), and Stage 8 (P1–P5, P7, P8 + cross-artifact R1–R6). On validator failure the pipeline loops back to the offending stage. Per-stage routing detail lives in [`references/stages/`](./references/stages/).
+Each stage writes a `0N_<stage>.json` artifact to `research/audits/<slug>/` via `scripts/checkpoint.py write --stage N`. Validator gates run at Stage 2 (P7, P9), Stage 4 (P8), and Stage 8 (P1–P5, P7, P8, P9 + cross-artifact R1–R6). On validator failure the pipeline loops back to the offending stage. Per-stage routing detail lives in [`references/stages/`](./references/stages/).
 
 ## Pinned artifacts (evidence pinning)
 
@@ -156,7 +156,8 @@ Build a `ClaimInventory` validated against [`schemas/claim_inventory.json`](./sc
 
 - **What runs:** ≥2 independent identifier paths (PubMed → Crossref → OpenAlex `batch_resolve_references`) before declaring `UNSUPPORTED`. Covers DOI/PMID/PMCID resolution, journal-volume sanity, OpenAlex venue-quality sub-check, and web-citation handling for bare URLs.
 - **Validator gate — P7** ([`references/predicates.md`](./references/predicates.md)): biomedical/mixed Stage-2 findings with verdict in `{VERIFIED, METADATA_MISMATCH, UNSUPPORTED}` MUST log a Scite `editorialNotices` probe (retraction check) — or, for no-DOI web evidence, a `web_search` carve-out entry with the literal token `no_doi` in `result_summary`.
-- **Detail:** [`references/stages/stage_2_citation_existence.md`](./references/stages/stage_2_citation_existence.md) (routing, OpenAlex backstop, hallucination signatures, worked CRITICAL example).
+- **Validator gate — P9** ([`references/predicates.md`](./references/predicates.md)): every `VERIFIED` finding that resolved a scholarly identifier MUST log a `metadata_agreement` entry cross-checking the resolved record's authors + title against the citation (`author_match=…; title_match=…`). A resolving DOI proves a record exists, not that it is the cited paper — a **wrong-but-valid DOI** resolves to a real but different paper and is `METADATA_MISMATCH`, not `VERIFIED`. Domain-independent.
+- **Detail:** [`references/stages/stage_2_citation_existence.md`](./references/stages/stage_2_citation_existence.md) (routing, OpenAlex backstop, metadata-agreement check, hallucination signatures, worked CRITICAL example).
 - **Artifact:** `02_existence.json`.
 
 ### Stage 3 — Claim-citation alignment
@@ -198,7 +199,7 @@ Deterministic checks via `scripts/reconcile_references.py` (bibliography ↔ inl
 
 Two validator passes MUST run, in order, before the report can render:
 
-1. `scripts/validate_finding.py --batch findings.json --document-type <type> --domain <domain> --stage <originating-stage>` on every finding (P1–P5, P7).
+1. `scripts/validate_finding.py --batch findings.json --document-type <type> --domain <domain> --stage <originating-stage>` on every finding (P1–P5, P7, P9).
 2. `scripts/validate_audit_report.py audit_report.json --intake intake.json` (cross-stage P8).
 
 On any validator failure, loop back to the offending stage. Render via `scripts/render_report.py` (`generate_report(audit_report_dict, intake=...) → str`); rendering itself invokes `validate_audit_report.run_p8(...)` transitively, so the markdown cannot render past a P8 violation.
@@ -236,7 +237,7 @@ The 10-value verdict enum, the 10×7 Verdict×DocumentType severity matrix, `UNV
 
 ## Operating principles (validator-enforced)
 
-Seven numbered predicates — **P1–P5, P7, P8** (P6 retired; numbering preserved for stability) — govern every finding and the assembled report. P1–P5 + P7 fire per finding via `scripts/validate_finding.py`; P8 is cross-stage via `scripts/validate_audit_report.py` (also invoked transitively from `render_report.generate_report()`). Failure rejects the finding and forces a loop-back to the offending stage.
+Eight numbered predicates — **P1–P5, P7, P8, P9** (P6 retired; numbering preserved for stability) — govern every finding and the assembled report. P1–P5, P7, and P9 fire per finding via `scripts/validate_finding.py`; P8 is cross-stage via `scripts/validate_audit_report.py` (also invoked transitively from `render_report.generate_report()`). Failure rejects the finding and forces a loop-back to the offending stage.
 
 | Predicate | Stage of origin | Enforced by | What it checks |
 |---|---|---|---|
@@ -244,6 +245,7 @@ Seven numbered predicates — **P1–P5, P7, P8** (P6 retired; numbering preserv
 | P4 | Stage 5 | `validate_finding.py` | `QUOTE_*` verdicts ⇔ `claim_type == "direct_quote"` |
 | P7 | Stage 2 | `validate_finding.py --stage 2` | Biomedical Stage-2 findings log a Scite `editorialNotices` probe or `no_doi` web carve-out |
 | P8 | Stage 4 (sweep) → Stage 8 (gate) | `validate_audit_report.py`; transitive via `render_report.generate_report()` | Tier-3 cherry-picking coverage over every Stage-3 VERIFIED claim |
+| P9 | Stage 2 | `validate_finding.py --stage 2` | `VERIFIED` findings that resolved a scholarly ID log a `metadata_agreement` author/title cross-check; a recorded mismatch ⇒ `METADATA_MISMATCH` (catches wrong-but-valid DOIs) |
 
 Full text with failure modes and fix paths: [`references/predicates.md`](./references/predicates.md).
 
@@ -336,7 +338,7 @@ When document content concerns aptamer-siRNA chimera biology, T-cell exhaustion,
 
 Before delivering the report, the following validators **MUST** pass:
 
-1. `scripts/validate_finding.py --batch findings.json --document-type <type> --domain <domain>` (per-finding P1–P5 + P7). The Stage attribute is supplied implicitly when the validator is invoked via `checkpoint.py`; when calling the CLI directly, pass `--stage <originating-stage>` so P7 fires for biomedical Stage-2 findings.
+1. `scripts/validate_finding.py --batch findings.json --document-type <type> --domain <domain>` (per-finding P1–P5, P7, P9). The Stage attribute is supplied implicitly when the validator is invoked via `checkpoint.py`; when calling the CLI directly, pass `--stage <originating-stage>` so P7 and P9 fire for Stage-2 findings.
 2. `scripts/validate_audit_report.py audit_report.json --intake intake.json` (cross-stage P8). Enforces the Tier-3 cherry-picking sweep over Stage-3 VERIFIED claims.
 3. Every claim in the inventory appears in either `findings[]` or `verification_matrix[]`.
 4. Severity is consistent with the matrix.
@@ -384,7 +386,7 @@ The fork's final message to the caller is a single JSON object capped at ~800 to
   "top_findings": [
     { "id": "F-NN", "verdict": "<enum>", "severity": "<enum>", "rationale": "<≤140 chars>" }
   ],
-  "predicate_audit": { "P1": "pass", "P2": "pass", "P3": "pass", "P4": "pass", "P5": "pass", "P7": "pass", "P8": "pass" },
+  "predicate_audit": { "P1": "pass", "P2": "pass", "P3": "pass", "P4": "pass", "P5": "pass", "P7": "pass", "P8": "pass", "P9": "pass" },
   "report_paths": {
     "json": "research/audits/<slug>/audit_report.json",
     "markdown": "research/audits/<slug>/report.md"
@@ -393,7 +395,7 @@ The fork's final message to the caller is a single JSON object capped at ~800 to
 }
 ```
 
-**Required fields:** `audit_id`, `audit_dir`, `verdict_counts` (one count for each of the 10 canonical Finding verdicts from `references/CONTRACTS.md` §Verdict enum, zero if absent — this is `findings[]` only, not `style_findings[]`), `severity_counts`, `style_summary` (set `enabled: false` and zeros for non-Tier-3 audits where `prose_quality_audit` is not in `checks_enabled`; otherwise `total` is `len(style_findings)` and `critical` counts the four canonical CRITICAL style rules W6/AI8/Q5/R5), `predicate_audit` (P1–P5, P7, P8 from `references/CONTRACTS.md` — P7/P8 emit `"pass" | "fail" | "n/a"`; `"n/a"` when the predicate's trigger conditions did not apply for this audit, e.g., P7 on a general-domain audit or P8 outside Tier 3), `report_paths`. `top_findings` MUST be the up to three highest-severity findings ordered by severity descending, drawing from `findings[]` only (style findings surface separately via `style_summary`); rationales must be ≤140 characters and contain no quoted excerpts or full claim text.
+**Required fields:** `audit_id`, `audit_dir`, `verdict_counts` (one count for each of the 10 canonical Finding verdicts from `references/CONTRACTS.md` §Verdict enum, zero if absent — this is `findings[]` only, not `style_findings[]`), `severity_counts`, `style_summary` (set `enabled: false` and zeros for non-Tier-3 audits where `prose_quality_audit` is not in `checks_enabled`; otherwise `total` is `len(style_findings)` and `critical` counts the four canonical CRITICAL style rules W6/AI8/Q5/R5), `predicate_audit` (P1–P5, P7, P8, P9 from `references/CONTRACTS.md` — P7/P8/P9 emit `"pass" | "fail" | "n/a"`; `"n/a"` when the predicate's trigger conditions did not apply for this audit, e.g., P7 on a general-domain audit, P8 outside Tier 3, or P9 when no Stage-2 finding resolved a scholarly identifier), `report_paths`. `top_findings` MUST be the up to three highest-severity findings ordered by severity descending, drawing from `findings[]` only (style findings surface separately via `style_summary`); rationales must be ≤140 characters and contain no quoted excerpts or full claim text.
 
 **Forbidden in fork return:** raw claim text, quoted source excerpts, full-text snippets, MCP tool responses, paperclip output, intermediate stage findings (those live in `research/audits/<slug>/stage*.json`). The caller follows up with targeted reads — for example, `!\`jq '.findings[] | select(.id=="F-NN")' research/audits/<slug>/audit_report.json\`` — to surface specific finding details on demand at zero token cost in the main context.
 

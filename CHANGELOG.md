@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — research-accuracy-verifier predicate P9: wrong-but-valid-DOI gate
+
+A DOI that resolves only proves a record *exists* — not that it is the *cited* paper. Stage 2 conflated existence with identity and enforced only existence: P7 forced a Scite retraction probe on resolved DOIs, but nothing forced the author/title cross-check. So a **wrong-but-valid DOI** — an identifier that resolves cleanly to a real but *different* paper — passed as `VERIFIED` (graded low-severity). The metadata-agreement step was advisory prose in `stage_2_citation_existence.md`, never a gated predicate. This was the highest-value Stage-2 catch, reachable only by comparing the resolved record's authors against the citation.
+
+**New predicate P9 (per-finding, `validate_finding.py`):** when `stage == 2 AND verdict == VERIFIED` and a scholarly identifier was resolved (`verification_path[]` contains `doi_lookup` / `pmid_lookup` / `crossref_search` / `pubmed_search` / `pmc_fetch`), the finding MUST log a `metadata_agreement` entry, and that entry MUST NOT record `author_match=false` / `title_match=false`. A recorded mismatch forces `METADATA_MISMATCH`, not `VERIFIED`. Domain-independent (unlike P7 — wrong-but-valid DOIs occur in general-science writing too). Purely web-sourced findings are exempt (no resolved record to compare); governed by the P7 web carve-out instead. Skipped when `stage` is None (back-compat).
+
+- **`schemas/finding.json` + `CONTRACTS.md` locked schema** — `metadata_agreement` added to the `verification_path.method` enum.
+- **`CONTRACTS.md` / `predicates.md` / `stage_2_citation_existence.md` / `SKILL.md`** — P9 documented canonically; VERIFIED verdict redefined as "the resolved record IS the cited paper"; metadata-agreement promoted from advisory prose to a required logged step with the `author_match=…; title_match=…` token convention.
+- **Tests** — 8 new P9 cases in `tests/test_validation.py` (including the F-04 author-mismatch case); `tests/test_checkpoint.py` Stage-2 fixtures updated. Full suite 349 passed.
+- **Regression bed** — new fixture `08_lit_review_wrong_but_valid_doi` (doc + ground truth + manifest entry) pastes the real Gentzler 2024 DOI (`10.1093/oncolo/oyad180`, already vendored in-repo) onto a fabricated CRISPR paper; only acceptable verdict is `METADATA_MISMATCH`, with `VERIFIED` as the explicitly-guarded failure mode.
+
 ### Removed — Dead `/scientific-writer-init` command
 
 - **`commands/scientific-writer-init.md` deleted.** The command was inherited from upstream `K-Dense-AI/claude-scientific-writer` and copied a 1,362-line `CLAUDE.scientific-writer.md` template into the user's project as a project-level `CLAUDE.md`. The template was never bundled in this fork — verified missing from the source repo and from all three installed plugin versions (1.5.0 / 1.6.0 / 1.7.0). Hardcoded fallback path pointed at an unrelated developer's home directory (`/Users/vinayak/...`). Running the command would always fail at the locate-template step.

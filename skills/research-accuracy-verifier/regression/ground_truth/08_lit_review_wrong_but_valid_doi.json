@@ -1,0 +1,62 @@
+{
+  "doc_id": "08_lit_review_wrong_but_valid_doi",
+  "document_type": "lit_review",
+  "verification_tier": "3",
+  "domain": "biomedical",
+  "flag_threshold": "standard",
+  "sources_available": "none",
+  "intake_notes": "No source PDFs supplied. This document seeds a WRONG-BUT-VALID DOI: the citation attributes a CRISPR base-editing paper (Okonkwo et al., 2024, Nature Medicine) to DOI 10.1093/oncolo/oyad180. That DOI resolves cleanly — but to a DIFFERENT real paper: Gentzler et al. 2024, 'Phase I/II Trial of Carboplatin, Nab-paclitaxel, and Pembrolizumab for Advanced Non–Small Cell Lung Cancer: Hoosier Cancer Research Network LUN13-175', The Oncologist. A 'does the DOI resolve?' check passes; only an author/title cross-check (predicate P9) catches the divergence.",
+  "seeded_errors": [
+    {
+      "error_id": "GT-08-1",
+      "kind": "wrong_but_valid_doi",
+      "location": {
+        "section": "Background, paragraph 1",
+        "claim_anchor": "durable fetal hemoglobin induction with no detectable off-target editing at 12 months"
+      },
+      "claim_text": "A first-in-human application of ABE-corrected autologous stem cells reported durable fetal hemoglobin induction with no detectable off-target editing at 12 months of follow-up (Okonkwo et al., 2024, Nature Medicine, https://doi.org/10.1093/oncolo/oyad180).",
+      "cited_source": {
+        "doi": "10.1093/oncolo/oyad180",
+        "title": "First-in-human adenine base editing of autologous hematopoietic stem cells for sickle cell disease",
+        "authors": "Okonkwo et al.",
+        "year": 2024,
+        "journal": "Nature Medicine"
+      },
+      "actual_resolved_source": {
+        "doi": "10.1093/oncolo/oyad180",
+        "title": "Phase I/II Trial of Carboplatin, Nab-paclitaxel, and Pembrolizumab for Advanced Non–Small Cell Lung Cancer: Hoosier Cancer Research Network LUN13-175",
+        "authors": ["Gentzler", "Mohindra", "Jalal", "Reckamp", "Hall", "Hanna", "Chae", "Koczywas", "Helenowski", "Patel"],
+        "year": 2024,
+        "venue": "The Oncologist",
+        "pmid": "37390616",
+        "pmcid": "PMC10769801"
+      },
+      "expected_findings_any_of": [
+        {
+          "stage": 2,
+          "verdict": "METADATA_MISMATCH",
+          "severity": "MAJOR",
+          "severity_rationale": "severity_matrix.values.json: METADATA_MISMATCH × lit_review = MAJOR. This is the PREFERRED catch: the DOI resolves to a real but different paper (different authors, different title, different field), so the author/title cross-check (P9) must flag the divergence."
+        }
+      ],
+      "must_not_emit": [
+        {
+          "stage": 2,
+          "verdict": "VERIFIED",
+          "rationale": "VERIFIED is the FAILURE mode this fixture guards against. A DOI that resolves is NOT sufficient for VERIFIED — the resolved record must also match the cited authors + title. Emitting VERIFIED here means the verifier ran a 'does it resolve?' check without the P9 author/title cross-check."
+        }
+      ],
+      "ground_truth_source": "DOI 10.1093/oncolo/oyad180 is a REAL, resolvable DOI registered to Gentzler et al. 2024 in The Oncologist (PMID 37390616, PMC10769801) — vendored in this repo at regression/sources/gentzler2024_lun13_175/gentzler2024_lun13_175_source_meta.json. No paper by 'Okonkwo et al.' on base editing for sickle cell disease is published under this DOI. The cited title and authors do not match the resolved record on any field except year (both 2024, coincidental).",
+      "notes": {
+        "claim_type": "citation_bearing",
+        "verification_path_min": ["doi_lookup", "metadata_agreement"],
+        "preferred_verdict": "METADATA_MISMATCH",
+        "p9_demonstration": "This is the canonical P9 test: the metadata_agreement verification_path entry MUST record author_match=false and title_match=false, and the verdict MUST be METADATA_MISMATCH (not VERIFIED). A verifier that emits VERIFIED here is structurally incapable of catching wrong-but-valid DOIs.",
+        "rationale_for_single_acceptable_verdict": "Unlike doc 01 (fabricated DOI, where UNSUPPORTED / UNVERIFIED / METADATA_MISMATCH are all acceptable because the DOI does not resolve at all), this DOI DOES resolve. UNSUPPORTED would be wrong (the record exists), and VERIFIED would be the seeded failure. Only METADATA_MISMATCH correctly characterizes a resolving-but-mismatched citation."
+      }
+    }
+  ],
+  "expected_clean_claims": [],
+  "uncited_claims_note": "The closing sentence ('established base editing as a clinically viable strategy ... motivated the multi-center trials now in progress') is uncited framing. Stage 4 may emit findings against it depending on flag_threshold and tier; it is NOT a seeded error and is NOT measured in ground_truth_recall.",
+  "measurement_notes": "This document contains exactly ONE cited reference, using a real DOI (10.1093/oncolo/oyad180) that resolves to a DIFFERENT real paper than the one cited. Ground-truth recall = 1.0 iff the verifier emits METADATA_MISMATCH (the only acceptable verdict) against the Okonkwo 2024 citation AND does NOT emit VERIFIED. This is the regression-bed home for the wrong-but-valid-DOI class (predicate P9). Additional findings (e.g., the uncited closing claim) are tolerated but not credited."
+}

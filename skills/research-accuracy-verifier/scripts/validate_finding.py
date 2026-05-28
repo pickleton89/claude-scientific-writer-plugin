@@ -5,11 +5,11 @@
 #   "jsonschema>=4.20",
 # ]
 # ///
-"""Validate Finding JSON against schema and predicates P1-P5, P7 from references/CONTRACTS.md.
+"""Validate Finding JSON against schema and predicates P1-P5, P7, P9 from references/CONTRACTS.md.
 
 Two-stage pattern delegated to `verifier_kit.validate.SchemaValidator`:
   Stage 1: JSON Schema (Draft-07) against schemas/finding.json
-  Stage 2: Predicates P1-P5, P7 (this module's `run_predicates`)
+  Stage 2: Predicates P1-P5, P7, P9 (this module's `run_predicates`)
     P1. verdict == UNVERIFIED ⟹ reason ∈ enum AND severity != CRITICAL
     P2. severity == CRITICAL ⟹ len(verification_path) >= 2
     P3. len(evidence) >= 1 AND every evidence has resolvable URL/PMID/DOI
@@ -28,6 +28,19 @@ Two-stage pattern delegated to `verifier_kit.validate.SchemaValidator`:
         — see references/CONTRACTS.md §Hard predicates and
           skills/shared/references/citable_web_domains.md. Skipped when
           domain or stage is None (back-compat for ad-hoc CLI calls).
+    P9. stage == 2 AND verdict == VERIFIED AND a scholarly identifier was
+        resolved (verification_path[] contains a method ∈ {doi_lookup,
+        pmid_lookup, crossref_search, pubmed_search, pmc_fetch})
+        ⟹ verification_path[] MUST contain a metadata_agreement entry,
+          AND that entry MUST NOT record author_match=false or
+          title_match=false (a recorded mismatch ⟹ verdict can't be
+          VERIFIED — it is METADATA_MISMATCH). This closes the
+          wrong-but-valid-DOI hole: a DOI that resolves to a real BUT
+          DIFFERENT paper passes a "does it resolve?" check yet fails the
+          author/title cross-check. Purely web-sourced findings (no
+          scholarly resolution) are exempt — there is no resolved record
+          to compare against. Domain-independent (unlike P7); skipped when
+          stage is None (back-compat for ad-hoc CLI calls).
 
 P8 (Tier-3 cherry-picking sweep) is a cross-stage post-condition and lives
 in `validate_audit_report.py` — it cannot be enforced from a per-finding
@@ -76,6 +89,18 @@ P7_DOMAINS = {"biomedical", "mixed"}
 # itself wasn't resolved, so no DOI was available to feed Scite).
 P7_VERDICTS = {"VERIFIED", "METADATA_MISMATCH", "UNSUPPORTED"}
 _SCITE_TOOL_RE = re.compile(r"scite", re.IGNORECASE)
+
+# P9: methods that count as resolving a *scholarly* record (DOI/PMID/work).
+# P9 only fires when one of these is present — a VERIFIED finding that
+# resolved a scholarly identifier MUST also document the author/title
+# cross-check. Purely web-sourced findings (only web_search) are exempt.
+P9_SCHOLARLY_RESOLUTION_METHODS = {
+    "doi_lookup",
+    "pmid_lookup",
+    "crossref_search",
+    "pubmed_search",
+    "pmc_fetch",
+}
 
 
 class FindingValidator(SchemaValidator):
@@ -145,7 +170,9 @@ class FindingValidator(SchemaValidator):
             errors.append("P3: at least one evidence entry required")
         else:
             for i, ev in enumerate(evidence):
-                if not (ev.get("url") and isinstance(ev["url"], str) and ev["url"].strip()):
+                if not (
+                    ev.get("url") and isinstance(ev["url"], str) and ev["url"].strip()
+                ):
                     errors.append(f"P3: evidence[{i}] missing resolvable URL/PMID/DOI")
 
         # P4
@@ -153,7 +180,11 @@ class FindingValidator(SchemaValidator):
             errors.append(
                 f"P4: verdict {verdict} requires claim_type == 'direct_quote' (got {claim_type})"
             )
-        if claim_type == "direct_quote" and verdict and verdict not in QUOTE_VERDICTS | {"UNVERIFIED"}:
+        if (
+            claim_type == "direct_quote"
+            and verdict
+            and verdict not in QUOTE_VERDICTS | {"UNVERIFIED"}
+        ):
             warnings.append(
                 f"P4 advisory: claim_type 'direct_quote' usually pairs with QUOTE_* verdicts (got {verdict})"
             )
@@ -197,11 +228,7 @@ class FindingValidator(SchemaValidator):
         # deterministic and YAML-independent for v1.
         domain = ctx.get("domain")
         stage = ctx.get("stage")
-        if (
-            domain in P7_DOMAINS
-            and stage == 2
-            and verdict in P7_VERDICTS
-        ):
+        if domain in P7_DOMAINS and stage == 2 and verdict in P7_VERDICTS:
             has_scite = False
             has_web_search = False
             has_web_no_doi = False
@@ -244,6 +271,60 @@ class FindingValidator(SchemaValidator):
                     "with result_summary containing the literal token 'no_doi'."
                 )
 
+        # P9: Stage-2 VERIFIED metadata-agreement gate (domain-independent).
+        # Fires only when a scholarly identifier was resolved — a DOI/PMID
+        # that resolves to a real BUT DIFFERENT paper passes a "does it
+        # resolve?" check yet must fail the author/title cross-check. The
+        # comparison is recorded in a metadata_agreement verification_path
+        # entry; if it records a mismatch, the verdict can't be VERIFIED.
+        # Purely web-sourced findings (no scholarly resolution) are exempt:
+        # there is no resolved record to compare against. Skipped when stage
+        # is None (back-compat for ad-hoc CLI callers).
+        if stage == 2 and verdict == "VERIFIED":
+            has_scholarly_resolution = False
+            has_metadata_agreement = False
+            mismatch_recorded = False
+            for entry in verification_path:
+                if not isinstance(entry, dict):
+                    continue
+                method = (entry.get("method") or "").lower()
+                if method in P9_SCHOLARLY_RESOLUTION_METHODS:
+                    has_scholarly_resolution = True
+                if method == "metadata_agreement":
+                    has_metadata_agreement = True
+                    # Normalize "author_match = false" → "author_match=false"
+                    # so the token check is whitespace-insensitive.
+                    summary = (
+                        (entry.get("result_summary") or "").lower().replace(" ", "")
+                    )
+                    if (
+                        "author_match=false" in summary
+                        or "title_match=false" in summary
+                    ):
+                        mismatch_recorded = True
+
+            if has_scholarly_resolution:
+                if not has_metadata_agreement:
+                    errors.append(
+                        "P9: Stage-2 VERIFIED finding resolved a scholarly "
+                        "identifier but has no metadata_agreement entry in "
+                        "verification_path[]. A DOI/PMID that resolves only "
+                        "proves a record EXISTS — not that it is the cited "
+                        "paper. Log a metadata_agreement step cross-checking "
+                        "the resolved record's authors + title against the "
+                        "citation (result_summary: 'author_match=true; "
+                        "title_match=true; ...'). If they disagree, the "
+                        "verdict is METADATA_MISMATCH, not VERIFIED."
+                    )
+                elif mismatch_recorded:
+                    errors.append(
+                        "P9: Stage-2 finding records author_match=false or "
+                        "title_match=false in its metadata_agreement entry "
+                        "but the verdict is VERIFIED. A recorded author/title "
+                        "mismatch means the DOI resolves to a DIFFERENT paper "
+                        "— the verdict MUST be METADATA_MISMATCH."
+                    )
+
     def validate(  # type: ignore[override]
         self,
         finding: dict[str, Any],
@@ -257,6 +338,8 @@ class FindingValidator(SchemaValidator):
         `domain` and `stage` gate predicate P7. When either is `None`
         (default), P7 is skipped — preserving back-compat with all
         pre-P7 callers and tests that pass only `(finding, document_type)`.
+        `stage` alone gates predicate P9 (domain-independent); when `stage`
+        is `None`, P9 is skipped too.
         """
         return super().validate(
             finding,
@@ -272,7 +355,15 @@ def main() -> None:
     parser.add_argument(
         "--document-type",
         required=True,
-        choices=["grant", "manuscript", "lit_review", "slides", "report", "memo", "other"],
+        choices=[
+            "grant",
+            "manuscript",
+            "lit_review",
+            "slides",
+            "report",
+            "memo",
+            "other",
+        ],
     )
     parser.add_argument(
         "--domain",
@@ -285,7 +376,9 @@ def main() -> None:
         choices=range(2, 8),
         help="Originating pipeline stage. Required to activate P7.",
     )
-    parser.add_argument("--batch", action="store_true", help="Treat input as array of findings")
+    parser.add_argument(
+        "--batch", action="store_true", help="Treat input as array of findings"
+    )
     parser.add_argument("--schema", help="Custom schema path")
     parser.add_argument("--matrix", help="Custom matrix values path")
     parser.add_argument("--json", action="store_true", help="Output JSON")
@@ -307,7 +400,13 @@ def main() -> None:
         )
         all_ok = all_ok and ok
         results.append(
-            {"index": i, "id": f.get("id"), "valid": ok, "errors": errs, "warnings": warns}
+            {
+                "index": i,
+                "id": f.get("id"),
+                "valid": ok,
+                "errors": errs,
+                "warnings": warns,
+            }
         )
 
     if args.json:

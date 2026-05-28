@@ -78,6 +78,7 @@
               "crossref_search",
               "pubmed_search",
               "pmc_fetch",
+              "metadata_agreement",
               "exact_quote_match",
               "scite_context",
               "web_search",
