@@ -39,13 +39,14 @@ TIER_CHECKS: dict[str, list[str]] = {
         "numerical_sanity",
         "named_entities",
         "internal_consistency",
-        "prose_quality_audit",
     ],
 }
 
-# prose_quality_audit is restricted to Tier 3 (auto-included) or custom (opt-in).
-# Tiers 1 and 2 have no prose-quality coverage.
-TIER3_OR_CUSTOM_ONLY_CHECKS: set[str] = {"prose_quality_audit"}
+# prose_quality_audit is reachable ONLY via verification_tier == "custom"
+# (the /prose-audit slash command pins this). No numbered tier — including
+# Tier 3 — auto-includes it; the citation/claim pipeline never silently turns
+# into a style/grammar audit. See references/CONTRACTS.md §STYLE_NONCONFORMING.
+CUSTOM_ONLY_CHECKS: set[str] = {"prose_quality_audit"}
 
 
 class IntakeValidator:
@@ -55,9 +56,7 @@ class IntakeValidator:
         if schema_path:
             self.schema_path = Path(schema_path)
         else:
-            self.schema_path = (
-                Path(__file__).parent.parent / "schemas" / "intake.json"
-            )
+            self.schema_path = Path(__file__).parent.parent / "schemas" / "intake.json"
         with open(self.schema_path) as f:
             self.schema: dict[str, Any] = json.load(f)
 
@@ -70,7 +69,9 @@ class IntakeValidator:
             errors.append(f"schema: {err.message} at {list(err.absolute_path)}")
 
         # Stage 2: business rules — run regardless of schema failures
-        if intake.get("document_type") == "other" and not intake.get("document_type_other"):
+        if intake.get("document_type") == "other" and not intake.get(
+            "document_type_other"
+        ):
             errors.append(
                 "business rule: document_type_other is required when document_type == 'other'"
             )
@@ -83,21 +84,25 @@ class IntakeValidator:
                 )
         elif tier in TIER_CHECKS:
             user_checks = intake.get("checks_enabled")
-            if user_checks and set(user_checks) != set(TIER_CHECKS[tier]):
+            # Ignore custom-only checks here — those get a dedicated hard error below;
+            # warning only on genuine divergence from the canonical citation set.
+            if user_checks and (
+                set(user_checks) - CUSTOM_ONLY_CHECKS != set(TIER_CHECKS[tier])
+            ):
                 warnings.append(
                     f"checks_enabled supplied for tier {tier} differs from canonical "
                     f"mapping; canonical wins (use tier == 'custom' to override)."
                 )
 
-        # Tier-3-or-custom-only checks (e.g., prose_quality_audit) cannot be requested
-        # at tiers 1 or 2 even via explicit checks_enabled.
-        if tier in {"1", "2"}:
+        # custom-only checks (e.g., prose_quality_audit) cannot be requested at any
+        # numbered tier even via explicit checks_enabled — they require tier == "custom".
+        if tier in {"1", "2", "3"}:
             user_checks = set(intake.get("checks_enabled") or [])
-            forbidden = user_checks & TIER3_OR_CUSTOM_ONLY_CHECKS
+            forbidden = user_checks & CUSTOM_ONLY_CHECKS
             if forbidden:
                 errors.append(
                     f"business rule: {sorted(forbidden)} require verification_tier "
-                    f"'3' or 'custom' (got '{tier}')"
+                    f"'custom' (got '{tier}')"
                 )
 
         return len(errors) == 0, errors, warnings
@@ -128,7 +133,9 @@ def main() -> None:
     ok, errors, warnings = validator.validate(intake)
 
     if args.json:
-        print(json.dumps({"valid": ok, "errors": errors, "warnings": warnings}, indent=2))
+        print(
+            json.dumps({"valid": ok, "errors": errors, "warnings": warnings}, indent=2)
+        )
     else:
         print(f"Validating: {args.intake_file}")
         if errors:

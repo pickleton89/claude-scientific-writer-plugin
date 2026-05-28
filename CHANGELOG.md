@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed — research-accuracy-verifier no longer drifts into a prose/style audit
+
+`/research-accuracy-verifier <path>` behaved non-deterministically: sometimes it ran the citation/claim pipeline (correct), sometimes it produced only prose `style_findings[]`, and sometimes a generic copyedit — instead of verifying citations. Root cause was a code↔contract contradiction: `validate_intake.py` defined **Tier 3 as the 7 citation checks *plus* `prose_quality_audit`**, while the declared source of truth (`CONTRACTS.md`) said Tier 3 was "all 7 checks." With no deterministic default, a bare invocation let the fork improvise an intake — and reaching for the "full audit" tier silently switched on the parallel STYLE_NONCONFORMING pass, which then dominated the output.
+
+**`prose_quality_audit` is now `custom`-only.** No numbered tier — including Tier 3 — auto-includes it; the only door is the dedicated `/prose-audit` command (`verification_tier == "custom"`). The citation/claim pipeline can no longer turn itself into a style/grammar audit.
+
+- **`scripts/validate_intake.py`** — removed `prose_quality_audit` from `TIER_CHECKS["3"]` (Tier 3 = 7 citation checks); renamed `TIER3_OR_CUSTOM_ONLY_CHECKS` → `CUSTOM_ONLY_CHECKS` and extended the hard error to forbid prose at tiers 1/2/**3** alike. The "differs from canonical" warning is suppressed when prose is the sole deviation, so a forbidden-prose intake emits one clear error rather than a warning + error.
+- **`SKILL.md`** — new mandatory first-action block: a bare invocation MUST trigger the five-question intake and MUST NOT produce a style edit; `prose_quality_audit` documented as never auto-enabled. Tier-3 mapping and `style_summary` wording corrected.
+- **`CONTRACTS.md`** (source of truth) — Tier-3 mapping now enumerates the 7 checks explicitly and states prose is excluded; intake comment and STYLE_NONCONFORMING section updated to "`custom`-only, via `/prose-audit`."
+- **Tests** — `tests/test_validation.py` gains coverage that Tier 3 excludes prose, that prose is rejected at every numbered tier (parametrized 1/2/3), that custom permits it, and that the redundant canonical-divergence warning is suppressed. Full suite 360 passed.
+
 ### Added — research-accuracy-verifier predicate P9: wrong-but-valid-DOI gate
 
 A DOI that resolves only proves a record *exists* — not that it is the *cited* paper. Stage 2 conflated existence with identity and enforced only existence: P7 forced a Scite retraction probe on resolved DOIs, but nothing forced the author/title cross-check. So a **wrong-but-valid DOI** — an identifier that resolves cleanly to a real but *different* paper — passed as `VERIFIED` (graded low-severity). The metadata-agreement step was advisory prose in `stage_2_citation_existence.md`, never a gated predicate. This was the highest-value Stage-2 catch, reachable only by comparing the resolved record's authors against the citation.

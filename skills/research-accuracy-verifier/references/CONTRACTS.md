@@ -134,7 +134,8 @@ The `paper_id` join key is byte-compatible with `deep-research/schemas/sources.j
                               "exact_quotes","numerical_sanity","named_entities","internal_consistency",
                               "prose_quality_audit" ] } },
                               // required iff verification_tier == "custom"
-                              // prose_quality_audit: Tier 3 + custom only; parallel pipeline (style_findings[])
+                              // prose_quality_audit: CUSTOM only (no numbered tier auto-includes it);
+                              //   parallel pipeline (style_findings[]); canonical door is /prose-audit
     "domain":               { "enum": ["biomedical","general","mixed"] },
     "flag_threshold":       { "enum": ["conservative","standard","strict"] },
     "cited_papers":         { "type": "array", "items": { "$ref": "#/$defs/citedPaper" } },  // optional — research-paper-summarizer handoff
@@ -164,7 +165,7 @@ Detect the marker and populate `intake.pinned_sidecars` from conventional siblin
 Tier → `checks_enabled` mapping (computed when tier ≠ `custom`):
 - Tier 1 → `["citation_existence"]`
 - Tier 2 → `["citation_existence","claim_alignment"]`
-- Tier 3 → all 7 checks
+- Tier 3 → all 7 citation/claim checks (`citation_existence`, `claim_alignment`, `uncited_claims`, `exact_quotes`, `numerical_sanity`, `named_entities`, `internal_consistency`). **`prose_quality_audit` is NOT one of them** — it is `custom`-only and never auto-included by any numbered tier.
 
 ---
 
@@ -353,7 +354,7 @@ The final `audit_report.json` is also written here, replacing the historical "an
 
 ## STYLE_NONCONFORMING verdict family (added v1.3, prose-standards integration)
 
-A separate verdict family for prose-quality violations. **Operates on a parallel pipeline** to the citation/claim verdicts above — does NOT enter the 10-value Verdict enum or the 70-cell Severity matrix; uses its own `style_findings[]` array in the AuditReport when the verifier is run with `checks_enabled` including `prose_quality_audit` (Tier 3 + custom only).
+A separate verdict family for prose-quality violations. **Operates on a parallel pipeline** to the citation/claim verdicts above — does NOT enter the 10-value Verdict enum or the 70-cell Severity matrix; uses its own `style_findings[]` array in the AuditReport when the verifier is run with `checks_enabled` including `prose_quality_audit` (**`custom` tier only** — no numbered tier auto-includes it; canonical entry point is the `/prose-audit` command).
 
 **Source of truth for thresholds:** `../shared/references/prose_standards_thresholds.yaml`. The verifier loads this YAML at startup and uses its severity tags directly (no separate severity matrix — a YAML-tagged CRITICAL is CRITICAL regardless of document type, because prose-standard violations are not document-type-conditional in the way citation errors are).
 

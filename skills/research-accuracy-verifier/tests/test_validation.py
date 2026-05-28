@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
+import pytest
 
 from validate_finding import FindingValidator
 from validate_intake import IntakeValidator, TIER_CHECKS
@@ -113,6 +114,67 @@ class TestIntakeValidator:
     def test_expand_tier_populates_checks(self, sample_intake: dict[str, Any]) -> None:
         out = IntakeValidator().expand_tier(sample_intake)
         assert out["checks_enabled"] == TIER_CHECKS["2"]
+
+    # ---- prose_quality_audit is custom-only (never auto-included by a tier) ----
+
+    def test_tier3_excludes_prose_quality_audit(self) -> None:
+        """Tier 3 is the 7 citation/claim checks only — prose must not ride along."""
+        assert "prose_quality_audit" not in TIER_CHECKS["3"]
+        assert len(TIER_CHECKS["3"]) == 7
+
+    def test_tier3_expansion_has_no_prose(self) -> None:
+        intake = {
+            "document_type": "manuscript",
+            "sources_available": "none",
+            "verification_tier": "3",
+            "domain": "biomedical",
+            "flag_threshold": "standard",
+        }
+        out = IntakeValidator().expand_tier(intake)
+        assert "prose_quality_audit" not in out["checks_enabled"]
+
+    @pytest.mark.parametrize("tier", ["1", "2", "3"])
+    def test_prose_forbidden_at_numbered_tier(self, tier: str) -> None:
+        """Explicitly requesting prose at any numbered tier (1/2/3) is an error."""
+        intake = {
+            "document_type": "manuscript",
+            "sources_available": "none",
+            "verification_tier": tier,
+            "checks_enabled": ["citation_existence", "prose_quality_audit"],
+            "domain": "biomedical",
+            "flag_threshold": "standard",
+        }
+        ok, errors, _ = IntakeValidator().validate(intake)
+        assert not ok
+        assert any("prose_quality_audit" in e and "custom" in e for e in errors), errors
+
+    def test_prose_allowed_at_custom_tier(self) -> None:
+        intake = {
+            "document_type": "manuscript",
+            "sources_available": "none",
+            "verification_tier": "custom",
+            "checks_enabled": ["prose_quality_audit"],
+            "domain": "general",
+            "flag_threshold": "standard",
+        }
+        ok, errors, _ = IntakeValidator().validate(intake)
+        assert ok, errors
+
+    def test_prose_as_sole_deviation_skips_canonical_warning(self) -> None:
+        """Tier 3 + the 7 canonical checks + prose: emit the hard prose error only,
+        not the redundant 'differs from canonical' warning."""
+        intake = {
+            "document_type": "manuscript",
+            "sources_available": "none",
+            "verification_tier": "3",
+            "checks_enabled": [*TIER_CHECKS["3"], "prose_quality_audit"],
+            "domain": "biomedical",
+            "flag_threshold": "standard",
+        }
+        ok, errors, warnings = IntakeValidator().validate(intake)
+        assert not ok
+        assert any("prose_quality_audit" in e for e in errors), errors
+        assert not any("differs from canonical" in w for w in warnings), warnings
 
     # ---- cited_papers[] (Stage 6 cooperation handoff) ------------------------
 

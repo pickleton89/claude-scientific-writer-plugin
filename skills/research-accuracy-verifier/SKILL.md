@@ -26,6 +26,10 @@ Do not use this skill when the user wants the document edited for style, summari
 
 ## Initial intake — five questions, asked once
 
+**First action, mandatory.** This skill is a *citation/claim accuracy* auditor. When invoked with only a document or file path and no other parameters — e.g. `/research-accuracy-verifier <path>` — your **first action MUST be the five-question intake below**. Do **not** improvise: do not produce a style, grammar, or clarity edit (that is Out of scope, see §Out of scope), and do not silently pick a tier and run. A bare invocation is *not* a request for a prose audit.
+
+**prose_quality_audit is never auto-enabled.** No numbered tier (including Tier 3) turns on the STYLE_NONCONFORMING pass. It is reachable only when the user explicitly asks for a prose/style audit (`verification_tier == "custom"` with `prose_quality_audit` in `checks_enabled`), and its canonical entry point is the dedicated `/prose-audit` command. If the user wants prose quality checked, route them there; this skill's tiers stay citation-only.
+
 Five questions drive every downstream routing decision. Skipping them produces noticeably worse audits. Ask all five up front in a single consolidated elicitation. Skip any question the user has already answered in prior turns.
 
 The intake answers are emitted as a JSON object validated against [`schemas/intake.json`](./schemas/intake.json):
@@ -38,7 +42,8 @@ The intake answers are emitted as a JSON object validated against [`schemas/inta
   "verification_tier": "1" | "2" | "3" | "custom",
 
   // checks_enabled: required iff verification_tier == "custom".
-  // prose_quality_audit is Tier-3 + custom only (parallel pipeline → style_findings[]).
+  // prose_quality_audit is CUSTOM-only (parallel pipeline → style_findings[]); no
+  // numbered tier auto-includes it. The /prose-audit slash command is its canonical door.
   "checks_enabled":    ["citation_existence","claim_alignment","uncited_claims",
                         "exact_quotes","numerical_sanity","named_entities","internal_consistency",
                         "prose_quality_audit"],
@@ -63,7 +68,7 @@ The intake answers are emitted as a JSON object validated against [`schemas/inta
 Tier → `checks_enabled` mapping (computed when tier ≠ `custom`):
 - Tier 1 → `["citation_existence"]`
 - Tier 2 → `["citation_existence", "claim_alignment"]`
-- Tier 3 → all 7 citation-pipeline checks **plus** `prose_quality_audit` (parallel STYLE_NONCONFORMING pass; see `references/CONTRACTS.md` §STYLE_NONCONFORMING)
+- Tier 3 → all 7 citation-pipeline checks (`prose_quality_audit` is **not** included — it is `custom`-only; run `/prose-audit` for a STYLE_NONCONFORMING pass, see `references/CONTRACTS.md` §STYLE_NONCONFORMING)
 
 ### Required input wrappers
 
@@ -395,7 +400,7 @@ The fork's final message to the caller is a single JSON object capped at ~800 to
 }
 ```
 
-**Required fields:** `audit_id`, `audit_dir`, `verdict_counts` (one count for each of the 10 canonical Finding verdicts from `references/CONTRACTS.md` §Verdict enum, zero if absent — this is `findings[]` only, not `style_findings[]`), `severity_counts`, `style_summary` (set `enabled: false` and zeros for non-Tier-3 audits where `prose_quality_audit` is not in `checks_enabled`; otherwise `total` is `len(style_findings)` and `critical` counts the four canonical CRITICAL style rules W6/AI8/Q5/R5), `predicate_audit` (P1–P5, P7, P8, P9 from `references/CONTRACTS.md` — P7/P8/P9 emit `"pass" | "fail" | "n/a"`; `"n/a"` when the predicate's trigger conditions did not apply for this audit, e.g., P7 on a general-domain audit, P8 outside Tier 3, or P9 when no Stage-2 finding resolved a scholarly identifier), `report_paths`. `top_findings` MUST be the up to three highest-severity findings ordered by severity descending, drawing from `findings[]` only (style findings surface separately via `style_summary`); rationales must be ≤140 characters and contain no quoted excerpts or full claim text.
+**Required fields:** `audit_id`, `audit_dir`, `verdict_counts` (one count for each of the 10 canonical Finding verdicts from `references/CONTRACTS.md` §Verdict enum, zero if absent — this is `findings[]` only, not `style_findings[]`), `severity_counts`, `style_summary` (set `enabled: false` and zeros whenever `prose_quality_audit` is not in `checks_enabled` — i.e. every audit except a `custom` tier that explicitly enables it / a `/prose-audit` run; otherwise `total` is `len(style_findings)` and `critical` counts the four canonical CRITICAL style rules W6/AI8/Q5/R5), `predicate_audit` (P1–P5, P7, P8, P9 from `references/CONTRACTS.md` — P7/P8/P9 emit `"pass" | "fail" | "n/a"`; `"n/a"` when the predicate's trigger conditions did not apply for this audit, e.g., P7 on a general-domain audit, P8 outside Tier 3, or P9 when no Stage-2 finding resolved a scholarly identifier), `report_paths`. `top_findings` MUST be the up to three highest-severity findings ordered by severity descending, drawing from `findings[]` only (style findings surface separately via `style_summary`); rationales must be ≤140 characters and contain no quoted excerpts or full claim text.
 
 **Forbidden in fork return:** raw claim text, quoted source excerpts, full-text snippets, MCP tool responses, paperclip output, intermediate stage findings (those live in `research/audits/<slug>/stage*.json`). The caller follows up with targeted reads — for example, `!\`jq '.findings[] | select(.id=="F-NN")' research/audits/<slug>/audit_report.json\`` — to surface specific finding details on demand at zero token cost in the main context.
 
