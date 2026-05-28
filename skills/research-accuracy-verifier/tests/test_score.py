@@ -257,11 +257,65 @@ class TestSeededErrorSatisfied:
         assert seeded_error_satisfied(seeded, [finding], []) is False
 
 
+# ----- must_not_emit (wrong-but-valid-DOI guard, P9) -------------------------
+
+
+def _doi_finding(verdict: str) -> dict:
+    """A Stage-2 citation-existence finding with the given verdict."""
+    return {
+        "id": "F-08-1",
+        "verdict": verdict,
+        "severity": "MAJOR" if verdict == "METADATA_MISMATCH" else "INFORMATIONAL",
+        "evidence": [
+            {"source": "Crossref", "url": "https://doi.org/10.1093/oncolo/oyad180"}
+        ],
+    }
+
+
+class TestMustNotEmit:
+    """Ground-truth `must_not_emit` makes the VERIFIED false-positive a real,
+    scored failure — not just an absent recall match. This is what lets the
+    regression bed detect a verifier that falls into the wrong-but-valid-DOI
+    trap (predicate P9)."""
+
+    GT08 = {
+        "expected_findings_any_of": [
+            {"stage": 2, "verdict": "METADATA_MISMATCH", "severity": "MAJOR"}
+        ],
+        "must_not_emit": [{"stage": 2, "verdict": "VERIFIED"}],
+    }
+
+    def test_correct_catch_counts_as_satisfied(self):
+        """METADATA_MISMATCH and no forbidden VERIFIED → caught."""
+        assert (
+            seeded_error_satisfied(self.GT08, [_doi_finding("METADATA_MISMATCH")], [])
+            is True
+        )
+
+    def test_forbidden_verdict_alone_is_a_miss(self):
+        """VERIFIED only (P9 not implemented) → not caught."""
+        assert (
+            seeded_error_satisfied(self.GT08, [_doi_finding("VERIFIED")], []) is False
+        )
+
+    def test_forbidden_verdict_overrides_a_valid_match(self):
+        """Even if the right verdict is also present, emitting the forbidden
+        VERIFIED for the same citation is a broken audit → not caught."""
+        findings = [_doi_finding("METADATA_MISMATCH"), _doi_finding("VERIFIED")]
+        assert seeded_error_satisfied(self.GT08, findings, []) is False
+
+    def test_absent_must_not_emit_is_backward_compatible(self):
+        """Ground truth without must_not_emit behaves exactly as before."""
+        gt = {"expected_findings_any_of": [{"stage": 2, "verdict": "VERIFIED"}]}
+        assert seeded_error_satisfied(gt, [_doi_finding("VERIFIED")], []) is True
+
+
 # ----- artifact coverage extraction ------------------------------------------
 
 
 def _write_sidecars(run_dir: Path, *, files: dict[str, dict]) -> None:
     import json as _json
+
     run_dir.mkdir(parents=True, exist_ok=True)
     for name, payload in files.items():
         (run_dir / name).write_text(_json.dumps(payload))
@@ -275,28 +329,34 @@ class TestLedgerHitRate:
         assert _ledger_hit_rate({"entries": []}) == (0, None)
 
     def test_all_misses_no_reuse(self):
-        ledger = {"entries": [
-            {"id": "E1", "consumed_by_findings": ["F1"]},
-            {"id": "E2", "consumed_by_findings": ["F2"]},
-        ]}
+        ledger = {
+            "entries": [
+                {"id": "E1", "consumed_by_findings": ["F1"]},
+                {"id": "E2", "consumed_by_findings": ["F2"]},
+            ]
+        }
         n, rate = _ledger_hit_rate(ledger)
         assert n == 2
         assert rate == 0.0
 
     def test_reuse_yields_hits(self):
-        ledger = {"entries": [
-            {"id": "E1", "consumed_by_findings": ["F1", "F2", "F3"]},
-            {"id": "E2", "consumed_by_findings": ["F4"]},
-        ]}
+        ledger = {
+            "entries": [
+                {"id": "E1", "consumed_by_findings": ["F1", "F2", "F3"]},
+                {"id": "E2", "consumed_by_findings": ["F4"]},
+            ]
+        }
         n, rate = _ledger_hit_rate(ledger)
         assert n == 2
         assert rate == pytest.approx(2 / 4)
 
     def test_unconsumed_entries_ignored_in_total(self):
-        ledger = {"entries": [
-            {"id": "E1", "consumed_by_findings": []},
-            {"id": "E2", "consumed_by_findings": ["F1", "F2"]},
-        ]}
+        ledger = {
+            "entries": [
+                {"id": "E1", "consumed_by_findings": []},
+                {"id": "E2", "consumed_by_findings": ["F1", "F2"]},
+            ]
+        }
         n, rate = _ledger_hit_rate(ledger)
         assert n == 2
         assert rate == pytest.approx(1 / 2)
@@ -304,14 +364,19 @@ class TestLedgerHitRate:
 
 class TestArtifactCoverageExtraction:
     def test_all_artifacts_present(self, tmp_path):
-        _write_sidecars(tmp_path, files={
-            "document_inventory.json": {"x": 1},
-            "reference_map.json": {"x": 1},
-            "resolved_sources.json": {"x": 1},
-            "external_evidence.json": {"entries": [
-                {"id": "E1", "consumed_by_findings": ["F1", "F2"]},
-            ]},
-        })
+        _write_sidecars(
+            tmp_path,
+            files={
+                "document_inventory.json": {"x": 1},
+                "reference_map.json": {"x": 1},
+                "resolved_sources.json": {"x": 1},
+                "external_evidence.json": {
+                    "entries": [
+                        {"id": "E1", "consumed_by_findings": ["F1", "F2"]},
+                    ]
+                },
+            },
+        )
         cov = extract_artifact_coverage(tmp_path)
         assert cov["document_inventory_present"] is True
         assert cov["reference_map_present"] is True
@@ -320,10 +385,13 @@ class TestArtifactCoverageExtraction:
         assert cov["ledger_hit_rate"] == pytest.approx(0.5)
 
     def test_partial_artifacts_present(self, tmp_path):
-        _write_sidecars(tmp_path, files={
-            "document_inventory.json": {"x": 1},
-            "external_evidence.json": {"entries": []},
-        })
+        _write_sidecars(
+            tmp_path,
+            files={
+                "document_inventory.json": {"x": 1},
+                "external_evidence.json": {"entries": []},
+            },
+        )
         cov = extract_artifact_coverage(tmp_path)
         assert cov["document_inventory_present"] is True
         assert cov["reference_map_present"] is False
@@ -340,21 +408,31 @@ class TestArtifactCoverageExtraction:
         assert cov["ledger_hit_rate"] is None
 
     def test_ledger_with_zero_consumption(self, tmp_path):
-        _write_sidecars(tmp_path, files={
-            "external_evidence.json": {"entries": [
-                {"id": "E1", "consumed_by_findings": []},
-            ]},
-        })
+        _write_sidecars(
+            tmp_path,
+            files={
+                "external_evidence.json": {
+                    "entries": [
+                        {"id": "E1", "consumed_by_findings": []},
+                    ]
+                },
+            },
+        )
         cov = extract_artifact_coverage(tmp_path)
         assert cov["external_evidence_entries"] == 1
         assert cov["ledger_hit_rate"] is None
 
     def test_ledger_with_high_reuse(self, tmp_path):
-        _write_sidecars(tmp_path, files={
-            "external_evidence.json": {"entries": [
-                {"id": "E1", "consumed_by_findings": ["F1", "F2", "F3", "F4"]},
-            ]},
-        })
+        _write_sidecars(
+            tmp_path,
+            files={
+                "external_evidence.json": {
+                    "entries": [
+                        {"id": "E1", "consumed_by_findings": ["F1", "F2", "F3", "F4"]},
+                    ]
+                },
+            },
+        )
         cov = extract_artifact_coverage(tmp_path)
         assert cov["ledger_hit_rate"] == pytest.approx(0.75)
 
@@ -370,47 +448,83 @@ class TestArtifactCoverageExtraction:
 
 class TestRPredicateAuditExtraction:
     def test_all_pass(self):
-        audit = {"audit_meta": {"r_predicate_status": {
-            "R1": "pass", "R2": "pass", "R3": "pass",
-            "R4": "pass", "R5": "pass", "R6": "pass",
-        }}}
+        audit = {
+            "audit_meta": {
+                "r_predicate_status": {
+                    "R1": "pass",
+                    "R2": "pass",
+                    "R3": "pass",
+                    "R4": "pass",
+                    "R5": "pass",
+                    "R6": "pass",
+                }
+            }
+        }
         result = extract_r_predicate_audit(audit)
         assert result == {
-            "R1": "pass", "R2": "pass", "R3": "pass",
-            "R4": "pass", "R5": "pass", "R6": "pass",
+            "R1": "pass",
+            "R2": "pass",
+            "R3": "pass",
+            "R4": "pass",
+            "R5": "pass",
+            "R6": "pass",
         }
 
     def test_mixed_pass_fail(self):
-        audit = {"audit_meta": {"r_predicate_status": {
-            "R1": "pass", "R2": "fail", "R3": "pass",
-            "R4": "fail", "R5": "pass", "R6": "pass",
-        }}}
+        audit = {
+            "audit_meta": {
+                "r_predicate_status": {
+                    "R1": "pass",
+                    "R2": "fail",
+                    "R3": "pass",
+                    "R4": "fail",
+                    "R5": "pass",
+                    "R6": "pass",
+                }
+            }
+        }
         result = extract_r_predicate_audit(audit)
         assert result["R2"] == "fail"
         assert result["R4"] == "fail"
         assert result["R1"] == "pass"
 
     def test_all_fail(self):
-        audit = {"audit_meta": {"r_predicate_status": {
-            name: "fail" for name in ("R1", "R2", "R3", "R4", "R5", "R6")
-        }}}
+        audit = {
+            "audit_meta": {
+                "r_predicate_status": {
+                    name: "fail" for name in ("R1", "R2", "R3", "R4", "R5", "R6")
+                }
+            }
+        }
         result = extract_r_predicate_audit(audit)
         assert all(v == "fail" for v in result.values())
 
     def test_mixed_with_na(self):
-        audit = {"audit_meta": {"r_predicate_status": {
-            "R1": "pass", "R2": "n/a", "R3": "fail",
-            "R4": "n/a", "R5": "pass",
-        }}}
+        audit = {
+            "audit_meta": {
+                "r_predicate_status": {
+                    "R1": "pass",
+                    "R2": "n/a",
+                    "R3": "fail",
+                    "R4": "n/a",
+                    "R5": "pass",
+                }
+            }
+        }
         result = extract_r_predicate_audit(audit)
         assert result["R2"] == "n/a"
         assert result["R4"] == "n/a"
         assert result["R6"] == "n/a"
 
     def test_legacy_field_name(self):
-        audit = {"audit_meta": {"r_predicates": {
-            "R1": "pass", "R2": "fail",
-        }}}
+        audit = {
+            "audit_meta": {
+                "r_predicates": {
+                    "R1": "pass",
+                    "R2": "fail",
+                }
+            }
+        }
         result = extract_r_predicate_audit(audit)
         assert result["R1"] == "pass"
         assert result["R2"] == "fail"
@@ -486,8 +600,22 @@ class TestAggregateNewColumns:
 
     def test_r_predicate_pass_rate_ignores_na(self):
         rows = [
-            {"R1": "pass", "R2": "fail", "R3": "n/a", "R4": "pass", "R5": "pass", "R6": "n/a"},
-            {"R1": "pass", "R2": "pass", "R3": "n/a", "R4": "fail", "R5": "pass", "R6": "n/a"},
+            {
+                "R1": "pass",
+                "R2": "fail",
+                "R3": "n/a",
+                "R4": "pass",
+                "R5": "pass",
+                "R6": "n/a",
+            },
+            {
+                "R1": "pass",
+                "R2": "pass",
+                "R3": "n/a",
+                "R4": "fail",
+                "R5": "pass",
+                "R6": "n/a",
+            },
         ]
         coverage_rows = [
             {

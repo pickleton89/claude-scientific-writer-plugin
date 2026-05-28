@@ -25,6 +25,7 @@ Sprint 1 pass thresholds (from regression/README.md):
   schema_validation_pass.post            ≥ 0.98
   predicate_audit.post.fail_rate         ≤ baseline (non-decreasing)
 """
+
 from __future__ import annotations
 
 import json
@@ -118,9 +119,7 @@ def _evidence_pin_satisfied(expected: dict | None, evidence: list) -> bool:
     for entry in evidence:
         if not isinstance(entry, dict):
             continue
-        haystack = " ".join(
-            str(entry.get(k, "")) for k in ("source", "url", "snippet")
-        )
+        haystack = " ".join(str(entry.get(k, "")) for k in ("source", "url", "snippet"))
         if all(_needle_in_haystack(n, haystack) for n in needles):
             return True
     return False
@@ -153,8 +152,35 @@ def _finding_matches_expectation(
     return False
 
 
+def seeded_error_forbidden(err: dict, findings: list, style_findings: list) -> bool:
+    """True if the run emitted a verdict the ground truth forbids.
+
+    `must_not_emit` lists expectations (same shape as `expected_findings_any_of`
+    entries) that represent FAILURE modes — e.g., a wrong-but-valid-DOI fixture
+    forbids `VERIFIED`, because a resolving-but-mismatched citation graded
+    VERIFIED is exactly the regression P9 guards against. A forbidden match
+    overrides recall: the seeded error is NOT counted as caught even if an
+    acceptable expectation also matched (a verifier that emits both the right
+    and the forbidden verdict for the same claim has produced a broken audit).
+
+    Scope note: matched doc-wide, not per-claim. The regression docs that use
+    `must_not_emit` are single-citation by construction, so any forbidden
+    verdict in the report pertains to the seeded citation.
+    """
+    forbidden = err.get("must_not_emit")
+    if not forbidden:
+        return False
+    return any(
+        _finding_matches_expectation(expectation, findings, style_findings)
+        for expectation in forbidden
+    )
+
+
 def seeded_error_satisfied(err: dict, findings: list, style_findings: list) -> bool:
-    """A seeded error counts as caught if any acceptable expectation matches."""
+    """A seeded error counts as caught iff an acceptable expectation matches AND
+    no forbidden (`must_not_emit`) verdict was emitted."""
+    if seeded_error_forbidden(err, findings, style_findings):
+        return False
     alternatives = err.get("expected_findings_any_of")
     if alternatives:
         return any(
@@ -169,7 +195,9 @@ def seeded_error_satisfied(err: dict, findings: list, style_findings: list) -> b
     return _finding_matches_expectation(
         {"verdict": expected, "severity": expected_severity}, findings, style_findings
     ) or _finding_matches_expectation(
-        {"style_verdict": expected, "severity": expected_severity}, findings, style_findings
+        {"style_verdict": expected, "severity": expected_severity},
+        findings,
+        style_findings,
     )
 
 
@@ -192,9 +220,7 @@ def _ledger_hit_rate(ledger: dict | None) -> tuple[int, float | None]:
         return 0, None
     entry_count = len(entries)
     consumption_counts = [
-        len(e.get("consumed_by_findings", []))
-        for e in entries
-        if isinstance(e, dict)
+        len(e.get("consumed_by_findings", [])) for e in entries if isinstance(e, dict)
     ]
     total_calls = sum(consumption_counts)
     if total_calls == 0:
@@ -214,7 +240,9 @@ def extract_artifact_coverage(run_dir: Path) -> dict:
     external_evidence.json directly.
     """
     ledger = load_json(run_dir / "external_evidence.json")
-    entries_count, hit_rate = _ledger_hit_rate(ledger if isinstance(ledger, dict) else None)
+    entries_count, hit_rate = _ledger_hit_rate(
+        ledger if isinstance(ledger, dict) else None
+    )
     return {
         "document_inventory_present": (run_dir / "document_inventory.json").exists(),
         "reference_map_present": (run_dir / "reference_map.json").exists(),
@@ -236,9 +264,7 @@ def extract_r_predicate_audit(audit: dict | None) -> dict:
         return {name: "n/a" for name in R_PREDICATE_NAMES}
     audit_meta = audit.get("audit_meta", {}) if isinstance(audit, dict) else {}
     statuses = (
-        audit_meta.get("r_predicate_status")
-        or audit_meta.get("r_predicates")
-        or {}
+        audit_meta.get("r_predicate_status") or audit_meta.get("r_predicates") or {}
     )
     if not isinstance(statuses, dict):
         statuses = {}
@@ -271,13 +297,17 @@ def collect_run(doc_id: str, arm: str, run_idx: int, gt: dict, score: DocScore) 
         return
 
     score.artifact_coverage_per_run.append(extract_artifact_coverage(run_dir))
-    score.r_predicate_audit_per_run.append(extract_r_predicate_audit(audit if isinstance(audit, dict) else None))
+    score.r_predicate_audit_per_run.append(
+        extract_r_predicate_audit(audit if isinstance(audit, dict) else None)
+    )
 
     findings = audit.get("findings", []) if isinstance(audit, dict) else []
     style_findings = audit.get("style_findings", []) if isinstance(audit, dict) else []
 
     # verdict tuples for cross-run consistency — combine main + style findings
-    tuples = {(f.get("claim_id", f.get("id", "")), f.get("verdict", "")) for f in findings}
+    tuples = {
+        (f.get("claim_id", f.get("id", "")), f.get("verdict", "")) for f in findings
+    }
     tuples |= {(f.get("id", ""), f.get("verdict", "")) for f in style_findings}
     score.verdict_tuples_per_run.append(tuples)
 
@@ -301,7 +331,9 @@ def collect_run(doc_id: str, arm: str, run_idx: int, gt: dict, score: DocScore) 
         score.schema_passes.append(bool(schema_field))
     predicate_results = audit_meta.get("predicate_audit")
     if isinstance(predicate_results, dict) and predicate_results:
-        score.predicate_audit_fails.append(any(v != "pass" for v in predicate_results.values()))
+        score.predicate_audit_fails.append(
+            any(v != "pass" for v in predicate_results.values())
+        )
 
 
 def consistency_rate(per_run_tuples: list[set[tuple[str, str]]]) -> float:
@@ -358,7 +390,9 @@ def _aggregate_r_predicate_audit(scores: list[DocScore]) -> dict:
         if not considered:
             pass_rates[name] = None
         else:
-            pass_rates[name] = sum(1 for v in considered if v == "pass") / len(considered)
+            pass_rates[name] = sum(1 for v in considered if v == "pass") / len(
+                considered
+            )
     return {"pass_rate": pass_rates, "n_runs": len(rows)}
 
 
@@ -429,7 +463,11 @@ def evaluate_thresholds(report: dict) -> tuple[bool, list[str]]:
 
     base_recall = base.get("ground_truth_recall")
     post_recall = post.get("ground_truth_recall")
-    if base_recall is not None and post_recall is not None and post_recall < base_recall:
+    if (
+        base_recall is not None
+        and post_recall is not None
+        and post_recall < base_recall
+    ):
         failures.append(
             f"ground_truth_recall regressed: baseline={base_recall:.2f} → post={post_recall:.2f}"
         )
@@ -473,7 +511,9 @@ def main() -> int:
             arm_scores[arm].append(score)
             report["docs"][doc_id][arm] = {
                 "runs_collected": len(score.verdict_tuples_per_run),
-                "verdict_consistency_rate": consistency_rate(score.verdict_tuples_per_run),
+                "verdict_consistency_rate": consistency_rate(
+                    score.verdict_tuples_per_run
+                ),
                 "ground_truth_hits": score.ground_truth_hits,
                 "ground_truth_total": score.ground_truth_total,
                 "main_context_tokens": score.main_context_tokens,
@@ -492,7 +532,11 @@ def main() -> int:
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(report, indent=2, default=list))
 
-    print(json.dumps({k: report[k] for k in ARMS + ("ship_decision",)}, indent=2, default=list))
+    print(
+        json.dumps(
+            {k: report[k] for k in ARMS + ("ship_decision",)}, indent=2, default=list
+        )
+    )
     if not passed:
         print("\nSHIP DECISION: BLOCKED — see failures above", file=sys.stderr)
         return 1

@@ -141,6 +141,19 @@ Use when a seeded error can be legitimately caught via more than one path (e.g.,
 
 Recall match: a seeded error is considered caught if **any one** entry in `expected_findings_any_of` matches a real finding. An entry with a `verdict` field is matched against `findings[]`; an entry with a `style_verdict` field is matched against `style_findings[]` (with optional `rule_id` filter).
 
+### `must_not_emit` — forbidden-verdict guard (enforced)
+
+A seeded error may carry an optional `must_not_emit` array, whose entries use the **same shape** as `expected_findings_any_of` entries but represent **failure modes**. If any finding matches a `must_not_emit` entry, `score.py` counts the seeded error as **not caught**, even when an acceptable expectation also matched — emitting both the right and the forbidden verdict for one claim is a broken audit.
+
+```jsonc
+{
+  "expected_findings_any_of": [ { "stage": 2, "verdict": "METADATA_MISMATCH", "severity": "MAJOR" } ],
+  "must_not_emit":           [ { "stage": 2, "verdict": "VERIFIED" } ]
+}
+```
+
+This is what makes the **wrong-but-valid-DOI** fixture (doc 08) a real test rather than a passive one: a verifier that grades a resolving-but-mismatched citation `VERIFIED` (i.e., never ran the predicate-P9 author/title cross-check) is scored as a miss, not merely as "didn't happen to match." Scope: matched doc-wide, so reserve `must_not_emit` for single-citation fixtures where any forbidden verdict pertains to the seeded claim.
+
 ### Optional documentary fields
 
 These are read by humans, not enforced by `score.py`:
@@ -159,7 +172,8 @@ These are read by humans, not enforced by `score.py`:
 | 03 manuscript | retracted source | deferred | Needs real retracted paper with Scite editorialNotice as ground truth. Defer until Scite MCP available to verify retraction status. |
 | 04 slides | numerical inconsistency × 2 | authored | Self-contained — sample-size (n=120 vs n=132) and p-value (p<0.001 vs p<0.01) inconsistencies internal to the document. No external refs. |
 | 05 memo | cherry-picked support (Scite USI < 0.4) | deferred | Needs real paper with Scite USI ratio < 0.4. Defer until Scite MCP available to look up candidate USIs. |
+| 08 lit_review | wrong-but-valid DOI (`10.1093/oncolo/oyad180`) | authored | Self-contained — real DOI (Gentzler 2024, *The Oncologist*, vendored in `sources/gentzler2024_lun13_175/`) pasted onto a fabricated CRISPR citation. Only acceptable verdict is `METADATA_MISMATCH`; `VERIFIED` is forbidden via `must_not_emit`. Exercises predicate P9. |
 
 **Sprint 1 measurement bed status:** 2 of 5 docs authored. `score.py` filters by `manifest.documents[].content_status == "authored"` — deferred docs do not contribute to metrics. Sprint 1 ship decision is computed from Docs 01 and 04 alone; Docs 02/03/05 will be added in a follow-on once MCP verification is available, at which point thresholds may need adjustment for the larger N.
 
-`score.py` is exercised by a synthetic smoke test under `/tmp/score_smoketest/` (not committed) and verified to: (a) read `tokens.json` for main-context-token measurement, (b) accept both `findings[]` and `style_findings[]` for ground-truth recall, (c) score the rich `expected_findings_any_of` and the simple `expected_verdict` ground-truth shapes, (d) compute verdict-consistency tuples across runs, (e) emit non-zero exit and a `BLOCKED` ship decision when any threshold fails.
+`score.py` is exercised by a synthetic smoke test under `/tmp/score_smoketest/` (not committed) and verified to: (a) read `tokens.json` for main-context-token measurement, (b) accept both `findings[]` and `style_findings[]` for ground-truth recall, (c) score the rich `expected_findings_any_of` and the simple `expected_verdict` ground-truth shapes, (d) compute verdict-consistency tuples across runs, (e) emit non-zero exit and a `BLOCKED` ship decision when any threshold fails, (f) treat a `must_not_emit` match as a miss even when an acceptable expectation also matched (wrong-but-valid-DOI / P9 guard).

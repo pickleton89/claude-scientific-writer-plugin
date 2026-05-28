@@ -14,8 +14,9 @@ A DOI that resolves only proves a record *exists* — not that it is the *cited*
 
 - **`schemas/finding.json` + `CONTRACTS.md` locked schema** — `metadata_agreement` added to the `verification_path.method` enum.
 - **`CONTRACTS.md` / `predicates.md` / `stage_2_citation_existence.md` / `SKILL.md`** — P9 documented canonically; VERIFIED verdict redefined as "the resolved record IS the cited paper"; metadata-agreement promoted from advisory prose to a required logged step with the `author_match=…; title_match=…` token convention.
-- **Tests** — 8 new P9 cases in `tests/test_validation.py` (including the F-04 author-mismatch case); `tests/test_checkpoint.py` Stage-2 fixtures updated. Full suite 349 passed.
+- **Tests** — 8 new P9 cases in `tests/test_validation.py` (including the F-04 author-mismatch case); `tests/test_checkpoint.py` Stage-2 fixtures updated. Plus 4 scorer cases for the guard below. Full suite 353 passed.
 - **Regression bed** — new fixture `08_lit_review_wrong_but_valid_doi` (doc + ground truth + manifest entry) pastes the real Gentzler 2024 DOI (`10.1093/oncolo/oyad180`, already vendored in-repo) onto a fabricated CRISPR paper; only acceptable verdict is `METADATA_MISMATCH`, with `VERIFIED` as the explicitly-guarded failure mode.
+- **Scorer enforces the guard** — `regression/score.py` now honors a `must_not_emit` array in ground truth: a finding matching a forbidden expectation counts the seeded error as a miss, even when an acceptable expectation also matched. Without this the doc-08 `VERIFIED` trap was only passively detectable (absent recall match); now the wrong-but-valid-DOI failure mode is actively scored. Documented in `regression/README.md`.
 
 ### Removed — Dead `/scientific-writer-init` command
 
