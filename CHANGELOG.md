@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Project `CLAUDE.md`
+
+The repo had no project-level `CLAUDE.md`; agent-facing facts lived scattered across memory, `SKILL_ROUTER.md`, and `docs/`. Added a lean, facts-only `CLAUDE.md` at the root capturing the non-obvious conventions a new agent needs: no root `pyproject` (CLI scripts self-bootstrap via PEP-723), capability-key indirection through `skills/shared/tool-lookup.yaml` (skills reference keys, not raw tool names), the dossier-first biomedical pipeline, the verifier contract/predicate system (P1–P9, canonical in `CONTRACTS.md`), and the dual-file version bump (`plugin.json` + `marketplace.json`). Deliberately non-overlapping with the global user standards — no behavior steering, no duplicated `uv`/workflow rules.
+
 ### Fixed — research-accuracy-verifier no longer drifts into a prose/style audit
 
 `/research-accuracy-verifier <path>` behaved non-deterministically: sometimes it ran the citation/claim pipeline (correct), sometimes it produced only prose `style_findings[]`, and sometimes a generic copyedit — instead of verifying citations. Root cause was a code↔contract contradiction: `validate_intake.py` defined **Tier 3 as the 7 citation checks *plus* `prose_quality_audit`**, while the declared source of truth (`CONTRACTS.md`) said Tier 3 was "all 7 checks." With no deterministic default, a bare invocation let the fork improvise an intake — and reaching for the "full audit" tier silently switched on the parallel STYLE_NONCONFORMING pass, which then dominated the output.
