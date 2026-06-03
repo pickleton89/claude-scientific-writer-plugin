@@ -103,7 +103,7 @@ CONSORT flowchart with Oligon brand colors:
 
 ### Mermaid Brand Theme (SVG output)
 
-When emitting SVG via Mermaid, the default theme uses Trebuchet MS at ~14–16px — both the font family and (effectively) the smallest sizes violate brand standards. **Every Mermaid block must declare `themeVariables` in an init directive** to enforce Arial + the brand size ladder (10pt floor, 12pt base, 14pt panel, 16pt title — see `../oligon-brand/SKILL.md` `<svg_output>`).
+When emitting SVG via Mermaid, the default theme uses Trebuchet MS at ~14–16px — both the font family and (effectively) the smallest sizes violate brand standards. **Every Mermaid block must declare `themeVariables` in an init directive** to enforce Arial + the brand size ladder (v2.3 figure scale: title 12pt, axis 10pt, tick 9pt, legend 8.5–9pt — see the SVG output contract in `../oligon-brand/SKILL.md`).
 
 Paste this block at the top of every Mermaid source:
 
@@ -127,7 +127,7 @@ flowchart TD
   ...
 ```
 
-Mermaid's `fontSize` is a single value applied as the base; node/edge/title sizes are derived multiplicatively. To pin specific text elements at 10pt, 14pt, or 16pt, define classes with Mermaid's `classDef` and apply them per-node with `:::`:
+Mermaid's `fontSize` is a single value applied as the base; node/edge/title sizes are derived multiplicatively. To pin specific text elements at 9pt, 10pt, or 12pt, define classes with Mermaid's `classDef` and apply them per-node with `:::`:
 
 ```mermaid
 flowchart TD
