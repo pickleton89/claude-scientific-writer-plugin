@@ -1,0 +1,63 @@
+name: oligon-brand drift guard
+
+# Fails if skills/oligon-brand/ has been hand-edited instead of regenerated from
+# the canonical oligon-brand-core repo. It re-runs scripts/sync_brand_core.sh
+# against the core commit pinned in the skill's provenance banner and diffs the
+# result — any difference means someone edited the vendored copy directly.
+#
+# SETUP: oligon-brand-core is private, so this job needs a read token. Add a
+# repository secret OLIGON_BRAND_CORE_TOKEN = a fine-grained PAT (or deploy key
+# token) with read access to pickleton89/oligon-brand-core. Until that secret
+# exists the job skips (it never blocks PRs before it is configured).
+
+on:
+  pull_request:
+    paths:
+      - 'skills/oligon-brand/**'
+      - 'scripts/sync_brand_core.sh'
+      - 'scripts/oligon-brand-overlay/**'
+  push:
+    branches: [master]
+    paths:
+      - 'skills/oligon-brand/**'
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out plugin
+        uses: actions/checkout@v4
+
+      - name: Gate on core-token availability
+        id: gate
+        env:
+          CORE_TOKEN: ${{ secrets.OLIGON_BRAND_CORE_TOKEN }}
+        run: |
+          if [ -z "${CORE_TOKEN:-}" ]; then
+            echo "::notice::OLIGON_BRAND_CORE_TOKEN not set — skipping drift check (configure it to enable)."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Regenerate from pinned core SHA and compare
+        if: steps.gate.outputs.run == 'true'
+        env:
+          CORE_TOKEN: ${{ secrets.OLIGON_BRAND_CORE_TOKEN }}
+        run: |
+          set -euo pipefail
+          SHA=$(grep -oE 'oligon-brand-core@[0-9a-f]+' skills/oligon-brand/SKILL.md | head -1 | cut -d@ -f2)
+          if [ -z "$SHA" ]; then
+            echo "::error::No 'oligon-brand-core@<sha>' provenance banner found in skills/oligon-brand/SKILL.md"
+            exit 1
+          fi
+          echo "Pinned core SHA: $SHA"
+          git clone --quiet "https://x-access-token:${CORE_TOKEN}@github.com/pickleton89/oligon-brand-core.git" /tmp/core
+          git -C /tmp/core checkout --quiet "$SHA"
+          bash scripts/sync_brand_core.sh /tmp/core
+          if ! git diff --quiet -- skills/oligon-brand; then
+            echo "::error::skills/oligon-brand/ drifted from a regeneration of oligon-brand-core@${SHA}. Do not hand-edit the vendored skill — edit oligon-brand-core, re-run scripts/sync_brand_core.sh, and commit."
+            git --no-pager diff --stat -- skills/oligon-brand
+            exit 1
+          fi
+          echo "No drift: vendored skill matches oligon-brand-core@${SHA}."

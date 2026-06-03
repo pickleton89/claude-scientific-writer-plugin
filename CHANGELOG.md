@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed — sibling skills aligned to the v5 figure scale
+- `plotting-libraries` and `scientific-schematics` SKILL.md no longer reference the retired v4 SVG ladder ("10pt floor / 12 / 14 / 16"); they now cite the v2.3 figure scale (title 12 / axis 10 / tick 9 / legend 8.5–9 pt) and point at the renamed "SVG output contract" section in `oligon-brand`.
+
+### Added — oligon-brand vendoring drift guard (CI)
+- `.github/workflows/oligon-brand-drift.yml` re-runs `scripts/sync_brand_core.sh` against the core SHA pinned in the skill's provenance banner and fails if `skills/oligon-brand/` was hand-edited instead of regenerated. Requires a repo secret `OLIGON_BRAND_CORE_TOKEN` (read access to the private `oligon-brand-core`); the job skips gracefully until that secret is configured.
+
 ## [1.8.0] - 2026-06-03
 
 ### Changed — `oligon-brand` upgraded to v5.0 (Style Guide v2.3) and vendored from canonical source
