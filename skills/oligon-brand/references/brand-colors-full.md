@@ -59,7 +59,7 @@ equidistant.
 | Step | Hex      | Role |
 |:----:|:---------|------|
 | 50   | `#EFFBFF` | Callout background, lightest fill |
-| 100  | `#DBF3FF` | Lightest blue fill / tint |
+| 100  | `#DBF3FF` | Callout background; light fill surface |
 | 200  | `#B3E3FC` | Peer lightest arm; Focus receding |
 | 300  | `#76CAF3` | Cycle 1 control; Focus receding |
 | 400  | `#1FACE3` | Primary data default (Oklch twin of brand.blue) |
@@ -171,12 +171,18 @@ the same hue.
 
 | Order | Color     | Hex       | Role |
 |:-----:|-----------|-----------|------|
-| 1     | Brand Blue | `#2DB2E8` | Treatment / experimental |
-| 2     | Blue 300  | `#76CAF3` | Control / baseline |
+| 1     | Brand Blue | `#2DB2E8` | Treatment / experimental line |
+| 2     | Blue 300  | `#76CAF3` | Control / baseline line |
 
 ```python
 CYCLE_TREATMENT_CONTROL = ['#2DB2E8', '#76CAF3']
 ```
+
+> **CI bands are not drawn by default on line plots** — see §8.0. If the
+> user explicitly requests bands, they are rendered as a tint of each arm's
+> *own* line color at α ≈ 0.18 (matching-hue rule). Do not use `blue.100`
+> as a shared CI-band fill — that produces a muddy overlap where treatment
+> and control bands fuse.
 
 #### Cycle 2 — Peer
 
@@ -288,7 +294,7 @@ MARKER_SHAPES = ['o', 's', '^', 'D']
 
 | Step        | Role                         | Where |
 |:------------|------------------------------|-------|
-| 50 – 200    | Fills, tints, surfaces       | Box fills, callout backgrounds, light emphasis panels |
+| 50 – 200    | Fills, tints, surfaces       | CI bands, box fills, callout backgrounds |
 | 300         | Light data strokes           | Cycle 1 control, Cycle 2 Focus receding arms |
 | 400         | Primary data                 | Default for lines and markers |
 | 500 – 600   | Emphasis / button fills      | CTAs, hover states |
@@ -303,8 +309,6 @@ These rules govern what a figure is allowed to claim visually.
 Violating any of them misrepresents the data, regardless of how
 well-styled the figure looks.
 
-**Primary-literature justification** for the rules below lives in [`SKILL.md` `<design_foundation>` → Cognitive foundation](../SKILL.md) — Cleveland-McGill (channel ranking), Cowan (working memory), Treisman (pre-attentive features), Wagemans (Gestalt), Franconeri (serial comparisons), Crameri (rainbow critique). Cite those when defending a rule against reviewer pushback.
-
 1. **Zero baseline on bar charts.** Bars encode quantity by length; a
    truncated y-axis inflates differences. If truncation is unavoidable
    (tight effect on a large background), switch to a dot plot or
@@ -314,10 +318,11 @@ well-styled the figure looks.
    `log10 concentration (nM)` or equivalent, with one tick per decade
    as the base case. Never a silent log transform.
 
-3. **Uncertainty is shown.** Error bars or individual points
-   overlaid on summary statistics. Bar definition (SD, SEM, or
-   95% CI) is stated on-figure in caption or legend — not left to the
-   reader to guess.
+3. **Uncertainty is shown.** Caption CI values, at-risk / n-per-arm
+   tables, inline error-bar markers, or individual points overlaid on
+   summary statistics. Shaded CI bands on line plots are **not** the
+   default — see §8.0. The CI definition (SD, SEM, or 95% CI) is stated
+   in the caption or legend, never left to the reader to guess.
 
 4. **No 3D effects on 2D data.** 3D bars, 3D pies, and drop shadows
    distort perceived area and introduce perspective error. Flat, 2D,
@@ -453,8 +458,10 @@ Before publishing a figure:
 
 - [Coblis Colorblind Simulator](https://www.color-blindness.com/coblis-color-blindness-simulator/)
 - [Viz Palette](https://projects.susielu.com/viz-palette)
-- matplotlib `colorspacious` package
-- Internal: `skills/shared/accessibility/`
+- matplotlib `colorspacious` package (pip install colorspacious)
+- The bundled `matplotlib_adapter.validate_palette()` returns
+  per-color lightness deltas so CVD survival can be predicted
+  before rendering
 
 ---
 
@@ -464,24 +471,83 @@ Per-chart-type recipes for the most common scientific visualizations.
 Each entry fixes the cycle, line widths, marker sizes, and annotation
 placement so two analysts produce the same figure from the same data.
 
+### 8.0 Universal rule — no CI bands on line plots by default
+
+**Oligon house rule.** Line plots (Kaplan–Meier step curves, tumor-volume
+time courses, PK curves, dose-response fits, longitudinal means, and any
+other mean-over-time rendering) are **lines-only by default**. No shaded
+CI bands on the plot unless the user explicitly asks for them. Uncertainty
+is shown in one of three ways:
+
+1. **Caption** — report endpoint ± 95% CI values, e.g., "Day-28 mean (95% CI):
+   treatment 312 mm³ (268–356); vehicle 584 mm³ (510–658)."
+2. **At-risk / n-per-arm table** beneath the x-axis for KM or repeated-measures
+   plots where the sample size changes over time.
+3. **Inline error markers** at discrete timepoints — thin vertical SEM or
+   95% CI whiskers on the mean points, without extending the band across
+   the whole x range.
+
+**Rationale.** CI bands around every line crowd the canvas, draw attention
+to the overlap zone rather than the group difference, and train readers to
+read uncertainty qualitatively when the caption already states it
+quantitatively. Oligon house style keeps the plot surface for the signal
+and puts the noise in text. Figure-integrity rule #3 (uncertainty must be
+shown) is satisfied by the caption, not by filled bands.
+
+**Honor explicit user CI requests.** If the user explicitly asks for CI
+bands on the plot — whether they say "semi-transparent fills," "shaded CI,"
+"CI bands," "confidence bands," "95% CI ribbon," or something clearly
+equivalent — draw the bands. The user's stated preference wins over the
+house default. When drawing bands:
+
+- Use **matching-hue tints** at α=0.18. Each band is a tint of its own
+  line color (brand.blue line → brand.blue band; blue.300 line → blue.300
+  band). Do NOT fill all bands with a shared `blue.100` — that muddies
+  the overlap and misrepresents uncertainty as a shared quantity.
+- State in the caption what the bands represent (95% CI, SEM, or SD).
+- Use `add_error_band(ax, x, y, yerr, color=line_color)` from
+  `matplotlib_adapter`, which handles the matching-hue tint correctly in
+  one call.
+
 ### 8.1 Kaplan–Meier survival curves
 
 **Context:** Comparing survival between treatment arms.
 
 **Cycle:** Cycle 1 · Treatment/Control.
 
+KM follows the universal rule in §8.0 — step curves by default, no CI bands
+on the plot unless the user asks for them. Uncertainty is shown via (a) a
+**numbers-at-risk table** below the x-axis and (b) day-endpoint 95% CI
+values in the figure caption. This preserves figure-integrity rule #3
+without visually crowding the step events, which is what matters clinically.
+When the user requests bands, use matching-hue tints at α=0.18 per §8.0;
+the at-risk table becomes optional but is still recommended.
+
 | Element              | Color / spec                                    |
 |----------------------|-------------------------------------------------|
-| Treatment curve      | `brand.blue` `#2DB2E8`, solid, 2.0 pt           |
-| Control / vehicle curve | `blue.300` `#76CAF3`, solid, 2.0 pt          |
+| Treatment curve      | `brand.blue` `#2DB2E8`, solid, 2.0–2.2 pt, `ax.step(where='post')` |
+| Control / vehicle curve | `blue.300` `#76CAF3`, solid, 2.0 pt, `ax.step(where='post')` |
 | Additional arm (rare) | Cycle 3 `orange.600` `#A0421D` if opposing effect |
+| Confidence bands (default) | **None on plot.** Report endpoint 95% CI in caption |
+| Confidence bands (on user request) | Matching-hue tint of the line color at α=0.18 via `add_error_band(ax, x, y, yerr, color=line_color)` |
 | Censored tick marks  | `neutral.900` `#121719`, short vertical ticks   |
 | Median-survival guide | `neutral.400` dashed, 0.5 pt                   |
-| At-risk table        | `neutral.900` text; group labels in arm colors  |
+| At-risk table        | `neutral.900` text; group labels in arm colors; below x-axis |
 
-- Use `ax.step(..., where='post')` for the staircase.
+- Always use `ax.step(..., where='post')` — KM curves are step functions,
+  not smooth interpolations.
+- Include the numbers-at-risk table by default. Two rows, one per arm,
+  with the arm label in its line color (bold for the hero arm). When CI
+  bands are drawn on user request, the table becomes optional.
+- Caption must name the CI definition (e.g., "Day-90 95% CI: arm A 0.50–0.78;
+  arm B 0.14–0.45"). See the worked example in `oligon-brand-core/assets/`.
 - Place p-value and hazard ratio in upper-right or lower-left in 9 pt.
 - X-axis: `Time (days)` or appropriate unit; Y-axis: `Survival probability`.
+
+> **The no-CI-band-by-default rule is universal across line plots** (§8.0)
+> — it is not specific to KM. It applies equally to tumor-volume time
+> courses, PK curves, dose-response fits, and longitudinal means. An
+> explicit user request overrides it in every case.
 
 ### 8.2 Volcano plots
 
@@ -515,6 +581,8 @@ Cycle 1 when comparing a single drug vs vehicle.
 | Compound B        | `blue.500` `#008ECB` | Square, solid 2.0 pt |
 | Compound C        | `blue.300` `#76CAF3` | Triangle, solid 2.0 pt |
 | Vehicle control   | `orange.500` `#C45E39` | Diamond, dotted 1.6 pt |
+| 95 % CI bands (default) | **None on plot** per §8.0. Report IC50 ± 95% CI in caption | |
+| 95 % CI bands (on user request) | Matching hue, α=0.18, no border | |
 | IC50 guide line   | `neutral.400` | Horizontal dashed, 0.5 pt |
 
 - X-axis: `log10 concentration (nM)` (per §4 Rule 2: log scales
@@ -616,8 +684,15 @@ cycle_name, colors = select_cycle(n_series=2, context='comparison')
 set_brand_style(cycle_name)
 
 fig, ax = plt.subplots(figsize=(5, 3.75))
+
+# Default: lines only, no CI bands (see §8.0).
+# Report endpoint ± 95% CI in the caption, not on the plot.
 ax.plot(time, treatment, color=BRAND_BLUE, linewidth=2.0, label='Treatment')
 ax.plot(time, control,   color=BLUE_300,  linewidth=2.0, label='Control')
+
+# On explicit user request for CI bands — matching-hue tints at α=0.18:
+# add_error_band(ax, time, treatment, tx_err,   color=BRAND_BLUE, label='Treatment')
+# add_error_band(ax, time, control,   ctrl_err, color=BLUE_300,  label='Control')
 
 # Validate
 assert all(run_preflight(fig).values())

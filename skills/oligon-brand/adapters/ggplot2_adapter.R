@@ -66,10 +66,14 @@ semantic_light <- list(
 # =============================================================================
 
 # Cycle 1 — Treatment / Control: same-hue, lightness hierarchy.
+# CI bands: matching-hue tint of each arm's line at alpha ≈ 0.18 — NOT a
+# shared blue.100 fill (that produces muddy overlap). See brand-colors-full.md §4.
 cycle_treatment_control <- c(
   "Treatment" = "#2DB2E8",  # brand.blue
   "Control"   = "#76CAF3"   # blue.300
 )
+# Use geom_ribbon(aes(fill = arm), alpha = 0.18) with the same palette
+# to get per-arm matching-hue CI bands.
 
 # Cycle 2 — Peer: equal-weight arms, no promotion.
 cycle_peer_4 <- c("#003454", "#006EA6", "#1FACE3", "#B3E3FC")

@@ -52,17 +52,24 @@ def render_spec_yaml(spec: Dict[str, Any]) -> str:
         if "colors" in palette:
             lines.append("    colors:")
             for color in palette["colors"]:
-                lines.append(f"      - \"{color}\"")
+                lines.append(f'      - "{color}"')
         for key in ["primary", "secondary", "accent", "background", "text"]:
             if key in palette:
-                lines.append(f"    {key}: \"{palette[key]}\"")
+                lines.append(f'    {key}: "{palette[key]}"')
 
     # Typography
     typo = spec.get("typography", {})
     if typo:
         lines.append("  typography:")
-        for key in ["family", "title_pt", "axis_label_pt", "tick_label_pt",
-                    "legend_pt", "annotation_pt", "min_pt"]:
+        for key in [
+            "family",
+            "title_pt",
+            "axis_label_pt",
+            "tick_label_pt",
+            "legend_pt",
+            "annotation_pt",
+            "min_pt",
+        ]:
             if key in typo:
                 value = typo[key]
                 if isinstance(value, str):
@@ -75,7 +82,9 @@ def render_spec_yaml(spec: Dict[str, Any]) -> str:
     if access:
         lines.append("  accessibility:")
         if "colorblind_safe" in access:
-            lines.append(f"    colorblind_safe: {str(access['colorblind_safe']).lower()}")
+            lines.append(
+                f"    colorblind_safe: {str(access['colorblind_safe']).lower()}"
+            )
         if "min_contrast_ratio" in access:
             lines.append(f"    min_contrast_ratio: {access['min_contrast_ratio']}")
         if "redundant_encoding" in access:
@@ -130,14 +139,18 @@ def render_spec_markdown(spec: Dict[str, Any], include_validation: bool = True) 
 
     # Dimensions section
     dims = spec.get("dimensions", {})
-    lines.extend([
-        "## Dimensions",
-        "",
-        "| Property | Value |",
-        "|----------|-------|",
-    ])
+    lines.extend(
+        [
+            "## Dimensions",
+            "",
+            "| Property | Value |",
+            "|----------|-------|",
+        ]
+    )
     if "width_mm" in dims:
-        lines.append(f"| Width | {dims['width_mm']}mm ({dims.get('width_in', 'N/A')}in) |")
+        lines.append(
+            f"| Width | {dims['width_mm']}mm ({dims.get('width_in', 'N/A')}in) |"
+        )
     if "height_mm" in dims:
         lines.append(f"| Height | {dims['height_mm']}mm |")
     if "column_type" in dims:
@@ -145,12 +158,14 @@ def render_spec_markdown(spec: Dict[str, Any], include_validation: bool = True) 
     lines.append("")
 
     # Output settings
-    lines.extend([
-        "## Output Settings",
-        "",
-        "| Setting | Value |",
-        "|---------|-------|",
-    ])
+    lines.extend(
+        [
+            "## Output Settings",
+            "",
+            "| Setting | Value |",
+            "|---------|-------|",
+        ]
+    )
     if "resolution_dpi" in spec:
         lines.append(f"| Resolution | {spec['resolution_dpi']} DPI |")
     if "file_format" in spec:
@@ -162,12 +177,16 @@ def render_spec_markdown(spec: Dict[str, Any], include_validation: bool = True) 
     # Color palette
     palette = spec.get("color_palette", {})
     if palette:
-        lines.extend([
-            "## Color Palette",
-            "",
-        ])
+        lines.extend(
+            [
+                "## Color Palette",
+                "",
+            ]
+        )
         if "name" in palette:
-            lines.append(f"**Palette:** {palette['name']} ({palette.get('type', 'categorical')})")
+            lines.append(
+                f"**Palette:** {palette['name']} ({palette.get('type', 'categorical')})"
+            )
             lines.append("")
 
         if "colors" in palette:
@@ -190,12 +209,14 @@ def render_spec_markdown(spec: Dict[str, Any], include_validation: bool = True) 
     # Typography
     typo = spec.get("typography", {})
     if typo:
-        lines.extend([
-            "## Typography",
-            "",
-            "| Element | Size |",
-            "|---------|------|",
-        ])
+        lines.extend(
+            [
+                "## Typography",
+                "",
+                "| Element | Size |",
+                "|---------|------|",
+            ]
+        )
         if "family" in typo:
             lines.append(f"| Font Family | {typo['family']} |")
         for key, label in [
@@ -213,10 +234,12 @@ def render_spec_markdown(spec: Dict[str, Any], include_validation: bool = True) 
     # Accessibility
     access = spec.get("accessibility", {})
     if access:
-        lines.extend([
-            "## Accessibility",
-            "",
-        ])
+        lines.extend(
+            [
+                "## Accessibility",
+                "",
+            ]
+        )
         items = []
         if access.get("colorblind_safe"):
             items.append("- [x] Colorblind-safe palette")
@@ -227,7 +250,9 @@ def render_spec_markdown(spec: Dict[str, Any], include_validation: bool = True) 
             ratio = access["min_contrast_ratio"]
             passed = ratio >= 4.5
             mark = "x" if passed else " "
-            items.append(f"- [{mark}] Contrast ratio: {ratio}:1 (WCAG AA requires 4.5:1)")
+            items.append(
+                f"- [{mark}] Contrast ratio: {ratio}:1 (WCAG AA requires 4.5:1)"
+            )
 
         if "wcag_level" in access:
             items.append(f"- WCAG Level: {access['wcag_level']}")
@@ -242,10 +267,12 @@ def render_spec_markdown(spec: Dict[str, Any], include_validation: bool = True) 
     # Chart recommendation
     chart = spec.get("chart_recommendation", {})
     if chart:
-        lines.extend([
-            "## Chart Recommendation",
-            "",
-        ])
+        lines.extend(
+            [
+                "## Chart Recommendation",
+                "",
+            ]
+        )
         if "type" in chart:
             lines.append(f"**Recommended:** {chart['type']}")
         if "alternatives" in chart:
@@ -261,12 +288,14 @@ def render_spec_markdown(spec: Dict[str, Any], include_validation: bool = True) 
     if "panel_label_case" in spec:
         case = spec["panel_label_case"]
         example = "a, b, c" if case == "lower" else "A, B, C"
-        lines.extend([
-            "## Panel Labels",
-            "",
-            f"Use **{case}case** labels ({example})",
-            "",
-        ])
+        lines.extend(
+            [
+                "## Panel Labels",
+                "",
+                f"Use **{case}case** labels ({example})",
+                "",
+            ]
+        )
 
     return "\n".join(lines)
 
@@ -327,10 +356,12 @@ def render_validation_report(
     # Errors
     errors = validation_result.get("errors", [])
     if errors:
-        lines.extend([
-            "## Errors (Must Fix)",
-            "",
-        ])
+        lines.extend(
+            [
+                "## Errors (Must Fix)",
+                "",
+            ]
+        )
         for error in errors:
             lines.append(f"- {error}")
         lines.append("")
@@ -338,10 +369,12 @@ def render_validation_report(
     # Warnings
     warnings = validation_result.get("warnings", [])
     if warnings:
-        lines.extend([
-            "## Warnings (Should Consider)",
-            "",
-        ])
+        lines.extend(
+            [
+                "## Warnings (Should Consider)",
+                "",
+            ]
+        )
         for warning in warnings:
             lines.append(f"- {warning}")
         lines.append("")
@@ -349,10 +382,12 @@ def render_validation_report(
     # Checks performed
     checks = validation_result.get("checks_performed", [])
     if checks:
-        lines.extend([
-            "## Checks Performed",
-            "",
-        ])
+        lines.extend(
+            [
+                "## Checks Performed",
+                "",
+            ]
+        )
         for check in checks:
             lines.append(f"- {check}")
         lines.append("")

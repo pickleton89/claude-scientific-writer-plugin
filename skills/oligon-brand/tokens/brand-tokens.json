@@ -33,7 +33,7 @@
     "ramps": {
       "blue": {
         "50":  {"hex": "#EFFBFF", "role": "Callout background, lightest fill"},
-        "100": {"hex": "#DBF3FF", "role": "Lightest blue fill / tint"},
+        "100": {"hex": "#DBF3FF", "role": "Light callout background, panel tint (NOT CI band — see brand-colors-full.md §4: CI bands use matching-hue of line at α=0.18)"},
         "200": {"hex": "#B3E3FC", "role": "Cycle 2 Peer lightest arm, Cycle 2 Focus receding"},
         "300": {"hex": "#76CAF3", "role": "Cycle 1 control, Cycle 2 Peer/Focus light stroke"},
         "400": {"hex": "#1FACE3", "role": "Primary data default (Oklch twin of brand.blue)"},
@@ -219,7 +219,9 @@
       "gridlines":    {"default": false, "if_needed": {"color": "#D6DCDF", "width_pt": 0.5, "style": "dashed", "orientation": "horizontal"}},
       "legend":       {"frameon": false, "location": "inside plot area in empty region"},
       "data_lines":   {"primary_pt": [1.8, 2.2], "secondary_pt": [1.0, 1.6]},
-      "markers":      {"size_pt": [5, 6], "shape": "filled circle", "outline": "white on colored fills"}
+      "markers":      {"size_pt": [5, 6], "shape": "filled circle", "outline": "white on colored fills"},
+      "error_bars":   {"width_pt": 0.75, "cap_pt": 0, "note": "Match the colour of the series they annotate."},
+      "error_bands":  {"alpha": 0.18, "border": false, "note": "CI / uncertainty bands are NOT a default Cycle 1 arm. When shown on user request, fill with the matching hue of the line at alpha 0.18, no border (see brand-colors-full.md §4 / §8.0)."}
     },
     "aspect_ratios": {
       "rule": "Match to the data, not the canvas.",
@@ -303,7 +305,7 @@
       "Coblis Colorblind Simulator",
       "Viz Palette",
       "matplotlib colorspacious package",
-      "skills/shared/accessibility/ (internal)"
+      "matplotlib_adapter.validate_palette() (bundled)"
     ]
   },
   "logo": {

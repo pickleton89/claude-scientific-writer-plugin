@@ -67,9 +67,11 @@ Use this template to document design decisions before implementation.
 ## Color Palette (Cycle 1 · Treatment/Control)
 | Role       | Token       | Hex Code  |
 |------------|-------------|-----------|
-| Treatment  | brand.blue  | #2DB2E8   |
-| Control    | blue.300    | #76CAF3   |
-| Background | white       | #FFFFFF   |
+| Treatment line     | brand.blue  | #2DB2E8   |
+| Treatment CI band  | brand.blue @ α=0.18 | matching-hue tint |
+| Control line       | blue.300    | #76CAF3   |
+| Control CI band    | blue.300 @ α=0.18   | matching-hue tint |
+| Background         | white       | #FFFFFF   |
 | Text       | neutral.900 | #121719   |
 | Axis furniture | neutral.200 | #D6DCDF |
 
@@ -90,6 +92,7 @@ Use this template to document design decisions before implementation.
 ## Notes
 - Treatment group: brand.blue solid line with filled circles (5–6 pt)
 - Control group: blue.300 solid line with filled squares (5–6 pt)
+- Error bands: 95% CI, ~18% opacity (v2.3 default) of same hue, no border
 - Include at-risk table below x-axis in neutral.900 text
 ```
 
@@ -144,7 +147,7 @@ For rapid design documentation when full template is excessive:
 
 **Target:** {{Journal/Conference}} | **Size:** {{W}}×{{H}}mm | **DPI:** {{300}}
 
-**Cycle:** Treatment=brand.blue `#2DB2E8`, Control=blue.300 `#76CAF3`, CI=blue.100 `#DBF3FF`
+**Cycle:** Treatment=brand.blue `#2DB2E8`, Control=blue.300 `#76CAF3`. **CI bands:** matching-hue tint of each arm's line at α ≈ 0.18, no border.
 
 **Font:** Arial / DejaVu Sans; title 12 pt, axis 10 pt, tick 9 pt | **Accessibility:** v2.3 ramps (Okabe-Ito-class), shapes + color
 
@@ -153,4 +156,4 @@ For rapid design documentation when full template is excessive:
 
 ---
 
-*See [SKILL.md](../SKILL.md) for the v5.0 workflow, [brand-colors-full.md](brand-colors-full.md) for ramps and cycles, and `../../venue-templates/references/figure_specs.md` for per-journal dimensions.*
+*See [SKILL.md](../SKILL.md) for the workflow, [brand-colors-full.md](brand-colors-full.md) for ramps and cycles, and [medium_playbooks.md](medium_playbooks.md) for social / deck / email / landing page layouts. Per-journal figure dimensions are not included in this skill — consult the target journal's author guidelines.*

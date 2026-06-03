@@ -3,10 +3,7 @@
 Canonical reference for Oligon written communications across every
 medium. Source: Oligon Digital Style Guide v2.3, §09 (Voice &
 Messaging) and §10 (Copy Patterns). Applies to web, deck, social,
-email, and spoken scripts.
-
-Consumers: `scientific-writing`, `scientific-slides`, `research-posters`,
-`paper-2-web`, `executive-summary`, `markdown-to-pdf`.
+email, spoken scripts, manuscript prose, and any branded document.
 
 ---
 

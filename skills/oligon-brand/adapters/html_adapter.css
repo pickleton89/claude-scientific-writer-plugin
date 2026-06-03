@@ -106,6 +106,7 @@
   --brand-font-size-slide-body: 18pt;
   --brand-font-size-slide-heading: 28pt;
   --brand-font-size-slide-axis: 18pt;
+  --brand-font-size-subtitle: 20pt;   /* slide subtitle — between heading and body */
 
   /* Spacing */
   --brand-spacing-xs: 4px;

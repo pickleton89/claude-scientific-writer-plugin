@@ -1,28 +1,32 @@
 ---
 name: oligon-brand
 version: 5.0.0
-description: "Use when applying Oligon brand colors, typography, figure standards, voice rules, or medium-specific layouts (social, deck, email, landing page) to any scientific or communications deliverable. Implements Oligon Digital Style Guide v2.3 with Oklch tonal ramps, same-hue Cycle 1, Peer/Focus cycle split, and format adapters for matplotlib, ggplot2, ReportLab, python-docx, python-pptx, and HTML/CSS."
+description: Use when applying Oligon brand colors, typography, figure standards, voice rules, or medium layouts to any scientific or communications deliverable — matplotlib/ggplot2 plots, Kaplan-Meier curves, volcano plots, heatmaps, branded PowerPoint decks, Word documents, PDF reports, HTML pages, social posts, or email. Implements Oligon Digital Style Guide v2.3 with Oklch tonal ramps, same-hue Cycle 1, Peer/Focus cycle split, and format adapters for matplotlib, ggplot2, ReportLab, python-docx, python-pptx, and HTML/CSS. Apply whenever a deliverable needs Oligon branding, even if the user doesn't say "brand."
 allowed-tools: Read Glob
 brand-type: organizational
 tokens-file: tokens/brand-tokens.json
 style-guide: references/Oligon_Digital_Style_Guide_v2.3.html
 ---
+<!-- GENERATED FILE - do not edit here.
+     Vendored from https://github.com/pickleton89/oligon-brand-core@073031f
+     Edit oligon-brand-core and re-run scripts/sync_brand_core.sh. -->
 
-# Oligon Scientific Brand
+
+# Oligon Scientific Brand — Core
 
 <overview>
-Brand implementation skill for Oligon — colors, typography, figure
-standards, voice/copy patterns, and medium playbooks for every output
-format. Implements **Oligon Digital Style Guide v2.3** (April 2026).
+Self-contained brand implementation for Oligon. Everything needed to
+apply the visual system — tokens, adapters, decision rules, preflight —
+lives inside this skill folder; nothing points at sibling skills.
 
-**Core principle:** Neutrals are default; Brand Blue highlights the
+**Core principle.** Neutrals are default; Brand Blue highlights the
 one or two elements that matter most; Orange supplies opposition or
 focus.
 
-The skill ships three Oklch tonal ramps (Blue / Orange / Neutral ×
-10 steps), one Brand Blue anchor (`#2DB2E8`), semantic tokens for
-light and dark themes, and six color cycles selected by data
-structure (Rule 1) and ramp step (Rule 2).
+**Primitives.** Three Oklch tonal ramps (Blue / Orange / Neutral × 10
+steps), one Brand Blue anchor (`#2DB2E8`), semantic tokens for light
+and dark themes, and six color cycles selected by data structure
+(Rule 1) and ramp step (Rule 2).
 </overview>
 
 <default_behavior>
@@ -43,49 +47,54 @@ Use generic/default styling for all visual outputs. Do not apply Oligon brand.
 ```
 </default_behavior>
 
-<when_to_use>
-## Trigger Conditions
 
-**Use this skill explicitly when:**
-- Accessing brand color hex codes or ramp tokens programmatically
-- Loading brand tokens directly (`tokens/brand-tokens.json` or mplstyle)
-- Creating branded PDFs, Word documents, PowerPoint presentations
+<when_to_use>
+## When to apply this skill
+
+**Apply when:**
+- Styling any figure, plot, chart, heatmap, or schematic that will
+  carry the Oligon identity
+- Building branded PowerPoint, Word, PDF, or HTML deliverables
 - Writing copy that needs the Oligon voice (technical-plain pairing,
   numbers-over-adjectives, verbs-over-nouns)
 - Designing single-image social posts, landing pages, email funnels,
-  or decks that follow the v2.3 medium playbooks
-- Needing a non-figure asset (file-naming conventions, persistent
-  footers, MLR/compliance footers)
+  or decks against the v2.3 medium playbooks
+- Loading brand tokens programmatically from `tokens/brand-tokens.json`
 
-**Do NOT use this skill when:**
-- Creating standard visual outputs → brand is auto-applied
-- Working on a non-Oligon project → request opt-out
-- Writing plotting code → use `plotting-libraries` (brand auto-applied)
-- Need journal-specific figure dimensions → use `venue-templates`
-- Need WCAG / CVD validation utilities → `skills/shared/accessibility/`
+**Do not apply when:**
+- Working on an explicitly non-Oligon project (manuscript for an
+  external collaborator who has their own identity, personal side
+  project). Use the neutral fallback noted under `<design_foundation>`.
+- The user explicitly asks for generic styling ("Use matplotlib
+  defaults", "No brand styling").
 </when_to_use>
 
 <prerequisites>
 ## Prerequisites
 
 **Python (matplotlib / seaborn):**
+
 ```bash
 pip install matplotlib numpy pillow
 ```
 
 **R (ggplot2):**
+
 ```r
 install.packages(c("ggplot2", "scales"))
 ```
 
-**Setup (one-time):**
+**One-time setup (optional — installs the mplstyle into matplotlib's
+config dir so `plt.style.use('oligon_color_brand')` works from anywhere):**
+
 ```bash
 python {baseDir}/scripts/matplotlib_brand_setup.py
 # or
 Rscript {baseDir}/scripts/ggplot2_brand_setup.R
 ```
 
-**Alternative — load mplstyle directly:**
+**Direct load — works without setup:**
+
 ```python
 import matplotlib.pyplot as plt
 plt.style.use('{baseDir}/assets/oligon_color_brand.mplstyle')
@@ -119,7 +128,7 @@ n_series ≥ 5                    →  REDESIGN (facet / small multiples)
 
 | Cycle                       | Colors (ramp steps)                                    |
 |-----------------------------|--------------------------------------------------------|
-| Cycle 1 · Treatment/Control | `brand.blue`, `blue.300`                               |
+| Cycle 1 · Treatment/Control | `brand.blue`, `blue.300` (CI bands = matching-hue @ α=0.18) |
 | Cycle 2 · Peer (4-arm)      | `blue.800`, `blue.600`, `blue.400`, `blue.200`         |
 | Cycle 2 · Peer (3-arm)      | `blue.700`, `blue.500`, `blue.300`                     |
 | Cycle 2 · Focus             | `blue.500`, `blue.300`, `blue.200` + `orange.500` focus |
@@ -166,69 +175,99 @@ from matplotlib_adapter import (
 # Rule 1: pick the cycle from data
 cycle_name, colors = select_cycle(n_series=2, context='comparison')
 
-# Apply brand defaults (Figure Type Scale: title 12pt, axis 10pt, tick 9pt)
+# Apply brand defaults (title 12pt, axis 10pt, tick 9pt, despined)
 set_brand_style(cycle_name)
 ```
 
 ### 3. Create figure
 
+Generic two-arm time-series (dose-response, PK curve, longitudinal mean,
+tumor volume, Kaplan–Meier). **Lines-only by default** — no CI bands on
+line plots unless the user explicitly asks for them. Uncertainty moves off
+the plot and into the caption (endpoint ± 95% CI values), a numbers-at-risk
+table beneath the x-axis (for KM), or inline markers showing individual
+timepoints.
+
 ```python
 import matplotlib.pyplot as plt
+
 fig, ax = plt.subplots(figsize=(5, 3.75))
-ax.plot(t, tx,   color=BRAND_BLUE, linewidth=2.0, label='Treatment')
-ax.plot(t, ctrl, color=BLUE_300,   linewidth=2.0, label='Control')
+
+# Treatment (hero) line — no fill_between
+ax.plot(t, tx, color=BRAND_BLUE, linewidth=2.2, label='Treatment', zorder=3)
+
+# Control line — no fill_between
+ax.plot(t, ctrl, color=BLUE_300, linewidth=2.0, label='Control', zorder=2)
+
 ax.set_xlabel('Time (days)')
-ax.set_ylabel('Survival probability')
-ax.legend(loc='lower left')
-fig.savefig('km.svg')  # vector preferred; 300 dpi PNG for raster
+ax.set_ylabel('Response')
+ax.legend(loc='lower left', frameon=False)
+fig.savefig('plot.svg')  # vector preferred; 300 dpi PNG for raster
 ```
 
-### 4. Pre-flight & verify
+**Why lines-only by default.** Bands around every line crowd the canvas,
+draw the eye toward the overlap zone rather than the group difference, and
+train readers to read uncertainty qualitatively when our captions already
+state it quantitatively. Oligon house style keeps the plot surface for the
+signal and puts the noise in text. This applies across KM step curves,
+tumor-volume time courses, dose-response fits, and all other line plots.
+
+**Honor explicit user CI requests.** If the user explicitly asks for CI
+bands on the plot (e.g., "semi-transparent fills," "shaded CI," "bands on
+the plot," "95% CI ribbon"), honor the request — the user's stated
+preference wins over the house default. When drawing bands:
+
+1. Use **matching-hue tints** at α=0.18. Each line's CI band is a tint of
+   *its own* line color (brand.blue line → brand.blue band at α=0.18;
+   blue.300 line → blue.300 band at α=0.18).
+2. Do NOT fill all bands with a shared `blue.100` — that produces a muddy
+   overlap where treatment and control bands fuse and it misrepresents
+   uncertainty as a shared quantity.
+3. Note in the caption that bands are 95% CI (or SEM, SD — whichever you
+   used) so the reader isn't left guessing.
+4. For KM specifically, the at-risk table is optional once bands are on
+   the plot but still recommended for precision-aware audiences.
+
+The `add_error_band(ax, x, y, yerr, color=line_color)` helper in
+`matplotlib_adapter` does the matching-hue tint correctly in one call.
+
+```python
+# KM default: step lines, no bands, at-risk table below, CI endpoints in caption.
+ax.step(days, tx_surv,   color=BRAND_BLUE, linewidth=2.2, where='post',
+        label='SeekR-siRNA')
+ax.step(days, ctrl_surv, color=BLUE_300,  linewidth=2.0, where='post',
+        label='Untreated')
+
+# If the user asked for CI bands, add matching-hue tints:
+# add_error_band(ax, days, tx_surv,   yerr=tx_ci,   color=BRAND_BLUE)
+# add_error_band(ax, days, ctrl_surv, yerr=ctrl_ci, color=BLUE_300)
+```
+
+### 4. Preflight & verify
 
 ```python
 print(get_brand_compliance_report(fig))
 ```
 
-Expect PASS on:
-
-- [ ] White background, spines removed, grid off, axes dark
-- [ ] No library default colors; no retired v4 hexes (`#E8622D`,
-      `#7D250F`, `#0F5D7D`, `#158BBB`)
-- [ ] Brand Blue ≤ 2 focal elements per panel
-- [ ] Colors drawn from the v2.3 Blue / Orange / Neutral ramps
+Expect PASS on: white background, spines removed, no library default
+colors, no retired v4 hexes (`#E8622D`, `#7D250F`, `#0F5D7D`,
+`#158BBB`), Brand Blue limited to ≤ 2 focal elements, colors drawn
+from v2.3 ramps.
 
 ### 5. Grayscale + CVD check
 
-Convert to grayscale and simulate deuteranopia/protanopia via
-`skills/shared/accessibility/`. Every category must remain
-distinguishable — if it doesn't, add shape or line-style redundancy.
+Convert the saved figure to grayscale and simulate deuteranopia /
+protanopia. Every category must remain distinguishable. If it doesn't,
+add shape or line-style redundancy.
 
-> **Do not mark task complete until pre-flight, grayscale, and CVD
+The adapter's `validate_palette()` returns ramp-lightness deltas so
+you can predict CVD survival before rendering. For independent
+validation, use the Coblis colorblind simulator or the
+`colorspacious` Python package.
+
+> **Do not mark task complete until preflight, grayscale, and CVD
 > checks all pass.**
 </workflow>
-
-<success_criteria>
-## Success Criteria
-
-### Pre-flight checklist (from v2.3)
-
-- [ ] White background / brand ground (`blue.900` for dark theme)
-- [ ] Axis furniture in `neutral.200`–`300`; text `neutral.900` on
-      light, `neutral.50` on dark
-- [ ] Top and right spines removed
-- [ ] Correct cycle for scientific context (Rule 1) and correct ramp
-      step for visual role (Rule 2)
-- [ ] Brand Blue limited to 1–2 focal elements per panel
-- [ ] No library default colors; no retired v4 hexes
-- [ ] Redundant encoding (shapes/styles with color)
-- [ ] Tested in grayscale and under CVD simulation
-- [ ] Uncertainty rendered and labeled (SEM / SD / 95 % CI, n=?)
-- [ ] Font Arial/Helvetica/DejaVu Sans; figure scale 9–12 pt,
-      projection scale ≥ 18 pt
-- [ ] Resolution ≥ 300 DPI for print; vector preferred for line art
-- [ ] Alt text describes the *finding*, not the chart type
-- [ ] Logo excluded from publication figures
-</success_criteria>
 
 <figure_integrity>
 ## Figure Integrity — Eight Rules
@@ -237,16 +276,15 @@ These govern what a figure is allowed to claim visually. Violating any
 of them misrepresents the data, regardless of how well-styled the
 figure looks.
 
-1. **Zero baseline on bar charts.** Switch to dot plot if truncation
+1. **Zero baseline on bar charts.** Switch to a dot plot if truncation
    is unavoidable.
 2. **Log scales labeled as such** (`log10 concentration (nM)`), one
    tick per decade baseline. Never a silent log transform.
-3. **Uncertainty is shown** — error bars or individual points on
-   summary statistics. Bar definition (SD / SEM / 95 % CI) stated
-   on-figure.
+3. **Uncertainty shown** — error bars, CI bands, or individual points.
+   State bar definition (SD / SEM / 95 % CI) on-figure.
 4. **No 3D effects on 2D data.** Flat, 2D, always.
 5. **No rainbow / jet colormaps on continuous data.** Use viridis-
-   family or the §3 divergent cycle.
+   family or the Cycle 3 divergent ramp.
 6. **No category encoded by hue alone.** Combine with shape, line
    style, or direct label.
 7. **Isotype charts replicate 1:1.** Five icons beside one — never a
@@ -265,7 +303,7 @@ brand-agnostic decision flow to run *before* picking colors and fonts.
 
 > **Generic-fallback for non-Oligon output.** For unbranded manuscripts,
 > cross-organization collaborations, or personal projects, follow the
-> same principles but substitute: **viridis/cividis** for sequential
+> same principles but substitute: **viridis / cividis** for sequential
 > data, **Okabe-Ito** (8-color) for categorical, **ColorBrewer
 > diverging** (RdBu, PuOr) for diverging, and validate contrast with
 > the WebAIM Contrast Checker or WCAG 2.1 AA tooling.
@@ -277,27 +315,27 @@ Who is the viewer?           → audience matrix (below)
    ↓
 What story in one sentence?  → single-message test
    ↓
-Which chart type?            → plotting-libraries/scripts/chart_selector
+Which chart type?            → match the data structure, not habit
    ↓
-Which cycle / palette?       → Rule 1 (oligon-brand) — or palette_selector (generic)
+Which cycle / palette?       → Rule 1 (see <decision_framework>)
    ↓
-Which ramp step?             → Rule 2 (oligon-brand)
+Which ramp step?             → Rule 2 (see <decision_framework>)
    ↓
-Accessibility check          → skills/shared/accessibility/
+Accessibility check          → grayscale + CVD (workflow step 5)
    ↓
-Venue constraints            → venue-templates/references/figure_specs.md
+Venue constraints            → target venue's author guidelines
 ```
 
 ### Audience matrix
 
-| Audience                         | Output             | Design direction |
-|----------------------------------|--------------------|------------------|
+| Audience                           | Output             | Design direction |
+|------------------------------------|--------------------|------------------|
 | Journal reviewers / academic peers | Data-heavy figures | Precise, restrained, minimal decoration; 300 DPI; venue dimensions |
-| Journal reviewers / academic peers | Conceptual figures | Clean, publishable; Helvetica/Arial |
-| Conference audience              | Poster             | Scannable in 3 s; ≥ 24 pt body; high contrast |
-| Conference audience              | Talk slides        | One idea per slide; projection type scale (§5) |
-| General public / media           | Any                | Accessible, engaging; avoid jargon; visual metaphors |
-| Internal team                    | Any                | Functional, clear; templates acceptable |
+| Journal reviewers / academic peers | Conceptual figures | Clean, publishable; Helvetica / Arial |
+| Conference audience                | Poster             | Scannable in 3 s; ≥ 24 pt body; high contrast |
+| Conference audience                | Talk slides        | One idea per slide; projection type scale (≥ 18 pt body) |
+| General public / media             | Any                | Accessible, engaging; avoid jargon; visual metaphors |
+| Internal team                      | Any                | Functional, clear; templates acceptable |
 
 ### Single-message test
 
@@ -317,105 +355,187 @@ figure is doing too many jobs — split into panels or multiple figures.
 
 ### Cognitive foundation
 
-The design rules above are applications of a small set of settled cognitive-science results. When reviewers push back, these are the primary references to cite.
+The design rules above are applications of a small set of settled
+cognitive-science results. When reviewers push back, these are the
+primary references to cite.
 
-- **Cleveland & McGill (1984), *JASA* 79(387)** — ranking of elementary perceptual tasks for quantitative judgment. From most to least accurate: position on a common scale > length > angle/slope > area > volume > shading/color saturation. Justifies encoding the most important quantitative claim with position, not color or area. Replicated on Mechanical Turk by Heer & Bostock (2010).
-- **Cowan (2010), *Current Directions in Psychological Science* 19(1)** — working memory holds ~4 chunks, not Miller's 7 ± 2. Justifies the "≤4 simultaneously encoded dimensions per panel" constraint and "3–5 acts per graphical abstract" rule.
-- **Treisman & Gelade (1980), *Cognitive Psychology* 12(1)** — feature integration theory. Feature search (one distinctive dimension) is pre-attentive; conjunction search (two non-distinctive features) is serial. Justifies **Rule 6 (no hue-alone encoding):** a result highlighted by a conjunction of non-distinctive features will only be found by readers who already know where to look.
-- **Wagemans et al. (2012), *Psychological Bulletin* 138(6)** — Gestalt grouping principles (proximity, similarity, continuity, closure, common region, connectedness). Justifies direct labeling at line endpoints over corner legends, and shared background tints for panel families over boxed borders.
-- **Franconeri, Padilla, Shah, Zacks & Hullman (2021), *Psychological Science in the Public Interest* 22(3)** — evidence synthesis on visual data communication. Key finding: comparisons are serial, ensemble statistics are parallel. Justifies calling out the key comparison as a direct-encoded annotation rather than expecting the reader to scan a dense heatmap.
-- **Crameri, Shephard & Heron (2020), *Nature Communications* 11** — authoritative rainbow-colormap critique and home of the free Scientific Colour Maps (batlow, vik, roma, lajolla, berlin) at https://fabiocrameri.ch/colourmaps. Justifies viridis/cividis for sequential, RdBu/PuOr/vik/berlin for diverging.
-
-Long-form synthesis with Treisman 1988, Rensink 1997 change blindness, Drew et al. 2013 inattentional blindness in radiologists, and Okabe-Ito color-universal-design rationale: [`docs/design-rationale/infographic-graphic-abstract.md`](../../docs/design-rationale/infographic-graphic-abstract.md).
+- **Cleveland & McGill (1984), *JASA* 79(387)** — ranking of elementary
+  perceptual tasks for quantitative judgment. From most to least
+  accurate: position on a common scale > length > angle / slope > area
+  > volume > shading / color saturation. Justifies encoding the most
+  important quantitative claim with position, not color or area.
+  Replicated on Mechanical Turk by Heer & Bostock (2010).
+- **Cowan (2010), *Current Directions in Psychological Science*
+  19(1)** — working memory holds ~4 chunks, not Miller's 7 ± 2.
+  Justifies the "≤ 4 simultaneously encoded dimensions per panel"
+  constraint and "3–5 acts per graphical abstract" rule.
+- **Treisman & Gelade (1980), *Cognitive Psychology* 12(1)** — feature
+  integration theory. Feature search (one distinctive dimension) is
+  pre-attentive; conjunction search (two non-distinctive features) is
+  serial. Justifies **Rule 6 (no hue-alone encoding):** a result
+  highlighted by a conjunction of non-distinctive features will only
+  be found by readers who already know where to look.
+- **Wagemans et al. (2012), *Psychological Bulletin* 138(6)** —
+  Gestalt grouping principles (proximity, similarity, continuity,
+  closure, common region, connectedness). Justifies direct labeling
+  at line endpoints over corner legends, and shared background tints
+  for panel families over boxed borders.
+- **Franconeri, Padilla, Shah, Zacks & Hullman (2021), *Psychological
+  Science in the Public Interest* 22(3)** — evidence synthesis on
+  visual data communication. Key finding: comparisons are serial,
+  ensemble statistics are parallel. Justifies calling out the key
+  comparison as a direct-encoded annotation rather than expecting the
+  reader to scan a dense heatmap.
+- **Crameri, Shephard & Heron (2020), *Nature Communications* 11** —
+  authoritative rainbow-colormap critique and home of the free
+  Scientific Colour Maps (batlow, vik, roma, lajolla, berlin) at
+  <https://fabiocrameri.ch/colourmaps>. Justifies viridis / cividis for
+  sequential, RdBu / PuOr / vik / berlin for diverging.
+- **Tufte (2001), *The Visual Display of Quantitative Information* (2nd
+  ed., Graphics Press)** — data-to-ink ratio. *Apply:* drop gridlines,
+  decorative backgrounds, and redundant ticks unless they carry signal —
+  weighed against the takeaway-message reframing (Fujii 2026, below).
+- **Wilke (2019), *Fundamentals of Data Visualization* (O'Reilly)** —
+  practitioner reference for plot-type selection, color, and proportional
+  encoding. *Apply:* default reference for chart-type questions outside
+  the primary sources above.
+- **O'Donoghue et al. (2018), *Annu Rev Biomed Data Sci* 1** — readers
+  look at figures before text. *Apply:* design the figure so its takeaway
+  is recognisable from the figure alone, before the caption.
+- **Weissgerber et al. (2015), *PLoS Biol* 13, e1002128** — bar charts of
+  continuous data hide the distribution. *Apply:* show individual points
+  (box+jitter, violin+jitter, or strip), not bars, for continuous
+  measurements.
+- **Fujii (2023), *J Epidemiol* 33, 487–488** — risk / odds / hazard
+  ratios should be drawn as point + 95 % CI (pointrange), never as bars.
+  *Apply:* use pointrange for ratio estimates.
+- **Fujii (2026), *Nat Hum Behav* doi:10.1038/s41562-026-02466-9** —
+  communication-context framework (audience × time × interaction) and the
+  modern signal-to-noise reframing of data-to-ink. *Apply:* ask not "does
+  this ink represent data?" but "does this ink support the takeaway?" —
+  scale figure complexity to the viewing context.
+- **Jambor (2025), *Nat Cell Biol* 27, 879–883** — figure accessibility:
+  alt text, contrast, and multi-modal redundant encoding. *Apply:* supply
+  alt text and never encode category by hue alone (reinforces Rule 6).
+- **Midway (2020), *Patterns* 1, 100141** — table-vs-figure principles.
+  *Apply:* when exact values matter more than the pattern, use a table.
 
 ### Font embedding
 
-Embed fonts; do not outline. Publishers need editable text for house-style changes, HTML translation, and accessibility tooling. Concrete commands per toolchain (matplotlib `rcParams['pdf.fonttype'] = 42`; R `cairo_pdf()` or `extrafont::embed_fonts()`; Illustrator subset fonts at 100 %) live in `venue-templates/references/figure_specs.md § Font Embedding`. Verify with `pdffonts file.pdf` — expect `emb=yes` for every face.
+Embed fonts; do not outline. Publishers need editable text for
+house-style changes, HTML translation, and accessibility tooling.
+Concrete commands per toolchain:
+
+- **matplotlib:** `plt.rcParams['pdf.fonttype'] = 42` (TrueType, not
+  Type 3) plus `plt.rcParams['ps.fonttype'] = 42`.
+- **R:** `cairo_pdf()` device, or
+  `extrafont::embed_fonts("out.pdf")` after rendering.
+- **Illustrator:** File → Save As → PDF → subset fonts at 100 %.
+
+Verify with `pdffonts file.pdf` — expect `emb=yes` for every face.
 
 ### Output-format guidance
 
-- **Figures (matplotlib/seaborn/SVG)** — delegate code to
-  `plotting-libraries`; dimensions from
-  `venue-templates/references/figure_specs.md`. 300 DPI for print,
-  150 DPI for screen. Prefer PDF/EPS/SVG (vector). Embed fonts in PDF.
-- **Infographics (SVG)** — one clear message; minimal text;
-  `skills/shared/svg-components/` for reusable pieces.
-- **Report illustrations (ReportLab)** — use `adapters/reportlab_adapter.py`
-  building blocks (`MetricCard`, `CalloutBox`, `SectionHeader`, `DataTable`).
-- **Presentations (PPTX/Beamer)** — projection type scale (§5).
-- **Posters** — scannable hierarchy (3 s / 10 s / 60 s), view-distance
-  font sizing. See `research-posters/`.
+- **Figures (matplotlib / seaborn / SVG)** — 300 DPI for print, 150 DPI
+  for screen. Prefer PDF / EPS / SVG (vector). Embed fonts in PDF.
+- **Infographics (SVG)** — one clear message; minimal text; direct
+  labels over legends.
+- **Report illustrations (ReportLab)** — route through
+  `adapters/reportlab_adapter.py`; use `brand_header`, `brand_logo`,
+  `get_brand_styles`, `get_brand_table_style`, `highlight_text`, and
+  the `brand_spacer` / `brand_page_break` flowables.
+- **Presentations (PPTX / Beamer)** — projection type scale (body
+  ≥ 18 pt, heading 28 pt, figure axis labels 18 pt).
+- **Posters** — scannable hierarchy (3 s / 10 s / 60 s);
+  view-distance font sizing.
+
+### SVG output contract
+
+SVG is the preferred figure format for reports — vector, editable,
+embeddable. Two invariants must hold on every emitted figure.
+
+**Font family.** Every `<text>` / `<tspan>` must carry an explicit
+font-family (e.g. `font-family="Arial, Helvetica, sans-serif"`).
+Renderers that omit it fall back to a system default (often Times on
+Linux), which is on the forbidden list. For matplotlib this is guaranteed
+by the brand style's `svg.fonttype: none`, which keeps text as real
+`<text>` elements rather than outlined glyph paths; if you loaded a
+non-brand style first, set `plt.rcParams['svg.fonttype'] = 'none'` before
+saving.
+
+**Font sizes follow the v2.3 figure scale** — title 12 pt / axis label
+10 pt / tick 9 pt / legend 8.5–9 pt / panel label 9–10 pt — canonical in
+`tokens/brand-tokens.json` (`layout.figures`, `typography`). Do not
+override downward. (This replaces the old v4 10 pt-floor / 10·12·14·16
+ladder.)
+
+**Sanity check** before delivering — must return matches and must NOT
+include Times, Calibri, or a system default:
+
+```bash
+grep -oE 'font-family[^;">]+' figure.svg | sort -u
+```
+
+**Visual preview (required).** The grep confirms text-level compliance
+but not layout — overlapping labels, clipped titles, illegible legends.
+Render to PNG and inspect:
+
+```bash
+scripts/render_svg_preview.sh figure.svg              # writes figure.preview.png
+scripts/render_svg_preview.sh figure.svg /tmp/out.png # explicit output path
+```
 </design_foundation>
 
-<scope>
-## Scope
+<preflight>
+## Preflight Checklist
 
-**In Scope:**
-- Tonal-ramp color tokens + semantic tokens (light + dark themes)
-- Format-specific adapters (matplotlib, ggplot2, ReportLab, docx, pptx, HTML)
-- Typography standards (document, figure, projection scales)
-- Figure integrity rules and pre-flight validation
-- Voice, copy patterns, messaging pillars (`references/voice_and_copy.md`)
-- Medium playbooks (social, landing page, deck, email) and file-naming
-  conventions (`references/medium_playbooks.md`)
-
-**Out of Scope:**
-- Plotting code → `plotting-libraries`
-- Journal-specific figure dimensions → `venue-templates`
-- WCAG / CVD validation utilities → `skills/shared/accessibility/`
-- Diagram creation → `scientific-schematics`
-- Poster layout from scratch → `research-posters`
-- Slide layout from scratch → `scientific-slides`
-</scope>
+- [ ] White background / brand ground (`blue.900` for dark theme)
+- [ ] Axis furniture in `neutral.200`–`300`; text `neutral.900` on
+      light, `neutral.50` on dark
+- [ ] Top and right spines removed
+- [ ] Correct cycle for context (Rule 1) and correct ramp step for
+      role (Rule 2)
+- [ ] Brand Blue limited to 1–2 focal elements per panel
+- [ ] No library default colors; no retired v4 hexes
+- [ ] Redundant encoding (shapes / styles with color)
+- [ ] Tested in grayscale and under CVD simulation
+- [ ] Uncertainty rendered and labeled (SEM / SD / 95 % CI, n=?)
+- [ ] Font Arial / Helvetica / DejaVu Sans; figure scale 9–12 pt,
+      projection scale ≥ 18 pt
+- [ ] Resolution ≥ 300 DPI for print; vector preferred for line art
+- [ ] Alt text describes the *finding*, not the chart type
+- [ ] Logo excluded from publication figures
+</preflight>
 
 <anti_patterns>
 ## Common Pitfalls
 
-### 1. Using retired v4 hexes
-**Problem:** `#E8622D`, `#7D250F`, `#0F5D7D`, `#158BBB`, `#222222`
-legacy colors appear in figures.
-**Solution:** v2.3 uses Orange 600 `#A0421D` for opposition, Blue 800
-`#003454` for dark teal replacement, Blue 500 `#008ECB` for medium
-blue, Neutral 900 `#121719` for dark text. The preflight validator
-flags these as violations.
-
-### 2. Using library defaults
-**Problem:** Matplotlib/seaborn default colors instead of v2.3 palette.
-**Solution:** Call `set_brand_style(cycle_name)` before plotting.
-
-### 3. Overusing Brand Blue
-**Problem:** Too many elements highlighted, diluting emphasis.
-**Solution:** Limit Brand Blue to 1–2 focal elements per panel. Use
-ramp neutrals or Peer blue steps for the rest. `count_brand_blue()`
-flags violations.
-
-### 4. Wrong Cycle 2 variant
-**Problem:** Using Focus when no arm carries the narrative answer,
-or Peer when one arm does.
-**Solution:** Ask first — "does any arm carry the narrative?" Yes →
-Focus. No → Peer. See Rule 1 in `<decision_framework>`.
-
-### 5. Color-only encoding
-**Problem:** Relying solely on color to distinguish groups.
-**Solution:** Combine with marker shapes, line styles, or direct
-labels. Mandatory for Cycle 4.
-
-### 6. Ignoring grayscale + CVD tests
-**Problem:** Figure unreadable when printed black-and-white or viewed
-under deuteranopia.
-**Solution:** Always run both tests before finalizing. Blue 600 +
-Orange 600 ramp-matched lightness survives CVD; pure hue-only does not.
-
-### 7. Logo on publication figures
-**Problem:** Including Oligon logo on journal figures.
-**Solution:** Journals prohibit branding. Use logos only on
-presentations, posters, and internal documents.
-
-### 8. Slide title as topic label
-**Problem:** "Jurkat uptake data" instead of a finding.
-**Solution:** Slide titles are declarative takeaways — "SeekR bridges
-drive ~10× siRNA uptake in Jurkat T cells." See `voice_and_copy.md`
-§4.4.
+1. **Retired v4 hexes appearing.** `#E8622D`, `#7D250F`, `#0F5D7D`,
+   `#158BBB`, `#222222` are legacy. v2.3 uses Orange 600 `#A0421D` for
+   opposition, Blue 800 `#003454` for dark teal, Blue 500 `#008ECB`
+   for medium blue, Neutral 900 `#121719` for dark text. The preflight
+   validator flags these.
+2. **Library defaults.** Call `set_brand_style(cycle_name)` before any
+   `plt.subplots()` call — order matters.
+3. **Overusing Brand Blue.** If more than two elements per panel are
+   in `brand.blue`, emphasis is diluted. Use ramp neutrals or Peer
+   blue steps for the rest. `count_brand_blue()` flags violations.
+4. **Wrong Cycle 2 variant.** Focus when no arm carries the narrative
+   is misleading; Peer when one arm carries the narrative buries the
+   answer. Ask first — "does any arm carry the narrative?" Yes →
+   Focus. No → Peer.
+5. **Color-only encoding.** Relying solely on color to distinguish
+   groups fails in grayscale and under CVD. Combine with marker
+   shapes, line styles, or direct labels. Mandatory for Cycle 4.
+6. **Skipping grayscale / CVD tests.** Blue 600 + Orange 600
+   ramp-matched for lightness survives CVD; pure hue-only does not.
+   Run both tests before finalizing.
+7. **Logo on publication figures.** Journals prohibit branding. Use
+   logos only on presentations, posters, and internal documents.
+8. **Slide title as a topic label.** "Jurkat uptake data" is a topic,
+   not a takeaway. Slide titles should be declarative findings —
+   "SeekR bridges drive ~10× siRNA uptake in Jurkat T cells." See
+   `references/voice_and_copy.md` for the rule and examples.
 </anti_patterns>
 
 <error_handling>
@@ -423,7 +543,7 @@ drive ~10× siRNA uptake in Jurkat T cells." See `voice_and_copy.md`
 
 ### Font not found
 **Symptom:** Matplotlib warns about Arial.
-**Solution:**
+**Fix:**
 ```python
 import matplotlib.pyplot as plt
 plt.rcParams['font.family'] = 'sans-serif'
@@ -432,9 +552,9 @@ plt.rcParams['font.sans-serif'] = ['Arial', 'Helvetica', 'DejaVu Sans']
 
 ### Token file not found
 **Symptom:** `FileNotFoundError` loading `brand-tokens.json`.
-**Solution:** `matplotlib_adapter` has an embedded fallback and loads
-from `tokens/brand-tokens.json` relative to the adapter module. For
-direct JSON loading:
+**Fix:** The matplotlib adapter has an embedded fallback and resolves
+`tokens/brand-tokens.json` relative to the adapter module. For direct
+JSON loading:
 ```python
 from pathlib import Path
 tokens_path = Path(__file__).parent / "tokens" / "brand-tokens.json"
@@ -443,21 +563,24 @@ assert tokens_path.exists()
 
 ### Color cycle not applying
 **Symptom:** Default matplotlib colors appear despite `set_brand_style()`.
-**Solution:** Call `set_brand_style()` **before** creating figures:
+**Fix:** Call `set_brand_style()` **before** any figure is created:
 ```python
-set_brand_style('treatment_control')  # Must be first!
-fig, ax = plt.subplots()
+set_brand_style('treatment_control')   # first
+fig, ax = plt.subplots()                # then
 ```
 
 ### Legacy v4 alias in downstream code
 **Symptom:** `KeyError: 'dark_gray'` in docx/pptx/reportlab adapters.
-**Solution:** v4 names (`dark_gray`, `contrast_orange`, etc.) route to
+**Fix:** v4 names (`dark_gray`, `contrast_orange`, etc.) route to
 v2.3 equivalents via the `BRAND_HEX` alias block in each adapter.
 If the alias is missing, prefer the ramp name (e.g. `neutral_900`).
 </error_handling>
 
 <adapters>
 ## Format Adapters
+
+Every output format has a bundled adapter that loads the same v2.3
+tokens. Route through these rather than hardcoding hex values.
 
 | Format              | Adapter                          | Entry point |
 |---------------------|----------------------------------|-------------|
@@ -468,9 +591,8 @@ If the alias is missing, prefer the ramp name (e.g. `neutral_900`).
 | python-pptx         | `adapters/pptx_adapter.py`       | `get_brand_theme()` |
 | HTML / CSS          | `adapters/html_adapter.css`      | `--blue-*`, `--orange-*`, `--neutral-*` |
 
-All adapters ship with the same v5.0 token set (Blue/Orange/Neutral
-ramps + brand anchor). The Python adapters keep v4 aliases as
-route-through keys so existing call sites continue to work.
+Python adapters keep v4 aliases as route-through keys so existing
+call sites continue to work.
 </adapters>
 
 <cross_references>
@@ -502,16 +624,18 @@ Mirror the directory structure and validate with
 </cross_references>
 
 <references>
-## Reference Documents
+## Bundled Reference Files
 
-| Document                                  | Purpose |
+| File                                      | Purpose |
 |-------------------------------------------|---------|
-| `tokens/brand-tokens.json`                | Machine-readable brand tokens (primary source of truth) |
-| `references/brand-colors-full.md`         | Full figure/color reference — ramps, cycles, typography, accessibility, code templates |
+| `tokens/brand-tokens.json`                | Machine-readable tokens — primary source of truth |
+| `references/Oligon_Digital_Style_Guide_v2.3.html` | Human-readable style guide (April 2026) |
+| `references/brand-colors-full.md`         | Full figure/color reference — ramps, cycles, typography, code templates |
 | `references/voice_and_copy.md`            | Voice rules, messaging pillars, headline formulas, CTA bank, glossary |
-| `references/medium_playbooks.md`          | Social/web/deck/email playbooks + file-naming convention |
-| `references/output_templates.md`          | Output-format templates |
+| `references/medium_playbooks.md`          | Social / web / deck / email playbooks + file-naming convention |
+| `references/output_templates.md`          | Per-format output templates |
 | `assets/oligon_color_brand.mplstyle`      | Matplotlib style file (one-line brand application) |
+| `assets/Oligon_Logo_*.svg` / `Oligon_Icon_*.svg` | Logo variants (Brand Blue + White) |
 
 ### Color quick reference
 
@@ -540,15 +664,44 @@ Body 14 pt/400/1.55, Caption 11 pt/400.
 **Projection scale (slides):** Body 18 pt, heading 28 pt, axis labels
 on embedded figures 18 pt.
 
-### Logo assets
+### Logo usage
 
-| Variant                     | File                           | Use on |
-|-----------------------------|--------------------------------|--------|
-| Full wordmark (Brand Blue)  | `assets/Oligon_Logo_BrandBlue.svg` | Light / Neutral 50 / Neutral 100 |
-| Full wordmark (White)       | `assets/Oligon_Logo_White.svg`     | Blue 700+ / Neutral 800+ |
-| Icon (Brand Blue)           | `assets/Oligon_Icon_BrandBlue.svg` | Light backgrounds |
-| Icon (White)                | `assets/Oligon_Icon_White.svg`     | Dark backgrounds |
+Full wordmark (Brand Blue) on light / Neutral 50 / Neutral 100
+grounds; full wordmark (White) on Blue 700+ / Neutral 800+. Icon
+variants for tight spaces. **Never place a logo on a publication
+figure** — journals prohibit branding. Logos are for presentations,
+posters, and internal documents only.
 
-> **Do NOT place logos on publication figures** — journals prohibit
-> branding. Use on presentations, posters, and internal documents only.
+**Logos live in `assets/logos/`.** The canonical lockup is
+`Oligon_Logo_BrandBlue.svg`; the expanded set includes
+right-anchored, tracked-under, divider, underline, and stacked-compact
+variants in Black / BrandBlue / White. Always use the SVG file — it
+embeds as true vector in PDFs and scales cleanly on slides.
+
+**In ReportLab PDFs, use the `brand_logo()` and `brand_header()` helpers
+— do not roll your own.** Rolling your own tends to rasterize the SVG at
+display DPI (~100) and produces a visibly pixelated logo in print, and
+it's easy to underweight the gap between logo and title so they collide.
+Both failures showed up in iteration-1 outputs. The helpers handle
+vector embedding (via `svglib`) and enforce 24 pt right-padding on the
+logo cell:
+
+```python
+from reportlab_adapter import brand_header, brand_logo
+
+# Full header (logo + title + brand-blue divider)
+story.extend(brand_header(
+    title="SeekR-CTLA4 Q1 Readout",
+    subtitle="QUARTERLY READOUT",  # optional eyebrow
+    logo_width_inches=1.2,
+))
+
+# Or just the logo on its own
+story.append(brand_logo(width_inches=1.5))
+```
+
+Vector embedding needs `pip install svglib reportlab`. If only
+`cairosvg` is available, the helper falls back to a 4× high-DPI PNG
+(acceptable, not ideal). Never render the logo at `output_width=100` —
+that's print-pixelated.
 </references>

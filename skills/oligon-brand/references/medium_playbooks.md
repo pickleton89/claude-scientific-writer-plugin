@@ -156,12 +156,10 @@ content varies by audience.
 
 ## 5. Posters & Print
 
-Poster-specific layout and print guidance live in the
-`research-posters/` skill (Oligon-branded templates) and the
-`venue-templates/` skill (per-conference size specs). This reference
-does not duplicate those — follow the color, typography, and figure-
-integrity rules from `brand-colors-full.md` and apply them at poster
-scale.
+Apply the color, typography, and figure-integrity rules from
+`brand-colors-full.md` at poster scale (see the Projection type scale
+for sizing). Each conference publishes its own size spec — follow
+that for dimensions and resolution.
 
 Printing notes:
 
@@ -220,15 +218,17 @@ Every asset delivered under this guide ships with:
 
 ---
 
-## Cross-references
+## Cross-references (within this skill)
 
-- Brand palette + typography + figure standards:
+- Brand palette + typography + figure standards →
   `references/brand-colors-full.md`
-- Voice, messaging, copy patterns, glossary:
+- Voice, messaging, copy patterns, glossary →
   `references/voice_and_copy.md`
-- Scientific figure code:
-  `plotting-libraries/` (consumes oligon-brand adapters)
-- Poster templates and layouts:
-  `research-posters/`
-- Slide templates:
-  `scientific-slides/`
+- Per-format output templates (social tile, landing hero, deck slide,
+  email, poster, figure) → `references/output_templates.md`
+- Figure code entry points → `adapters/matplotlib_adapter.py`,
+  `adapters/ggplot2_adapter.R`
+- Deck code entry point → `adapters/pptx_adapter.py`
+- Branded PDF / Word code entry points →
+  `adapters/reportlab_adapter.py`, `adapters/docx_adapter.py`
+- Web / email markup → `adapters/html_adapter.css`

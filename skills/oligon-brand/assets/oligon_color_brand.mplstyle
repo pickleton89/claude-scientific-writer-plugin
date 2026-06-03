@@ -22,11 +22,21 @@ savefig.dpi: 300
 savefig.bbox: tight
 savefig.pad_inches: 0.1
 
+# Vector text: keep glyphs as real, editable <text> in SVG/PDF/EPS (not
+# outlined paths) — required for the SVG font-family checks and journal
+# editable-text requirements.
+svg.fonttype: none
+pdf.fonttype: 42
+ps.fonttype: 42
+
 ##########
 # Font   #
 ##########
 font.family: sans-serif
-font.sans-serif: Arial, Helvetica, DejaVu Sans
+# Arial first (Mac/Windows/Linux with msttcorefonts), Helvetica next (Mac),
+# Liberation Sans as Arial-metric-compatible fallback for sandboxed Linux,
+# DejaVu Sans as the always-present last resort. All four are v2.3-sanctioned.
+font.sans-serif: Arial, Helvetica, Liberation Sans, DejaVu Sans
 font.size: 9
 
 ########
@@ -50,8 +60,9 @@ axes.spines.bottom: True
 axes.spines.left: True
 
 # Default color cycle: Cycle 1 — Treatment / Control (same-hue).
-# Position 1 = brand.blue treatment, 2 = blue.300 control, 3 = blue.100 CI,
-# with ramp steps trailing so n>3 still reads consistently.
+# Position 1 = brand.blue treatment, 2 = blue.300 control.
+# CI bands are matching-hue tints of the line at α≈0.18 (NOT a shared fill).
+# Trailing ramp steps (blue.100, blue.800, orange.500) support n>2 visuals.
 # For other cycles call `set_brand_style('peer' | 'focus' | 'opposing'
 # | 'multi_category')` from matplotlib_adapter.
 axes.prop_cycle: cycler("color", ["2DB2E8", "76CAF3", "DBF3FF", "003454", "C45E39"])
@@ -87,8 +98,10 @@ lines.solid_capstyle: round
 ###########
 # Patches #
 ###########
-# Bars: no edge outlines (data-ink economy).
-patch.facecolor: 2DB2E8
+# Bars: no edge outlines (data-ink economy). Default fill is neutral.900 —
+# Brand Blue (#2DB2E8) is reserved for the 1–2 focal elements per panel and
+# is applied deliberately, not as the default for every bar.
+patch.facecolor: 121719
 patch.edgecolor: none
 patch.linewidth: 0.0
 

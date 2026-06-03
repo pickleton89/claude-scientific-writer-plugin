@@ -44,49 +44,9 @@ import matplotlib
 _ADAPTER_DIR = Path(__file__).resolve().parent.parent / "adapters"
 sys.path.insert(0, str(_ADAPTER_DIR))
 
-from matplotlib_adapter import (  # noqa: E402  (path setup first)
-    # Tokens
-    BRAND_COLORS,
-    BRAND_BLUE,
-    BLUE_50, BLUE_100, BLUE_200, BLUE_300, BLUE_400,
-    BLUE_500, BLUE_600, BLUE_700, BLUE_800, BLUE_900,
-    ORANGE_50, ORANGE_100, ORANGE_200, ORANGE_300, ORANGE_400,
-    ORANGE_500, ORANGE_600, ORANGE_700, ORANGE_800, ORANGE_900,
-    NEUTRAL_50, NEUTRAL_100, NEUTRAL_200, NEUTRAL_300, NEUTRAL_400,
-    NEUTRAL_500, NEUTRAL_600, NEUTRAL_700, NEUTRAL_800, NEUTRAL_900,
-    WHITE, BLACK,
-    # Semantic tokens
-    SEMANTIC_LIGHT, SEMANTIC_DARK,
-    # Cycles
-    CYCLE_TREATMENT_CONTROL,
-    CYCLE_PEER_3, CYCLE_PEER_4,
-    CYCLE_FOCUS, CYCLE_FOCUS_RECEDING, FOCUS_VARIANTS,
-    CYCLE_OPPOSING,
-    CYCLE_MULTI_CATEGORY,
-    CYCLE_NEUTRALS_ONLY,  # deprecated alias -> CYCLE_PEER_3
-    VOLCANO_COLORS,
-    MARKER_SHAPES,
-    # Helpers
-    set_brand_style,
-    select_cycle,
-    get_divergent_cmap,
-    add_panel_label,
-    add_error_band,
-    plot_volcano,
-    run_preflight,
-    validate_palette,
-    count_brand_blue,
-    get_brand_compliance_report,
-    get_color,
-    get_cycle,
-    get_semantic,
-)
-
 
 _STYLE_FILE = (
-    Path(__file__).resolve().parent.parent
-    / "assets"
-    / "oligon_color_brand.mplstyle"
+    Path(__file__).resolve().parent.parent / "assets" / "oligon_color_brand.mplstyle"
 )
 
 
