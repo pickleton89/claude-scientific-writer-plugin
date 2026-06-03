@@ -1,6 +1,6 @@
 ---
 name: scientific-slides
-version: 2.3.1
+version: 2.4.0
 extends: visual-design
 description: "Build structured research presentations — content organization and scientific storytelling for conference talks, seminars, defenses, and lab meetings. Use when creating a new research presentation. Do NOT use for editing existing PPTX files or raw file manipulation — use document-skills:pptx."
 when_to_use: "Conference presentations, seminar talks, thesis defense slides, grant pitches, journal club presentations, or any scientific talk requiring PDF, PowerPoint, or LaTeX Beamer output."
@@ -9,7 +9,7 @@ allowed-tools: [Read, Write, Edit, Bash]
 
 # Scientific Slides
 
-> **Design Foundation**: This skill extends [`visual-design`](../visual-design/SKILL.md) for typography, color, composition, and accessibility standards. Cognitive-foundation citations (Cleveland-McGill 1984, Cowan 2010 working-memory limit, Wagemans 2012, Crameri 2020, Fujii 2026 communication context) and cross-skill quality gates also live in [`oligon-brand`](../oligon-brand/SKILL.md) `<design_foundation>` and [`shared/references/`](../shared/references/) (`pre_submission_checklist.md`, `communication_context_matrix.md`, `figure_vs_table_decision.md`).
+> **Design Foundation**: This skill extends [`visual-design`](../visual-design/SKILL.md) for typography, color, composition, and accessibility standards. Cognitive-foundation citations (Cleveland-McGill 1984, Cowan 2010 working-memory limit, Wagemans 2012, Crameri 2020, Fujii 2026 communication context) and cross-skill quality gates also live in [`oligon-brand`](../oligon-brand/SKILL.md) `<design_foundation>` and [`shared/references/`](../shared/references/) (`pre_submission_checklist.md`, `communication_context_matrix.md`, `figure_vs_table_decision.md`). Slide-specific design best practices (layout, hierarchy, contrast, CVD-safe palettes) are collected in [`references/design_best_practices.md`](references/design_best_practices.md).
 >
 > **Prose Standards**: Speaker notes and on-slide text conform to [`../shared/references/prose_standards.md`](../shared/references/prose_standards.md) (active voice, S2 sentence length, no AI-tells). Slide text further compresses per the spoken-word context — see `prose_standards.md` §9.6 Register by Venue.
 
@@ -155,6 +155,7 @@ Choose output format
 │       - Generate visuals with --visual-only
 │       - Build PPTX with text separately
 │       - See: document-skills:pptx
+│       - Brand-compliant build details: references/powerpoint_implementation_guide.md
 │
 └─ Need equations, version control, reproducibility?
     └─ YES → LaTeX Beamer
