@@ -232,3 +232,13 @@ Every asset delivered under this guide ships with:
 - Branded PDF / Word code entry points →
   `adapters/reportlab_adapter.py`, `adapters/docx_adapter.py`
 - Web / email markup → `adapters/html_adapter.css`
+
+## Plugin integration
+
+Within the scientific-writer plugin, this reference pairs with sibling skills
+(the in-skill cross-references above remain the self-contained source):
+
+- Poster templates and layouts → `research-posters/`
+- Per-conference size specs → `venue-templates/`
+- Scientific figure code (consumes the oligon-brand adapters) → `plotting-libraries/`
+- Slide templates → `scientific-slides/`

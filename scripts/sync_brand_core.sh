@@ -31,12 +31,17 @@ CORE_SHA="$(git -C "$CORE_DIR" rev-parse --short HEAD 2>/dev/null || echo unknow
 
 echo "Vendoring oligon-brand-core@${CORE_SHA} -> skills/oligon-brand/ (+ overlay)"
 
-# 1. Regenerate the skill directory as an exact mirror of core (brand canon),
-#    excluding VCS / dev junk.
-rsync -a --delete \
+# 1. Regenerate the skill directory as a mirror of core (brand canon).
+#    Excludes: VCS/dev junk, plus content not needed in the *shipped* skill —
+#    the core-only v4 audit, the test suite, and the empty test scaffold (these
+#    live in oligon-brand-core; the plugin ships a lean skill).
+# --delete-excluded so excluded paths are also removed from a previously
+# vendored skill dir (plain --delete protects excluded files from deletion).
+rsync -a --delete --delete-excluded \
   --exclude='.git' --exclude='.gitignore' --exclude='__pycache__' \
   --exclude='*.pyc' --exclude='.DS_Store' --exclude='.pytest_cache' \
   --exclude='.ruff_cache' --exclude='.venv' \
+  --exclude='/AUDIT_v4.md' --exclude='/tests/' --exclude='/scripts/tests/' \
   "$CORE_DIR"/ "$SKILL_DIR"/
 
 # 2. Frontmatter rename (oligon-brand-core -> oligon-brand) + provenance banner.
@@ -51,8 +56,10 @@ banner = (
     "     Edit oligon-brand-core and re-run scripts/sync_brand_core.sh. -->\n"
 )
 parts = s.split("---", 2)
-if len(parts) == 3:           # ---\nfrontmatter\n---\nbody
-    s = "---" + parts[1] + "---" + banner + parts[2]
+if len(parts) != 3:           # expect ---\nfrontmatter\n---\nbody
+    sys.exit("error: SKILL.md has no parseable frontmatter; refusing to vendor "
+             "without a provenance banner")
+s = "---" + parts[1] + "---" + banner + parts[2]
 open(path, "w", encoding="utf-8").write(s)
 PY
 
@@ -72,6 +79,24 @@ else:
     s = s.rstrip() + "\n\n" + xref_txt
 open(skill, "w", encoding="utf-8").write(s)
 PY
+
+# 4. Append plugin cross-reference footers to the vendored reference docs.
+#    Each overlay fragment references/<name>.append.md is appended to
+#    references/<name>.md so the shipped docs cross-link to sibling skills
+#    without overwriting core's self-contained content.
+if [ -d "$OVERLAY_DIR/references" ]; then
+  for frag in "$OVERLAY_DIR"/references/*.append.md; do
+    [ -e "$frag" ] || continue
+    base="$(basename "$frag" .append.md)"
+    target="$SKILL_DIR/references/$base.md"
+    if [ -f "$target" ]; then
+      printf '\n' >>"$target"
+      cat "$frag" >>"$target"
+    else
+      echo "warn: overlay target references/$base.md not present in core" >&2
+    fi
+  done
+fi
 
 echo "Done: skills/oligon-brand/ regenerated from core@${CORE_SHA} + overlay."
 echo "Review the diff, then commit."

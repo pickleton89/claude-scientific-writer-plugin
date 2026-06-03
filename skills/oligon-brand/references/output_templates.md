@@ -157,3 +157,9 @@ For rapid design documentation when full template is excessive:
 ---
 
 *See [SKILL.md](../SKILL.md) for the workflow, [brand-colors-full.md](brand-colors-full.md) for ramps and cycles, and [medium_playbooks.md](medium_playbooks.md) for social / deck / email / landing page layouts. Per-journal figure dimensions are not included in this skill — consult the target journal's author guidelines.*
+
+## Plugin integration
+
+Per-journal figure dimensions are not bundled in this skill. Within the
+scientific-writer plugin, consult `../../venue-templates/references/figure_specs.md`
+for per-journal sizing; otherwise follow the target journal's author guidelines.
