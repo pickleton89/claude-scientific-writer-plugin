@@ -1,0 +1,29 @@
+{
+  "skill_name": "oligon-brand-core",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "km-survival-two-arm",
+      "prompt": "I've got a small CSV (columns: day, tx_surv, ctrl_surv, tx_lo, tx_hi, ctrl_lo, ctrl_hi) with Kaplan-Meier survival probabilities and 95% CI bands for a treatment arm and a control arm across 90 days. Treatment is our SeekR-siRNA construct, control is untreated. Generate a matplotlib survival curve as an SVG. Make sure it reads as an Oligon figure — the treatment arm should clearly be the hero, the control arm should recede, CI bands should be rendered as semi-transparent fills, and the caption should include an error-bar definition. Save the SVG to /tmp/km_survival.svg. Make up plausible numbers if you don't have the file.",
+      "expected_output": "An SVG matplotlib figure where the treatment arm is rendered in brand.blue (#2DB2E8), the control arm is rendered in a lighter ramp blue (e.g. blue.300), CI bands are semi-transparent fills, top and right spines are removed, and fonts are Arial/Helvetica/DejaVu Sans at figure scale (9-12 pt).",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 2,
+      "eval_name": "branded-pdf-one-pager",
+      "prompt": "Build me a one-page branded PDF report titled 'SeekR-CTLA4 Q1 Readout' using ReportLab. It needs: the Oligon logo in the header, a 3-sentence executive summary, a 2-column key-metrics block (IC50, % tumor regression, days to progression), and a short next-steps paragraph. Use Oligon brand styling throughout — palette, typography, spacing. Save it to /tmp/seekr_ctla4_q1.pdf. Make up plausible numbers.",
+      "expected_output": "A PDF built with ReportLab that uses the Oligon brand colors from the adapter (brand.blue for header/accent, neutrals for body text), Arial/Helvetica at document scale (14 pt body, 19 pt H2, 28 pt H1), logo in header, and no retired v4 hex codes.",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 3,
+      "eval_name": "slide-titles-declarative",
+      "prompt": "I'm drafting an internal data-review deck and I have a list of topic-label slide titles — help me rewrite them into declarative Oligon-voice titles that state the takeaway. Here they are: (1) 'Jurkat uptake data', (2) 'PK/PD summary', (3) 'Off-target hits', (4) 'Tumor growth curves', (5) 'Manufacturing yield'. Rewrite each to be a declarative finding in Oligon voice, then briefly explain the rules you applied.",
+      "expected_output": "Five rewritten slide titles, each a one-sentence declarative finding (not a topic label), following Oligon voice rules from voice_and_copy.md (technical-plain pairing, numbers over adjectives, verbs over nouns). A short closing note explaining the rule(s) applied.",
+      "files": [],
+      "assertions": []
+    }
+  ]
+}

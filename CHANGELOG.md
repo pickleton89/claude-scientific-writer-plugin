@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-06-03
+
+### Changed — `oligon-brand` upgraded to v5.0 (Style Guide v2.3) and vendored from canonical source
+
+The `oligon-brand` skill is upgraded from v4.1.0 (flat palette) to **v5.0 / Oligon Digital Style Guide v2.3** (Oklch tonal ramps), and is no longer hand-maintained in this repo. It is now **vendored** from the standalone canonical repository [`oligon-brand-core`](https://github.com/pickleton89/oligon-brand-core) via `scripts/sync_brand_core.sh`, which mirrors the core tree into `skills/oligon-brand/`, renames the frontmatter `name` to `oligon-brand`, stamps a `GENERATED FILE` provenance banner pinned to the core SHA, and layers a plugin-only delegation overlay (`scripts/oligon-brand-overlay/`: `<default_behavior>` + `<cross_references>`, plus "Plugin integration" footers on the reference docs). **Do not hand-edit `skills/oligon-brand/`** — edit `oligon-brand-core` and re-run the sync.
+
+- **Breaking (downstream code):** Cycle 1 Treatment/Control reduced from 3 colors to 2 — the `blue.100 #DBF3FF` CI-band slot is removed from `CYCLE_TREATMENT_CONTROL`, the token cycle, the ggplot2/CSS surfaces, and `select_cycle(n=3, comparison)` now routes to the Focus cycle. Code that indexed `CYCLE_TREATMENT_CONTROL[2]` must refactor. CI bands are no longer a default arm; when shown on request they are matching-hue tints at α 0.18.
+- **Palette:** retired flat hexes (`#E8622D`, `#0F5D7D`, `#158BBB`, gray-as-data) replaced by Oklch blue/orange/neutral ramps. Default bar fill changed from Brand Blue to `neutral.900 #121719` (Brand Blue reserved for 1–2 focal elements per panel).
+- **Adds:** full `assets/logos/` lockup set, `evals/`, structured `error_bands`/`error_bars` tokens, `svg.fonttype=none` (+ pdf/ps Type 42) for editable vector text, the SVG Output Contract (v2.3 font scale), ReportLab logo helpers, and the restored cognitive-foundation citations.
+
 ### Added — Project `CLAUDE.md`
 
 The repo had no project-level `CLAUDE.md`; agent-facing facts lived scattered across memory, `SKILL_ROUTER.md`, and `docs/`. Added a lean, facts-only `CLAUDE.md` at the root capturing the non-obvious conventions a new agent needs: no root `pyproject` (CLI scripts self-bootstrap via PEP-723), capability-key indirection through `skills/shared/tool-lookup.yaml` (skills reference keys, not raw tool names), the dossier-first biomedical pipeline, the verifier contract/predicate system (P1–P9, canonical in `CONTRACTS.md`), and the dual-file version bump (`plugin.json` + `marketplace.json`). Deliberately non-overlapping with the global user standards — no behavior steering, no duplicated `uv`/workflow rules.

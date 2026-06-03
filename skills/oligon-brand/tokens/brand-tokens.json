@@ -1,225 +1,353 @@
 {
   "meta": {
     "name": "Oligon Scientific Brand",
-    "version": "4.0",
-    "description": "Scientific brand visual identity tokens for figures, charts, presentations, and documents"
+    "version": "5.0",
+    "style_guide": "Oligon Digital Style Guide v2.3 (April 2026)",
+    "description": "Oklch tonal-ramp brand tokens for scientific figures, presentations, documents, and digital assets",
+    "breaking_changes_from_v4": [
+      "Flat contrast_orange #E8622D replaced by Orange tonal ramp (500=#C45E39, 600=#A0421D, 700=#772E11)",
+      "dark_warm #7D250F replaced by orange.800 #4F1B06",
+      "dark_teal #0F5D7D replaced by blue.800 #003454",
+      "medium_blue #158BBB removed; use blue.500 #008ECB for categorical series",
+      "Cycle 1 (treatment/control) restructured to same-hue pair: brand.blue + blue.300 (was blue + dark gray)",
+      "Cycle 2 split into Peer (equal-weight) and Focus (one promoted) variants",
+      "Cycle 3 opposing pair is blue.600 + orange.600 (was brand.blue + #E8622D)",
+      "Divergent colormap is blue.700 -> white -> orange.700 (was 5-stop dark teal -> blue -> white -> orange -> dark warm)",
+      "Figure type scale updated: title 12pt/700, axis 10pt/500, tick 9pt/400, legend 8.5-9pt/400"
+    ]
   },
   "philosophy": {
-    "core_principle": "Neutrals are default; Brand Colors are for highlights; Contrast colors show opposition",
+    "core_principle": "Neutrals are default; Brand Blue highlights the one or two elements that matter most; Orange supplies opposition or focus.",
+    "decision_rules": [
+      "Rule 1 - Choose the cycle from the data's categorical structure (treatment/control, peer, focus, opposing, divergent, multi-category).",
+      "Rule 2 - Choose the ramp step from each mark's visual role (fills=50-200, light data=300, primary=400, emphasis=500-600, text/borders=700, dark ground=800-900)."
+    ],
     "guidelines": [
-      "Most data should be grayscale - color is earned by importance",
-      "Brand Blue highlights the most important element (1-2 per panel max)",
-      "All figures must work in grayscale",
-      "Never rely on color alone - use shapes, line styles, or labels"
+      "Most data draws from the neutral ramp; Brand Blue or Blue 400-700 is reserved for 1-2 elements per panel.",
+      "Every figure must remain interpretable in grayscale and under deuteranopia / protanopia simulation.",
+      "Category is never encoded by hue alone - combine color with shape, line style, or direct label.",
+      "Zero baseline on bar charts; log scales labeled on-figure; uncertainty always shown."
     ]
   },
   "colors": {
-    "primary": {
+    "ramps": {
+      "blue": {
+        "50":  {"hex": "#EFFBFF", "role": "Callout background, lightest fill"},
+        "100": {"hex": "#DBF3FF", "role": "Light callout background, panel tint (NOT CI band — see brand-colors-full.md §4: CI bands use matching-hue of line at α=0.18)"},
+        "200": {"hex": "#B3E3FC", "role": "Cycle 2 Peer lightest arm, Cycle 2 Focus receding"},
+        "300": {"hex": "#76CAF3", "role": "Cycle 1 control, Cycle 2 Peer/Focus light stroke"},
+        "400": {"hex": "#1FACE3", "role": "Primary data default (Oklch twin of brand.blue)"},
+        "500": {"hex": "#008ECB", "role": "Cycle 2 Focus receding, Cycle 4 mid arm, emphasis"},
+        "600": {"hex": "#006EA6", "role": "Cycle 3 negative direction, CTA hover"},
+        "700": {"hex": "#00507E", "role": "Accent (links, primary buttons), divergent negative extreme"},
+        "800": {"hex": "#003454", "role": "Cycle 2 Peer darkest arm, Cycle 4 dark arm, dark surface"},
+        "900": {"hex": "#001A2E", "role": "Dark theme page background"}
+      },
+      "orange": {
+        "50":  {"hex": "#FFF5F1", "role": "Warning callout background"},
+        "100": {"hex": "#FFE8E0", "role": "Dont-do box background"},
+        "200": {"hex": "#FFCEBD", "role": "Light warning fill"},
+        "300": {"hex": "#F0AA92", "role": "Soft focus fill"},
+        "400": {"hex": "#DD8363", "role": "Cycle 2 Focus softer promotion"},
+        "500": {"hex": "#C45E39", "role": "Cycle 2 Focus default promotion, Cycle 4 categorical outlier"},
+        "600": {"hex": "#A0421D", "role": "Cycle 3 positive direction, volcano up-regulated"},
+        "700": {"hex": "#772E11", "role": "Signal/destructive text, divergent positive extreme, button on dark"},
+        "800": {"hex": "#4F1B06", "role": "Deep signal, rare dark accent"},
+        "900": {"hex": "#2B0901", "role": "Deepest warm"}
+      },
+      "neutral": {
+        "50":  {"hex": "#F3FAFD", "role": "Surface fill (cards, callouts, zebra rows), dark-theme text"},
+        "100": {"hex": "#E9F0F3", "role": "Secondary button fill, subtle surface"},
+        "200": {"hex": "#D6DCDF", "role": "Borders, rules, input outlines, axis furniture"},
+        "300": {"hex": "#B9BFC2", "role": "Volcano non-significant points, de-emphasized"},
+        "400": {"hex": "#9A9FA2", "role": "Neutral callout border, annotation mid"},
+        "500": {"hex": "#7C8184", "role": "Caption placeholder, disabled"},
+        "600": {"hex": "#5F6467", "role": "Caption text on light"},
+        "700": {"hex": "#44494B", "role": "Secondary text (text.muted), axis furniture dark"},
+        "800": {"hex": "#2A2F31", "role": "High-contrast text on light"},
+        "900": {"hex": "#121719", "role": "Body text on light (default)"}
+      }
+    },
+    "brand_anchor": {
       "brand_blue": {
         "hex": "#2DB2E8",
-        "role": "Hero highlight - primary data of interest, treatment groups, focal points"
-      }
-    },
-    "contrast": {
-      "contrast_orange": {
-        "hex": "#E8622D",
-        "role": "Opposition to Brand Blue - up vs down, mutant vs wildtype"
-      },
-      "dark_warm": {
-        "hex": "#7D250F",
-        "role": "Heatmap positive extreme"
-      }
-    },
-    "neutrals": {
-      "dark_gray": {
-        "hex": "#222222",
-        "role": "Primary default data - control groups, baselines"
-      },
-      "medium_gray": {
-        "hex": "#666666",
-        "role": "Secondary data lines/points"
-      },
-      "muted_gray": {
-        "hex": "#999999",
-        "role": "Tertiary data (lightest for actual data)"
-      },
-      "light_gray": {
-        "hex": "#BDBDBD",
-        "role": "Annotations, gridlines, de-emphasized points ONLY - lacks contrast for data"
-      }
-    },
-    "supporting_blues": {
-      "medium_blue": {
-        "hex": "#158BBB",
-        "role": "Additional categorical series when neutrals + Brand Blue insufficient"
-      },
-      "dark_teal": {
-        "hex": "#0F5D7D",
-        "role": "Heatmap negative extreme, rare secondary highlight"
+        "role": "Oligon brand anchor - logo, Cycle 1 treatment arm, primary data of interest",
+        "oklch_twin": "blue.400 #1FACE3",
+        "note": "Reserved for logos and Cycle 1 treatment. Use ramp steps everywhere else."
       }
     },
     "structure": {
-      "white": {
-        "hex": "#FFFFFF",
-        "role": "Backgrounds ONLY"
-      },
-      "black": {
-        "hex": "#000000",
-        "role": "Axes, ticks, labels, titles, legend text"
-      },
-      "gridline": {
-        "hex": "#E5E5E5",
-        "role": "Gridlines if essential (thin, 0.5pt)"
-      }
+      "white":    {"hex": "#FFFFFF", "role": "Page / figure backgrounds"},
+      "black":    {"hex": "#000000", "role": "Rare - axes default to neutral.900 #121719"},
+      "gridline": {"hex": "#D6DCDF", "role": "Axis furniture - neutral.200 (structure, not content)"}
+    }
+  },
+  "semantic_tokens": {
+    "light_theme": {
+      "page":       {"value": "#FFFFFF",        "source": "white",      "desc": "Document / app background"},
+      "surface":    {"value": "#F3FAFD",        "source": "neutral.50", "desc": "Cards, callouts, zebra rows"},
+      "border":     {"value": "#D6DCDF",        "source": "neutral.200","desc": "Rules, input borders"},
+      "text":       {"value": "#121719",        "source": "neutral.900","desc": "Body copy"},
+      "text_muted": {"value": "#44494B",        "source": "neutral.700","desc": "Secondary text, captions"},
+      "accent":     {"value": "#00507E",        "source": "blue.700",   "desc": "Links, primary button"},
+      "brand":      {"value": "#2DB2E8",        "source": "brand.blue", "desc": "Logo, Cycle 1 treatment arm"},
+      "signal":     {"value": "#772E11",        "source": "orange.700", "desc": "Warnings, destructive"}
+    },
+    "dark_theme": {
+      "page":       {"value": "#001A2E",        "source": "blue.900",   "desc": "Dark page background"},
+      "surface":    {"value": "#003454",        "source": "blue.800",   "desc": "Elevated cards on dark"},
+      "text":       {"value": "#F3FAFD",        "source": "neutral.50", "desc": "Body text on dark"},
+      "accent":     {"value": "#76CAF3",        "source": "blue.300",   "desc": "Links on dark"},
+      "brand":      {"value": "#2DB2E8",        "source": "brand.blue", "desc": "Brand accent on dark (7.28:1)"}
     }
   },
   "color_cycles": {
     "treatment_control": {
-      "description": "Control vs Treatment comparison (most common)",
-      "colors": ["#222222", "#2DB2E8", "#666666"],
+      "description": "Two-arm study, treatment carries the narrative. Same-hue pair with lightness hierarchy.",
+      "when": "Treatment vs control; any 2-arm design where one arm is the answer.",
+      "colors": ["#2DB2E8", "#76CAF3"],
       "assignments": {
-        "1": "Control / Baseline",
-        "2": "Treatment / Experimental",
-        "3": "Secondary comparison"
+        "1": "Treatment / experimental (brand.blue)",
+        "2": "Control / baseline (blue.300)"
       }
     },
-    "neutrals_only": {
-      "description": "All groups equal weight, no highlight needed",
-      "colors": ["#222222", "#666666", "#999999"],
-      "assignments": {
-        "1": "Group A",
-        "2": "Group B",
-        "3": "Group C"
-      }
+    "peer": {
+      "description": "N equal-weight arms; no arm carries the narrative. Blue ramp at stepped lightness; no promotion.",
+      "when": "Sibling siRNAs, cell lines, dose levels where ordering is arbitrary.",
+      "colors_4_arms": ["#003454", "#006EA6", "#1FACE3", "#B3E3FC"],
+      "colors_3_arms": ["#00507E", "#008ECB", "#76CAF3"],
+      "assignments": "blue.800/600/400/200 (4 arms) or blue.700/500/300 (3 arms)"
+    },
+    "focus": {
+      "description": "N arms with one promoted. Three background arms in receding Blue, focus arm in configurable intensity.",
+      "when": "Narrative answer is one arm of a larger set.",
+      "receding": ["#008ECB", "#76CAF3", "#B3E3FC"],
+      "focus_variants": {
+        "default":        {"hex": "#C45E39", "source": "orange.500", "use": "Categorically different focus (default)"},
+        "soft":           {"hex": "#DD8363", "source": "orange.400", "use": "Softer, less saturated promotion"},
+        "monochromatic":  {"hex": "#003454", "source": "blue.800",   "use": "More-of-the-same promotion (e.g. highest dose)"}
+      },
+      "assignments": "blue.500/300/200 receding + focus variant for promoted arm"
     },
     "opposing": {
-      "description": "Bidirectional effects (up/down, gain/loss)",
-      "colors": ["#2DB2E8", "#E8622D", "#222222"],
+      "description": "Signed or directional effects. Blue + Orange paired across the ramp.",
+      "when": "Up vs down, gain vs loss, positive vs negative effects.",
+      "colors": ["#006EA6", "#A0421D", "#B9BFC2"],
       "assignments": {
-        "1": "Direction A (e.g., Down-regulated)",
-        "2": "Direction B (e.g., Up-regulated)",
-        "3": "Neutral / Unchanged"
+        "1": "Negative / down-regulated (blue.600)",
+        "2": "Positive / up-regulated (orange.600)",
+        "3": "Non-significant / neutral (neutral.300)"
       }
     },
     "multi_category": {
-      "description": "4 categories max - MUST combine with marker shapes",
-      "colors": ["#222222", "#2DB2E8", "#666666", "#158BBB"],
+      "description": "3-4 categories with one conceptually distinct (e.g. vehicle vs compounds). If all categories are peers, use `peer` instead.",
+      "when": "Multi-compound screens, condition sets with one outlier.",
+      "colors": ["#003454", "#008ECB", "#76CAF3", "#C45E39"],
       "marker_shapes": ["circle", "square", "triangle", "diamond"],
-      "note": "If 5+ categories, redesign using faceting or small multiples"
+      "assignments": "blue.800/500/300 for peer categories + orange.500 for conceptual outlier",
+      "note": "Marker shapes MANDATORY for accessibility. If 5+ categories, redesign using faceting."
     },
     "volcano": {
       "description": "Differential expression volcano plots",
       "colors": {
-        "nonsig": "#BDBDBD",
-        "up": "#E8622D",
-        "down": "#2DB2E8"
+        "nonsig": "#B9BFC2",
+        "up":     "#A0421D",
+        "down":   "#006EA6"
+      },
+      "sources": {
+        "nonsig": "neutral.300",
+        "up":     "orange.600",
+        "down":   "blue.600"
       }
     }
   },
+  "ramp_role_mapping": {
+    "50_200":  "Fills, tints, surfaces - box fills, callout backgrounds, light emphasis panels",
+    "300":     "Light data strokes - Cycle 1 control, Cycle 2 Focus receding arms",
+    "400":     "Primary data - default for lines and markers",
+    "500_600": "Emphasis / button fills - CTAs, hover states",
+    "700":     "Text, borders, links - axis titles on light theme, heatmap extremes",
+    "800_900": "Dark page, deepest contrast - dark theme background, monochromatic Focus promotion"
+  },
   "divergent_colormap": {
-    "description": "For heatmaps with data centered at zero",
+    "description": "For heatmaps with data centered at zero (z-scores, log2 fold change). Matched lightness curves on both ramps keep perceptual distance from zero symmetric.",
     "gradient": [
-      {"position": 0.00, "color": "#0F5D7D", "label": "Extreme negative"},
-      {"position": 0.25, "color": "#2DB2E8", "label": "Moderate negative"},
-      {"position": 0.50, "color": "#FFFFFF", "label": "Zero/Neutral"},
-      {"position": 0.75, "color": "#E8622D", "label": "Moderate positive"},
-      {"position": 1.00, "color": "#7D250F", "label": "Extreme positive"}
+      {"position": 0.0, "color": "#00507E", "source": "blue.700",   "label": "Extreme negative"},
+      {"position": 0.5, "color": "#FFFFFF", "source": "white",      "label": "Zero / neutral"},
+      {"position": 1.0, "color": "#772E11", "source": "orange.700", "label": "Extreme positive"}
+    ],
+    "interpolation": "linear sRGB",
+    "requirements": [
+      "Center the colormap at zero - do not let auto-scaling shift the neutral point",
+      "Use symmetric limits when data spans both signs (e.g. -5 to +5 even if range is -3 to +5)",
+      "Always include a colorbar with ticks at meaningful intervals"
     ]
   },
   "typography": {
     "font_family": {
-      "primary": ["Arial", "Helvetica", "DejaVu Sans"],
-      "forbidden": ["Calibri", "Times New Roman", "system defaults"]
+      "primary":  ["Arial", "Helvetica", "DejaVu Sans"],
+      "mono":     ["SF Mono", "Menlo", "Consolas", "monospace"],
+      "forbidden": ["Calibri", "Times New Roman", "system defaults"],
+      "note": "DejaVu Sans is the cross-platform render target for matplotlib and ReportLab."
     },
-    "figures": {
-      "panel_labels": {"size_pt": 14, "weight": "bold", "color": "#000000"},
-      "axis_labels": {"size_pt": 12, "weight": "normal", "color": "#000000"},
-      "tick_labels": {"size_pt": 10, "weight": "normal", "color": "#000000"},
-      "legend_text": {"size_pt": 12, "weight": "normal", "color": "#000000"},
-      "annotations": {"size_pt": 10, "weight": "normal", "color": "#000000"},
-      "titles": {"size_pt": 16, "weight": "normal", "color": "#000000"}
+    "document_scale": {
+      "h1":      {"size_pt": 28,   "weight": 800, "color": "brand.blue",   "desc": "Section heading"},
+      "h2":      {"size_pt": 19,   "weight": 700, "color": "brand.blue",   "desc": "Subsection heading"},
+      "h3":      {"size_pt": 14,   "weight": 700, "color": "neutral.900",  "case": "uppercase", "letter_spacing": "0.05em", "desc": "Eyebrow / category label"},
+      "body":    {"size_pt": 14,   "weight": 400, "color": "neutral.900",  "line_height": 1.55, "desc": "Body copy"},
+      "caption": {"size_pt": 11,   "weight": 400, "color": "neutral.600",  "desc": "Captions, figure legends"}
     },
-    "documents": {
-      "body_text": {"size_pt": 11, "weight": "normal"},
-      "heading_1": {"size_pt": 14, "weight": "bold"},
-      "heading_2": {"size_pt": 12, "weight": "bold"},
-      "heading_3": {"size_pt": 11, "weight": "bold"},
-      "figure_captions": {"size_pt": 10, "style": "italic"}
+    "figure_scale": {
+      "title":       {"size_pt": 12,          "weight": 700},
+      "axis_label":  {"size_pt": 10,          "weight": 500},
+      "tick_label":  {"size_pt": 9,           "weight": 400},
+      "legend":      {"size_pt": [8.5, 9],    "weight": 400},
+      "panel_label": {"size_pt": [9, 10],     "weight": 700, "case": "uppercase", "placement": "top-left"},
+      "note": "Applies to figures rendered at document scale (print, PDF, web, 60-80cm reading). Projected slides use projection_scale."
     },
-    "presentations": {
-      "title": {"size_pt": 28, "weight": "bold"},
-      "subtitle": {"size_pt": 20, "weight": "normal"},
-      "body": {"size_pt": 18, "weight": "normal"},
-      "footer": {"size_pt": 12, "weight": "normal"}
+    "projection_scale": {
+      "heading":      {"size_pt": 28, "weight": 700},
+      "body":         {"size_pt": 18, "weight": 400},
+      "axis_label":   {"size_pt": 18, "weight": 500, "note": "Re-label in PowerPoint or scale figure up if native axis labels fall below 18pt at projected size"},
+      "context": "Projected slides (conference rooms, lecture halls). Document figure sizes disappear from the back row."
     }
   },
   "layout": {
     "figures": {
-      "background": "#FFFFFF",
-      "spines": {
-        "visible": ["left", "bottom"],
-        "hidden": ["top", "right"],
-        "width_pt": 0.8,
-        "color": "#000000"
-      },
-      "gridlines": {
-        "default": false,
-        "if_needed": {"color": "#E5E5E5", "width_pt": 0.5}
-      },
-      "legend": {
-        "frameon": false,
-        "location": "inside plot area in empty region"
-      }
+      "background":   "#FFFFFF",
+      "spines":       {"visible": ["left", "bottom"], "hidden": ["top", "right"], "width_pt": 0.8, "color": "#121719"},
+      "gridlines":    {"default": false, "if_needed": {"color": "#D6DCDF", "width_pt": 0.5, "style": "dashed", "orientation": "horizontal"}},
+      "legend":       {"frameon": false, "location": "inside plot area in empty region"},
+      "data_lines":   {"primary_pt": [1.8, 2.2], "secondary_pt": [1.0, 1.6]},
+      "markers":      {"size_pt": [5, 6], "shape": "filled circle", "outline": "white on colored fills"},
+      "error_bars":   {"width_pt": 0.75, "cap_pt": 0, "note": "Match the colour of the series they annotate."},
+      "error_bands":  {"alpha": 0.18, "border": false, "note": "CI / uncertainty bands are NOT a default Cycle 1 arm. When shown on user request, fill with the matching hue of the line at alpha 0.18, no border (see brand-colors-full.md §4 / §8.0)."}
     },
     "aspect_ratios": {
-      "time_series": "4:3",
+      "rule": "Match to the data, not the canvas.",
+      "trend_data": "Banked so the mean slope sits near 45 degrees (Cleveland).",
+      "categorical": "4:3 or 3:2 tolerated.",
       "scatter_correlation": "1:1",
-      "bar_charts": "context-dependent",
-      "heatmaps": "determined by data"
+      "heatmaps": "Determined by data dimensions",
+      "warning": "Do not stretch or squash to fill slide real estate - distorts perceived rate."
     }
   },
-  "lines_and_markers": {
-    "line_width": {
-      "primary_pt": [1.0, 1.5],
-      "secondary_pt": 0.75,
-      "error_bars_pt": 0.75
+  "figure_integrity_rules": [
+    {
+      "rule": "Zero baseline on bar charts",
+      "detail": "Bars encode quantity by length; truncated y-axis inflates differences. If truncation is unavoidable, switch to a dot plot or Cleveland dot plot."
     },
-    "marker_size_pt": [4, 6],
-    "error_bands": {
-      "opacity": [0.20, 0.30],
-      "border": false
+    {
+      "rule": "Log scales labeled as such",
+      "detail": "Axis title reads 'log10 concentration (nM)' or equivalent, with one tick per decade as the base case. Never a silent log transform."
+    },
+    {
+      "rule": "Uncertainty is shown",
+      "detail": "Error bars or individual points overlaid on summary statistics. Bar definition (SD, SEM, or 95% CI) stated on-figure in caption or legend."
+    },
+    {
+      "rule": "No 3D effects on 2D data",
+      "detail": "3D bars, 3D pies, and drop shadows distort perceived area and introduce perspective error. Flat, 2D, always."
+    },
+    {
+      "rule": "No rainbow / jet colormaps on continuous data",
+      "detail": "Rainbow has no perceptual ordering, introduces false luminance bands, and fails both CVD and grayscale. Use viridis-family or the divergent cycle for continuous scalars."
+    },
+    {
+      "rule": "No category encoded by hue alone",
+      "detail": "Combine color with shape (circle / square / triangle), line style, or direct label so the encoding survives grayscale printing, low-quality projection, and color vision deficiency."
+    },
+    {
+      "rule": "Isotype charts replicate 1:1",
+      "detail": "To show a 5:1 ratio, draw five icons beside one icon. Never one icon scaled 5x larger - area-vs-height scaling visually overstates the difference."
+    },
+    {
+      "rule": "No dual y-axes without justification",
+      "detail": "Dual y-axes invite spurious visual correlation between independently-scaled series. Reach for small multiples or a twin-panel layout first."
     }
-  },
+  ],
   "resolution": {
-    "print_publication": {"dpi": 300, "formats": ["TIFF", "PDF", "EPS"]},
+    "print_publication":   {"dpi": 300, "formats": ["PDF", "SVG", "EPS", "TIFF"]},
     "screen_presentation": {"dpi": 150, "formats": ["PNG", "PDF"]},
-    "web_preprint": {"dpi": 150, "formats": ["PNG", "SVG"]}
+    "web_preprint":        {"dpi": 150, "formats": ["PNG", "SVG"]},
+    "note": "Vector formats (PDF, EPS, SVG) are preferred for line-based figures - scale without quality loss."
   },
   "accessibility": {
-    "colorblind_safe_pair": ["#2DB2E8", "#E8622D"],
-    "requirements": [
-      "All figures must remain interpretable in grayscale",
-      "Combine color with line style, marker shape, or labels",
-      "Do not use #2DB2E8 vs #158BBB as primary differentiator",
-      "Minimum contrast: 3:1 for data, 4.5:1 for text"
+    "standard": "WCAG 2.1 Level AA (most pairs below reach AAA)",
+    "colorblind_safe": "Blue + Orange axis preserves dark-light differential under deuteranopia and protanopia because both ramps share Oklch lightness curves.",
+    "contrast_pairs_light_theme": [
+      {"fg": "#121719", "bg": "#FFFFFF", "ratio": 18.07, "level": "AAA", "use": "Body text on page"},
+      {"fg": "#44494B", "bg": "#FFFFFF", "ratio": 9.13,  "level": "AAA", "use": "Secondary text on page"},
+      {"fg": "#00507E", "bg": "#FFFFFF", "ratio": 8.58,  "level": "AAA", "use": "Links / CTA text"},
+      {"fg": "#FFFFFF", "bg": "#00507E", "ratio": 8.58,  "level": "AAA", "use": "Button label on Blue 700"},
+      {"fg": "#FFFFFF", "bg": "#772E11", "ratio": 9.62,  "level": "AAA", "use": "Accent button on Orange 700"}
+    ],
+    "contrast_pairs_dark_theme": [
+      {"fg": "#F3FAFD", "bg": "#001A2E", "ratio": 16.76, "level": "AAA", "use": "Body text on dark page"},
+      {"fg": "#76CAF3", "bg": "#001A2E", "ratio": 9.70,  "level": "AAA", "use": "Links / eyebrows on dark"},
+      {"fg": "#2DB2E8", "bg": "#001A2E", "ratio": 7.28,  "level": "AAA", "use": "Brand accent on dark"}
+    ],
+    "thresholds": {
+      "text_aa":       4.5,
+      "text_large_aa": 3.0,
+      "text_aaa":      7.0,
+      "data_elements": 3.0
+    },
+    "figure_checklist": [
+      "Grayscale version still interpretable",
+      "No category encoded by hue alone - shape, line style, or label also distinguishes",
+      "All text >= 9 pt at rendered size, AA contrast verified",
+      "Exported as 300 dpi PNG + vector (SVG/PDF)",
+      "Cycle documented in caption or YAML metadata",
+      "Alt text describes the FINDING, not the chart type (e.g. 'Bar chart shows a 2-fold increase in cell viability for the treatment group' - not 'image of a bar chart')"
     ],
     "testing_tools": [
       "Coblis Colorblind Simulator",
       "Viz Palette",
-      "matplotlib colorspacious package"
+      "matplotlib colorspacious package",
+      "matplotlib_adapter.validate_palette() (bundled)"
+    ]
+  },
+  "logo": {
+    "minimum_sizes": {
+      "digital_header_web":   {"min_width": "120 px", "clear_space": "0.5x logo height"},
+      "presentation_corner":  {"min_width": "100 px / 1.0 in", "clear_space": "0.5x logo height"},
+      "document_footer":      {"min_width": "80 px / 0.8 in", "clear_space": "0.5x logo height"},
+      "icon_standalone":      {"min_width": "24 px", "clear_space": "0.25x icon height"}
+    },
+    "usage_rules": [
+      "DO use Brand Blue wordmark on white, Neutral 50, or Neutral 100.",
+      "DO use White wordmark on Blue 700+ or Neutral 800+.",
+      "DO NOT rotate, skew, or place on low-contrast tinted backgrounds (Blue 300-500).",
+      "DO NOT include logos on publication figures - journals prohibit branding.",
+      "Use logos only on presentations, posters, and internal documents."
+    ]
+  },
+  "file_naming": {
+    "pattern": "oligon_[asset-type]_[topic]_[variant]_v[N]_[YYYY-MM].[ext]",
+    "rules": [
+      "v[N] segment is required - iterate v1 -> v2 -> v3.",
+      "Preserve prior versions until explicitly retired; never overwrite.",
+      "Year-month alone cannot disambiguate two iterations in the same month."
+    ],
+    "examples": [
+      {"name": "oligon_social_seekr-mechanism_li-square_v1_2026-04.png", "type": "LinkedIn square social tile"},
+      {"name": "oligon_deck_investor-q1_master_v3_2026-04.pptx",        "type": "Investor presentation, third iteration"},
+      {"name": "oligon_figure_km-survival_fig3_v1_2026-04.svg",          "type": "Scientific figure"}
     ]
   },
   "preflight_checklist": [
-    "White background (#FFFFFF)",
-    "Black text and axis lines (#000000)",
+    "White background (#FFFFFF) / brand ground (blue.900 for dark theme)",
+    "Axis furniture in neutral.200-300; text in neutral.900 on light, neutral.50 on dark",
     "Top and right spines removed",
-    "Correct color cycle for scientific context",
-    "Brand Blue limited to 1-2 elements per panel",
-    "No library default colors",
+    "Correct cycle for scientific context (Rule 1) and correct ramp step for visual role (Rule 2)",
+    "Brand Blue limited to 1-2 focal elements per panel",
+    "No library default colors; no retired v4 hexes (#E8622D, #7D250F, #0F5D7D, #158BBB)",
     "Redundant encoding (shapes/styles with color)",
-    "Tested in grayscale",
-    "Error bars labeled (SEM/SD/95% CI, n=?)",
-    "Arial font, 7-10 pt range",
-    "Resolution >= 300 DPI for print"
+    "Tested in grayscale and under CVD simulation",
+    "Uncertainty rendered and labeled (SEM/SD/95% CI, n=?)",
+    "Font: Arial / Helvetica / DejaVu Sans; figure scale 9-12pt, projection scale >= 18pt",
+    "Resolution >= 300 DPI for print; vector preferred for line art",
+    "Alt text describes the finding, not the chart type"
   ]
 }
