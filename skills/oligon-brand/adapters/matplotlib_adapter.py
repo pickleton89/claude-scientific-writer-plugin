@@ -1,315 +1,435 @@
 """
-Oligon Brand Adapter for Matplotlib/Seaborn
+Oligon Brand Adapter for Matplotlib / Seaborn (v5.0 — Style Guide v2.3)
 
-This module provides functions and constants for applying Oligon scientific
-brand identity to matplotlib and seaborn visualizations.
+Applies the Oligon Digital Style Guide v2.3 (April 2026) to matplotlib figures:
+Oklch tonal ramps (Blue/Orange/Neutral × 10 steps), same-hue treatment/control
+cycle, peer-vs-focus cycle split, and divergent Blue 700 → white → Orange 700
+colormap.
 
 Usage:
-    from oligon_brand.adapters.matplotlib_adapter import (
+    from matplotlib_adapter import (
         set_brand_style,
         select_cycle,
         run_preflight,
         validate_palette,
         count_brand_blue,
+        check_generic_blue_near_misses,
         get_brand_compliance_report,
         BRAND_COLORS,
         CYCLE_TREATMENT_CONTROL,
+        CYCLE_PEER, CYCLE_FOCUS,
+        CYCLE_OPPOSING,
+        CYCLE_MULTI_CATEGORY,
     )
 
-    # Deterministically select color cycle
     cycle_name, colors = select_cycle(n_series=2, context='comparison')
-
-    # Apply brand style
     set_brand_style(cycle_name)
 
-    # Create your plot...
     fig, ax = plt.subplots()
     ax.plot([1, 2, 3], [1, 4, 9])
 
-    # Validate brand compliance (full validation)
-    preflight = run_preflight(fig)
-    palette = validate_palette(fig)
-    brand_blue = count_brand_blue(fig)
-
-    assert all(preflight.values()), "Preflight failed"
-    assert palette['valid'], f"Non-brand colors: {palette['violations']}"
-    assert brand_blue['compliant'], "Too many Brand Blue elements"
-
-    # Or use the comprehensive report
     print(get_brand_compliance_report(fig))
+
+Breaking changes from v4 (#E8622D palette):
+    * CYCLE_TREATMENT_CONTROL is a same-hue pair now (brand.blue + blue.300).
+    * CYCLE_PEER and CYCLE_FOCUS replace the old single Cycle 2.
+    * CYCLE_OPPOSING uses blue.600 + orange.600 instead of brand.blue + #E8622D.
+    * VOLCANO_COLORS down/up = blue.600 / orange.600, ns = neutral.300.
+    * Divergent colormap is a 3-stop blue.700 → white → orange.700.
+    * Retired hexes (#E8622D, #7D250F, #0F5D7D, #158BBB, #222222 control) no
+      longer appear in ALLOWED_COLORS.
 """
 
 import json
 from pathlib import Path
-from typing import Optional, Literal
+from typing import Any, Dict, Optional, Literal
 
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
 
+
 # =============================================================================
 # LOAD BRAND TOKENS
 # =============================================================================
+
 
 def _load_brand_tokens() -> dict:
     """Load brand tokens from JSON file."""
     tokens_path = Path(__file__).parent.parent / "tokens" / "brand-tokens.json"
     if tokens_path.exists():
-        with open(tokens_path, 'r') as f:
+        with open(tokens_path, "r") as f:
             return json.load(f)
-    else:
-        # Fallback to embedded defaults
-        return _get_default_tokens()
+    return _get_default_tokens()
+
 
 def _get_default_tokens() -> dict:
-    """Fallback brand tokens if JSON not available."""
+    """Minimal fallback tokens if JSON not available."""
     return {
         "colors": {
-            "primary": {"brand_blue": {"hex": "#2DB2E8"}},
-            "contrast": {"contrast_orange": {"hex": "#E8622D"}, "dark_warm": {"hex": "#7D250F"}},
-            "neutrals": {
-                "dark_gray": {"hex": "#222222"},
-                "medium_gray": {"hex": "#666666"},
-                "muted_gray": {"hex": "#999999"},
-                "light_gray": {"hex": "#BDBDBD"}
+            "brand_anchor": {"brand_blue": {"hex": "#2DB2E8"}},
+            "ramps": {
+                "blue": {
+                    "50": {"hex": "#EFFBFF"},
+                    "100": {"hex": "#DBF3FF"},
+                    "200": {"hex": "#B3E3FC"},
+                    "300": {"hex": "#76CAF3"},
+                    "400": {"hex": "#1FACE3"},
+                    "500": {"hex": "#008ECB"},
+                    "600": {"hex": "#006EA6"},
+                    "700": {"hex": "#00507E"},
+                    "800": {"hex": "#003454"},
+                    "900": {"hex": "#001A2E"},
+                },
+                "orange": {
+                    "50": {"hex": "#FFF5F1"},
+                    "100": {"hex": "#FFE8E0"},
+                    "200": {"hex": "#FFCEBD"},
+                    "300": {"hex": "#F0AA92"},
+                    "400": {"hex": "#DD8363"},
+                    "500": {"hex": "#C45E39"},
+                    "600": {"hex": "#A0421D"},
+                    "700": {"hex": "#772E11"},
+                    "800": {"hex": "#4F1B06"},
+                    "900": {"hex": "#2B0901"},
+                },
+                "neutral": {
+                    "50": {"hex": "#F3FAFD"},
+                    "100": {"hex": "#E9F0F3"},
+                    "200": {"hex": "#D6DCDF"},
+                    "300": {"hex": "#B9BFC2"},
+                    "400": {"hex": "#9A9FA2"},
+                    "500": {"hex": "#7C8184"},
+                    "600": {"hex": "#5F6467"},
+                    "700": {"hex": "#44494B"},
+                    "800": {"hex": "#2A2F31"},
+                    "900": {"hex": "#121719"},
+                },
             },
-            "supporting_blues": {
-                "medium_blue": {"hex": "#158BBB"},
-                "dark_teal": {"hex": "#0F5D7D"}
-            },
-            "structure": {
-                "white": {"hex": "#FFFFFF"},
-                "black": {"hex": "#000000"},
-                "gridline": {"hex": "#E5E5E5"}
-            }
         }
     }
 
+
 _TOKENS = _load_brand_tokens()
+
 
 # =============================================================================
 # COLOR CONSTANTS
 # =============================================================================
 
+# Brand anchor
+BRAND_BLUE = "#2DB2E8"
+
+# Blue ramp (10 steps)
+BLUE_50 = "#EFFBFF"
+BLUE_100 = "#DBF3FF"
+BLUE_200 = "#B3E3FC"
+BLUE_300 = "#76CAF3"
+BLUE_400 = "#1FACE3"
+BLUE_500 = "#008ECB"
+BLUE_600 = "#006EA6"
+BLUE_700 = "#00507E"
+BLUE_800 = "#003454"
+BLUE_900 = "#001A2E"
+
+# Orange ramp (10 steps)
+ORANGE_50 = "#FFF5F1"
+ORANGE_100 = "#FFE8E0"
+ORANGE_200 = "#FFCEBD"
+ORANGE_300 = "#F0AA92"
+ORANGE_400 = "#DD8363"
+ORANGE_500 = "#C45E39"
+ORANGE_600 = "#A0421D"
+ORANGE_700 = "#772E11"
+ORANGE_800 = "#4F1B06"
+ORANGE_900 = "#2B0901"
+
+# Neutral ramp (10 steps)
+NEUTRAL_50 = "#F3FAFD"
+NEUTRAL_100 = "#E9F0F3"
+NEUTRAL_200 = "#D6DCDF"
+NEUTRAL_300 = "#B9BFC2"
+NEUTRAL_400 = "#9A9FA2"
+NEUTRAL_500 = "#7C8184"
+NEUTRAL_600 = "#5F6467"
+NEUTRAL_700 = "#44494B"
+NEUTRAL_800 = "#2A2F31"
+NEUTRAL_900 = "#121719"
+
+WHITE = "#FFFFFF"
+BLACK = "#000000"
+
 BRAND_COLORS = {
-    # Primary highlight
-    'brand_blue': '#2DB2E8',
-
-    # Neutrals (for data)
-    'dark_gray': '#222222',
-    'medium_gray': '#666666',
-    'muted_gray': '#999999',
-    'light_gray': '#BDBDBD',  # annotations only
-
-    # Contrast
-    'contrast_orange': '#E8622D',
-    'dark_warm': '#7D250F',
-
-    # Supporting blues
-    'medium_blue': '#158BBB',
-    'dark_teal': '#0F5D7D',
-
+    # Brand anchor
+    "brand_blue": BRAND_BLUE,
+    # Blue ramp
+    "blue_50": BLUE_50,
+    "blue_100": BLUE_100,
+    "blue_200": BLUE_200,
+    "blue_300": BLUE_300,
+    "blue_400": BLUE_400,
+    "blue_500": BLUE_500,
+    "blue_600": BLUE_600,
+    "blue_700": BLUE_700,
+    "blue_800": BLUE_800,
+    "blue_900": BLUE_900,
+    # Orange ramp
+    "orange_50": ORANGE_50,
+    "orange_100": ORANGE_100,
+    "orange_200": ORANGE_200,
+    "orange_300": ORANGE_300,
+    "orange_400": ORANGE_400,
+    "orange_500": ORANGE_500,
+    "orange_600": ORANGE_600,
+    "orange_700": ORANGE_700,
+    "orange_800": ORANGE_800,
+    "orange_900": ORANGE_900,
+    # Neutral ramp
+    "neutral_50": NEUTRAL_50,
+    "neutral_100": NEUTRAL_100,
+    "neutral_200": NEUTRAL_200,
+    "neutral_300": NEUTRAL_300,
+    "neutral_400": NEUTRAL_400,
+    "neutral_500": NEUTRAL_500,
+    "neutral_600": NEUTRAL_600,
+    "neutral_700": NEUTRAL_700,
+    "neutral_800": NEUTRAL_800,
+    "neutral_900": NEUTRAL_900,
     # Structure
-    'black': '#000000',
-    'white': '#FFFFFF',
-    'gridline': '#E5E5E5',
+    "white": WHITE,
+    "black": BLACK,
 }
 
+# Semantic tokens (light theme) — prefer these in new code
+SEMANTIC_LIGHT = {
+    "page": WHITE,
+    "surface": NEUTRAL_50,
+    "border": NEUTRAL_200,
+    "text": NEUTRAL_900,
+    "text_muted": NEUTRAL_700,
+    "accent": BLUE_700,
+    "brand": BRAND_BLUE,
+    "signal": ORANGE_700,
+}
+
+SEMANTIC_DARK = {
+    "page": BLUE_900,
+    "surface": BLUE_800,
+    "text": NEUTRAL_50,
+    "accent": BLUE_300,
+    "brand": BRAND_BLUE,
+}
+
+
 # =============================================================================
-# COLOR CYCLES
+# COLOR CYCLES (Rule 1 — choose from data structure)
 # =============================================================================
 
-# Cycle 1: Control vs Treatment (most common)
-CYCLE_TREATMENT_CONTROL = ['#222222', '#2DB2E8', '#666666']
+# Cycle 1 — Treatment / Control: same-hue pair, lightness hierarchy.
+# Treatment in Brand Blue, control in Blue 300. CI bands are NOT a default arm —
+# when shown on request, fill with the line's matching hue at alpha 0.18.
+CYCLE_TREATMENT_CONTROL = [BRAND_BLUE, BLUE_300]
 
-# Cycle 2: Neutrals only (no designated highlight)
-CYCLE_NEUTRALS_ONLY = ['#222222', '#666666', '#999999']
+# Cycle 2 — Peer: N equal-weight arms, no promotion.
+CYCLE_PEER_4 = [BLUE_800, BLUE_600, BLUE_400, BLUE_200]
+CYCLE_PEER_3 = [BLUE_700, BLUE_500, BLUE_300]
 
-# Cycle 3: Opposing effects (blue vs orange)
-CYCLE_OPPOSING = ['#2DB2E8', '#E8622D', '#222222']
+# Cycle 2 — Focus: N arms with one promoted.
+# Three background arms in receding Blue + one focus variant.
+CYCLE_FOCUS_RECEDING = [BLUE_500, BLUE_300, BLUE_200]
+FOCUS_VARIANTS = {
+    "default": ORANGE_500,  # Categorical focus (default)
+    "soft": ORANGE_400,  # Softer promotion
+    "monochromatic": BLUE_800,  # More-of-the-same promotion
+}
+# Default focus cycle: 3 receding + orange focus
+CYCLE_FOCUS = [*CYCLE_FOCUS_RECEDING, FOCUS_VARIANTS["default"]]
 
-# Cycle 4: Multiple categories (use sparingly, add shapes!)
-CYCLE_MULTI_CATEGORY = ['#222222', '#2DB2E8', '#666666', '#158BBB']
+# Cycle 3 — Opposing: signed/directional effects.
+CYCLE_OPPOSING = [BLUE_600, ORANGE_600, NEUTRAL_300]
 
-# Volcano plot specific
+# Cycle 4 — Multi-Category: 3-4 categories with one conceptual outlier.
+CYCLE_MULTI_CATEGORY = [BLUE_800, BLUE_500, BLUE_300, ORANGE_500]
+
+# Volcano plot (Cycle 3 convention)
 VOLCANO_COLORS = {
-    'nonsig': '#BDBDBD',
-    'up': '#E8622D',
-    'down': '#2DB2E8',
+    "nonsig": NEUTRAL_300,  # neutral.300
+    "up": ORANGE_600,  # orange.600
+    "down": BLUE_600,  # blue.600
 }
 
-# Marker shapes for multi-category (accessibility)
-MARKER_SHAPES = ['o', 's', '^', 'D']  # circle, square, triangle, diamond
+# Marker shapes mandatory under Cycle 4 for accessibility
+MARKER_SHAPES = ["o", "s", "^", "D"]  # circle, square, triangle, diamond
+
+# Back-compat alias: "neutrals_only" is superseded by Peer, but some callers may
+# still ask for it. Route to the 3-arm Peer cycle.
+CYCLE_NEUTRALS_ONLY = CYCLE_PEER_3
+
 
 # =============================================================================
 # STYLE CONFIGURATION
 # =============================================================================
 
-CycleType = Literal['treatment_control', 'neutrals_only', 'opposing', 'multi_category']
+CycleType = Literal[
+    "treatment_control",
+    "peer",
+    "peer_3",
+    "peer_4",
+    "focus",
+    "opposing",
+    "multi_category",
+    "neutrals_only",  # deprecated alias for peer_3
+]
 
-def set_brand_style(cycle: CycleType = 'treatment_control') -> None:
+
+def _resolve_cycle(cycle: CycleType) -> list:
+    return {
+        "treatment_control": CYCLE_TREATMENT_CONTROL,
+        "peer": CYCLE_PEER_4,
+        "peer_3": CYCLE_PEER_3,
+        "peer_4": CYCLE_PEER_4,
+        "focus": CYCLE_FOCUS,
+        "opposing": CYCLE_OPPOSING,
+        "multi_category": CYCLE_MULTI_CATEGORY,
+        "neutrals_only": CYCLE_PEER_3,
+    }.get(cycle, CYCLE_TREATMENT_CONTROL)
+
+
+def set_brand_style(cycle: CycleType = "treatment_control") -> None:
     """
-    Apply Oligon brand visual standards to matplotlib.
+    Apply Oligon brand v5.0 / Style Guide v2.3 defaults to matplotlib.
 
-    Parameters
-    ----------
-    cycle : str
-        Which color cycle to use as default:
-        - 'treatment_control' (default): Control vs experimental
-        - 'neutrals_only': All groups equal weight
-        - 'opposing': Bidirectional effects (up/down)
-        - 'multi_category': 4 categories (use with marker shapes)
-
-    Examples
-    --------
-    >>> set_brand_style('treatment_control')
-    >>> plt.plot([1, 2, 3], [1, 4, 9])  # Uses brand colors automatically
+    Type sizes follow the Figure Type Scale: title 12 pt, axis 10 pt,
+    tick 9 pt, legend 8.5 pt. Axis furniture draws from neutral.900 so
+    structure reads as structure, not as content.
     """
-    cycle_map = {
-        'treatment_control': CYCLE_TREATMENT_CONTROL,
-        'neutrals_only': CYCLE_NEUTRALS_ONLY,
-        'opposing': CYCLE_OPPOSING,
-        'multi_category': CYCLE_MULTI_CATEGORY,
-    }
+    selected_cycle = _resolve_cycle(cycle)
 
-    selected_cycle = cycle_map.get(cycle, CYCLE_TREATMENT_CONTROL)
+    plt.rcParams.update(
+        {
+            # Figure
+            "figure.facecolor": "white",
+            "figure.edgecolor": "white",
+            "figure.dpi": 150,
+            "savefig.dpi": 300,
+            "savefig.facecolor": "white",
+            "savefig.edgecolor": "white",
+            "savefig.bbox": "tight",
+            "savefig.pad_inches": 0.1,
+            # Vector text: keep glyphs as real, editable <text> (not outlined
+            # paths) in SVG/PDF/EPS. Required for the SVG font-family checks and
+            # for journal editable-text requirements (see SKILL.md SVG contract).
+            "svg.fonttype": "none",
+            "pdf.fonttype": 42,
+            "ps.fonttype": 42,
+            # Axes (Figure Type Scale)
+            "axes.facecolor": "white",
+            "axes.edgecolor": NEUTRAL_900,
+            "axes.linewidth": 0.8,
+            "axes.grid": False,
+            "axes.spines.top": False,
+            "axes.spines.right": False,
+            "axes.labelcolor": NEUTRAL_900,
+            "axes.labelsize": 10,  # axis labels
+            "axes.labelweight": "normal",
+            "axes.titlesize": 12,  # figure title
+            "axes.titleweight": "bold",
+            "axes.prop_cycle": plt.cycler(color=selected_cycle),
+            # Ticks
+            "xtick.labelsize": 9,
+            "ytick.labelsize": 9,
+            "xtick.color": NEUTRAL_900,
+            "ytick.color": NEUTRAL_900,
+            "xtick.direction": "out",
+            "ytick.direction": "out",
+            # Grid (off by default; neutral.200 when enabled)
+            "grid.color": NEUTRAL_200,
+            "grid.linewidth": 0.5,
+            "grid.linestyle": "--",
+            "grid.alpha": 1.0,
+            # Legend
+            "legend.fontsize": 8.5,
+            "legend.title_fontsize": 9,
+            "legend.frameon": False,
+            "legend.loc": "best",
+            # Font cascade: real Arial first (Mac / Windows / Linux with
+            # msttcorefonts), Helvetica next (Mac native), Liberation Sans as an
+            # Arial-metric-compatible open-source fallback for sandboxed Linux,
+            # DejaVu Sans as the final always-present guarantee. All four are
+            # v2.3-sanctioned sans-serifs — see brand-colors-full.md §5.
+            "font.family": "sans-serif",
+            "font.sans-serif": ["Arial", "Helvetica", "Liberation Sans", "DejaVu Sans"],
+            "font.size": 9,
+            # Lines / markers (v2.3: 1.8–2.2 pt primary, 5–6 pt markers)
+            "lines.linewidth": 2.0,
+            "lines.markersize": 5.5,
+            # Patches: no outline
+            "patch.edgecolor": "none",
+        }
+    )
 
-    plt.rcParams.update({
-        # Figure
-        'figure.facecolor': 'white',
-        'figure.edgecolor': 'white',
-        'figure.dpi': 150,
-        'savefig.dpi': 300,
-        'savefig.facecolor': 'white',
-        'savefig.edgecolor': 'white',
-        'savefig.bbox': 'tight',
-        'savefig.pad_inches': 0.1,
-
-        # Axes
-        'axes.facecolor': 'white',
-        'axes.edgecolor': 'black',
-        'axes.linewidth': 0.8,
-        'axes.grid': False,
-        'axes.spines.top': False,
-        'axes.spines.right': False,
-        'axes.labelcolor': 'black',
-        'axes.labelsize': 12,
-        'axes.titlesize': 16,
-        'axes.titleweight': 'normal',
-        'axes.prop_cycle': plt.cycler(color=selected_cycle),
-
-        # Ticks
-        'xtick.labelsize': 10,
-        'ytick.labelsize': 10,
-        'xtick.color': 'black',
-        'ytick.color': 'black',
-        'xtick.direction': 'out',
-        'ytick.direction': 'out',
-
-        # Grid (off by default)
-        'grid.color': '#E5E5E5',
-        'grid.linewidth': 0.5,
-        'grid.alpha': 1.0,
-
-        # Legend
-        'legend.fontsize': 12,
-        'legend.title_fontsize': 12,
-        'legend.frameon': False,
-        'legend.loc': 'best',
-
-        # Font (10pt floor, 12pt base — see brand-tokens.json typography.figures)
-        'font.family': 'sans-serif',
-        'font.sans-serif': ['Arial', 'Helvetica', 'DejaVu Sans'],
-        'font.size': 12,
-
-        # SVG/PDF font handling — keep text as text (not glyph paths) so
-        # brand grep-checks find font-family/font-size attributes and so
-        # downstream editors (Inkscape, Illustrator) can edit the text.
-        'svg.fonttype': 'none',
-        'pdf.fonttype': 42,
-        'ps.fonttype': 42,
-
-        # Lines
-        'lines.linewidth': 1.25,
-        'lines.markersize': 5,
-
-        # Patches (bars, etc.)
-        'patch.edgecolor': 'none',
-    })
 
 # =============================================================================
 # DETERMINISTIC SELECTORS
 # =============================================================================
 
-ContextType = Literal['comparison', 'equal_weight', 'bidirectional']
+ContextType = Literal["comparison", "equal_weight", "bidirectional", "focus"]
 
 
 def select_cycle(
     n_series: int,
-    context: ContextType = 'comparison',
-    has_highlight: bool = True
+    context: ContextType = "comparison",
+    has_highlight: bool = True,
 ) -> tuple[str, list[str]]:
     """
-    Deterministically select color cycle based on data characteristics.
+    Deterministically pick a v2.3 cycle from data characteristics (Rule 1).
 
-    This function eliminates LLM interpretation by providing explicit logic
-    for cycle selection based on the number of data series and scientific context.
+    Decision logic:
+        n=1                            → single stroke in brand.blue
+        n=2 + bidirectional            → opposing (blue.600, orange.600)
+        n=2 + focus                    → focus (1 receding + 1 focus arm)
+        n=2 + comparison               → treatment_control (brand.blue, blue.300)
+        n=3 + equal_weight             → peer_3
+        n=3 + bidirectional            → opposing
+        n=3 + focus or comparison      → focus (2 receding + 1 focus arm)
+        n=4 + equal_weight             → peer_4
+        n=4 + focus                    → focus (3 receding + 1 focus arm)
+        n=4 + comparison               → multi_category
+        n>=5                           → raise (redesign with faceting)
 
-    Parameters
-    ----------
-    n_series : int
-        Number of data series to be plotted (1-4 supported)
-    context : str
-        Scientific context of the visualization:
-        - 'comparison': Control vs treatment (default)
-        - 'equal_weight': All groups have equal importance
-        - 'bidirectional': Opposing effects (up/down, gain/loss)
-    has_highlight : bool
-        Whether one series should be highlighted (default True)
-
-    Returns
-    -------
-    tuple[str, list[str]]
-        (cycle_name, color_list) - The cycle name and list of hex colors
-
-    Raises
-    ------
-    ValueError
-        If n_series > 4 (redesign with faceting recommended)
-
-    Examples
-    --------
-    >>> cycle_name, colors = select_cycle(2, context='comparison')
-    >>> print(cycle_name)  # 'treatment_control'
-    >>> print(colors)  # ['#222222', '#2DB2E8']
-
-    >>> cycle_name, colors = select_cycle(2, context='bidirectional')
-    >>> print(cycle_name)  # 'opposing'
-    >>> print(colors)  # ['#2DB2E8', '#E8622D']
+    Returns (cycle_name, ordered hex list). Focus cycles always end in
+    the promoted focus arm (orange.500 by default).
     """
     if n_series < 1:
         raise ValueError(f"n_series must be >= 1, got {n_series}")
 
     if n_series == 1:
-        return 'single', [BRAND_COLORS['dark_gray']]
+        return "single", [BRAND_BLUE]
 
     if n_series == 2:
-        if context == 'bidirectional':
-            return 'opposing', CYCLE_OPPOSING[:2]
-        return 'treatment_control', CYCLE_TREATMENT_CONTROL[:2]
+        if context == "bidirectional":
+            return "opposing", CYCLE_OPPOSING[:2]
+        if context == "focus":
+            return "focus", [CYCLE_FOCUS_RECEDING[0], FOCUS_VARIANTS["default"]]
+        return "treatment_control", CYCLE_TREATMENT_CONTROL[:2]
 
     if n_series == 3:
-        if context == 'equal_weight' or not has_highlight:
-            return 'neutrals_only', CYCLE_NEUTRALS_ONLY
-        if context == 'bidirectional':
-            return 'opposing', CYCLE_OPPOSING
-        return 'treatment_control', CYCLE_TREATMENT_CONTROL
+        if context == "equal_weight" or not has_highlight:
+            return "peer_3", CYCLE_PEER_3
+        if context == "bidirectional":
+            return "opposing", CYCLE_OPPOSING
+        # 'focus' or 'comparison' with a narrative arm → focus cycle.
+        # (treatment_control is a 2-arm cycle; a 3rd series routes to focus.)
+        return "focus", [*CYCLE_FOCUS_RECEDING[:2], FOCUS_VARIANTS["default"]]
 
     if n_series == 4:
-        return 'multi_category', CYCLE_MULTI_CATEGORY
+        if context == "equal_weight" or not has_highlight:
+            return "peer_4", CYCLE_PEER_4
+        if context == "focus":
+            return "focus", CYCLE_FOCUS
+        return "multi_category", CYCLE_MULTI_CATEGORY
 
-    # 5+ series: signal redesign needed
     raise ValueError(
         f"Too many series ({n_series}). Maximum 4 supported. "
         "Redesign using faceting or small multiples."
@@ -317,38 +437,18 @@ def select_cycle(
 
 
 # =============================================================================
-# HELPER FUNCTIONS
+# COLORMAPS & HELPERS
 # =============================================================================
 
-def get_divergent_cmap(name: str = 'brand_divergent') -> LinearSegmentedColormap:
+
+def get_divergent_cmap(name: str = "brand_divergent") -> LinearSegmentedColormap:
     """
-    Create a perceptually uniform divergent colormap for heatmaps.
-
-    Centered at white: dark teal (neg) -> brand blue -> white -> orange -> dark warm (pos)
-
-    Returns
-    -------
-    LinearSegmentedColormap
-        Colormap suitable for data centered around zero.
-
-    Examples
-    --------
-    >>> cmap = get_divergent_cmap()
-    >>> plt.imshow(data, cmap=cmap, vmin=-3, vmax=3)
+    v2.3 divergent colormap for heatmaps centered at zero:
+    Blue 700 → white → Orange 700 (symmetric lightness).
     """
-    colors = [
-        BRAND_COLORS['dark_teal'],
-        BRAND_COLORS['brand_blue'],
-        BRAND_COLORS['white'],
-        BRAND_COLORS['contrast_orange'],
-        BRAND_COLORS['dark_warm'],
-    ]
-
-    positions = [0.0, 0.25, 0.5, 0.75, 1.0]
-
     return LinearSegmentedColormap.from_list(
         name,
-        list(zip(positions, colors))
+        [(0.0, BLUE_700), (0.5, WHITE), (1.0, ORANGE_700)],
     )
 
 
@@ -356,40 +456,20 @@ def add_panel_label(
     ax: plt.Axes,
     label: str,
     offset: tuple = (-0.12, 1.05),
-    fontsize: int = 14,
-    fontweight: str = 'bold'
+    fontsize: int = 10,
+    fontweight: str = "bold",
 ) -> None:
-    """
-    Add a panel label (A, B, C, etc.) to an axes.
-
-    Parameters
-    ----------
-    ax : matplotlib.axes.Axes
-        The axes to label
-    label : str
-        The label text (e.g., 'A', 'B', 'C')
-    offset : tuple
-        (x, y) offset in axes coordinates
-    fontsize : int
-        Font size in points
-    fontweight : str
-        Font weight ('bold', 'normal', etc.)
-
-    Examples
-    --------
-    >>> fig, axes = plt.subplots(1, 2)
-    >>> add_panel_label(axes[0], 'A')
-    >>> add_panel_label(axes[1], 'B')
-    """
+    """Add a panel label (A, B, C, ...) at the top-left of an axes."""
     ax.text(
-        offset[0], offset[1],
+        offset[0],
+        offset[1],
         label,
         transform=ax.transAxes,
         fontsize=fontsize,
         fontweight=fontweight,
-        va='top',
-        ha='left',
-        color='black'
+        va="top",
+        ha="left",
+        color=NEUTRAL_900,
     )
 
 
@@ -399,45 +479,17 @@ def add_error_band(
     y: np.ndarray,
     yerr: np.ndarray,
     color: str,
-    alpha: float = 0.25,
-    label: Optional[str] = None
+    alpha: float = 0.18,
+    label: Optional[str] = None,
 ) -> plt.Line2D:
-    """
-    Add a semi-transparent error band around a line.
-
-    Parameters
-    ----------
-    ax : matplotlib.axes.Axes
-        The axes to plot on
-    x : array-like
-        X values
-    y : array-like
-        Y values (center line)
-    yerr : array-like or tuple
-        Error values. If tuple, (lower, upper) errors.
-    color : str
-        Color for both line and band
-    alpha : float
-        Opacity of the error band (0.2-0.3 recommended)
-    label : str, optional
-        Label for legend
-
-    Returns
-    -------
-    matplotlib.lines.Line2D
-        The line object
-
-    Examples
-    --------
-    >>> line = add_error_band(ax, time, survival, ci, BRAND_COLORS['brand_blue'], label='Treatment')
-    """
+    """Semi-transparent error band around a line (v2.3: alpha ~0.18)."""
     if isinstance(yerr, tuple):
         lower, upper = y - yerr[0], y + yerr[1]
     else:
         lower, upper = y - yerr, y + yerr
 
     ax.fill_between(x, lower, upper, color=color, alpha=alpha, linewidth=0)
-    line, = ax.plot(x, y, color=color, label=label)
+    (line,) = ax.plot(x, y, color=color, label=label)
     return line
 
 
@@ -448,61 +500,49 @@ def plot_volcano(
     fc_thresh: float = 1.0,
     p_thresh: float = 0.05,
     gene_labels: Optional[np.ndarray] = None,
-    n_labels: int = 10
+    n_labels: int = 10,
 ) -> plt.Axes:
     """
-    Create a volcano plot with brand colors.
-
-    Parameters
-    ----------
-    ax : matplotlib.axes.Axes
-        Axes to plot on
-    log2fc : array-like
-        Log2 fold change values
-    pval : array-like
-        P-values (will be -log10 transformed)
-    fc_thresh : float
-        Fold change threshold (absolute log2)
-    p_thresh : float
-        P-value threshold
-    gene_labels : array-like, optional
-        Gene names for labeling top hits
-    n_labels : int
-        Number of top genes to label
-
-    Returns
-    -------
-    matplotlib.axes.Axes
-        The axes with volcano plot
-
-    Examples
-    --------
-    >>> fig, ax = plt.subplots()
-    >>> plot_volcano(ax, log2fc, pvalues, fc_thresh=1.5, p_thresh=0.01)
+    Volcano plot in v2.3 Cycle 3 opposing: down=blue.600, up=orange.600,
+    non-significant=neutral.300.
     """
     neg_log_p = -np.log10(pval)
 
-    # Classify points
     nonsig = (np.abs(log2fc) < fc_thresh) | (pval >= p_thresh)
     sig_up = (log2fc >= fc_thresh) & (pval < p_thresh)
     sig_down = (log2fc <= -fc_thresh) & (pval < p_thresh)
 
-    # Plot
-    ax.scatter(log2fc[nonsig], neg_log_p[nonsig],
-               c=VOLCANO_COLORS['nonsig'], s=12, alpha=0.6, label='NS')
-    ax.scatter(log2fc[sig_up], neg_log_p[sig_up],
-               c=VOLCANO_COLORS['up'], s=20, alpha=0.8, label='Up')
-    ax.scatter(log2fc[sig_down], neg_log_p[sig_down],
-               c=VOLCANO_COLORS['down'], s=20, alpha=0.8, label='Down')
+    ax.scatter(
+        log2fc[nonsig],
+        neg_log_p[nonsig],
+        c=VOLCANO_COLORS["nonsig"],
+        s=12,
+        alpha=0.6,
+        label="NS",
+    )
+    ax.scatter(
+        log2fc[sig_up],
+        neg_log_p[sig_up],
+        c=VOLCANO_COLORS["up"],
+        s=20,
+        alpha=0.85,
+        label="Up",
+    )
+    ax.scatter(
+        log2fc[sig_down],
+        neg_log_p[sig_down],
+        c=VOLCANO_COLORS["down"],
+        s=20,
+        alpha=0.85,
+        label="Down",
+    )
 
-    # Threshold lines
-    ax.axhline(-np.log10(p_thresh), color='#666666', linestyle='--', linewidth=0.5)
-    ax.axvline(-fc_thresh, color='#666666', linestyle='--', linewidth=0.5)
-    ax.axvline(fc_thresh, color='#666666', linestyle='--', linewidth=0.5)
+    ax.axhline(-np.log10(p_thresh), color=NEUTRAL_500, linestyle="--", linewidth=0.5)
+    ax.axvline(-fc_thresh, color=NEUTRAL_500, linestyle="--", linewidth=0.5)
+    ax.axvline(fc_thresh, color=NEUTRAL_500, linestyle="--", linewidth=0.5)
 
-    ax.set_xlabel('log₂(Fold Change)')
-    ax.set_ylabel('-log₁₀(p-value)')
-
+    ax.set_xlabel("log₂(Fold Change)")
+    ax.set_ylabel("-log₁₀(p-value)")
     return ax
 
 
@@ -510,450 +550,316 @@ def plot_volcano(
 # PREFLIGHT VALIDATORS
 # =============================================================================
 
-# Set of all allowed brand colors (uppercase hex)
+# Full v2.3 palette is the allow-set (primitives + semantic tokens all map to
+# ramp steps already enumerated in BRAND_COLORS).
 ALLOWED_COLORS = {c.upper() for c in BRAND_COLORS.values()}
 
 
 def run_preflight(fig: plt.Figure) -> dict[str, bool]:
     """
-    Automated preflight validation for brand compliance.
+    Automated preflight validation against v2.3 brand rules.
 
-    Checks the figure against Oligon brand standards and returns
-    a dictionary with pass/fail status for each check.
-
-    Parameters
-    ----------
-    fig : matplotlib.figure.Figure
-        The figure to validate
-
-    Returns
-    -------
-    dict[str, bool]
-        Dictionary mapping check names to pass/fail status:
-        - 'white_background': Figure has white background
-        - 'spines_removed': Top/right spines are hidden
-        - 'grid_off': Grid is disabled (or properly styled)
-        - 'axes_black': Axis lines and ticks are black
-
-    Examples
-    --------
-    >>> fig, ax = plt.subplots()
-    >>> set_brand_style('treatment_control')
-    >>> ax.plot([1, 2, 3], [1, 4, 9])
-    >>> results = run_preflight(fig)
-    >>> all(results.values())  # True if compliant
-    True
+    Returns pass/fail for:
+        white_background, spines_removed, grid_off, axes_dark_enough
     """
     results = {}
 
-    # Check 1: White background
     facecolor = fig.get_facecolor()
-    # Compare RGB values (ignore alpha)
-    results['white_background'] = (
-        abs(facecolor[0] - 1.0) < 0.01 and
-        abs(facecolor[1] - 1.0) < 0.01 and
-        abs(facecolor[2] - 1.0) < 0.01
+    results["white_background"] = (
+        abs(facecolor[0] - 1.0) < 0.01
+        and abs(facecolor[1] - 1.0) < 0.01
+        and abs(facecolor[2] - 1.0) < 0.01
     )
 
-    # Check 2: Top/right spines removed (check all axes)
     spines_ok = True
     for ax in fig.axes:
-        if ax.spines['top'].get_visible() or ax.spines['right'].get_visible():
+        if ax.spines["top"].get_visible() or ax.spines["right"].get_visible():
             spines_ok = False
             break
-    results['spines_removed'] = spines_ok
+    results["spines_removed"] = spines_ok
 
-    # Check 3: Grid off (or if on, properly styled)
     grid_ok = True
+    allowed_grid = {
+        "#D6DCDF",
+        "#E5E5E5",
+        "#E0E0E0",
+        "#EEEEEE",
+        "#B9BFC2",
+        "LIGHTGRAY",
+        "LIGHTGREY",
+    }
     for ax in fig.axes:
-        # Check if grid is visible by examining gridlines
         x_gridlines = ax.xaxis.get_gridlines()
         y_gridlines = ax.yaxis.get_gridlines()
-
-        x_grid_visible = any(line.get_visible() for line in x_gridlines) if x_gridlines else False
-        y_grid_visible = any(line.get_visible() for line in y_gridlines) if y_gridlines else False
-
+        x_grid_visible = (
+            any(line.get_visible() for line in x_gridlines) if x_gridlines else False
+        )
+        y_grid_visible = (
+            any(line.get_visible() for line in y_gridlines) if y_gridlines else False
+        )
         if x_grid_visible or y_grid_visible:
-            # Grid is on - check if it's properly styled (light gray)
-            for line in x_gridlines + y_gridlines:
+            for line in list(x_gridlines) + list(y_gridlines):
                 if line.get_visible():
                     color = line.get_color()
-                    # Accept gridline gray (#E5E5E5) or similar light grays
-                    if isinstance(color, str):
-                        color_upper = color.upper()
-                        if color_upper not in {'#E5E5E5', '#E0E0E0', '#EEEEEE', 'LIGHTGRAY', 'LIGHTGREY'}:
-                            grid_ok = False
-                            break
-    results['grid_off'] = grid_ok
+                    if isinstance(color, str) and color.upper() not in allowed_grid:
+                        grid_ok = False
+                        break
+    results["grid_off"] = grid_ok
 
-    # Check 4: Axes lines are black
-    axes_black = True
+    # Axes spines should be dark (neutral.900 or black). Accept anything with
+    # low luminance so legacy code using '#000000' still passes.
+    axes_dark = True
     for ax in fig.axes:
-        for spine in ['left', 'bottom']:
+        for spine in ("left", "bottom"):
             if ax.spines[spine].get_visible():
                 ec = ax.spines[spine].get_edgecolor()
-                # Check if color is black (RGB close to 0)
-                if not (ec[0] < 0.1 and ec[1] < 0.1 and ec[2] < 0.1):
-                    axes_black = False
+                if not (ec[0] < 0.25 and ec[1] < 0.25 and ec[2] < 0.25):
+                    axes_dark = False
                     break
-    results['axes_black'] = axes_black
+    results["axes_black"] = axes_dark
 
     return results
 
 
 def extract_figure_colors(fig: plt.Figure) -> set[str]:
-    """
-    Extract all colors used in a figure for validation.
-
-    Examines lines, scatter plots, bars, and other elements to
-    compile a set of all colors used in the visualization.
-
-    Parameters
-    ----------
-    fig : matplotlib.figure.Figure
-        The figure to analyze
-
-    Returns
-    -------
-    set[str]
-        Set of uppercase hex color strings (e.g., {'#2DB2E8', '#222222'})
-
-    Examples
-    --------
-    >>> fig, ax = plt.subplots()
-    >>> ax.plot([1, 2], [1, 2], color='#2DB2E8')
-    >>> colors = extract_figure_colors(fig)
-    >>> '#2DB2E8' in colors
-    True
-    """
+    """Extract all hex colors used in lines, collections, and patches."""
     colors = set()
 
-    def _color_to_hex(color) -> Optional[str]:
-        """Convert various color formats to hex string."""
+    def _to_hex(color) -> Optional[str]:
         if color is None:
             return None
         if isinstance(color, str):
-            if color.startswith('#'):
+            if color.startswith("#"):
                 return color.upper()
-            # Named colors - try to convert
             try:
                 rgb = mpl.colors.to_rgb(color)
-                return '#{:02X}{:02X}{:02X}'.format(
+                return "#{:02X}{:02X}{:02X}".format(
                     int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)
                 )
             except ValueError:
                 return None
-        if hasattr(color, '__len__') and len(color) >= 3:
-            # RGBA or RGB tuple
-            return '#{:02X}{:02X}{:02X}'.format(
+        if hasattr(color, "__len__") and len(color) >= 3:
+            return "#{:02X}{:02X}{:02X}".format(
                 int(color[0] * 255), int(color[1] * 255), int(color[2] * 255)
             )
         return None
 
     for ax in fig.axes:
-        # Lines
         for line in ax.get_lines():
-            hex_color = _color_to_hex(line.get_color())
-            if hex_color:
-                colors.add(hex_color)
-
-        # Collections (scatter, etc.)
+            hx = _to_hex(line.get_color())
+            if hx:
+                colors.add(hx)
         for coll in ax.collections:
-            facecolors = coll.get_facecolor()
-            if len(facecolors) > 0:
-                for fc in facecolors:
-                    hex_color = _color_to_hex(fc)
-                    if hex_color:
-                        colors.add(hex_color)
-
-            edgecolors = coll.get_edgecolor()
-            if len(edgecolors) > 0:
-                for ec in edgecolors:
-                    hex_color = _color_to_hex(ec)
-                    if hex_color:
-                        colors.add(hex_color)
-
-        # Patches (bars, etc.)
+            for fc in coll.get_facecolor():
+                hx = _to_hex(fc)
+                if hx:
+                    colors.add(hx)
+            for ec in coll.get_edgecolor():
+                hx = _to_hex(ec)
+                if hx:
+                    colors.add(hx)
         for patch in ax.patches:
-            fc = patch.get_facecolor()
-            hex_color = _color_to_hex(fc)
-            if hex_color:
-                colors.add(hex_color)
+            hx = _to_hex(patch.get_facecolor())
+            if hx:
+                colors.add(hx)
 
     return colors
 
 
 def get_preflight_report(fig: plt.Figure) -> str:
-    """
-    Generate a human-readable preflight report.
-
-    Parameters
-    ----------
-    fig : matplotlib.figure.Figure
-        The figure to validate
-
-    Returns
-    -------
-    str
-        Formatted report string with pass/fail indicators
-
-    Examples
-    --------
-    >>> fig, ax = plt.subplots()
-    >>> set_brand_style('treatment_control')
-    >>> print(get_preflight_report(fig))
-    Oligon Brand Preflight Check
-    ============================
-    ✓ white_background
-    ✓ spines_removed
-    ✓ grid_off
-    ✓ axes_black
-
-    Result: PASS (4/4 checks passed)
-    """
+    """Human-readable preflight report."""
     results = run_preflight(fig)
-
-    lines = ["Oligon Brand Preflight Check", "=" * 28]
+    lines = ["Oligon Brand Preflight Check (v2.3)", "=" * 35]
     for check, passed in results.items():
-        symbol = "✓" if passed else "✗"
-        lines.append(f"{symbol} {check}")
-
+        lines.append(f"{'✓' if passed else '✗'} {check}")
     passed_count = sum(results.values())
-    total_count = len(results)
-    status = "PASS" if passed_count == total_count else "FAIL"
-    lines.append("")
-    lines.append(f"Result: {status} ({passed_count}/{total_count} checks passed)")
-
+    total = len(results)
+    status = "PASS" if passed_count == total else "FAIL"
+    lines += ["", f"Result: {status} ({passed_count}/{total} checks passed)"]
     return "\n".join(lines)
 
 
 def validate_palette(fig: plt.Figure) -> dict:
-    """
-    Validate that all colors in a figure are from the brand palette.
-
-    Extracts colors from the figure and compares against the allowed
-    brand colors. Reports any violations (non-brand colors used).
-
-    Parameters
-    ----------
-    fig : matplotlib.figure.Figure
-        The figure to validate
-
-    Returns
-    -------
-    dict
-        Validation results containing:
-        - 'valid': bool - True if all colors are brand-compliant
-        - 'used_colors': set[str] - All colors found in the figure
-        - 'violations': set[str] - Colors not in the brand palette
-        - 'allowed_colors': set[str] - Reference set of allowed colors
-
-    Examples
-    --------
-    >>> set_brand_style('treatment_control')
-    >>> fig, ax = plt.subplots()
-    >>> ax.plot([1, 2, 3], [1, 4, 9])
-    >>> result = validate_palette(fig)
-    >>> result['valid']
-    True
-
-    >>> fig2, ax2 = plt.subplots()
-    >>> ax2.plot([1, 2, 3], [1, 4, 9], color='red')  # Non-brand color
-    >>> result2 = validate_palette(fig2)
-    >>> result2['valid']
-    False
-    >>> '#FF0000' in result2['violations']
-    True
-    """
+    """Validate all figure colors are v2.3 brand-compliant."""
     used_colors = extract_figure_colors(fig)
-
-    # Structural colors (white/black) are always allowed
-    structural_colors = {'#FFFFFF', '#000000'}
-
-    # Find violations: colors used that aren't in brand palette or structural
-    violations = used_colors - ALLOWED_COLORS - structural_colors
-
+    structural = {"#FFFFFF", "#000000"}
+    violations = used_colors - ALLOWED_COLORS - structural
     return {
-        'valid': len(violations) == 0,
-        'used_colors': used_colors,
-        'violations': violations,
-        'allowed_colors': ALLOWED_COLORS.copy(),
+        "valid": len(violations) == 0,
+        "used_colors": used_colors,
+        "violations": violations,
+        "allowed_colors": ALLOWED_COLORS.copy(),
     }
 
 
 def count_brand_blue(fig: plt.Figure) -> dict:
     """
-    Count Brand Blue (#2DB2E8) usage in a figure.
-
-    Brand guidelines specify that Brand Blue should be limited to
-    1-2 elements per panel to maintain its impact as a highlight color.
-
-    Parameters
-    ----------
-    fig : matplotlib.figure.Figure
-        The figure to analyze
-
-    Returns
-    -------
-    dict
-        Analysis results containing:
-        - 'total_count': int - Total Brand Blue elements across all axes
-        - 'per_axes': dict[int, int] - Count per axes index
-        - 'compliant': bool - True if all axes have <= 2 Brand Blue elements
-        - 'violations': list[int] - Axes indices exceeding the limit
-
-    Examples
-    --------
-    >>> set_brand_style('treatment_control')
-    >>> fig, ax = plt.subplots()
-    >>> ax.plot([1, 2, 3], [1, 4, 9])  # One Brand Blue line
-    >>> result = count_brand_blue(fig)
-    >>> result['compliant']
-    True
-    >>> result['total_count']
-    1
+    Count Brand Blue (#2DB2E8) uses; v2.3 keeps the 1–2 per panel limit.
     """
-    BRAND_BLUE = '#2DB2E8'
-    BRAND_BLUE_UPPER = BRAND_BLUE.upper()
-
+    target = BRAND_BLUE.upper()
     per_axes = {}
     violations = []
 
     def _is_brand_blue(color) -> bool:
-        """Check if a color matches Brand Blue."""
         if color is None:
             return False
         if isinstance(color, str):
-            if color.upper() == BRAND_BLUE_UPPER:
+            if color.upper() == target:
                 return True
-            if color.startswith('#'):
-                return color.upper() == BRAND_BLUE_UPPER
-            # Try converting named color
+            if color.startswith("#"):
+                return color.upper() == target
             try:
                 rgb = mpl.colors.to_rgb(color)
-                hex_color = '#{:02X}{:02X}{:02X}'.format(
+                hx = "#{:02X}{:02X}{:02X}".format(
                     int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)
                 )
-                return hex_color == BRAND_BLUE_UPPER
+                return hx == target
             except ValueError:
                 return False
-        if hasattr(color, '__len__') and len(color) >= 3:
-            hex_color = '#{:02X}{:02X}{:02X}'.format(
+        if hasattr(color, "__len__") and len(color) >= 3:
+            hx = "#{:02X}{:02X}{:02X}".format(
                 int(color[0] * 255), int(color[1] * 255), int(color[2] * 255)
             )
-            return hex_color == BRAND_BLUE_UPPER
+            return hx == target
         return False
 
     for ax_idx, ax in enumerate(fig.axes):
         count = 0
-
-        # Check lines
         for line in ax.get_lines():
             if _is_brand_blue(line.get_color()):
                 count += 1
-
-        # Check collections (scatter plots, etc.)
         for coll in ax.collections:
             facecolors = coll.get_facecolor()
             if len(facecolors) > 0:
-                # For scatter with single color, count as 1 element
-                unique_blues = set()
-                for fc in facecolors:
-                    if _is_brand_blue(fc):
-                        unique_blues.add(tuple(fc))
-                if unique_blues:
-                    count += 1  # Count collection as single element
-
-        # Check patches (bars, etc.)
+                if any(_is_brand_blue(fc) for fc in facecolors):
+                    count += 1
         for patch in ax.patches:
             if _is_brand_blue(patch.get_facecolor()):
                 count += 1
-
         per_axes[ax_idx] = count
-
-        # Check compliance (max 2 Brand Blue elements per axes)
         if count > 2:
             violations.append(ax_idx)
 
-    total_count = sum(per_axes.values())
-
     return {
-        'total_count': total_count,
-        'per_axes': per_axes,
-        'compliant': len(violations) == 0,
-        'violations': violations,
+        "total_count": sum(per_axes.values()),
+        "per_axes": per_axes,
+        "compliant": len(violations) == 0,
+        "violations": violations,
+    }
+
+
+# =============================================================================
+# Generic-blue near-miss check (advisory)
+# =============================================================================
+# Hexes we've seen people (and subagents) reach for when they want "a nice
+# corporate blue" — Material Design, iOS, Google, legacy Twitter, generic web
+# blues, and matplotlib's own tab:blue default. Each of these is visually
+# close enough to Oligon Brand Blue (#2DB2E8) that a figure styled with them
+# may look superficially on-brand, but the exact hex is wrong and won't match
+# a deck or a PDF rendered through the real adapters. The check surfaces a
+# friendly "you probably meant Brand Blue" warning.
+#
+# This is advisory only — it does NOT fail the compliance report. A figure
+# with these hexes will already fail `validate_palette()`; this check just
+# gives the author a readable reason why.
+# =============================================================================
+
+GENERIC_BLUE_NEAR_MISSES: Dict[str, str] = {
+    "#0066CC": 'generic "corporate blue" (common baseline default)',
+    "#0066FF": "saturated generic blue",
+    "#0077BE": "LinkedIn-style corporate blue",
+    "#0080C0": "generic web blue",
+    "#007AFF": "iOS system blue",
+    "#1976D2": "Material Design primary blue",
+    "#2196F3": "Material Design light primary blue",
+    "#1DA1F2": "legacy Twitter blue",
+    "#4285F4": "Google blue",
+    "#1E90FF": 'CSS "dodgerblue"',
+    "#4169E1": 'CSS "royalblue"',
+    "#003366": 'generic dark navy (often paired with "corporate blue")',
+    "#0F52BA": 'generic "sapphire" blue',
+    "#1F77B4": "matplotlib default tab:blue",
+    "#5B9BD5": "PowerPoint default accent 1",
+}
+
+
+def check_generic_blue_near_misses(fig: plt.Figure) -> Dict[str, Any]:
+    """
+    Flag hexes in `fig` that match common "generic corporate blue" defaults.
+    These almost always mean the author reached for a generic blue instead of
+    Oligon Brand Blue (#2DB2E8). The check is advisory — it returns warnings
+    in `found`, and does not count as a compliance failure.
+
+    Returns a dict with keys:
+      - has_warnings: bool
+      - found: list of (hex, friendly_name) tuples
+      - suggested_replacement: the Oligon Brand Blue hex
+    """
+    used = extract_figure_colors(fig)
+    found = [
+        (hx, GENERIC_BLUE_NEAR_MISSES[hx])
+        for hx in used
+        if hx in GENERIC_BLUE_NEAR_MISSES
+    ]
+    found.sort()
+    return {
+        "has_warnings": len(found) > 0,
+        "found": found,
+        "suggested_replacement": BRAND_BLUE,
     }
 
 
 def get_brand_compliance_report(fig: plt.Figure) -> str:
-    """
-    Generate a comprehensive brand compliance report.
+    """Combined preflight + palette + brand-blue usage report."""
+    lines = ["Oligon Brand Compliance Report (v2.3)", "=" * 37, ""]
 
-    Combines preflight checks, palette validation, and Brand Blue usage
-    into a single human-readable report.
-
-    Parameters
-    ----------
-    fig : matplotlib.figure.Figure
-        The figure to validate
-
-    Returns
-    -------
-    str
-        Formatted compliance report
-
-    Examples
-    --------
-    >>> set_brand_style('treatment_control')
-    >>> fig, ax = plt.subplots()
-    >>> ax.plot([1, 2, 3], [1, 4, 9])
-    >>> print(get_brand_compliance_report(fig))
-    """
-    lines = ["Oligon Brand Compliance Report", "=" * 31, ""]
-
-    # Preflight checks
     preflight = run_preflight(fig)
     lines.append("PREFLIGHT CHECKS:")
     for check, passed in preflight.items():
-        symbol = "✓" if passed else "✗"
-        lines.append(f"  {symbol} {check}")
-
+        lines.append(f"  {'✓' if passed else '✗'} {check}")
     lines.append("")
 
-    # Palette validation
     palette = validate_palette(fig)
     lines.append("PALETTE VALIDATION:")
-    if palette['valid']:
+    if palette["valid"]:
         lines.append("  ✓ All colors are brand-compliant")
     else:
         lines.append("  ✗ Non-brand colors detected:")
-        for violation in sorted(palette['violations']):
+        for violation in sorted(palette["violations"]):
             lines.append(f"    - {violation}")
-
     lines.append("")
 
-    # Brand Blue usage
+    # Advisory: common generic-blue defaults an author may have reached for
+    # thinking they were using Brand Blue.
+    near_miss = check_generic_blue_near_misses(fig)
+    if near_miss["has_warnings"]:
+        lines.append("GENERIC-BLUE WARNING:")
+        for hx, name in near_miss["found"]:
+            lines.append(f"  ⚠ {hx} — {name}")
+        lines.append(
+            f"    You probably meant Oligon Brand Blue "
+            f"({near_miss['suggested_replacement']})."
+        )
+        lines.append("")
+
     brand_blue = count_brand_blue(fig)
     lines.append("BRAND BLUE USAGE:")
     lines.append(f"  Total elements: {brand_blue['total_count']}")
-    if brand_blue['compliant']:
+    if brand_blue["compliant"]:
         lines.append("  ✓ Within limit (≤2 per panel)")
     else:
         lines.append("  ✗ Exceeds limit in panels:")
-        for ax_idx in brand_blue['violations']:
-            lines.append(f"    - Axes {ax_idx}: {brand_blue['per_axes'][ax_idx]} elements")
-
+        for ax_idx in brand_blue["violations"]:
+            lines.append(
+                f"    - Axes {ax_idx}: {brand_blue['per_axes'][ax_idx]} elements"
+            )
     lines.append("")
 
-    # Overall result
+    # Near-miss warnings do not fail the report — they're advisory only.
     all_passed = (
-        all(preflight.values()) and
-        palette['valid'] and
-        brand_blue['compliant']
+        all(preflight.values()) and palette["valid"] and brand_blue["compliant"]
     )
-    status = "PASS" if all_passed else "FAIL"
-    lines.append(f"OVERALL: {status}")
-
+    lines.append(f"OVERALL: {'PASS' if all_passed else 'FAIL'}")
     return "\n".join(lines)
 
 
@@ -961,25 +867,19 @@ def get_brand_compliance_report(fig: plt.Figure) -> str:
 # CONVENIENCE FUNCTIONS
 # =============================================================================
 
+
 def get_color(name: str) -> str:
-    """Get a brand color by name."""
-    return BRAND_COLORS.get(name, '#000000')
+    """Look up a brand color by name (supports ramp-step and legacy keys)."""
+    return BRAND_COLORS.get(name, "#000000")
 
 
 def get_cycle(name: CycleType) -> list:
-    """Get a color cycle by name."""
-    cycles = {
-        'treatment_control': CYCLE_TREATMENT_CONTROL,
-        'neutrals_only': CYCLE_NEUTRALS_ONLY,
-        'opposing': CYCLE_OPPOSING,
-        'multi_category': CYCLE_MULTI_CATEGORY,
-    }
-    return cycles.get(name, CYCLE_TREATMENT_CONTROL)
+    """Look up a cycle by name."""
+    return _resolve_cycle(name)
 
 
-# =============================================================================
-# AUTO-APPLY ON IMPORT (Optional)
-# =============================================================================
-
-# Uncomment to apply brand style automatically when module is imported:
-# set_brand_style('treatment_control')
+def get_semantic(token: str, theme: str = "light") -> str:
+    """Resolve a semantic token (page, surface, text, accent, brand, signal, border)."""
+    if theme == "dark":
+        return SEMANTIC_DARK.get(token, SEMANTIC_LIGHT.get(token, "#000000"))
+    return SEMANTIC_LIGHT.get(token, "#000000")

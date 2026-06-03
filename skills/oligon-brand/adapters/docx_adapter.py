@@ -24,76 +24,97 @@ from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
-from typing import Optional, Tuple
+from typing import Optional
 
 # =============================================================================
-# BRAND COLORS (RGB tuples)
+# BRAND COLORS (v5.0 — Style Guide v2.3: Oklch tonal ramps)
 # =============================================================================
 
-BRAND_COLORS = {
-    # Primary highlight
-    'brand_blue': RGBColor(0x2D, 0xB2, 0xE8),
-
-    # Neutrals
-    'dark_gray': RGBColor(0x22, 0x22, 0x22),
-    'medium_gray': RGBColor(0x66, 0x66, 0x66),
-    'muted_gray': RGBColor(0x99, 0x99, 0x99),
-    'light_gray': RGBColor(0xBD, 0xBD, 0xBD),
-
-    # Contrast
-    'contrast_orange': RGBColor(0xE8, 0x62, 0x2D),
-    'dark_warm': RGBColor(0x7D, 0x25, 0x0F),
-
-    # Supporting blues
-    'medium_blue': RGBColor(0x15, 0x8B, 0xBB),
-    'dark_teal': RGBColor(0x0F, 0x5D, 0x7D),
-
-    # Structure
-    'black': RGBColor(0x00, 0x00, 0x00),
-    'white': RGBColor(0xFF, 0xFF, 0xFF),
-    'gridline': RGBColor(0xE5, 0xE5, 0xE5),
-}
-
-# Hex strings for reference
+# Hex primitives for reference / lookups.
 BRAND_HEX = {
-    'brand_blue': '#2DB2E8',
-    'dark_gray': '#222222',
-    'medium_gray': '#666666',
-    'muted_gray': '#999999',
-    'light_gray': '#BDBDBD',
-    'contrast_orange': '#E8622D',
-    'dark_warm': '#7D250F',
-    'medium_blue': '#158BBB',
-    'dark_teal': '#0F5D7D',
-    'black': '#000000',
-    'white': '#FFFFFF',
-    'gridline': '#E5E5E5',
+    # Brand anchor
+    "brand_blue": "#2DB2E8",
+    # Blue ramp (10 steps)
+    "blue_50": "#EFFBFF",
+    "blue_100": "#DBF3FF",
+    "blue_200": "#B3E3FC",
+    "blue_300": "#76CAF3",
+    "blue_400": "#1FACE3",
+    "blue_500": "#008ECB",
+    "blue_600": "#006EA6",
+    "blue_700": "#00507E",
+    "blue_800": "#003454",
+    "blue_900": "#001A2E",
+    # Orange ramp (10 steps)
+    "orange_50": "#FFF5F1",
+    "orange_100": "#FFE8E0",
+    "orange_200": "#FFCEBD",
+    "orange_300": "#F0AA92",
+    "orange_400": "#DD8363",
+    "orange_500": "#C45E39",
+    "orange_600": "#A0421D",
+    "orange_700": "#772E11",
+    "orange_800": "#4F1B06",
+    "orange_900": "#2B0901",
+    # Neutral ramp (10 steps)
+    "neutral_50": "#F3FAFD",
+    "neutral_100": "#E9F0F3",
+    "neutral_200": "#D6DCDF",
+    "neutral_300": "#B9BFC2",
+    "neutral_400": "#9A9FA2",
+    "neutral_500": "#7C8184",
+    "neutral_600": "#5F6467",
+    "neutral_700": "#44494B",
+    "neutral_800": "#2A2F31",
+    "neutral_900": "#121719",
+    # Structure
+    "black": "#000000",
+    "white": "#FFFFFF",
+    "gridline": "#D6DCDF",  # neutral.200
+    # Deprecated v4 aliases (route to closest v2.3 equivalent)
+    "dark_gray": "#121719",  # was #222222 -> neutral.900
+    "medium_gray": "#44494B",  # was #666666 -> neutral.700
+    "muted_gray": "#7C8184",  # was #999999 -> neutral.500
+    "light_gray": "#B9BFC2",  # was #BDBDBD -> neutral.300
+    "contrast_orange": "#A0421D",  # was #E8622D -> orange.600
+    "dark_warm": "#4F1B06",  # was #7D250F -> orange.800
+    "medium_blue": "#008ECB",  # was #158BBB -> blue.500
+    "dark_teal": "#003454",  # was #0F5D7D -> blue.800
 }
+
+
+def _hex_to_rgb(hex_str: str) -> RGBColor:
+    h = hex_str.lstrip("#")
+    return RGBColor(int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))
+
+
+BRAND_COLORS = {name: _hex_to_rgb(hx) for name, hx in BRAND_HEX.items()}
 
 # =============================================================================
 # TYPOGRAPHY SETTINGS
 # =============================================================================
 
-FONT_NAME = 'Arial'
+FONT_NAME = "Arial"
 
 FONT_SIZES = {
-    'body': Pt(11),
-    'heading1': Pt(14),
-    'heading2': Pt(12),
-    'heading3': Pt(11),
-    'caption': Pt(10),
-    'footnote': Pt(9),
-    'small': Pt(8),
+    "body": Pt(11),
+    "heading1": Pt(14),
+    "heading2": Pt(12),
+    "heading3": Pt(11),
+    "caption": Pt(10),
+    "footnote": Pt(9),
+    "small": Pt(8),
 }
 
 LINE_SPACING = {
-    'body': 1.15,
-    'heading': 1.2,
+    "body": 1.15,
+    "heading": 1.2,
 }
 
 # =============================================================================
 # DOCUMENT CREATION
 # =============================================================================
+
 
 def create_brand_document() -> Document:
     """
@@ -128,50 +149,50 @@ def apply_brand_styles(doc: Document) -> None:
     styles = doc.styles
 
     # --- Normal (Body) Style ---
-    style_normal = styles['Normal']
+    style_normal = styles["Normal"]
     font = style_normal.font
     font.name = FONT_NAME
-    font.size = FONT_SIZES['body']
-    font.color.rgb = BRAND_COLORS['black']
+    font.size = FONT_SIZES["body"]
+    font.color.rgb = BRAND_COLORS["black"]
 
     paragraph_format = style_normal.paragraph_format
-    paragraph_format.line_spacing = LINE_SPACING['body']
+    paragraph_format.line_spacing = LINE_SPACING["body"]
     paragraph_format.space_after = Pt(6)
 
     # Set East Asian font (for proper Arial rendering)
-    style_normal._element.rPr.rFonts.set(qn('w:eastAsia'), FONT_NAME)
+    style_normal._element.rPr.rFonts.set(qn("w:eastAsia"), FONT_NAME)
 
     # --- Heading 1 ---
-    style_h1 = styles['Heading 1']
+    style_h1 = styles["Heading 1"]
     font = style_h1.font
     font.name = FONT_NAME
-    font.size = FONT_SIZES['heading1']
+    font.size = FONT_SIZES["heading1"]
     font.bold = True
-    font.color.rgb = BRAND_COLORS['black']
+    font.color.rgb = BRAND_COLORS["black"]
 
     paragraph_format = style_h1.paragraph_format
     paragraph_format.space_before = Pt(12)
     paragraph_format.space_after = Pt(6)
 
     # --- Heading 2 ---
-    style_h2 = styles['Heading 2']
+    style_h2 = styles["Heading 2"]
     font = style_h2.font
     font.name = FONT_NAME
-    font.size = FONT_SIZES['heading2']
+    font.size = FONT_SIZES["heading2"]
     font.bold = True
-    font.color.rgb = BRAND_COLORS['black']
+    font.color.rgb = BRAND_COLORS["black"]
 
     paragraph_format = style_h2.paragraph_format
     paragraph_format.space_before = Pt(10)
     paragraph_format.space_after = Pt(4)
 
     # --- Heading 3 ---
-    style_h3 = styles['Heading 3']
+    style_h3 = styles["Heading 3"]
     font = style_h3.font
     font.name = FONT_NAME
-    font.size = FONT_SIZES['heading3']
+    font.size = FONT_SIZES["heading3"]
     font.bold = True
-    font.color.rgb = BRAND_COLORS['black']
+    font.color.rgb = BRAND_COLORS["black"]
 
     paragraph_format = style_h3.paragraph_format
     paragraph_format.space_before = Pt(8)
@@ -179,34 +200,32 @@ def apply_brand_styles(doc: Document) -> None:
 
     # --- Caption Style ---
     try:
-        style_caption = styles['Caption']
+        style_caption = styles["Caption"]
     except KeyError:
-        style_caption = styles.add_style('Caption', WD_STYLE_TYPE.PARAGRAPH)
+        style_caption = styles.add_style("Caption", WD_STYLE_TYPE.PARAGRAPH)
 
     font = style_caption.font
     font.name = FONT_NAME
-    font.size = FONT_SIZES['caption']
+    font.size = FONT_SIZES["caption"]
     font.italic = True
-    font.color.rgb = BRAND_COLORS['dark_gray']
+    font.color.rgb = BRAND_COLORS["dark_gray"]
 
     # --- Title Style ---
-    style_title = styles['Title']
+    style_title = styles["Title"]
     font = style_title.font
     font.name = FONT_NAME
     font.size = Pt(18)
     font.bold = True
-    font.color.rgb = BRAND_COLORS['black']
+    font.color.rgb = BRAND_COLORS["black"]
 
 
 # =============================================================================
 # HELPER FUNCTIONS
 # =============================================================================
 
+
 def add_highlighted_text(
-    paragraph,
-    text: str,
-    color: str = 'brand_blue',
-    bold: bool = False
+    paragraph, text: str, color: str = "brand_blue", bold: bool = False
 ) -> None:
     """
     Add highlighted text to a paragraph using brand colors.
@@ -223,7 +242,7 @@ def add_highlighted_text(
         Whether to make the text bold
     """
     run = paragraph.add_run(text)
-    run.font.color.rgb = BRAND_COLORS.get(color, BRAND_COLORS['brand_blue'])
+    run.font.color.rgb = BRAND_COLORS.get(color, BRAND_COLORS["brand_blue"])
     run.font.bold = bold
 
 
@@ -231,8 +250,8 @@ def create_brand_table(
     doc: Document,
     data: list,
     col_widths: Optional[list] = None,
-    header_bg: str = 'light_gray'
-) -> 'Table':
+    header_bg: str = "light_gray",
+) -> "Table":
     """
     Create a table with brand styling.
 
@@ -288,8 +307,8 @@ def create_brand_table(
             if i == 0:
                 for run in paragraph.runs:
                     run.font.bold = True
-                # Set background color
-                set_cell_shading(cell, BRAND_HEX.get(header_bg, '#BDBDBD'))
+                # Set background color (fallback: neutral.300)
+                set_cell_shading(cell, BRAND_HEX.get(header_bg, "#B9BFC2"))
 
     return table
 
@@ -303,20 +322,18 @@ def set_cell_shading(cell, hex_color: str) -> None:
     cell : Cell
         The table cell
     hex_color : str
-        Hex color string (e.g., '#BDBDBD')
+        Hex color string (e.g., '#B9BFC2' for neutral.300)
     """
     # Remove # if present
-    color = hex_color.lstrip('#')
+    color = hex_color.lstrip("#")
 
-    shading_elm = OxmlElement('w:shd')
-    shading_elm.set(qn('w:fill'), color)
+    shading_elm = OxmlElement("w:shd")
+    shading_elm.set(qn("w:fill"), color)
     cell._tc.get_or_add_tcPr().append(shading_elm)
 
 
 def add_figure_caption(
-    doc: Document,
-    caption_text: str,
-    figure_number: Optional[int] = None
+    doc: Document, caption_text: str, figure_number: Optional[int] = None
 ) -> None:
     """
     Add a figure caption with brand styling.
@@ -335,14 +352,12 @@ def add_figure_caption(
     else:
         full_caption = caption_text
 
-    para = doc.add_paragraph(style='Caption')
+    para = doc.add_paragraph(style="Caption")
     para.add_run(full_caption)
 
 
 def add_table_caption(
-    doc: Document,
-    caption_text: str,
-    table_number: Optional[int] = None
+    doc: Document, caption_text: str, table_number: Optional[int] = None
 ) -> None:
     """
     Add a table caption with brand styling.
@@ -361,13 +376,14 @@ def add_table_caption(
     else:
         full_caption = caption_text
 
-    para = doc.add_paragraph(style='Caption')
+    para = doc.add_paragraph(style="Caption")
     para.add_run(full_caption)
 
 
 # =============================================================================
 # EXAMPLE USAGE
 # =============================================================================
+
 
 def create_example_document():
     """Create an example document demonstrating brand styles."""
@@ -387,18 +403,22 @@ def create_example_document():
     # Add highlighted text
     doc.add_heading("Key Findings", level=2)
     para = doc.add_paragraph("The ")
-    add_highlighted_text(para, "treatment group", color='brand_blue', bold=True)
-    para.add_run(" showed significant improvement compared to the control group (p < 0.05).")
+    add_highlighted_text(para, "treatment group", color="brand_blue", bold=True)
+    para.add_run(
+        " showed significant improvement compared to the control group (p < 0.05)."
+    )
 
     # Add table
     doc.add_heading("Results Summary", level=2)
     data = [
-        ['Group', 'N', 'Mean', 'SD', 'p-value'],
-        ['Control', '25', '4.2', '1.1', '-'],
-        ['Treatment', '25', '6.8', '0.9', '<0.001'],
+        ["Group", "N", "Mean", "SD", "p-value"],
+        ["Control", "25", "4.2", "1.1", "-"],
+        ["Treatment", "25", "6.8", "0.9", "<0.001"],
     ]
     create_brand_table(doc, data, col_widths=[1.5, 0.75, 1.0, 0.75, 1.0])
-    add_table_caption(doc, "Summary statistics for treatment comparison.", table_number=1)
+    add_table_caption(
+        doc, "Summary statistics for treatment comparison.", table_number=1
+    )
 
     doc.save("example_brand_document.docx")
     print("Example document created: example_brand_document.docx")

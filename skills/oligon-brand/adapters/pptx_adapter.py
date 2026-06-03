@@ -23,49 +23,84 @@ from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.enum.shapes import MSO_SHAPE
-from typing import Optional, List, Tuple
+from typing import Optional, List
 
 # =============================================================================
-# BRAND COLORS
+# BRAND COLORS (v5.0 — Style Guide v2.3: Oklch tonal ramps)
 # =============================================================================
 
-BRAND_COLORS = {
-    # Primary highlight
-    'brand_blue': RGBColor(0x2D, 0xB2, 0xE8),
-
-    # Neutrals
-    'dark_gray': RGBColor(0x22, 0x22, 0x22),
-    'medium_gray': RGBColor(0x66, 0x66, 0x66),
-    'muted_gray': RGBColor(0x99, 0x99, 0x99),
-    'light_gray': RGBColor(0xBD, 0xBD, 0xBD),
-
-    # Contrast
-    'contrast_orange': RGBColor(0xE8, 0x62, 0x2D),
-    'dark_warm': RGBColor(0x7D, 0x25, 0x0F),
-
-    # Supporting blues
-    'medium_blue': RGBColor(0x15, 0x8B, 0xBB),
-    'dark_teal': RGBColor(0x0F, 0x5D, 0x7D),
-
+BRAND_HEX = {
+    # Brand anchor
+    "brand_blue": "#2DB2E8",
+    # Blue ramp
+    "blue_50": "#EFFBFF",
+    "blue_100": "#DBF3FF",
+    "blue_200": "#B3E3FC",
+    "blue_300": "#76CAF3",
+    "blue_400": "#1FACE3",
+    "blue_500": "#008ECB",
+    "blue_600": "#006EA6",
+    "blue_700": "#00507E",
+    "blue_800": "#003454",
+    "blue_900": "#001A2E",
+    # Orange ramp
+    "orange_50": "#FFF5F1",
+    "orange_100": "#FFE8E0",
+    "orange_200": "#FFCEBD",
+    "orange_300": "#F0AA92",
+    "orange_400": "#DD8363",
+    "orange_500": "#C45E39",
+    "orange_600": "#A0421D",
+    "orange_700": "#772E11",
+    "orange_800": "#4F1B06",
+    "orange_900": "#2B0901",
+    # Neutral ramp
+    "neutral_50": "#F3FAFD",
+    "neutral_100": "#E9F0F3",
+    "neutral_200": "#D6DCDF",
+    "neutral_300": "#B9BFC2",
+    "neutral_400": "#9A9FA2",
+    "neutral_500": "#7C8184",
+    "neutral_600": "#5F6467",
+    "neutral_700": "#44494B",
+    "neutral_800": "#2A2F31",
+    "neutral_900": "#121719",
     # Structure
-    'black': RGBColor(0x00, 0x00, 0x00),
-    'white': RGBColor(0xFF, 0xFF, 0xFF),
+    "black": "#000000",
+    "white": "#FFFFFF",
+    # Deprecated v4 aliases (route to closest v2.3 equivalent)
+    "dark_gray": "#121719",
+    "medium_gray": "#44494B",
+    "muted_gray": "#7C8184",
+    "light_gray": "#B9BFC2",
+    "contrast_orange": "#A0421D",
+    "dark_warm": "#4F1B06",
+    "medium_blue": "#008ECB",
+    "dark_teal": "#003454",
 }
+
+
+def _hex_to_rgb(hex_str: str) -> RGBColor:
+    h = hex_str.lstrip("#")
+    return RGBColor(int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))
+
+
+BRAND_COLORS = {name: _hex_to_rgb(hx) for name, hx in BRAND_HEX.items()}
 
 # =============================================================================
 # TYPOGRAPHY SETTINGS
 # =============================================================================
 
-FONT_NAME = 'Arial'
+FONT_NAME = "Arial"
 
 FONT_SIZES = {
-    'title': Pt(28),
-    'subtitle': Pt(20),
-    'heading': Pt(24),
-    'body': Pt(18),
-    'bullet': Pt(16),
-    'caption': Pt(12),
-    'footer': Pt(10),
+    "title": Pt(28),
+    "subtitle": Pt(20),
+    "heading": Pt(24),
+    "body": Pt(18),
+    "bullet": Pt(16),
+    "caption": Pt(12),
+    "footer": Pt(10),
 }
 
 # =============================================================================
@@ -84,6 +119,7 @@ MARGIN_BOTTOM = Inches(0.5)
 # =============================================================================
 # PRESENTATION CREATION
 # =============================================================================
+
 
 def create_brand_presentation() -> Presentation:
     """
@@ -113,11 +149,10 @@ def create_brand_presentation() -> Presentation:
 # SLIDE CREATION FUNCTIONS
 # =============================================================================
 
+
 def add_title_slide(
-    prs: Presentation,
-    title: str,
-    subtitle: Optional[str] = None
-) -> 'Slide':
+    prs: Presentation, title: str, subtitle: Optional[str] = None
+) -> "Slide":
     """
     Add a title slide with brand styling.
 
@@ -142,22 +177,19 @@ def add_title_slide(
     background = slide.background
     fill = background.fill
     fill.solid()
-    fill.fore_color.rgb = BRAND_COLORS['white']
+    fill.fore_color.rgb = BRAND_COLORS["white"]
 
     # Add title
     title_box = slide.shapes.add_textbox(
-        MARGIN_LEFT,
-        Inches(2.5),
-        SLIDE_WIDTH - MARGIN_LEFT - MARGIN_RIGHT,
-        Inches(1.5)
+        MARGIN_LEFT, Inches(2.5), SLIDE_WIDTH - MARGIN_LEFT - MARGIN_RIGHT, Inches(1.5)
     )
     title_frame = title_box.text_frame
     title_para = title_frame.paragraphs[0]
     title_para.text = title
     title_para.font.name = FONT_NAME
-    title_para.font.size = FONT_SIZES['title']
+    title_para.font.size = FONT_SIZES["title"]
     title_para.font.bold = True
-    title_para.font.color.rgb = BRAND_COLORS['black']
+    title_para.font.color.rgb = BRAND_COLORS["black"]
     title_para.alignment = PP_ALIGN.CENTER
 
     # Add subtitle if provided
@@ -166,26 +198,22 @@ def add_title_slide(
             MARGIN_LEFT,
             Inches(4.2),
             SLIDE_WIDTH - MARGIN_LEFT - MARGIN_RIGHT,
-            Inches(1)
+            Inches(1),
         )
         subtitle_frame = subtitle_box.text_frame
         subtitle_para = subtitle_frame.paragraphs[0]
         subtitle_para.text = subtitle
         subtitle_para.font.name = FONT_NAME
-        subtitle_para.font.size = FONT_SIZES['subtitle']
-        subtitle_para.font.color.rgb = BRAND_COLORS['medium_gray']
+        subtitle_para.font.size = FONT_SIZES["subtitle"]
+        subtitle_para.font.color.rgb = BRAND_COLORS["medium_gray"]
         subtitle_para.alignment = PP_ALIGN.CENTER
 
     # Add brand accent line
     line = slide.shapes.add_shape(
-        MSO_SHAPE.RECTANGLE,
-        Inches(4),
-        Inches(4),
-        Inches(5.333),
-        Pt(4)
+        MSO_SHAPE.RECTANGLE, Inches(4), Inches(4), Inches(5.333), Pt(4)
     )
     line.fill.solid()
-    line.fill.fore_color.rgb = BRAND_COLORS['brand_blue']
+    line.fill.fore_color.rgb = BRAND_COLORS["brand_blue"]
     line.line.fill.background()
 
     return slide
@@ -195,8 +223,8 @@ def add_content_slide(
     prs: Presentation,
     title: str,
     bullets: Optional[List[str]] = None,
-    content_text: Optional[str] = None
-) -> 'Slide':
+    content_text: Optional[str] = None,
+) -> "Slide":
     """
     Add a content slide with title and bullets or text.
 
@@ -223,22 +251,19 @@ def add_content_slide(
     background = slide.background
     fill = background.fill
     fill.solid()
-    fill.fore_color.rgb = BRAND_COLORS['white']
+    fill.fore_color.rgb = BRAND_COLORS["white"]
 
     # Add title
     title_box = slide.shapes.add_textbox(
-        MARGIN_LEFT,
-        MARGIN_TOP,
-        SLIDE_WIDTH - MARGIN_LEFT - MARGIN_RIGHT,
-        Inches(1)
+        MARGIN_LEFT, MARGIN_TOP, SLIDE_WIDTH - MARGIN_LEFT - MARGIN_RIGHT, Inches(1)
     )
     title_frame = title_box.text_frame
     title_para = title_frame.paragraphs[0]
     title_para.text = title
     title_para.font.name = FONT_NAME
-    title_para.font.size = FONT_SIZES['heading']
+    title_para.font.size = FONT_SIZES["heading"]
     title_para.font.bold = True
-    title_para.font.color.rgb = BRAND_COLORS['black']
+    title_para.font.color.rgb = BRAND_COLORS["black"]
 
     # Add content area
     content_top = Inches(1.5)
@@ -249,7 +274,7 @@ def add_content_slide(
             MARGIN_LEFT,
             content_top,
             SLIDE_WIDTH - MARGIN_LEFT - MARGIN_RIGHT,
-            content_height
+            content_height,
         )
         text_frame = content_box.text_frame
         text_frame.word_wrap = True
@@ -262,8 +287,8 @@ def add_content_slide(
 
             para.text = bullet
             para.font.name = FONT_NAME
-            para.font.size = FONT_SIZES['bullet']
-            para.font.color.rgb = BRAND_COLORS['dark_gray']
+            para.font.size = FONT_SIZES["bullet"]
+            para.font.color.rgb = BRAND_COLORS["dark_gray"]
             para.level = 0
             para.space_after = Pt(12)
 
@@ -272,23 +297,20 @@ def add_content_slide(
             MARGIN_LEFT,
             content_top,
             SLIDE_WIDTH - MARGIN_LEFT - MARGIN_RIGHT,
-            content_height
+            content_height,
         )
         text_frame = content_box.text_frame
         text_frame.word_wrap = True
         para = text_frame.paragraphs[0]
         para.text = content_text
         para.font.name = FONT_NAME
-        para.font.size = FONT_SIZES['body']
-        para.font.color.rgb = BRAND_COLORS['dark_gray']
+        para.font.size = FONT_SIZES["body"]
+        para.font.color.rgb = BRAND_COLORS["dark_gray"]
 
     return slide
 
 
-def add_section_slide(
-    prs: Presentation,
-    title: str
-) -> 'Slide':
+def add_section_slide(prs: Presentation, title: str) -> "Slide":
     """
     Add a section divider slide with brand styling.
 
@@ -311,33 +333,27 @@ def add_section_slide(
     background = slide.background
     fill = background.fill
     fill.solid()
-    fill.fore_color.rgb = BRAND_COLORS['brand_blue']
+    fill.fore_color.rgb = BRAND_COLORS["brand_blue"]
 
     # White title text
     title_box = slide.shapes.add_textbox(
-        MARGIN_LEFT,
-        Inches(3),
-        SLIDE_WIDTH - MARGIN_LEFT - MARGIN_RIGHT,
-        Inches(1.5)
+        MARGIN_LEFT, Inches(3), SLIDE_WIDTH - MARGIN_LEFT - MARGIN_RIGHT, Inches(1.5)
     )
     title_frame = title_box.text_frame
     title_para = title_frame.paragraphs[0]
     title_para.text = title
     title_para.font.name = FONT_NAME
-    title_para.font.size = FONT_SIZES['title']
+    title_para.font.size = FONT_SIZES["title"]
     title_para.font.bold = True
-    title_para.font.color.rgb = BRAND_COLORS['white']
+    title_para.font.color.rgb = BRAND_COLORS["white"]
     title_para.alignment = PP_ALIGN.CENTER
 
     return slide
 
 
 def add_two_column_slide(
-    prs: Presentation,
-    title: str,
-    left_content: List[str],
-    right_content: List[str]
-) -> 'Slide':
+    prs: Presentation, title: str, left_content: List[str], right_content: List[str]
+) -> "Slide":
     """
     Add a two-column content slide.
 
@@ -364,22 +380,19 @@ def add_two_column_slide(
     background = slide.background
     fill = background.fill
     fill.solid()
-    fill.fore_color.rgb = BRAND_COLORS['white']
+    fill.fore_color.rgb = BRAND_COLORS["white"]
 
     # Title
     title_box = slide.shapes.add_textbox(
-        MARGIN_LEFT,
-        MARGIN_TOP,
-        SLIDE_WIDTH - MARGIN_LEFT - MARGIN_RIGHT,
-        Inches(1)
+        MARGIN_LEFT, MARGIN_TOP, SLIDE_WIDTH - MARGIN_LEFT - MARGIN_RIGHT, Inches(1)
     )
     title_frame = title_box.text_frame
     title_para = title_frame.paragraphs[0]
     title_para.text = title
     title_para.font.name = FONT_NAME
-    title_para.font.size = FONT_SIZES['heading']
+    title_para.font.size = FONT_SIZES["heading"]
     title_para.font.bold = True
-    title_para.font.color.rgb = BRAND_COLORS['black']
+    title_para.font.color.rgb = BRAND_COLORS["black"]
 
     # Calculate column dimensions
     content_top = Inches(1.5)
@@ -388,10 +401,7 @@ def add_two_column_slide(
 
     # Left column
     left_box = slide.shapes.add_textbox(
-        MARGIN_LEFT,
-        content_top,
-        column_width,
-        content_height
+        MARGIN_LEFT, content_top, column_width, content_height
     )
     _add_bullets_to_textbox(left_box, left_content)
 
@@ -400,7 +410,7 @@ def add_two_column_slide(
         MARGIN_LEFT + column_width + Inches(0.5),
         content_top,
         column_width,
-        content_height
+        content_height,
     )
     _add_bullets_to_textbox(right_box, right_content)
 
@@ -420,8 +430,8 @@ def _add_bullets_to_textbox(textbox, bullets: List[str]) -> None:
 
         para.text = bullet
         para.font.name = FONT_NAME
-        para.font.size = FONT_SIZES['bullet']
-        para.font.color.rgb = BRAND_COLORS['dark_gray']
+        para.font.size = FONT_SIZES["bullet"]
+        para.font.color.rgb = BRAND_COLORS["dark_gray"]
         para.space_after = Pt(8)
 
 
@@ -429,12 +439,10 @@ def _add_bullets_to_textbox(textbox, bullets: List[str]) -> None:
 # HELPER FUNCTIONS
 # =============================================================================
 
+
 def add_image_slide(
-    prs: Presentation,
-    title: str,
-    image_path: str,
-    caption: Optional[str] = None
-) -> 'Slide':
+    prs: Presentation, title: str, image_path: str, caption: Optional[str] = None
+) -> "Slide":
     """
     Add a slide with an image and optional caption.
 
@@ -461,34 +469,26 @@ def add_image_slide(
     background = slide.background
     fill = background.fill
     fill.solid()
-    fill.fore_color.rgb = BRAND_COLORS['white']
+    fill.fore_color.rgb = BRAND_COLORS["white"]
 
     # Title
     title_box = slide.shapes.add_textbox(
-        MARGIN_LEFT,
-        MARGIN_TOP,
-        SLIDE_WIDTH - MARGIN_LEFT - MARGIN_RIGHT,
-        Inches(0.8)
+        MARGIN_LEFT, MARGIN_TOP, SLIDE_WIDTH - MARGIN_LEFT - MARGIN_RIGHT, Inches(0.8)
     )
     title_frame = title_box.text_frame
     title_para = title_frame.paragraphs[0]
     title_para.text = title
     title_para.font.name = FONT_NAME
-    title_para.font.size = FONT_SIZES['heading']
+    title_para.font.size = FONT_SIZES["heading"]
     title_para.font.bold = True
-    title_para.font.color.rgb = BRAND_COLORS['black']
+    title_para.font.color.rgb = BRAND_COLORS["black"]
 
     # Image (centered)
     img_top = Inches(1.3)
     img_height = Inches(5) if caption else Inches(5.5)
 
     # Add image centered
-    slide.shapes.add_picture(
-        image_path,
-        Inches(1.5),
-        img_top,
-        height=img_height
-    )
+    slide.shapes.add_picture(image_path, Inches(1.5), img_top, height=img_height)
 
     # Caption
     if caption:
@@ -496,15 +496,15 @@ def add_image_slide(
             MARGIN_LEFT,
             Inches(6.5),
             SLIDE_WIDTH - MARGIN_LEFT - MARGIN_RIGHT,
-            Inches(0.5)
+            Inches(0.5),
         )
         caption_frame = caption_box.text_frame
         caption_para = caption_frame.paragraphs[0]
         caption_para.text = caption
         caption_para.font.name = FONT_NAME
-        caption_para.font.size = FONT_SIZES['caption']
+        caption_para.font.size = FONT_SIZES["caption"]
         caption_para.font.italic = True
-        caption_para.font.color.rgb = BRAND_COLORS['medium_gray']
+        caption_para.font.color.rgb = BRAND_COLORS["medium_gray"]
         caption_para.alignment = PP_ALIGN.CENTER
 
     return slide
@@ -517,8 +517,8 @@ def add_highlight_box(
     top: float,
     width: float,
     height: float,
-    bg_color: str = 'brand_blue',
-    text_color: str = 'white'
+    bg_color: str = "brand_blue",
+    text_color: str = "white",
 ) -> None:
     """
     Add a highlighted text box to a slide.
@@ -541,11 +541,11 @@ def add_highlight_box(
         Inches(left),
         Inches(top),
         Inches(width),
-        Inches(height)
+        Inches(height),
     )
 
     shape.fill.solid()
-    shape.fill.fore_color.rgb = BRAND_COLORS.get(bg_color, BRAND_COLORS['brand_blue'])
+    shape.fill.fore_color.rgb = BRAND_COLORS.get(bg_color, BRAND_COLORS["brand_blue"])
     shape.line.fill.background()
 
     text_frame = shape.text_frame
@@ -553,9 +553,9 @@ def add_highlight_box(
     para = text_frame.paragraphs[0]
     para.text = text
     para.font.name = FONT_NAME
-    para.font.size = FONT_SIZES['body']
+    para.font.size = FONT_SIZES["body"]
     para.font.bold = True
-    para.font.color.rgb = BRAND_COLORS.get(text_color, BRAND_COLORS['white'])
+    para.font.color.rgb = BRAND_COLORS.get(text_color, BRAND_COLORS["white"])
     para.alignment = PP_ALIGN.CENTER
     text_frame.anchor = MSO_ANCHOR.MIDDLE
 
@@ -564,15 +564,14 @@ def add_highlight_box(
 # EXAMPLE USAGE
 # =============================================================================
 
+
 def create_example_presentation():
     """Create an example presentation demonstrating brand styles."""
     prs = create_brand_presentation()
 
     # Title slide
     add_title_slide(
-        prs,
-        "Oligon Scientific Presentation",
-        "Demonstrating Brand-Compliant Slides"
+        prs, "Oligon Scientific Presentation", "Demonstrating Brand-Compliant Slides"
     )
 
     # Section divider
@@ -586,8 +585,8 @@ def create_example_presentation():
             "Treatment group showed 62% improvement",
             "Statistical significance achieved (p < 0.001)",
             "Effect size was large (Cohen's d = 1.2)",
-            "No adverse events reported"
-        ]
+            "No adverse events reported",
+        ],
     )
 
     # Two-column slide
@@ -598,14 +597,14 @@ def create_example_presentation():
             "Control Group",
             "N = 25 participants",
             "Mean response: 4.2",
-            "SD: 1.1"
+            "SD: 1.1",
         ],
         right_content=[
             "Treatment Group",
             "N = 25 participants",
             "Mean response: 6.8",
-            "SD: 0.9"
-        ]
+            "SD: 0.9",
+        ],
     )
 
     # Section divider
@@ -618,7 +617,7 @@ def create_example_presentation():
         content_text=(
             "This study demonstrates significant efficacy of the treatment "
             "approach. Results support further investigation in larger trials."
-        )
+        ),
     )
 
     prs.save("example_brand_presentation.pptx")

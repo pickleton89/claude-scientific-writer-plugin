@@ -1,8 +1,12 @@
-##########################################
-# Oligon Brand Style v4 - Neutrals First #
-##########################################
-# Based on Documents/BRAND_COLORS_v4.md
-# Philosophy: Most data should be grayscale. Brand Blue highlights only.
+##############################################
+# Oligon Brand Style v5.0 — Style Guide v2.3 #
+##############################################
+# Aligned with Oligon_Digital_Style_Guide_v2.3.html (April 2026):
+# Oklch tonal ramps (Blue / Orange / Neutral × 10 steps), same-hue
+# treatment/control cycle, neutral.200 axis furniture, figure type scale
+# (title 12 pt / axis 10 pt / tick 9 pt / legend 8.5 pt).
+# Most data should draw from the neutral or peer-blue ramp; Brand Blue
+# (#2DB2E8) is reserved for 1–2 focal elements per panel.
 
 ##########
 # Figure #
@@ -18,110 +22,107 @@ savefig.dpi: 300
 savefig.bbox: tight
 savefig.pad_inches: 0.1
 
+# Vector text: keep glyphs as real, editable <text> in SVG/PDF/EPS (not
+# outlined paths) — required for the SVG font-family checks and journal
+# editable-text requirements.
+svg.fonttype: none
+pdf.fonttype: 42
+ps.fonttype: 42
+
 ##########
 # Font   #
 ##########
 font.family: sans-serif
-font.sans-serif: Arial, Helvetica, DejaVu Sans
-font.size: 12
+# Arial first (Mac/Windows/Linux with msttcorefonts), Helvetica next (Mac),
+# Liberation Sans as Arial-metric-compatible fallback for sandboxed Linux,
+# DejaVu Sans as the always-present last resort. All four are v2.3-sanctioned.
+font.sans-serif: Arial, Helvetica, Liberation Sans, DejaVu Sans
+font.size: 9
 
 ########
 # Axes #
 ########
 axes.facecolor: white
-axes.edgecolor: black
+axes.edgecolor: 121719
 axes.linewidth: 0.8
 
-# Axes labels and title - black (scientific journal standard)
-axes.labelcolor: black
-axes.labelsize: 12
-axes.titlesize: 16
-axes.titlecolor: black
-axes.titleweight: normal
+# Figure Type Scale (v2.3)
+axes.labelcolor: 121719
+axes.labelsize: 10
+axes.titlesize: 12
+axes.titlecolor: 121719
+axes.titleweight: bold
 
-# Despined layout - remove top and right spines
+# Despined layout — top and right spines hidden
 axes.spines.top: False
 axes.spines.right: False
 axes.spines.bottom: True
 axes.spines.left: True
 
-# Default color cycle: Treatment vs Control (Neutrals First)
-# #222222 = Dark Gray (control/baseline)
-# #2DB2E8 = Brand Blue (treatment/highlight)
-# #666666 = Medium Gray (secondary)
-# For opposing effects, set manually: #2DB2E8, #E8622D, #222222
-axes.prop_cycle: cycler("color", ["222222", "2DB2E8", "666666", "999999", "158BBB"])
+# Default color cycle: Cycle 1 — Treatment / Control (same-hue).
+# Position 1 = brand.blue treatment, 2 = blue.300 control.
+# CI bands are matching-hue tints of the line at α≈0.18 (NOT a shared fill).
+# Trailing ramp steps (blue.100, blue.800, orange.500) support n>2 visuals.
+# For other cycles call `set_brand_style('peer' | 'focus' | 'opposing'
+# | 'multi_category')` from matplotlib_adapter.
+axes.prop_cycle: cycler("color", ["2DB2E8", "76CAF3", "DBF3FF", "003454", "C45E39"])
 
 ###########
 # Ticks   #
 ###########
-xtick.color: black
-ytick.color: black
-xtick.labelsize: 10
-ytick.labelsize: 10
+xtick.color: 121719
+ytick.color: 121719
+xtick.labelsize: 9
+ytick.labelsize: 9
 xtick.direction: out
 ytick.direction: out
 
 ###########
 # Grid    #
 ###########
-# Off by default per v4 spec
+# Off by default; neutral.200 dashed 0.5 pt when enabled.
 axes.grid: False
-grid.color: E5E5E5
-grid.linestyle: -
+grid.color: D6DCDF
+grid.linestyle: --
 grid.linewidth: 0.5
 grid.alpha: 1.0
 
 #############
 # Lines     #
 #############
-lines.linewidth: 1.25
-lines.markersize: 5
+# v2.3: 1.8–2.2 pt primary data; 5–6 pt filled markers.
+lines.linewidth: 2.0
+lines.markersize: 5.5
 lines.solid_capstyle: round
 
 ###########
 # Patches #
 ###########
-# No black outlines on bars (reduces data-ink ratio)
-patch.facecolor: 222222
+# Bars: no edge outlines (data-ink economy). Default fill is neutral.900 —
+# Brand Blue (#2DB2E8) is reserved for the 1–2 focal elements per panel and
+# is applied deliberately, not as the default for every bar.
+patch.facecolor: 121719
 patch.edgecolor: none
 patch.linewidth: 0.0
 
 ############
 # Legend   #
 ############
-# Minimalist, no frame per v4 spec
 legend.frameon: False
 legend.facecolor: white
 legend.edgecolor: none
-legend.fontsize: 12
-legend.title_fontsize: 12
+legend.fontsize: 8.5
+legend.title_fontsize: 9
 legend.loc: best
 
 ##########
 # Text   #
 ##########
-text.color: black
-
-##########
-# SVG    #
-##########
-# Keep text as <text> elements (not glyph paths) so font-family and
-# font-size attributes are present in the SVG. Required for the
-# brand grep-based sanity check and for downstream Inkscape/Illustrator editing.
-svg.fonttype: none
-
-##########
-# PDF    #
-##########
-# Same intent for PDF — Type 42 (TrueType) keeps fonts embedded as fonts,
-# not as outlined paths. Required for journal submissions that ask for
-# editable text.
-pdf.fonttype: 42
-ps.fonttype: 42
+text.color: 121719
 
 ##########
 # Image  #
 ##########
-# Default colormap (use get_divergent_cmap() for heatmaps)
+# Default sequential colormap. For divergent data use
+# matplotlib_adapter.get_divergent_cmap() (blue.700 → white → orange.700).
 image.cmap: viridis
