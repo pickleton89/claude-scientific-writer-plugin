@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — scientific-slides design references (salvaged from the v2.5 line) → v2.4.0
+- Brought the two net-new design reference docs authored on the `migrate/deprecate-visual-design` branch into `scientific-slides`: `references/design_best_practices.md` (slide layout, hierarchy, contrast, CVD-safe palettes) and `references/powerpoint_implementation_guide.md` (brand-compliant PPTX build). Accessibility / chart-selection cross-references were rewired from the branch's (unmerged) `shared/accessibility/` + `plotting-libraries/scripts/` layout back to master's `visual-design/utils/`. Lightly wired into `SKILL.md`; skill bumped 2.3.1 → 2.4.0. The branch's full v2.5.0 SKILL.md/version reconciliation was deliberately NOT taken (it conflicts with master's prose_standards/chart_types/Fujii integration).
+
 ### Changed — sibling skills aligned to the v5 figure scale
 - `plotting-libraries` and `scientific-schematics` SKILL.md no longer reference the retired v4 SVG ladder ("10pt floor / 12 / 14 / 16"); they now cite the v2.3 figure scale (title 12 / axis 10 / tick 9 / legend 8.5–9 pt) and point at the renamed "SVG output contract" section in `oligon-brand`.
 
