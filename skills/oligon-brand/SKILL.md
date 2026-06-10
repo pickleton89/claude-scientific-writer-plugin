@@ -8,7 +8,7 @@ tokens-file: tokens/brand-tokens.json
 style-guide: references/Oligon_Digital_Style_Guide_v2.3.html
 ---
 <!-- GENERATED FILE - do not edit here.
-     Vendored from https://github.com/pickleton89/oligon-brand-core@67d9a66
+     Vendored from https://github.com/pickleton89/oligon-brand-core@b4e52ed
      Edit oligon-brand-core and re-run scripts/sync_brand_core.sh. -->
 
 

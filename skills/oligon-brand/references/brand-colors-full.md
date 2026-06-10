@@ -303,7 +303,7 @@ MARKER_SHAPES = ['o', 's', '^', 'D']
 
 ---
 
-## 4. Figure Integrity — Eight Rules
+## 4. Figure Integrity — Twelve Rules
 
 These rules govern what a figure is allowed to claim visually.
 Violating any of them misrepresents the data, regardless of how
@@ -346,6 +346,42 @@ well-styled the figure looks.
 8. **No dual y-axes without justification.** Dual y-axes invite
    spurious visual correlation between series scaled independently.
    Reach for small multiples or a twin-panel layout first.
+
+These four govern *generative-artifact integrity* — the failure modes a
+diffusion model or code-gen LLM introduces that a competent human would
+not. Because we author from ground-truth data and source SVG/plot code,
+these are **exact deterministic checks against what we already hold**,
+not image forensics. A single confirmed violation of Rule 9, 11, or 12
+is a *categorical tell* — it dominates the verdict regardless of how
+clean the rest of the figure is.
+
+9. **Lexically-valid labels only.** Every axis label, legend entry, tick
+   label, and callout is a real word, term, or number — never a
+   letter-shaped but lexically-void glyph-string ("*diƨlocttal*",
+   "*testtomcels*"), invented diacritic, or melted/mixed-script
+   character. This is the strongest single AI tell (Frontiers/Bik 2024).
+   For our own output, scan the source string set, not the pixels.
+
+10. **Non-default styling is intentional, not stripped.** Tool defaults
+    (matplotlib `C0`/`C1` tab10, seaborn theme, Excel chart style) are a
+    regression-to-mean slop fingerprint — apply a brand cycle or a
+    justified palette instead. But this rule is **two-sided**: do *not*
+    over-minimize toward a sterile, decoration-free chart either.
+    Embellishment that aids recall is not slop (Bateman CHI 2010). Keep
+    ink that supports the takeaway; replace defaults, don't strip
+    meaning.
+
+11. **Encoding-value fidelity.** Bar heights, slice angles, point
+    positions, and marker sizes must match the printed/underlying
+    values. Geometry that contradicts the data label is a fabrication
+    tell. We hold the data, so verify exactly — `encoded_value ==
+    source_value`, not OCR.
+
+12. **Closure / conservation holds.** Parts-of-whole sum to the whole
+    (pie/stacked slices → 100% or the stated total); subgroup counts
+    reconcile to the group total; axis labels are the real categories,
+    not raw sequence indices (1, 2, 3…). Check the source data array,
+    not the render.
 
 ---
 

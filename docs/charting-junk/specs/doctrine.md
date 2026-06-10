@@ -53,7 +53,7 @@ The source framework (`docs/charting-junk/Chart_slop_claude.md`) decomposes figu
 
 | Axis | One-line definition | Where it lives |
 |---|---|---|
-| **A. Graphical integrity** | Does the figure's visual claim faithfully represent the data (zero baselines, honest scales, shown uncertainty, no 3D distortion)? | **Already canonical** — `oligon-brand/SKILL.md` `<figure_integrity>` "Eight Rules" + `figure_design_principles.md` §7 anti-patterns. Do not re-derive; point here. |
+| **A. Graphical integrity** | Does the figure's visual claim faithfully represent the data (zero baselines, honest scales, shown uncertainty, no 3D distortion)? | **Already canonical** — `oligon-brand/SKILL.md` `<figure_integrity>` "Twelve Rules" + `figure_design_principles.md` §7 anti-patterns. Do not re-derive; point here. |
 | **B. Data-ink economy** | Is non-data ink in service of the takeaway, or noise — judged by Fujii's signal-to-noise reframing, **not** mechanical data-ink maximization? | **Already canonical** — `figure_design_principles.md` §7 row 14 + `oligon-brand/SKILL.md` `<design_foundation>` "Universal design pitfalls." **Two-sided** (see §4): more ink can be correct. |
 | **C. Generative-artifact credibility** | Are the *generation-specific* artifacts absent — no garbled glyphs, no encoding-value mismatch, no parts-not-summing, no impossible anatomy, no tool-default fingerprint? | **NEW — this doc owns it.** §3 catalogs the tells; §4 catalogs the regression-to-mean defaults. |
 
