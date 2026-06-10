@@ -8,7 +8,7 @@ tokens-file: tokens/brand-tokens.json
 style-guide: references/Oligon_Digital_Style_Guide_v2.3.html
 ---
 <!-- GENERATED FILE - do not edit here.
-     Vendored from https://github.com/pickleton89/oligon-brand-core@073031f
+     Vendored from https://github.com/pickleton89/oligon-brand-core@67d9a66
      Edit oligon-brand-core and re-run scripts/sync_brand_core.sh. -->
 
 
@@ -270,7 +270,7 @@ validation, use the Coblis colorblind simulator or the
 </workflow>
 
 <figure_integrity>
-## Figure Integrity — Eight Rules
+## Figure Integrity — Twelve Rules
 
 These govern what a figure is allowed to claim visually. Violating any
 of them misrepresents the data, regardless of how well-styled the
@@ -291,6 +291,39 @@ figure looks.
    single icon scaled 5× larger.
 8. **No dual y-axes without justification.** Prefer small multiples
    or twin-panel layouts first.
+
+These four govern *generative-artifact integrity* — the failure modes a
+diffusion model or code-gen LLM introduces that a competent human would
+not. Because we author from ground-truth data and source SVG/plot code,
+these are **exact deterministic checks against what we already hold**, not
+image forensics. A single confirmed violation of Rule 9, 11, or 12 is a
+*categorical tell* — it dominates the verdict regardless of how clean the
+rest of the figure is.
+
+9. **Lexically-valid labels only.** Every axis label, legend entry, tick
+   label, and callout is a real word, term, or number — never a
+   letter-shaped but lexically-void glyph-string ("*diƨlocttal*",
+   "*testtomcels*"), invented diacritic, or melted/mixed-script character.
+   This is the strongest single AI tell (Frontiers/Bik 2024). For our own
+   output, scan the source string set, not the pixels.
+10. **Non-default styling is intentional, not stripped.** Tool defaults
+    (matplotlib `C0`/`C1` tab10, seaborn theme, Excel chart style) are a
+    regression-to-mean slop fingerprint — apply a brand cycle or a
+    justified palette instead. But this rule is **two-sided**: do *not*
+    over-minimize toward a sterile, decoration-free chart either.
+    Embellishment that aids recall is not slop (Bateman CHI 2010). Keep
+    ink that supports the takeaway; replace defaults, don't strip
+    meaning.
+11. **Encoding-value fidelity.** Bar heights, slice angles, point
+    positions, and marker sizes must match the printed/underlying values.
+    Geometry that contradicts the data label is a fabrication tell. We
+    hold the data, so verify exactly — `encoded_value == source_value`,
+    not OCR.
+12. **Closure / conservation holds.** Parts-of-whole sum to the whole
+    (pie/stacked slices → 100% or the stated total); subgroup counts
+    reconcile to the group total; axis labels are the real categories,
+    not raw sequence indices (1, 2, 3…). Check the source data array,
+    not the render.
 </figure_integrity>
 
 <design_foundation>
@@ -345,7 +378,14 @@ figure is doing too many jobs — split into panels or multiple figures.
 
 ### Universal design pitfalls
 
-1. **Default Syndrome** — tool defaults without justification
+1. **Default Syndrome / regression-to-mean (two-sided)** — tool defaults
+   without justification are a slop fingerprint (avoid the canonical
+   matplotlib/seaborn/Excel look); but the opposite failure is just as
+   real — sterile over-minimization that strips useful labels and
+   embellishment is *also* regression-to-the-mean (Bateman CHI 2010: junk
+   doesn't impair comprehension and aids recall). Replace defaults with an
+   intentional, takeaway-supporting style — not with the leanest possible
+   chart.
 2. **Rainbow colormap for sequential data** — use viridis family
 3. **Color-only encoding** — add shape / line style / direct label
 4. **Cramming** — one main message per figure
