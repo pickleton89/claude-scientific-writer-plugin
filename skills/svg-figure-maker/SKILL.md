@@ -130,11 +130,13 @@ Is the figure a one-off custom illustration?
 **Steps:**
 1. Run `uv run python scripts/preflight_check.py figure.svg --tokens ../oligon-brand/tokens/brand-tokens.json -o preflight.json`
 2. Read `preflight.json` — the linter returns `pass | warn | fail` per check plus structured findings keyed to `figure_design_principles.md` section numbers
-3. If any `fail` finding: Edit `figure.svg` to fix; re-run preflight; loop until pass
-4. `warn` findings are non-blocking but should be addressed where possible
+3. **Anti-slop is built in — no separate script.** `preflight_check.py` now also flags the categorical AI-generation tells in our OWN output: garbled / lexically-void `<text>` content (`check_garbled_text`, emits the new `categorical` severity), default-library palette fingerprint (`check_default_palette_fingerprint`), and axis ticks emitted as raw sequence indices `1,2,3…` instead of real categories (`check_raw_index_labels`). These check against the labels/palette we authored — no OCR, no forensic CV (those are inbound-audit / Track D only, owned by `research-accuracy-verifier`). A `categorical`-severity finding is a **hard fail** (treat exactly like `fail`). Aesthetic/chartjunk findings are advisory and two-sided — do NOT strip decoration or minimize ink to clear them (Bateman CHI2010). Thresholds are provisional/uncalibrated; findings are a vector of severity-tagged sub-scores, never a composite slop score. Doctrine: `shared/references/ai_figure_slop.md`.
+4. If any `fail` or `categorical` finding: Edit `figure.svg` to fix; re-run preflight; loop until pass
+5. `warn` findings are non-blocking but should be addressed where possible
 
 **Exit Criteria:**
 - [ ] All `fail` findings cleared
+- [ ] Zero `categorical`-severity findings (garbled text, default-palette fingerprint, raw-index labels) — these are hard fails
 - [ ] `preflight.json` `overall: pass`
 
 ---
@@ -160,7 +162,19 @@ Is the figure a one-off custom illustration?
 
 **Steps:**
 1. `Read` the `figure.preview.png` file (Claude reads PNGs directly via the Read tool)
-2. Walk `references/visual_critique_checklist.md` (Phase 3 deliverable) — for v0.1 use the inline checklist below:
+2. **Generative-Artifact Tell Pass FIRST** (categorical; dominates the aesthetic walk).
+   Before judging craft, run the per-tell checklist in
+   `../../shared/references/generative_artifact_tells.md`. Check T1→T4 (⚑ categorical)
+   **in order**; write a one-line justification per item quoting what you saw.
+   - T1 Lexical validity · T2 Glyph integrity · T3 Encoding↔printed-value ·
+     T4 Physical/pathway plausibility — **any = 2 ⇒ regenerate**, short-circuit,
+     skip the aesthetic walk this iteration.
+   - T5 Axis/label coherence · T6 Default-template feel (weak, two-sided —
+     never strip decoration to lower T6).
+   - Emit the `tell_pass` vector into `critique.json` (`category: generative_tell`,
+     `tell` object per `schemas/critique_finding.schema.json`). A clean pass is
+     **no positive evidence**, not proof. Thresholds are provisional/uncalibrated.
+3. Walk `references/visual_critique_checklist.md` (Phase 3 deliverable) — for v0.1 use the inline checklist below:
    - **Text legibility:** every label readable; nothing clipped, overlapping, or truncated
    - **Hierarchy:** the takeaway message is recognizable from the figure alone
    - **Alignment:** elements snap to the 8px grid; panels align cleanly
@@ -168,11 +182,12 @@ Is the figure a one-off custom illustration?
    - **Line crispness:** strokes render cleanly at the rasterized resolution
    - **Composition balance:** whitespace is intentional (§6.4 of `figure_design_principles.md`); no crowding
    - **Accessibility:** color isn't the only differentiator; legible in grayscale
-3. Emit findings as JSON validating against `schemas/critique_finding.schema.json` — each finding names the issue, its location in the SVG (group id or element selector), and the suggested fix
-4. READ `design_practices_index.md` §5 → `shared/references/pre_submission_checklist.md` for the 15-point gate cross-check
+4. Emit findings as JSON validating against `schemas/critique_finding.schema.json` — each finding names the issue, its location in the SVG (group id or element selector), and the suggested fix
+5. READ `design_practices_index.md` §5 → `shared/references/pre_submission_checklist.md` for the 15-point gate cross-check
 
 **Exit Criteria:**
 - [ ] `critique.json` written and schema-valid
+- [ ] `tell_pass` vector recorded; no ⚑ categorical tell (T1–T4) scored 2
 - [ ] Number of findings recorded for iteration log
 
 ---
@@ -325,6 +340,21 @@ Hand-writing palette hexes, font-family strings, size values inline as magic num
 **Solution:**
 Use the templates as the source of truth for invariants (viewBox, font-family declaration, group structure). Edit content, preserve invariants. For programmatic figures, load tokens once from `tokens/brand-tokens.json` and reference them everywhere.
 
+---
+
+### 7. Treating decoration removal as a slop fix
+
+**Anti-pattern:**
+Stripping embellishment, flattening to a bare-minimum default, or minimizing
+ink to make a figure "look less AI." This chases the wrong signal.
+
+**Solution:**
+The decisive AI tells are categorical integrity failures (garbled text, melted
+glyphs, encoding≠printed value, impossible geometry — `../../shared/references/generative_artifact_tells.md`
+T1–T4), NOT aesthetic richness. Over-minimization is itself a regression-to-mean
+slop failure (Bateman CHI2010 — embellishment does not impair comprehension and
+can aid recall). Fix the integrity tell; leave intentional decoration alone.
+
 </anti_patterns>
 
 <templates>
@@ -380,6 +410,7 @@ Schema: `schemas/figure_metadata.schema.json`. Excerpt:
 | `oligon-brand` | Brand tokens at Stage 1; `scripts/render_svg_preview.sh` at Stage 4 — **canonical**, do not duplicate |
 | `shared/references/figure_design_principles.md` | Authoritative principles (typography, color, accessibility, anti-patterns, grid, layout) — every workflow stage references a section |
 | `shared/references/pre_submission_checklist.md` | 15-point operational gate cross-checked at Stage 5 |
+| `shared/references/ai_figure_slop.md` | Anti-slop guardrail (canonical doctrine). `scripts/preflight_check.py` (Stage 3 preflight, already extended) checks our own SVG EXACTLY — garbled/lexically-void text (`categorical` severity = hard fail), default-library palette fingerprint, and axis ticks as raw indices — against the labels/palette we authored, never via OCR. Categorical tells dominate; chartjunk signals are weak and two-sided |
 | `shared/references/figure_vs_table_decision.md` | Stage 0 sanity check |
 | `shared/references/communication_context_matrix.md` | Stage 0 complexity calibration |
 
@@ -415,6 +446,7 @@ Schema: `schemas/figure_metadata.schema.json`. Excerpt:
 | `references/grid_and_layout.md` | 8px-grid discipline; coord-divisibility rule; alignment patterns |
 | `references/anti_patterns.md` | Banned attributes; "AI slop" markers; expanded checklist with examples |
 | `references/visual_critique_checklist.md` | Vision-loop critique rubric — 7 categories with `principle_ref` anchors and the schema-compatible finding shape |
+| `../../shared/references/generative_artifact_tells.md` | Generative-Artifact Tell Pass (T1–T6) — categorical AI-tell checklist run at the head of Stage 5; vector output, ⚑ auto-fail→regenerate rule (categorical tells dominate; aesthetic signals weak/two-sided; thresholds provisional) |
 | `references/figure_type_catalog.md` | Routing table for SVG figures across visual skills + leak-investigation findings for the four neighbour skills (scientific-schematics, plotting-libraries, research-posters, paperbanana/generate-image) |
 | `references/programmatic_authoring.md` | `drawsvg` patterns for parametric figures — palette loading, grid arithmetic, determinism rules, accessibility scaffolding, and the root-dimension strip |
 | `templates/parametric_4panel.py` | Canonical drawsvg worked example: PEP-723 self-bootstrap, 4-panel grid, byte-identical across runs, passes preflight 15/15 zero-warn |

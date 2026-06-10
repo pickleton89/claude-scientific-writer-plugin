@@ -1,5 +1,5 @@
 # Skill Trigger Registry
-# Version: 1.7.0
+# Version: 1.8.0
 # Purpose: Deterministic keyword-based routing for the scientific writing skill library
 #
 # Structure:
@@ -67,6 +67,11 @@ skills:
       - figure from paper
       - figure from text
       - figure from method
+      # Figure AUDIT (Track D) → research-accuracy-verifier, not a generator
+      - audit this figure
+      - is this figure ai slop
+      - chart slop
+      - figure integrity check
 
   scientific-schematics:
     description: Structured scientific diagrams with explicit components — flowcharts, pathways, networks, mechanism illustrations. User specifies diagram type, nodes, or relationships
@@ -121,6 +126,11 @@ skills:
       - visual summary
       - figure from text
       - explain visually
+      # Figure AUDIT (Track D) → research-accuracy-verifier, not a generator
+      - audit this figure
+      - is this figure ai slop
+      - chart slop
+      - figure integrity check
 
   generate-image:
     description: AI-generated photorealistic images, artistic illustrations, and creative visuals — not structured scientific figures or diagrams
@@ -161,6 +171,11 @@ skills:
       - figure from text
       - figure from paper
       - methodology overview
+      # Figure AUDIT (Track D) → research-accuracy-verifier, not a generator
+      - audit this figure
+      - is this figure ai slop
+      - chart slop
+      - figure integrity check
 
   paperbanana:
     description: AI-generated publication figures from prose text (graphical abstracts, visual summaries, methodology overviews) — input is unstructured text, not data or explicit diagram specs
@@ -207,6 +222,11 @@ skills:
       - mermaid
       - nodes
       - edges
+      # Figure AUDIT (Track D) → research-accuracy-verifier, not a generator
+      - audit this figure
+      - is this figure ai slop
+      - chart slop
+      - figure integrity check
 
   svg-figure-maker:
     description: Deterministic, brand-aware SVG figure authoring — novel/custom SVG, parametric (drawsvg) layouts, annotated SVG overlays; ships with render→inspect→fix loop. The plugin's low-level SVG primitive.
@@ -276,6 +296,11 @@ skills:
       - dall-e
       - ai generated
       - ai-generated
+      # Figure AUDIT (Track D) → research-accuracy-verifier, not a generator
+      - audit this figure
+      - is this figure ai slop
+      - chart slop
+      - figure integrity check
 
   visual-design:
     description: Design guidance, color theory, typography, layout, accessibility
@@ -804,6 +829,16 @@ skills:
       - check this against prose standards
       - audit against prose standards
       - run prose-quality audit
+      # Track D — inbound AI-figure-slop audit (advisory/triage; figure_integrity_audit)
+      - is this figure ai slop
+      - is this chart ai slop
+      - audit this figure
+      - audit this chart
+      - ai-generated figure
+      - ai generated chart
+      - figure integrity check
+      - chart slop
+      - is this figure real
     triggers:
       - "fact[-\\s]?check"
       - "verify.*(?:the|all|these)?.*citations?"
@@ -824,6 +859,11 @@ skills:
       - "STYLE_NONCONFORMING"
       - "(?:check|audit).*(?:writing|prose).*(?:quality|standards)"
       - "(?:check|audit).*against.*prose\\s*standards"
+      # Track D — inbound AI-figure-slop audit (figure_integrity_audit)
+      - "(?:is|audit).*(?:this|the|my).*(?:figure|chart|plot|diagram).*(?:ai|slop|generated|real|fake)"
+      - "(?:figure|chart)\\s+integrity\\s+(?:check|audit)"
+      - "chart\\s+slop"
+      - "(?:ai|machine)[-\\s]?generated.*(?:figure|chart|plot|diagram)"
     output_formats: [md, html]
     negative_keywords:
       - edit for style
@@ -854,6 +894,11 @@ skills:
       - this claim about
       - one claim
       - single claim
+      # Figure CREATION phrasings → generators, not the Track-D audit
+      - create figure
+      - make a chart
+      - design a figure
+      - generate a figure
     priority: 1  # Tiebreaker over peer-review when "verify" or "audit" appears with AI-content signals
 
   scientific-brainstorming:

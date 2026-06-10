@@ -34,6 +34,7 @@
         "line_crispness",
         "composition_balance",
         "accessibility",
+        "generative_tell",
         "other"
       ],
       "description": "Critique category — keyed to the vision-loop checklist."
@@ -73,6 +74,33 @@
       "type": "string",
       "description": "Concrete action to resolve the finding.",
       "minLength": 1
+    },
+    "tell": {
+      "type": "object",
+      "description": "Generative-Artifact Tell Pass discriminator. Present only on category='generative_tell' findings. See ../../shared/references/generative_artifact_tells.md. Categorical tells (T1–T4) dominate; aesthetic signals (T6) are weak and two-sided.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": ["T1", "T2", "T3", "T4", "T5", "T6"],
+          "description": "Tell identifier: T1 lexical validity, T2 glyph integrity, T3 encoding↔printed-value, T4 physical/pathway plausibility (T1–T4 categorical), T5 axis/label coherence, T6 default-template feel (T5–T6 graded)."
+        },
+        "score": {
+          "type": "integer",
+          "enum": [0, 1, 2],
+          "description": "0 = no tell observed; 1 = weak/ordinary; 2 = decisive tell. A categorical tell scored 2 forces regenerate. Thresholds provisional/uncalibrated."
+        },
+        "categorical": {
+          "type": "boolean",
+          "description": "True for T1–T4 (dominant, auto-fail at score 2); false for T5–T6 (graded, never dispositive)."
+        },
+        "justification": {
+          "type": "string",
+          "minLength": 1,
+          "description": "One-line justification quoting what was seen in the raster (or 'not observed')."
+        }
+      },
+      "required": ["id", "score", "categorical", "justification"],
+      "additionalProperties": false
     }
   },
   "additionalProperties": false

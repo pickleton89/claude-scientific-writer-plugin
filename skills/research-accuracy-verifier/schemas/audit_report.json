@@ -57,6 +57,11 @@
       "type": "array",
       "items": { "$ref": "#/definitions/Finding" }
     },
+    "figure_findings": {
+      "type": "array",
+      "description": "Optional FIGURE_INTEGRITY parallel family (inbound figure audit). Present only when checks_enabled includes 'figure_integrity_audit' (custom tier). Items conform to schemas/figure_audit_finding.json and are validated by scripts/validate_figure_finding.py (FD-P1..FD-P7). Does NOT enter the Verdict enum or severity matrix — advisory/triage only. Empty/absent otherwise.",
+      "items": { "type": "object" }
+    },
     "verification_matrix": {
       "type": "array",
       "items": {

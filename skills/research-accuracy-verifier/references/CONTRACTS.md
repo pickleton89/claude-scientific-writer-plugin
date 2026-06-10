@@ -419,6 +419,68 @@ S-P3. `style findings load thresholds from prose_standards_thresholds.yaml` — 
 
 ---
 
+## FIGURE_INTEGRITY verdict family (added v1.8, AI-figure-slop integration)
+
+A separate verdict family for **inbound third-party figure-integrity audits**
+(a figure the user hands us, not one this plugin generated). **Operates on a
+parallel pipeline** to the citation/claim verdicts — does NOT enter the 10-value
+Verdict enum or the 70-cell Severity matrix; uses its own `figure_findings[]`
+array in the AuditReport when the verifier is run with `checks_enabled`
+including `figure_integrity_audit` (**`custom` tier only** — no numbered tier
+auto-includes it). Same architectural posture as STYLE_NONCONFORMING.
+
+**Advisory/triage only, never dispositive.** A clean audit is "no positive
+evidence of AI authorship," never proof of human authorship; the burden it
+supports is "obtain source data / provenance," never "conclude misconduct."
+Adjudication stays human (FD-P4 enforces this on `recommended_action`).
+
+**Source of truth for the rubric:** `references/figure_integrity_audit.md`
+(6 dimensions, 0/1/2 anchors, 5 categorical ⚑ metrics {1.1,1.2,2.1,2.2,3.1}).
+The rubric is **PROVISIONAL/UNCALIBRATED**. Why this family is not the citation
+enum: a figure audit asserts a property of an *image* (a pixel region with no
+DOI/PMID), so it cannot satisfy P3, and forcing `CONTRADICTED`/`UNSUPPORTED`
+onto pixel observations would be a category error.
+
+### Audit-level verdicts (3 values — NOT the citation enum)
+
+| Verdict | Trigger |
+|---|---|
+| `FIGURE_INTEGRITY_FLAG` | any ⚑ metric = 2 OR any Tier-1 deterministic hard mismatch |
+| `FIGURE_REVIEW_RECOMMENDED` | converging soft signals, no ⚑=2 |
+| `FIGURE_NO_POSITIVE_EVIDENCE` | clean |
+
+### FigureAuditFinding shape (separate from Finding)
+
+Schema: `schemas/figure_audit_finding.json`. Per-metric severity uses the shared
+`{CRITICAL,MAJOR,MINOR,INFORMATIONAL}` but is assigned by the rubric's explicit
+table (⚑=2 → CRITICAL; non-⚑ score 2 → MAJOR; score 1 → MINOR; D4/D6 ≤ MINOR),
+NOT computed from the severity matrix.
+
+### AuditReport extension
+
+`audit_report.json` gains an optional `figure_findings[]` array (alongside
+`findings[]` and `style_findings[]`). Empty array if `figure_integrity_audit` is
+not in `checks_enabled`.
+
+### Hard predicates for figure findings (FD-P1..FD-P7)
+
+Enforced by `scripts/validate_figure_finding.py` (FD-P1..FD-P6 per-finding;
+FD-P7 audit-level in `validate_audit_verdict()`). Full statements in
+`predicates.md`. They encode the two guardrails: categorical tells dominate
+(FD-P1/P2/P7), aesthetic D6 is weak/two-sided (FD-P3), framing stays advisory
+(FD-P4), decaying signals carry their caveat (FD-P5), deterministic findings
+name their linter (FD-P6).
+
+### Tier plan
+
+Tier 1 (deterministic, `scripts/figure_axis_lint.py`, reuses the Track-B
+linters; only when the user supplies machine-readable source) + Tier 3
+(instrumented vision-judge) ship now. Tier 2 (CV) deferred. An "AI-generated"
+classifier is **never** built and never gates (SciFigDetect: detectors fail
+zero-shot).
+
+---
+
 ## Validator pattern reminder
 
 All validators in `scripts/validate_*.py` MUST use the **2-stage continue-on-failure** pattern:

@@ -1,6 +1,6 @@
 # Pre-Submission Checklist — Scientific Visuals
 
-> 15-point unified quality gate for figures, graphical abstracts, posters, slides, and schematics before submission.
+> 20-point unified quality gate for figures, graphical abstracts, posters, slides, and schematics before submission.
 > Version: 1.0.0
 > Used by: paperbanana, scientific-schematics, research-posters, plotting-libraries, scientific-slides
 >
@@ -114,13 +114,59 @@ See `figure_vs_table_decision.md` for the full decision aid. **If the answer is 
 
 **Check:** Continuous data (e.g., individual measurements per group) is shown with box+jitter, violin+jitter, or strip plots — **not** as bar charts of group means.
 **Why:** Weissgerber et al. 2015 *PLoS Biol* — bar charts hide the underlying distribution; identical-looking bar charts can come from radically different distributions.
-**Verify:** See `plotting-libraries/scripts/validate_figure.py::check_continuous_as_bars` and `plotting-libraries/references/plot_selection_guide.md` for code recipes.
+**Verify:** See `plotting-libraries/scripts/validate_data.py::check_continuous_as_bars` and `plotting-libraries/references/plot_selection_guide.md` for code recipes.
 
 ### 14. Risk ratios / odds ratios / hazard ratios shown as points + 95% CI, not bars
 
 **Check:** Point estimates with confidence intervals (forest plots; effect sizes) are drawn as points with horizontal CI lines (`pointrange`), not as bars.
 **Why:** Fujii 2023 *J Epidemiol* — bars exaggerate the visual weight of the point estimate at the expense of the CI; a wide-CI estimate looks deceptively confident as a bar.
-**Verify:** matplotlib `ax.errorbar(x, y, yerr=...)` or ggplot2 `geom_pointrange(aes(ymin=lower, ymax=upper))`.
+**Verify:** matplotlib `ax.errorbar(x, y, yerr=...)` or ggplot2 `geom_pointrange(aes(ymin=lower, ymax=upper))`. Programmatic: `plotting-libraries/scripts/validate_data.py::check_riskratio_as_bars`.
+
+---
+
+## Generative-artifact Integrity (anti-slop)
+
+> Detects AI-slop tells (garbled labels, default fingerprint, geometry≠data,
+> broken closure). Because we author from ground-truth data and source code,
+> these are **exact deterministic checks against what we already hold** — not
+> OCR or image forensics. A single confirmed failure of #16, #18, or #19 is a
+> *categorical tell* (severity `categorical` — a hard fail) and dominates the
+> verdict. Aesthetic/default-palette signals (#17) are weak, graded, and
+> two-sided — never an AI verdict on their own and never an instruction to
+> strip decoration or minimize ink (Bateman CHI 2010). Emit a *vector* of
+> severity-tagged sub-scores, never a composite "slop score." Thresholds here
+> are provisional/uncalibrated; see `figure_design_principles.md` §12,
+> `ai_figure_slop.md`, and the vision Tell-Pass doc `generative_artifact_tells.md`.
+
+### 16. No garbled / lexically-void labels
+
+**Check:** Every axis label, legend entry, tick label, and callout is a real word, term, or number — no letter-shaped but meaningless glyph-strings ("*diƨlocttal*"), invented diacritics, or mixed-script characters.
+**Why:** Lexically-void figure text is the strongest single AI-generation tell (Frontiers/Bik 2024 retraction). For self-authored figures, scan the source string set, not the rendered pixels.
+**Verify:** `uv run python scripts/preflight_check.py figure.svg` (`svg-figure-maker/scripts/preflight_check.py`, `check_garbled_text` — emits the `categorical` severity, a hard fail — runs a lexical scan over `<text>`/`<tspan>`); for plot code, inspect the label/tick-label arrays directly.
+
+### 17. Non-default palette confirmed
+
+**Check:** Figure does not use the unmodified tool default (matplotlib `C0`/`C1` tab10, seaborn default theme, Excel chart styling); a brand cycle or justified palette is applied. **Two-sided:** confirm styling is *intentional*, not stripped to a sterile, decoration-free minimum.
+**Why:** Default-distribution styling is a regression-to-mean slop fingerprint (Kommers 2026); but over-minimization is *also* a failure — embellishment aids recall and does not impair comprehension (Bateman CHI 2010). This is a weak, graded signal, never an AI verdict on its own.
+**Verify:** `plotting-libraries/scripts/validate_data.py::check_default_palette`; for SVG, `svg-figure-maker/scripts/preflight_check.py` `check_default_palette_fingerprint` (off-palette/default-hex check).
+
+### 18. Encoding–value fidelity
+
+**Check:** Bar heights, slice angles, point positions, and marker sizes match the underlying/printed values exactly.
+**Why:** Geometry that contradicts the data is a fabrication tell — the covert Class B failure where a chart "looks right but encodes wrong data" (Woo 2025). We hold the source data, so verify `encoded == source` exactly rather than recovering values via OCR.
+**Verify:** `plotting-libraries/scripts/validate_data.py::check_encoding_value_fidelity` (compare the plotted array against the source data array); for ratio/continuous-encoding pitfalls see `::check_continuous_as_bars` and `::check_riskratio_as_bars`.
+
+### 19. Closure / conservation sums
+
+**Check:** Parts-of-whole reconcile (pie/stacked slices sum to 100% or the stated total); subgroup counts sum to the group total; stacked-bar segments sum to the bar height.
+**Why:** Slices that don't sum to 100% and totals that don't reconcile are a deterministic generative-artifact signature (practitioner Class B catalog). Internal-consistency arithmetic is exact and provenance-agnostic.
+**Verify:** `plotting-libraries/scripts/validate_data.py::check_closure` (sum the source data array(s) and assert closure, e.g. `assert abs(sum(parts) - whole) < tol`).
+
+### 20. Axis labels are real categories, not raw indices
+
+**Check:** Categorical tick labels are the actual category names, not raw sequence indices (1, 2, 3…) standing in for unmapped categories.
+**Why:** Index-as-label is a code-gen "data-mapping" tell (RealChart2Code 2026) and reads as an unfinished/hallucinated axis. Scale type must also fit the data (no silent log).
+**Verify:** Inspect the tick-label array against the category source; `svg-figure-maker/scripts/preflight_check.py` `check_raw_index_labels` flags numeric-only categorical tick runs.
 
 ---
 
@@ -146,8 +192,13 @@ Run this checklist as a **post-design gate** (after the figure is complete) and 
 | #5 Font embedding | `pdffonts <file.pdf>` |
 | #7 CVD simulation | `skills/shared/accessibility/` utilities |
 | #8–9 Contrast | `skills/shared/accessibility/` utilities |
-| #13 Continuous-as-bars | `plotting-libraries/scripts/validate_figure.py::check_continuous_as_bars` |
-| #14 Risk-ratio-as-bars | `plotting-libraries/scripts/validate_figure.py::check_riskratio_as_bars` |
+| #13 Continuous-as-bars | `plotting-libraries/scripts/validate_data.py::check_continuous_as_bars` |
+| #14 Risk-ratio-as-bars | `plotting-libraries/scripts/validate_data.py::check_riskratio_as_bars` |
+| #16 Garbled / lexically-void labels | `svg-figure-maker/scripts/preflight_check.py::check_garbled_text` (`categorical` hard fail) |
+| #17 Default-palette fingerprint | `plotting-libraries/scripts/validate_data.py::check_default_palette`; SVG: `svg-figure-maker/scripts/preflight_check.py::check_default_palette_fingerprint` |
+| #18 Encoding–value fidelity | `plotting-libraries/scripts/validate_data.py::check_encoding_value_fidelity` |
+| #19 Closure / conservation | `plotting-libraries/scripts/validate_data.py::check_closure` |
+| #20 Raw-index axis labels | `svg-figure-maker/scripts/preflight_check.py::check_raw_index_labels` |
 
 ---
 

@@ -411,6 +411,7 @@ pdffonts poster.pdf
 - [ ] Total word count 300-800
 - [ ] Each section uses bullet points (not paragraphs)
 - [ ] All figures have captions
+- [ ] Each composited figure passed its source skill's anti-slop gate (`scientific-schematics` Stage 5 / `plotting-libraries` `validate_data.py::check_encoding_value_fidelity`, `check_closure` / `svg-figure-maker` `preflight_check.py` — where a `categorical`-severity finding is a hard fail); no figure shows garbled labels, raw-index ticks, or geometry that contradicts its printed values (`../shared/references/ai_figure_slop.md`)
 - [ ] QR code added and tested
 - [ ] References included (5-10 key citations)
 - [ ] Contact information visible
@@ -460,6 +461,7 @@ Visual Elements:
 - [ ] No pixelated or blurry images
 - [ ] Figure captions present and readable
 - [ ] Colors render as expected
+- [ ] No anti-slop tells in any figure (lexically-void/garbled labels, encoding≠value, parts not summing to whole) — categorical tells dominate the review (`../shared/references/ai_figure_slop.md`)
 - [ ] Logos display clearly
 - [ ] QR codes scannable
 
@@ -614,6 +616,7 @@ Accessibility:
 | `venue-templates` | Conference-specific formatting requirements |
 | `oligon-brand` | Brand colors and styling for Oligon posters |
 | `shared/references/figure_design_principles.md` | Shared figure-making principles — typography (§2), multi-panel layout (§6.2), legend placement (§6.3), whitespace and padding (§6.4), anti-patterns (§7). Essential for poster panel composition |
+| `shared/references/ai_figure_slop.md` | Anti-slop guardrail. Every composited figure must have passed its own skill's anti-slop gate before placement; at poster scale also confirm no figure carries garbled labels or encoding↔value mismatch. Categorical tells dominate; aesthetic/default-palette signals are weak and two-sided — do not down-style figures to look "leaner" or minimize ink (Bateman CHI 2010). Thresholds provisional/uncalibrated |
 | `paper-2-web` | Auto-generate poster from existing paper |
 
 **Skill Selection:**
@@ -633,6 +636,7 @@ See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 | `{baseDir}/references/pptx_workflows.md` | PowerPoint templates and workflows |
 | `../shared/references/iconography-licensing.md` | Icon-library licensing (BioRender, NIH BIOART, SciDraw, Servier, Noun Project) — re-verify at submission |
 | `../shared/references/pre_submission_checklist.md` | 15-point unified quality gate (also applies to posters) |
+| `../shared/references/ai_figure_slop.md` | AI-figure-slop guardrail for composited figures (categorical tells dominate; aesthetic signals weak/two-sided; thresholds provisional/uncalibrated; never strip decoration to minimize ink) |
 | `../shared/references/communication_context_matrix.md` | Audience × time × interaction → poster complexity (Fujii 2026); poster row covers 3-5 minute viewer scenarios |
 | `../shared/references/figure_vs_table_decision.md` | Decision aid for figure vs table on a poster (Fujii 2026; Midway 2020) |
 | `../shared/references/chart_types_catalog.md` | Flat by-chart-type catalog of 35 chart types — use when planning a poster's data figures (companion to `plot_selection_guide.md`) |

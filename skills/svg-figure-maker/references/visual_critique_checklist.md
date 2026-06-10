@@ -155,6 +155,23 @@ intent from Stage 0).
 
 ---
 
+## Run the Generative-Artifact Tell Pass FIRST
+
+Before this aesthetic walk, run `../../shared/references/generative_artifact_tells.md`
+(T1–T6). It catches what BOTH the preflight linter AND this aesthetic checklist
+miss: garbled/melted text, encoding≠printed-value, impossible geometry. Check the
+⚑ categorical tells T1→T4 **in order**; any one at score 2 short-circuits to
+`regenerate` and you skip this walk for the current iteration. Emit each tell as a
+`category: generative_tell` finding with the `tell` object
+(`schemas/critique_finding.schema.json`). The tells are a vector of
+severity-tagged sub-scores, never a composite slop number; categorical tells
+dominate, while T6 (default-template feel) is weak, two-sided, and never
+dispositive — do NOT strip decoration or minimize ink to lower it (Bateman
+CHI2010). A clean pass is no positive evidence, not proof. Thresholds are
+provisional/uncalibrated.
+
+---
+
 ## What this checklist deliberately does NOT cover
 
 These are caught by `scripts/preflight_check.py` upstream — do not re-check

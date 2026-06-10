@@ -618,6 +618,7 @@ Generate Image → Review Quality → Score >= Threshold?
 3. Verify accessibility (colorblind-safe, contrast)
 4. Confirm all labels readable at final size
 5. Validate file format and resolution
+6. **Anti-slop check (post-generation).** For Tier-1 Mermaid SVG: run `uv run python ../svg-figure-maker/scripts/preflight_check.py figure.svg` — its anti-slop checks flag garbled `<text>` (`check_garbled_text`, which emits the `categorical` severity), default-library palette fingerprint (`check_default_palette_fingerprint`), and raw-index node labels (`check_raw_index_labels`) — exact, against the labels and palette we authored (no OCR). A `categorical`-severity finding is a hard fail. For Tier-2 AI (Nano Banana Pro) raster output: there is no source SVG to diff, so do a structured human-eye Class-A categorical check against the `../shared/references/generative_artifact_tells.md` rubric — confirm every label is a real word/term (no `diƨlocttal`-style glyph-strings), every arrow connects meaningful entities (no arrows to/from nothing), anatomy/topology is valid, and printed numbers/units are plausible. These categorical tells dominate the verdict; the default-palette / decoration signal is weak, two-sided, and must not by itself fail a diagram (Bateman CHI 2010 — never strip decoration or minimize ink to clear it). Emit findings as a vector of severity-tagged sub-scores, never a single slop score; thresholds are provisional/uncalibrated. Full doctrine: `../shared/references/ai_figure_slop.md`.
 
 **Exit Criteria:**
 - [ ] Overall quality score ≥ threshold for document type
@@ -625,6 +626,7 @@ Generate Image → Review Quality → Score >= Threshold?
 - [ ] Colorblind simulation passes
 - [ ] Text readable at target reproduction size
 - [ ] File format appropriate (PNG for web, PDF for print)
+- [ ] Anti-slop: SVG output has zero `categorical`-severity findings from `preflight_check.py`; for AI raster output, no lexically-void labels, no arrows to/from nothing, no impossible anatomy/topology (human-eye Class-A check per `../shared/references/generative_artifact_tells.md` / `ai_figure_slop.md`)
 
 **Quality Scoring Rubric (10 points total):**
 
@@ -971,6 +973,8 @@ Vertical top-to-bottom layout.
 | `visual-design` | Consult for design principles before creating schematics |
 | `oligon-brand` | Consult `<design_foundation>` for cognitive-foundation citations (Cleveland, Wagemans, Crameri, Fujii 2026) — complementary to visual-design |
 | `shared/references/figure_design_principles.md` | Shared visual-design principles — typography ladder (§2), colorblind palettes (§3), accessibility (§4), grid discipline (§6.1), complexity budgets (§5.4), diagram anti-patterns (§7). Consult before authoring schematics |
+| `shared/references/ai_figure_slop.md` | Anti-slop guardrail — most relevant to the Tier-2 AI (Nano Banana Pro) path, which produces the Class-A tells (lexically-void labels like `diƨlocttal`, arrows connecting nothing, impossible anatomy/topology). Categorical tells dominate; verify label lexical-validity and pathway logic before delivery |
+| `shared/references/generative_artifact_tells.md` | Vision Tell-Pass rubric for the human-eye Class-A check on Tier-2 AI raster output |
 | `generate-image` | Use for photorealistic images; schematics for diagrams |
 | `paperbanana` | Use for text-to-visual (graphical abstracts, visual summaries); schematics for specified diagrams |
 | `scientific-slides` | Schematics integrates into slide presentations |
@@ -1001,6 +1005,8 @@ See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 | `{baseDir}/references/quick_reference.md` | Quick start guide and common examples |
 | `../shared/references/iconography-licensing.md` | Icon-library licensing (BioRender, NIH BIOART, SciDraw, Servier, Noun Project) — re-verify at submission |
 | `../shared/references/pre_submission_checklist.md` | 15-point unified quality gate (Q0 = "should this be a table?") |
+| `../shared/references/ai_figure_slop.md` | AI-figure-slop guardrail (categorical tells dominate; aesthetic signals weak/two-sided; provisional/uncalibrated thresholds). Apply at Stage 5 quality verification, especially for Tier-2 AI output |
+| `../shared/references/generative_artifact_tells.md` | Vision Tell-Pass rubric for the human-eye Class-A categorical check on Tier-2 AI raster output |
 | `../shared/references/communication_context_matrix.md` | Audience × time × interaction → diagram complexity (Fujii 2026) |
 | `../shared/references/figure_vs_table_decision.md` | Decision aid for figure vs table vs both (Fujii 2026; Midway 2020) |
 | `../oligon-brand/SKILL.md` `<design_foundation>` | Cognitive-foundation citations (Cleveland-McGill channel ranking, Wagemans Gestalt grouping, Crameri color, Fujii 2026 communication context) |

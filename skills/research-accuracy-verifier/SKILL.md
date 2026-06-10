@@ -30,6 +30,8 @@ Do not use this skill when the user wants the document edited for style, summari
 
 **prose_quality_audit is never auto-enabled.** No numbered tier (including Tier 3) turns on the STYLE_NONCONFORMING pass. It is reachable only when the user explicitly asks for a prose/style audit (`verification_tier == "custom"` with `prose_quality_audit` in `checks_enabled`), and its canonical entry point is the dedicated `/prose-audit` command. If the user wants prose quality checked, route them there; this skill's tiers stay citation-only.
 
+**figure_integrity_audit is never auto-enabled either.** The FIGURE_INTEGRITY parallel family (inbound third-party figure-slop audit → `figure_findings[]`) is reachable only via `verification_tier == "custom"` with `figure_integrity_audit` in `checks_enabled`. It triggers on explicit figure-audit intent ("is this figure AI slop?", "audit this chart"). It is **advisory/triage only, never dispositive** — a clean audit is "no positive evidence of AI authorship," never proof; the burden it supports is "obtain source data / provenance," never "conclude misconduct." Rubric: [`references/figure_integrity_audit.md`]; predicates FD-P1..FD-P7 in [`references/predicates.md`]; validator [`scripts/validate_figure_finding.py`]; Tier-1 deterministic adapter [`scripts/figure_axis_lint.py`] (reuses the Track-B linters). For figures WE generate, prefer the source-side gates (`svg-figure-maker/scripts/preflight_check.py`, `plotting-libraries/scripts/validate_data.py`) — see `../shared/references/ai_figure_slop.md`.
+
 Five questions drive every downstream routing decision. Skipping them produces noticeably worse audits. Ask all five up front in a single consolidated elicitation. Skip any question the user has already answered in prior turns.
 
 The intake answers are emitted as a JSON object validated against [`schemas/intake.json`](./schemas/intake.json):
@@ -42,11 +44,13 @@ The intake answers are emitted as a JSON object validated against [`schemas/inta
   "verification_tier": "1" | "2" | "3" | "custom",
 
   // checks_enabled: required iff verification_tier == "custom".
-  // prose_quality_audit is CUSTOM-only (parallel pipeline → style_findings[]); no
-  // numbered tier auto-includes it. The /prose-audit slash command is its canonical door.
+  // prose_quality_audit AND figure_integrity_audit are CUSTOM-only (parallel
+  // pipelines → style_findings[] / figure_findings[]); no numbered tier auto-includes
+  // them. /prose-audit is prose's canonical door; figure_integrity_audit triggers on
+  // explicit figure-audit intent (see §intake note above).
   "checks_enabled":    ["citation_existence","claim_alignment","uncited_claims",
                         "exact_quotes","numerical_sanity","named_entities","internal_consistency",
-                        "prose_quality_audit"],
+                        "prose_quality_audit","figure_integrity_audit"],
 
   "domain":            "biomedical" | "general" | "mixed",
   "flag_threshold":    "conservative" | "standard" | "strict",

@@ -363,6 +363,7 @@ Choose output format
    | Contrast | Text-background ratio ≥4.5:1 |
    | Visual content | ≥1 strong visual per slide |
    | White space | 40-50% of slide empty |
+   | Anti-slop (categorical) | No garbled / lexically-void label text on generated slide images, no fabricated symbols, no impossible geometry; embedded data figures have passed their source-skill gate. Dominates: a single garbled label fails the slide regardless of polish (`../shared/references/ai_figure_slop.md`). Aesthetic / default-palette signals are advisory and two-sided — do NOT minimize visuals to clear them (Bateman CHI 2010) |
 
 3. Document issues:
    ```
@@ -380,6 +381,7 @@ Choose output format
 - [ ] All fonts readable (≥24pt body)
 - [ ] Adequate contrast throughout
 - [ ] Visual content on every slide
+- [ ] Anti-slop: no garbled labels / fabricated symbols on any generated slide image; embedded data figures passed their source gate (`../shared/references/ai_figure_slop.md`)
 
 ---
 
@@ -434,6 +436,7 @@ Choose output format
 - [ ] No text-only bullet point slides
 - [ ] Font sizes ≥24pt body, ≥36pt titles
 - [ ] High contrast (≥4.5:1) throughout
+- [ ] No AI-slop tells on generated slide images (garbled labels, fabricated symbols); embedded data figures pass their source gate — categorical tells, checked at Stage 4
 - [ ] Research context established with citations
 - [ ] Clear narrative arc (hook → problem → approach → results → implications)
 - [ ] Practiced ≥3 times with exact timing
@@ -588,6 +591,7 @@ See `{baseDir}/references/output_templates.md` for complete templates:
 | `research-posters` | Use for research posters (not presentations) |
 | `document-skills:pptx` | Use for editable PowerPoint creation |
 | `venue-templates` | Consult for conference-specific styles |
+| `shared/references/ai_figure_slop.md` | Anti-slop guardrail — scan generated slide images for garbled label text and fabricated symbols before assembling the PDF |
 
 **Skill Selection:**
 See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
@@ -612,6 +616,7 @@ See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 | `../shared/references/communication_context_matrix.md` | Audience × time × interaction → figure complexity (Fujii 2026); the **oral / public talk** row of this matrix is the canonical figure-complexity guide for slides |
 | `../shared/references/figure_vs_table_decision.md` | Decide whether a slide should show a figure or a table (Fujii 2026; Midway 2020) |
 | `../shared/references/pre_submission_checklist.md` | 15-point quality gate; applies to slides exported as PDF for permanent record |
+| `../shared/references/ai_figure_slop.md` | AI-figure-slop guardrail. The Nano Banana Pro slide-image path is a diffusion source of Class-A tells (garbled text, fabricated symbols); embedded data figures inherit their source skill's gate. Apply at Stage 4 visual validation; categorical tells dominate, aesthetic/default-palette signals are weak/two-sided. Emit a vector of severity-tagged sub-scores (thresholds provisional/uncalibrated) — never a single slop score; never minimize visuals to clear aesthetic flags (Bateman CHI 2010) |
 | `../oligon-brand/SKILL.md` `<design_foundation>` | Cognitive-foundation citations (Cleveland-McGill, Cowan working memory limit, Crameri color, Fujii 2026 communication context) |
 
 ## Script Reference

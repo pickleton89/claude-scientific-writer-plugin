@@ -42,11 +42,13 @@ TIER_CHECKS: dict[str, list[str]] = {
     ],
 }
 
-# prose_quality_audit is reachable ONLY via verification_tier == "custom"
-# (the /prose-audit slash command pins this). No numbered tier — including
-# Tier 3 — auto-includes it; the citation/claim pipeline never silently turns
-# into a style/grammar audit. See references/CONTRACTS.md §STYLE_NONCONFORMING.
-CUSTOM_ONLY_CHECKS: set[str] = {"prose_quality_audit"}
+# prose_quality_audit and figure_integrity_audit are reachable ONLY via
+# verification_tier == "custom". No numbered tier — including Tier 3 —
+# auto-includes them; the citation/claim pipeline never silently turns into a
+# style audit (STYLE_NONCONFORMING) or an inbound figure-slop audit
+# (FIGURE_INTEGRITY). See references/CONTRACTS.md §STYLE_NONCONFORMING and
+# §FIGURE_INTEGRITY.
+CUSTOM_ONLY_CHECKS: set[str] = {"prose_quality_audit", "figure_integrity_audit"}
 
 
 class IntakeValidator:

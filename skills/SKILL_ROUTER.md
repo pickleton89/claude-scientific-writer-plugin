@@ -355,8 +355,21 @@ User needs research/information support
              ├─ Numbers / named entities to sanity-check?
              │  └─ Stage 6: Numerical heuristics + entity-resolution delegate
              │
-             └─ Internal consistency (refs ↔ inline cites, acronym drift)?
-                └─ Stage 7: reconcile_references.py + scan_acronyms.py
+             ├─ Internal consistency (refs ↔ inline cites, acronym drift)?
+             │  └─ Stage 7: reconcile_references.py + scan_acronyms.py
+             │
+             └─ Auditing a FIGURE/CHART for AI-generation tells ("is this AI slop?", "audit this figure")?
+                └─ Track D (inbound figure audit) — ADVISORY/TRIAGE ONLY, never dispositive.
+                   custom tier, checks_enabled=['figure_integrity_audit']. Uses the
+                   forensic/OCR/rubric stack from `shared/references/ai_figure_slop.md`
+                   and the vision Tell-Pass doc `shared/references/generative_artifact_tells.md`
+                   (categorical tells dominate: lexically-void labels, encoding≠value,
+                   parts-not-summing, impossible anatomy). For figures WE generated, prefer the
+                   exact SOURCE-SIDE gates instead (svg-figure-maker `preflight_check.py` — a
+                   `categorical`-severity finding is a hard fail; plotting-libraries
+                   `validate_data.py::check_encoding_value_fidelity` / `check_closure`).
+                   Emit a VECTOR of severity-tagged sub-scores — never a single composite slop
+                   score; thresholds are PROVISIONAL/UNCALIBRATED; adjudication stays human.
 ```
 
 ### Research Task Routing
@@ -387,6 +400,7 @@ User needs research/information support
 | "Audit this grant for accuracy" | research-accuracy-verifier | Tier-3 audit with severity matrix; deterministic Verdict enum |
 | "Did the AI make these references up?" | research-accuracy-verifier | Hallucination check on AI-generated content |
 | "Check this draft for hallucinated references" | research-accuracy-verifier | Same — strong document-audit signals |
+| "Is this figure AI slop?" / "Audit this figure/chart" | research-accuracy-verifier (Track D, advisory) | Inbound third-party figure audit — custom tier, `checks_enabled=['figure_integrity_audit']`. Forensic/rubric triage per `ai_figure_slop.md` + `generative_artifact_tells.md`; emits a vector of severity-tagged sub-scores (thresholds provisional/uncalibrated), human-adjudicated. For OUR OWN output use the source-side exact gates instead (svg-figure-maker `preflight_check.py`, plotting-libraries `validate_data.py`) |
 
 ---
 

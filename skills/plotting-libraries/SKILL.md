@@ -566,6 +566,7 @@ See `oligon-brand` skill for complete brand implementation patterns.
 ### Cross-Skill Design References
 - **[../shared/references/iconography-licensing.md](../shared/references/iconography-licensing.md)**: Icon-library licensing (BioRender, NIH BIOART, SciDraw, Servier, Noun Project) — re-verify at submission
 - **[../shared/references/pre_submission_checklist.md](../shared/references/pre_submission_checklist.md)**: 15-point unified quality gate (Q0 = "should this be a table?")
+- **[../shared/references/ai_figure_slop.md](../shared/references/ai_figure_slop.md)**: AI-figure-slop guardrail. Because we hold the source DataFrame, encoding↔value fidelity and parts-sum closure are checked EXACTLY against the data (`scripts/validate_data.py::check_encoding_value_fidelity`, `check_closure`) — not via image OCR. Categorical tells (raw-index tick labels, geometry-contradicts-label) dominate; chartjunk/default-palette signals are weak, two-sided, and down-weighted (do NOT strip decoration to "minimize ink" — Bateman). Thresholds provisional/uncalibrated.
 - **[../shared/references/communication_context_matrix.md](../shared/references/communication_context_matrix.md)**: Audience × time × interaction → figure complexity (Fujii 2026)
 - **[../shared/references/figure_vs_table_decision.md](../shared/references/figure_vs_table_decision.md)**: Decision aid for figure vs table vs both (Fujii 2026; Midway 2020)
 - **[../shared/references/chart_types_catalog.md](../shared/references/chart_types_catalog.md)**: Flat by-chart-type catalog of 35 chart types (uses, when-to / when-not-to, strengths, weaknesses, data shapes). Companion to `plot_selection_guide.md` — use the catalog when you already know the chart family, the selection guide when starting from intent.
@@ -581,6 +582,7 @@ See `oligon-brand` skill for complete brand implementation patterns.
 
 - **[oligon-brand](../oligon-brand/SKILL.md)**: Brand colors and tokens—load before plotting for Oligon-branded figures. See `<styling_integration>` above for usage patterns. The `<design_foundation>` block holds cross-format cognitive-foundation citations (Cleveland-McGill, Crameri, Wilke, Fujii 2026).
 - **[shared/references/figure_design_principles.md](../shared/references/figure_design_principles.md)**: Shared figure-making principles consumed by all visual skills — typography ladder, colorblind palettes, accessibility minimums, anti-patterns, grid discipline. Consult §2 (typography), §3 (color), §5.3 (chart conflict resolution), §7 (anti-patterns) when choosing plot types and palettes.
+- **[shared/references/ai_figure_slop.md](../shared/references/ai_figure_slop.md)**: Anti-slop gate. Run `scripts/validate_data.py` (now hosts `check_continuous_as_bars`, `check_riskratio_as_bars`, `check_encoding_value_fidelity`, `check_closure`) as the data-side post-design check.
 - **[visual-design](../visual-design/SKILL.md)**: Design principles and publication specifications
 - **[venue-templates](../venue-templates/SKILL.md)**: Per-journal column widths, DPI floors; cross-cutting font embedding and graphical-abstract specs in `references/figure_specs.md`
 - **[statistical-analysis](../statistical-analysis/SKILL.md)**: Statistics underlying visualizations—see `<statistical_visualization>` above for implementation patterns
@@ -639,6 +641,7 @@ ggsave("debug.png", p, width = 7, height = 5)
 - [ ] Figure dimensions match journal requirements
 - [ ] Error bars include measure type (SE, SD, 95% CI) and sample size
 - [ ] No chart junk (unnecessary gridlines, borders, 3D effects)
+- [ ] Anti-slop: encoding matches printed values; parts-of-whole sum; tick labels are real categories (not 1,2,3… indices) — verified against source data via `scripts/validate_data.py`
 
 **Validation Workflow:**
 1. **Preview before saving**: Display figure to verify layout and content
@@ -646,4 +649,5 @@ ggsave("debug.png", p, width = 7, height = 5)
 3. **Check dimensions**: Verify exported figure matches target dimensions (journal single-column: 89mm, double-column: 183mm)
 4. **Colorblind accessibility**: Test with `pip install colorblindcheck` (Python) or `colorBlindness` (R)
 5. **Final review**: Zoom to 100% to verify text readability at final print size
+6. **Anti-slop data check (post-design):** Run `uv run python scripts/validate_data.py <data.csv-or-df>` to confirm — against the SOURCE data we already hold — that bar heights / point positions / slice angles match their printed values (`check_encoding_value_fidelity`), parts-of-whole sum (`check_closure`), tick labels are real categories not raw indices, and continuous-as-bars / riskratio-as-bars are not used. These exact checks replace the unreliable image→data recovery step for our own output. The script emits a vector of flagged sub-scores with severities — never a single slop score. Aesthetic/chartjunk flags are advisory and two-sided: do not remove labels or decoration to chase a data-ink target (Bateman). See `../shared/references/ai_figure_slop.md`.
 </success_criteria>

@@ -16,6 +16,7 @@
 - Skills' workflows say "READ §N before proceeding" inline at the relevant stage
 - Programmatic enforcement lives in `skills/svg-figure-maker/scripts/preflight_check.py` (rules that can be mechanized)
 - For the unified pre-submission gate (15-point checklist), see `pre_submission_checklist.md` in this directory
+- For the AI-figure-slop guardrail (categorical tells dominate; aesthetic signals are weak, down-weighted, and two-sided; thresholds provisional/uncalibrated; never minimize ink), see `ai_figure_slop.md` in this directory
 
 ---
 
@@ -267,8 +268,10 @@ Universal anti-patterns. Skill-specific anti-patterns (e.g., matplotlib library 
 | 12 | CSS named colors (`lightblue`, `darkred`, etc.) in SVG | Ambiguous, not in palette tokens, fails preflight | Use hex from `tokens/brand-tokens.json` |
 | 13 | Rounded corners larger than 10px on diagram nodes | "rounded-2xl" reads as web-UI, not editorial figure | Max radius 6–10px |
 | 14 | Optimizing for data-to-ink ratio mechanically | Tufte's rule mis-applied removes useful labels | Apply Fujii's signal-to-noise reframing: keep ink that supports the *takeaway*, not just ink that "represents data" |
+| 15 ⚑ | Lexically-void / garbled label text (`diƨlocttal`, `2xℇpens`), or axis ticks rendered as raw sequence indices (1,2,3…) instead of real categories | Near-categorical AI-generation tell (Frontiers/Bik 2024); a competent human never emits void glyph-strings | Replace with real terms from the source data; for our own output this is caught EXACTLY by `svg-figure-maker/scripts/preflight_check.py` (`check_garbled_text`, `check_raw_index_labels`) against the known labels — see `ai_figure_slop.md` |
+| 16 ⚑ | Encoding contradicts the printed value (bar height / slice angle / point position ≠ its number), or parts-of-whole that do not sum (pie ≠ 100%, stacked totals don't reconcile) | Covert Class-B tell: rendering looks correct, the encoding contract is broken (Woo; practitioner) | We hold the source data — verify EXACTLY (`plotting-libraries/scripts/validate_data.py::check_encoding_value_fidelity`, `::check_closure`). Never an image-OCR step for our own figures. See `ai_figure_slop.md` |
 
-**Sources:** `oligon-brand/SKILL.md` `<anti_patterns>` §1–7; `diagram-design-skill.md` §4 lines 96–113; `pre_submission_checklist.md` §13–14.
+**Sources:** `oligon-brand/SKILL.md` `<anti_patterns>` §1–7; `diagram-design-skill.md` §4 lines 96–113; `pre_submission_checklist.md` §13–14. Rows 15–16: `ai_figure_slop.md` (categorical-tell-dominant; two-sided/down-weighted aesthetic signals).
 
 ---
 
@@ -355,7 +358,59 @@ Returns JSON findings keyed to this document's section numbers.
 
 ---
 
-## §10. Out-of-scope for this doc
+## §10. AI figure slop & regression-to-mean
+
+> **Canonical reference:** `skills/shared/references/ai_figure_slop.md` —
+> the three-track model (A2 author-time exact checks / Track B linter
+> functions / Track D inbound advisory triage), the six-dimension v0.1
+> rubric, and the categorical-vs-graded severity logic. **Read that file
+> before relying on any threshold here; all thresholds are provisional and
+> uncalibrated.**
+
+Two load-bearing rules govern everything in that file and must be honored
+by any skill that consumes it:
+
+1. **Emit a *vector* of flagged sub-scores with severities — never a single
+   composite "slop score."** Provenance ≠ quality: a figure can be
+   AI-generated and excellent, or human-made and slop (Kommers 2026).
+2. **Categorical tells dominate; aesthetic signals are weak, down-weighted,
+   and two-sided.** A lexically-void label or an encoding-vs-value mismatch
+   is near-decisive on its own; decoration/data-ink signals never trigger
+   a verdict alone and must not be read as "strip the decoration"
+   (Bateman 2010).
+
+Because this plugin *generates* figures, we hold the ground-truth data and
+source SVG/plot code, so the unreliable image→data recovery step (OCR /
+forensic CV — shown to fail zero-shot in SciFigDetect) is **unnecessary for
+our own output**. Replace it with cheap *exact* checks against the data and
+source. Only inbound third-party figures (Track D) need the forensic/rubric
+stack, and there it stays advisory, never dispositive.
+
+**One-line take-aways (mirroring the §1 cognitive-foundation table):**
+
+| Signal | Class | One-line apply rule |
+|---|---|---|
+| Lexically-void / garbled labels | categorical ⚑ | Real words/terms/numbers only — scan the source string set, not pixels (Frontiers/Bik 2024) |
+| Encoding–value mismatch | categorical ⚑ | `encoded == source` for every bar/slice/point — verify against held data, not OCR (Woo 2025) |
+| Closure / conservation failure | categorical ⚑ | Parts sum to whole; subgroups reconcile to totals — check the data array |
+| Axis labels = raw indices | categorical ⚑ | Tick labels are real categories, never 1,2,3… sequence indices |
+| Default-distribution styling | graded, weak | Replace tool defaults (tab10/seaborn/Excel) with an intentional palette — *don't* over-minimize (two-sided) |
+| Gratuitous decoration / data-ink | graded, weak, two-sided | Keep ink that supports the takeaway; embellishment aids recall (Bateman 2010) — never an AI verdict alone |
+
+**Track B enforcement.** The exact author-time checks are deterministic
+functions in `plotting-libraries/scripts/validate_data.py`
+(`check_continuous_as_bars`, `check_riskratio_as_bars`,
+`check_encoding_value_fidelity`, and `check_closure`) plus the SVG-string
+scan in `svg-figure-maker/scripts/preflight_check.py` (`check_garbled_text`,
+`check_default_palette_fingerprint`, `check_raw_index_labels`). Run the SVG
+gate via `uv run python scripts/preflight_check.py figure.svg`; a
+`categorical`-severity finding there is a **hard fail** (treat like `fail`).
+See `pre_submission_checklist.md` "Generative-artifact integrity" items for
+the operational gate.
+
+---
+
+## §11. Out-of-scope for this doc
 
 Things that look like principles but belong elsewhere:
 
@@ -374,7 +429,7 @@ Things that look like principles but belong elsewhere:
 
 ---
 
-## §11. References
+## §12. References
 
 Primary perception / cognitive science (full citations in `oligon-brand/SKILL.md` `<design_foundation>`):
 

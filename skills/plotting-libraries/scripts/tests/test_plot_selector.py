@@ -19,7 +19,10 @@ from plotting_params import (  # noqa: E402
     recommend_palette,
 )
 from validate_data import (  # noqa: E402
+    check_closure,
     check_continuous_as_bars,
+    check_default_palette,
+    check_encoding_value_fidelity,
     check_riskratio_as_bars,
 )
 
@@ -130,9 +133,7 @@ class TestRecommendChart:
         assert pie_recs[0].discouraged is False
 
     def test_association_continuous_continuous_returns_scatter(self) -> None:
-        recs = recommend_chart(
-            "association", x_type="continuous", y_type="continuous"
-        )
+        recs = recommend_chart("association", x_type="continuous", y_type="continuous")
         plot_types = [r.plot_type for r in recs]
         assert plot_types[0] == "scatter"
 
@@ -165,12 +166,12 @@ class TestRecommendPalette:
         p = recommend_palette("categorical", n_levels=8)
         assert p.name == "Categorical 8"
 
-    def test_categorical_too_many_warns_via_logging(self, caplog: pytest.LogCaptureFixture) -> None:
+    def test_categorical_too_many_warns_via_logging(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
         with caplog.at_level(logging.WARNING):
             p = recommend_palette("categorical", n_levels=12)
-        assert any(
-            "exceeds the 8-level" in record.message for record in caplog.records
-        )
+        assert any("exceeds the 8-level" in record.message for record in caplog.records)
         # Still returns a categorical palette as best-effort
         assert p.colorblind_safe is True
 
@@ -184,12 +185,12 @@ class TestRecommendPalette:
         assert p.colorblind_safe is True
         assert len(p.colors) == 7
 
-    def test_sequential_too_many_levels_warns(self, caplog: pytest.LogCaptureFixture) -> None:
+    def test_sequential_too_many_levels_warns(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
         with caplog.at_level(logging.WARNING):
             p = recommend_palette("sequential", n_levels=20)
-        assert any(
-            "exceeds the 7-stop" in record.message for record in caplog.records
-        )
+        assert any("exceeds the 7-stop" in record.message for record in caplog.records)
         # Still returns the discrete sample (caller can switch to continuous cmap)
         assert p.name == "Viridis (7-stop)"
 
@@ -283,3 +284,143 @@ class TestCheckRiskratioAsBars:
     def test_empty_label_no_warning(self) -> None:
         result = check_riskratio_as_bars("bar", "")
         assert len(result.warnings) == 0
+
+
+# ---------------------------------------------------------------------------
+# AI-figure-slop validators (encoding fidelity, closure, default palette)
+# ---------------------------------------------------------------------------
+
+
+class TestCheckEncodingValueFidelity:
+    """Report dimension 2.1 (encoding-value fidelity), categorical tell."""
+
+    def test_bar_geometry_matches_values_passes(self) -> None:
+        r = check_encoding_value_fidelity(
+            [10, 20, 30],
+            "bar",
+            geometry=[1.0, 2.0, 3.0],  # consistent k=0.1
+        )
+        assert r.valid is True
+        assert len(r.errors) == 0
+
+    def test_bar_geometry_desync_errors(self) -> None:
+        # third bar scaled by a different factor -> height/label desync
+        r = check_encoding_value_fidelity([10, 20, 30], "bar", geometry=[1.0, 2.0, 9.0])
+        assert r.valid is False
+        assert any("desync" in e or "linear transform" in e for e in r.errors)
+
+    def test_printed_label_mismatch_errors(self) -> None:
+        r = check_encoding_value_fidelity([42.0], "bar", printed_labels=["57"])
+        assert r.valid is False
+        assert any("does not match" in e for e in r.errors)
+
+    def test_pie_angles_proportional_passes(self) -> None:
+        r = check_encoding_value_fidelity(
+            {"A": 25, "B": 25, "C": 50},
+            "pie",
+            geometry=[90.0, 90.0, 180.0],  # degrees sum 360
+            printed_labels=["25%", "25%", "50%"],
+        )
+        assert r.valid is True
+
+    def test_pie_negative_value_errors(self) -> None:
+        r = check_encoding_value_fidelity({"A": -5, "B": 10}, "pie")
+        assert r.valid is False
+        assert any("negative" in e.lower() for e in r.errors)
+
+    def test_log_axis_nonpositive_value_errors(self) -> None:
+        r = check_encoding_value_fidelity(
+            [0.0, 10.0], "bar", geometry=[0.0, 1.0], axis_is_log=True
+        )
+        assert r.valid is False
+        assert any("log" in e.lower() for e in r.errors)
+
+    def test_nan_excluded_warns_not_errors(self) -> None:
+        r = check_encoding_value_fidelity(
+            [10.0, np.nan, 30.0], "bar", geometry=[1.0, 0.0, 3.0]
+        )
+        assert r.valid is True
+        assert any("NaN" in w for w in r.warnings)
+
+
+class TestCheckClosure:
+    """Report dimension 2.2 (closure / conservation)."""
+
+    def test_pie_sums_to_100_passes(self) -> None:
+        r = check_closure({"A": 25, "B": 25, "C": 50}, "pie")
+        assert r.valid is True
+        assert len(r.errors) == 0
+
+    def test_pie_rounding_gap_warns_not_errors(self) -> None:
+        # 33.3*3 = 99.9 -> within the rounding band (>0.5pp, <=1.0pp)
+        r = check_closure([33.3, 33.3, 33.3], "pie", expect_percent=True)
+        assert r.valid is True
+        assert any("gap" in w for w in r.warnings)
+
+    def test_pie_fails_to_sum_errors(self) -> None:
+        r = check_closure([20, 30, 42], "pie", expect_percent=True)  # 92%
+        assert r.valid is False
+        assert any("conservation" in e or "whole" in e for e in r.errors)
+
+    def test_stacked_bar_reconciles_to_declared_total(self) -> None:
+        r = check_closure([400, 350, 500], "stacked_bar", declared_total=1250)
+        assert r.valid is True
+
+    def test_stacked_bar_total_mismatch_errors(self) -> None:
+        r = check_closure([400, 350, 500], "stacked_bar", declared_total=2000)
+        assert r.valid is False
+
+    def test_negative_pie_segment_errors(self) -> None:
+        r = check_closure({"A": -10, "B": 110}, "pie")
+        assert r.valid is False
+        assert any("negative" in e.lower() for e in r.errors)
+
+    def test_non_partsofwhole_encoding_is_noop(self) -> None:
+        r = check_closure([20, 30, 42], "scatter")
+        assert r.valid is True
+        assert len(r.errors) == 0 and len(r.warnings) == 0
+
+
+class TestCheckDefaultPalette:
+    """Report dimension 6.2 (template/default-distribution look), two-sided weak signal."""
+
+    def test_tab10_palette_warns(self) -> None:
+        r = check_default_palette(["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"])
+        assert r.valid is True  # never blocks
+        assert len(r.warnings) == 1
+        assert "default" in r.warnings[0].lower()
+
+    def test_named_default_sentinel_warns(self) -> None:
+        r = check_default_palette("tab10")
+        assert r.valid is True
+        assert any("default" in w.lower() for w in r.warnings)
+
+    def test_okabe_ito_palette_no_warning(self) -> None:
+        r = check_default_palette(
+            ["#e69f00", "#56b4e9", "#009e73", "#f0e442", "#0072b2"]
+        )
+        assert len(r.warnings) == 0  # recommended palette is clean (two-sided)
+
+    def test_oligon_brand_palette_no_warning(self) -> None:
+        r = check_default_palette(["#222222", "#2db2e8", "#666666", "#e8622d"])
+        assert len(r.warnings) == 0
+
+    def test_single_c0_blue_does_not_false_flag(self) -> None:
+        r = check_default_palette(["#1f77b4"])  # one blue is not a fingerprint
+        assert len(r.warnings) == 0
+
+    def test_seaborn_deep_palette_warns(self) -> None:
+        r = check_default_palette(["#4c72b0", "#dd8452", "#55a868", "#c44e52"])
+        assert len(r.warnings) == 1
+
+    def test_rgb_float_tuples_normalized_and_flagged(self) -> None:
+        # tab10 C0/C1/C2 as 0..1 RGB floats
+        r = check_default_palette(
+            [(0.121, 0.466, 0.705), (1.0, 0.498, 0.054), (0.172, 0.627, 0.172)]
+        )
+        assert len(r.warnings) == 1
+
+    def test_none_palette_is_noop(self) -> None:
+        r = check_default_palette(None)
+        assert r.valid is True
+        assert len(r.warnings) == 0

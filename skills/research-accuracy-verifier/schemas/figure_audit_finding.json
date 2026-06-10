@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "figure_audit_finding.json",
+  "title": "FigureAuditFinding",
+  "description": "Advisory inbound figure-integrity finding (FIGURE_INTEGRITY family). PARALLEL PIPELINE to the citation/claim Finding: does NOT enter the 10-value Verdict enum or the 70-cell Severity matrix (same posture as STYLE_NONCONFORMING). Emitted into audit_report.figure_findings[] only when checks_enabled includes 'figure_integrity_audit' (custom tier only). NEVER dispositive: a clean audit is 'no positive evidence of AI authorship', never proof of human authorship; the burden it supports is 'obtain source data / provenance', never 'conclude misconduct'. Thresholds are PROVISIONAL/UNCALIBRATED.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "figure_ref",
+    "dimension",
+    "metric_id",
+    "score",
+    "categorical",
+    "severity",
+    "tier",
+    "observation",
+    "recommended_action",
+    "confidence"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^FA[0-9]{3,}$",
+      "description": "Sequential id, e.g. FA001."
+    },
+    "figure_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file"],
+      "properties": {
+        "file": { "type": "string", "minLength": 1 },
+        "panel": { "type": ["string", "null"] },
+        "region": { "type": ["string", "null"] }
+      }
+    },
+    "media_class": {
+      "enum": [
+        "A_generated_illustration",
+        "B_data_chart",
+        "C_photographic",
+        "unknown"
+      ]
+    },
+    "dimension": {
+      "enum": [
+        "D1_text_symbol",
+        "D2_quant_semantic",
+        "D3_plausibility",
+        "D4_render_artifact",
+        "D5_provenance",
+        "D6_stylistic"
+      ]
+    },
+    "metric_id": {
+      "type": "string",
+      "pattern": "^[1-6]\\.[0-9]$",
+      "description": "Rubric metric, e.g. '1.1', '2.2', '6.1'."
+    },
+    "score": {
+      "enum": [0, 1, 2],
+      "description": "0 clean / 1 ambiguous / 2 clear tell."
+    },
+    "categorical": {
+      "type": "boolean",
+      "description": "True iff metric_id is a categorical ⚑ tell {1.1,1.2,2.1,2.2,3.1}. Enforced by FD-P1."
+    },
+    "severity": {
+      "enum": ["CRITICAL", "MAJOR", "MINOR", "INFORMATIONAL"]
+    },
+    "tier": {
+      "enum": ["1_deterministic", "3_vision_judge"],
+      "description": "Tier-1 deterministic (reuses Track B linters; only when source supplied) or Tier-3 instrumented vision-judge. No Tier-2 yet; no AI-detector classifier."
+    },
+    "source_check": {
+      "type": ["string", "null"],
+      "description": "Tier-1 only: the linter fn that produced the finding, e.g. 'validate_data.check_closure'. Enforced non-null for tier 1 by FD-P6."
+    },
+    "observation": {
+      "type": "string",
+      "minLength": 1,
+      "description": "What a second reviewer would also see. No quoted manuscript prose."
+    },
+    "evidence_snippet": {
+      "type": ["string", "null"]
+    },
+    "recommended_action": {
+      "type": "string",
+      "minLength": 1,
+      "description": "MUST be triage-shaped (FD-P4): an allowed template, never a dispositive disposition."
+    },
+    "confidence": {
+      "enum": ["high", "medium", "low"]
+    },
+    "decaying_signal_caveat": {
+      "type": ["string", "null"],
+      "description": "Required non-null when dimension == D4_render_artifact (FD-P5): 4.x=0 is never exoneration; 2026-gen models pass these cleanly."
+    }
+  }
+}

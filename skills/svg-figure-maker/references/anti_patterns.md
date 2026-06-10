@@ -305,3 +305,23 @@ The preflight checker uses these severity assignments:
 | E.3 `<script>` blocks | `fail` |
 | E.4 `<foreignObject>` | `fail` |
 | Off-palette hex | `fail` |
+| `garbled_text` (lexically-void label text) | `categorical` (void) / `warn` (soft) |
+| `default_palette_fingerprint` (tab10/Excel/seaborn default run) | `warn` |
+| `raw_index_labels` (bare 0/1.. index ticks where categories expected) | `warn` |
+
+### The `categorical` severity (AI-figure-slop tells)
+
+`categorical` is a **new, fourth severity** introduced for the AI-figure-slop
+checks. It **sorts above `fail`**: it encodes the strongest, dominant AI-generation
+tell (lexically-void label text, the "Frontiers rat" genre), and a single
+`categorical` finding flips the preflight `overall` verdict to `fail` (CLI exit 1)
+on its own — independent of how many `fail` findings are present. This honors the
+guardrail that *categorical tells dominate* while keeping the findings as a vector
+of per-check severities (no composite "slop score").
+
+The other two AI-slop checks (`default_palette_fingerprint`, `raw_index_labels`)
+are deliberately **soft, `warn`-only, and two-sided**: a default colour that is also
+a brand colour, or a genuine integer axis, is legitimate. Never "fix" a soft
+warning by stripping decoration or minimizing ink — over-minimization is itself a
+regression-to-mean failure (Bateman et al., CHI 2010). All AI-slop thresholds are
+**PROVISIONAL / UNCALIBRATED**.

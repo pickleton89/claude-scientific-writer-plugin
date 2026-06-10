@@ -301,6 +301,7 @@ The compiled revision prompt can be used as `--caption` input for a focused refi
 - [ ] Quality score meets document type threshold
 - [ ] Review log includes per-dimension scores
 - [ ] **Figure complexity matches Stage 1 communication-context tag** (Fujii 2026)
+- [ ] **Generative-Artifact Tell Pass clean** — no categorical tell (T1–T4) scored 2; `tell_pass` vector in review log (`../shared/references/generative_artifact_tells.md`)
 - [ ] No critical issues flagged
 
 ---
@@ -416,9 +417,16 @@ python {baseDir}/scripts/generate_figure.py --input paper.txt \
 
 **Solution:** Per Fujii 2026 §"Choose the right graph and colour", GenAI text-to-figure tools tend to map data 1:1 to a default visualisation without considering message, audience, or interaction context. After every generation, run the post-generation review:
 
-1. **Key message check:** does the figure convey the single takeaway from the caption / Stage 1 input?
-2. **Communication-context tag check:** does the complexity match the Stage 1 audience / setting / time tag? See `../shared/references/communication_context_matrix.md`.
-3. **Figure-design canon check:** does the output respect Cleveland-McGill 1984 channel ranking, Crameri 2020 colour, Wagemans 2012 direct-labelling, and (if continuous data is involved) Weissgerber 2015? See `../oligon-brand/SKILL.md` `<design_foundation>`.
+1. **Generative-Artifact Tell Pass (CATEGORICAL — run FIRST, dominates the checks below).** PaperBanana renders via diffusion (Imagen), the highest-risk source of Class-A generation tells. `Read` the generated PNG and walk the per-tell checklist in `../shared/references/generative_artifact_tells.md`, T1→T4 **in order**, one written justification each:
+   - **T1 Lexical validity** — every label/callout a real word? Glyph-strings like `diƨlocttal` ⇒ score 2.
+   - **T2 Glyph integrity** — melted/fused/morphing letterforms ⇒ score 2.
+   - **T3 Encoding↔printed-value** — printed numbers match geometry; parts sum to whole ⇒ else score 2.
+   - **T4 Physical/pathway plausibility** — impossible anatomy/topology, arrows to nothing ⇒ score 2.
+   - **T5 Axis/label coherence** (graded) · **T6 default-template feel** (weak, two-sided — do NOT strip decoration or minimize ink to lower it; Bateman CHI2010).
+   **Any T1–T4 = 2 ⇒ the figure is rejected: refine via the Critic loop or tighten the caption and regenerate — do not accept.** Emit the `tell_pass` vector into the review log. The output is a vector of severity-tagged sub-scores, never a composite slop score; thresholds are provisional/uncalibrated. A clean pass is **no positive evidence**, not proof; T3 checks only printed values, not whether the source numbers are real.
+2. **Key message check:** does the figure convey the single takeaway from the caption / Stage 1 input?
+3. **Communication-context tag check:** does the complexity match the Stage 1 audience / setting / time tag? See `../shared/references/communication_context_matrix.md`.
+4. **Figure-design canon check:** does the output respect Cleveland-McGill 1984 channel ranking, Crameri 2020 colour, Wagemans 2012 direct-labelling, and (if continuous data is involved) Weissgerber 2015? See `../oligon-brand/SKILL.md` `<design_foundation>`.
 
 If any check fails, iterate via the Critic loop or refine the caption with more specific intent. Do not accept the first generation as final for journal-grade output.
 
@@ -580,7 +588,16 @@ python {baseDir}/scripts/evaluate_figure.py \
         "professional_appearance": 1.8
       },
       "total_score": 8.3,
-      "meets_threshold": false
+      "meets_threshold": false,
+      "tell_pass": {
+        "T1": {"score": 0, "categorical": true,  "justification": "all labels valid: 'RNA-seq', 'alignment', 'DESeq2'"},
+        "T2": {"score": 0, "categorical": true,  "justification": "glyphs intact"},
+        "T3": {"score": 0, "categorical": true,  "justification": "no printed values on marks; scored 0"},
+        "T4": {"score": 0, "categorical": true,  "justification": "workflow arrows connect named real stages"},
+        "T5": {"score": 1, "categorical": false, "justification": "legend has one orphaned entry"},
+        "T6": {"score": 0, "categorical": false, "justification": "bespoke to brief"},
+        "verdict": "accept_with_notes"
+      }
     }
   ],
   "final_score": 8.7,
@@ -629,6 +646,8 @@ python {baseDir}/scripts/evaluate_figure.py \
 | `generate-image` | Use for photorealistic images; paperbanana for academic figures |
 | `visual-design` | Consult for design principles before creating figures |
 | `oligon-brand` | Consult `<design_foundation>` for cognitive-foundation citations (Cleveland, Crameri, Fujii 2026) — complementary to visual-design |
+| `../shared/references/ai_figure_slop.md` | Anti-slop guardrail — read before accepting any generation as final; the diffusion path is exactly where lexically-void labels and impossible geometry appear. Categorical tells dominate; aesthetic signals weak/two-sided |
+| `../shared/references/generative_artifact_tells.md` | Generative-Artifact Tell Pass (T1–T6) run at the head of the Stage-3 post-generation review; any T1–T4 = 2 ⇒ reject/regenerate |
 | `executive-summary` | Pair with paperbanana for visual executive summaries |
 | `scientific-writing` | Paperbanana provides methodology figures for papers |
 
@@ -653,6 +672,8 @@ See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 | `{baseDir}/data/guidelines/oligon_style.yaml` | Oligon aesthetic guidelines for Stylist agent |
 | `../shared/references/iconography-licensing.md` | Icon-library licensing (BioRender, NIH BIOART, SciDraw, Servier, Noun Project) — re-verify at submission |
 | `../shared/references/pre_submission_checklist.md` | 15-point unified quality gate (Q0 = "should this be a table?") |
+| `../shared/references/ai_figure_slop.md` | AI-figure-slop guardrail. PaperBanana is a diffusion/Imagen pipeline — the highest-risk source of Class-A categorical tells (garbled labels, impossible anatomy, fabricated symbols). Apply at Stage 3 quality evaluation; categorical tells dominate, aesthetic/default-palette signals are weak and two-sided; output is a vector of severity-tagged sub-scores, never a composite, thresholds provisional/uncalibrated |
+| `../shared/references/generative_artifact_tells.md` | Generative-Artifact Tell Pass (T1–T6) — categorical AI-tell checklist run at the head of the Stage-3 post-generation review; vector output, any T1–T4 = 2 ⇒ reject/regenerate |
 | `../shared/references/communication_context_matrix.md` | Audience × time × interaction → figure complexity (Fujii 2026) |
 | `../shared/references/figure_vs_table_decision.md` | Decision aid for figure vs table vs both (Fujii 2026; Midway 2020) |
 | `../oligon-brand/SKILL.md` `<design_foundation>` | Cognitive-foundation citations (Cleveland-McGill, Crameri, Wilke, Fujii 2026, Weissgerber 2015 for plots, etc.) |
