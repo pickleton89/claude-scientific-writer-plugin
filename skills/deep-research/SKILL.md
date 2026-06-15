@@ -1,33 +1,22 @@
-<!-- Pipeline architecture inspired by academic-research-skills by Cheng-I Wu -->
 ---
-skill_name: deep-research
-version: 1.0.0
+name: deep-research
+version: 1.1.0
 description: >
-  Multi-mode biomedical research pipeline with 7 agents, 8 modes, and 6 mandatory
-  checkpoints. Conducts literature reviews, systematic reviews, hypothesis generation,
-  fact-checking, and Socratic research mentoring. Uses PubMed, bioRxiv, Consensus,
-  and ToolUniverse MCP tools for evidence gathering and verification.
-trigger_keywords:
-  - literature review
-  - systematic review
-  - find papers
-  - search pubmed
-  - hypothesis
-  - research question
-  - deep research
-  - fact-check
-  - PRISMA
-  - meta-analysis
-  - guide my research
-  - evidence synthesis
-do_not_trigger:
-  - summarize this paper (use research-paper-summarizer)
-  - review this manuscript (use peer-review)
-  - write a paper (use scientific-writing)
-  - target dossier (use target-intelligence)
-  - drug dossier (use drug-intelligence)
-  - validation scorecard (use target-validation)
+  Multi-mode biomedical research pipeline (7 agents, 8 modes, 6 mandatory user
+  checkpoints) for literature reviews, systematic reviews (PRISMA), hypothesis
+  generation, fact-checking, evidence synthesis, and Socratic research mentoring.
+  Uses PubMed, bioRxiv, Consensus, Paperclip, and ToolUniverse MCP tools for
+  evidence gathering and verification. Triggers on "literature review",
+  "systematic review", "find papers", "search pubmed", "hypothesis", "research
+  question", "deep research", "fact-check", "PRISMA", "meta-analysis", "guide my
+  research", "evidence synthesis". Do NOT use to summarize a single paper (use
+  research-paper-summarizer), review a manuscript (use peer-review), write a paper
+  (use scientific-writing), or build a target/drug dossier or validation scorecard
+  (use target-intelligence / drug-intelligence / target-validation).
+allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
 ---
+
+<!-- Pipeline architecture inspired by academic-research-skills by Cheng-I Wu (CC-BY-NC 4.0) -->
 
 # Deep Research
 
@@ -97,6 +86,10 @@ explicit section lists, word count requests, or file structure directives):
 5. **Format directives** (LaTeX, HTML, PDF) → IGNORED. Output is always
    markdown. The user can convert to other formats using downstream skills
    (e.g., `markdown-to-pdf`, `document-skills:pdf`).
+
+> **Prompt-writing guidance:** For best results, prompts should specify *what*
+> to research, not *how* to format output — see
+> [`references/prompt_guidelines.md`](references/prompt_guidelines.md).
 
 ### Output Format Mandates
 
@@ -527,5 +520,5 @@ Some modes skip phases:
 
 - `skills/shared/references/evidence_grading.md` — T1-T4 tier definitions
 - `skills/shared/tool-lookup.yaml` — MCP capability key resolution
-- `skills/shared/QUANTIFICATION_THRESHOLDS.md` — literature coverage thresholds (§1), replication standards (§3)
+- `skills/QUANTIFICATION_THRESHOLDS.md` — literature coverage thresholds (§1), replication standards (§3)
 - `skills/shared/references/known_param_corrections.md` — ToolUniverse API quirks

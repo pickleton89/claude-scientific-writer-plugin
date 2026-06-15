@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed — `deep-research` skill was not registering (non-standard frontmatter)
+
+`skills/deep-research/SKILL.md` carried two frontmatter defects unique among the plugin's 29 skills, which together prevented the loader from registering `claude-scientific-writer:deep-research`: it used a `skill_name:` key instead of the standard `name:`, and an HTML attribution comment sat on line 1 *before* the opening `---` (YAML frontmatter must begin on line 1). Standardized the frontmatter to match the sibling skills — `name:`, the `trigger_keywords`/`do_not_trigger` lists folded into `description` (with Paperclip added to the tool list to match the body's Search Contract), `allowed-tools` declared, the CC-BY-NC attribution comment relocated below the frontmatter, and the skill version bumped 1.0.0 → 1.1.0. Deliberately did **not** add `context: fork` — the skill's 6 mandatory user checkpoints require it to run in the main loop (only the 6 fire-and-return pipeline skills fork).
+
+- Fixed a broken reference: `skills/shared/QUANTIFICATION_THRESHOLDS.md` → `skills/QUANTIFICATION_THRESHOLDS.md` (the file lives at the `skills/` root, not under `shared/`).
+- Wired two orphaned docs into the pipeline instead of deleting them: `references/prompt_guidelines.md` → Prompt Adapter section of `SKILL.md`; `templates/review_template.md` → compiler Lit-Review Mode.
+- Removed the stale, superseded orphan `references/_legacy/database_strategies.md` (old gget/WebFetch approach).
+- All 876 deep-research tests remain green. Note: the fix only reaches the running environment once the plugin is re-vendored/released.
+
 ### Added — AI figure-slop guardrail (regression-to-mean defense) across the visual + verifier skills
 
 A four-track guardrail so the plugin's *generated* figures don't regress to the training-distribution mean (default palettes, garbled labels, templated layouts), and so *inbound* third-party figures can be triaged for AI-slop tells. Synthesized from two research reports in `docs/charting-junk/`. Governing insight: because we generate the figure we hold the ground-truth data + source SVG, so the unreliable OCR/forensic-CV recovery step is replaced by cheap exact deterministic checks (only the inbound-audit track keeps the forensic stack, advisory-only). Two guardrails run throughout: a vector of severity-tagged sub-scores (never a single composite "slop score"), and categorical tells dominate while aesthetic/chartjunk signals stay weak and two-sided — never "strip decoration to look less AI" (Bateman CHI 2010; over-minimization is itself regression-to-mean).

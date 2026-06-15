@@ -231,6 +231,11 @@ Strategy Block.]
 
 ### Lit-Review Mode
 
+> Full-document skeleton (title page, structured abstract, IMRAD review sections,
+> registration/keywords) available in `templates/review_template.md` — use for
+> narrative, scoping, or umbrella reviews; pair with the component templates
+> (matrices, GRADE/extraction tables) in `templates/output_templates.md`.
+
 ```markdown
 # Literature Review: [Topic]
 
