@@ -1,0 +1,107 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "decomposition.json",
+  "title": "DeepResearchDecomposition",
+  "description": "Decomposition contract emitted by the deep-research orchestrator at Phase 1 (Scoping), frozen at Checkpoint 1 alongside the Output + Search contracts. Splits the research question into bounded sub-questions, each carrying the four delegation fields Anthropic's multi-agent research system requires (objective, output_format, source_guidance, boundary). Feeds the Phase 3 parallel sub-question fan-out. Built by scripts/decomposition_contract.py; validated by scripts/validate_sidecar.py --kind decomposition + predicates D1-D3.",
+  "type": "object",
+  "required": ["schema_version", "metadata", "scaling", "sub_questions"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["1.0"],
+      "description": "Decomposition schema version. Bump on breaking changes."
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["frozen_at", "mode", "topic_slug", "complexity"],
+      "properties": {
+        "frozen_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO-8601 timestamp when the decomposition was frozen at Checkpoint 1."
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["full", "quick", "lit-review", "systematic-review", "hypothesis", "fact-check"],
+          "description": "Active deep-research mode. Only search-running modes produce a decomposition."
+        },
+        "topic_slug": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Topic slug used in the report filename (e.g. 'kras-inhibitors')."
+        },
+        "complexity": {
+          "type": "string",
+          "enum": ["simple", "comparative", "complex"],
+          "description": "Query complexity level driving fan-out width + per-subagent budget (thresholds.COMPLEXITY_SCALING)."
+        },
+        "rq": {
+          "type": ["string", "null"],
+          "description": "Research question text from Phase 1 scoping."
+        }
+      },
+      "additionalProperties": false
+    },
+    "scaling": {
+      "type": "object",
+      "description": "Effort-scaling envelope resolved from complexity (thresholds.COMPLEXITY_SCALING), with fan_out capped to 1 outside thresholds.FANOUT_MODES.",
+      "required": ["fan_out_width", "tool_calls_min", "tool_calls_max", "results_cap_per_channel"],
+      "properties": {
+        "fan_out_width": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of sub-question researchers (must equal len(sub_questions); predicate D2)."
+        },
+        "tool_calls_min": {"type": "integer", "minimum": 1},
+        "tool_calls_max": {"type": "integer", "minimum": 1},
+        "results_cap_per_channel": {"type": "integer", "minimum": 1},
+        "fanout_eligible": {
+          "type": "boolean",
+          "description": "True when mode is in thresholds.FANOUT_MODES (Phase 3 spawns real subagents); False means single-context execution."
+        }
+      },
+      "additionalProperties": false
+    },
+    "sub_questions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/definitions/SubQuestion"}
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "SubQuestion": {
+      "type": "object",
+      "description": "One bounded sub-question handed to a researcher (subagent in fan-out modes, sequential pass otherwise). All four delegation fields are mandatory and non-empty (predicate D3) — vague tasks cause duplicated work and coverage gaps.",
+      "required": ["id", "objective", "output_format", "source_guidance", "boundary"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^SQ[0-9]+$",
+          "description": "Stable sub-question id (SQ1, SQ2, ...). Unique within sub_questions (predicate D1)."
+        },
+        "objective": {
+          "type": "string",
+          "minLength": 1,
+          "description": "What this sub-question must answer — a specific, self-contained research goal."
+        },
+        "output_format": {
+          "type": "string",
+          "minLength": 1,
+          "description": "What the researcher returns (e.g. 'annotated sources + 2-sentence finding per theme')."
+        },
+        "source_guidance": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Which databases / tools / source types to favor for this slice."
+        },
+        "boundary": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Explicit scope limit — what this sub-question does NOT cover, to prevent overlap with siblings."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

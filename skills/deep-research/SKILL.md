@@ -204,11 +204,11 @@ the next phase begins. There are no auto-continue shortcuts.
 4. Define inclusion/exclusion criteria
 5. Select databases (≥3 required; see `references/biomedical_research.md` for mapping)
 
-### Contract Bundle Generation (Output + Search)
+### Contract Bundle Generation (Output + Search + Decomposition)
 
 After scope is defined and mode is selected, generate the **contract bundle**
-— Output Contract + Search Contract, both presented at Checkpoint 1, both
-frozen on approval:
+— Output Contract + Search Contract + Decomposition Contract, all presented at
+Checkpoint 1, all frozen on approval:
 
 1. Run `scripts/mode_selector.py` with the user's prompt to determine mode
    (if not explicitly specified by the user). Honor the mode-confirmation
@@ -256,18 +256,42 @@ frozen on approval:
     bibliography agent must emit a PRISMA-S §S4 disclosure block in
     Phase 2 output. Out-of-whitelist hits stay context-only per
     `shared/references/citable_web_domains.md` W3 rules.
-4. Present BOTH contracts to the user as part of Checkpoint 1:
+3b. Run `scripts/decomposition_contract.py` to produce the **Decomposition
+    Contract** (skip for `socratic` and `review`):
+    - Inputs: `mode`, `research_question`, optional `complexity` override,
+      optional `topic_slug`. When `complexity` is omitted,
+      `scripts/complexity_classifier.py` labels the RQ simple / comparative /
+      complex from its wording plus the mode prior.
+    - Outputs the sub-question fan-out: `fan_out_width` researchers (from
+      `thresholds.COMPLEXITY_SCALING`, capped to 1 outside
+      `thresholds.FANOUT_MODES` — only `full` / `systematic-review` /
+      `hypothesis` fan out in Phase 3; the rest plan a decomposition but run
+      single-context), each with a per-subagent tool-call budget.
+    - Emits one sub-question scaffold per researcher with four mandatory
+      delegation fields — **objective, output format, source guidance,
+      boundary**. **Replace every `[FILL]` placeholder with the real semantic
+      decomposition before freezing** — bounded, non-overlapping sub-questions
+      prevent the duplicated-work / coverage-gap failure mode.
+4. Present ALL THREE contracts to the user as part of Checkpoint 1:
    - Selected mode and confidence level (plus any mode-confirmation note)
    - Output: section structure with user-label mappings, word counts, file spec
    - Search: required databases (gated), optional channels (mode-eligible),
      mode-skipped channels, and the `MIN_DATABASES` / `MIN_SOURCES` floor
-   - Any warnings from either contract
+   - Decomposition: complexity level, fan-out width, and the sub-question list
+     with their objectives + boundaries
+   - Any warnings from the contracts
 5. The user can strike specific optional channels from the Search Contract
    (e.g., "skip Paperclip") via `SearchContract.strike()`. Required channels
    cannot be struck below `MIN_DATABASES`.
-6. The user must approve the bundle before Phase 2 begins. Both contracts
+6. The user must approve the bundle before Phase 2 begins. All three contracts
    are FROZEN after approval — no structural changes and no database
-   additions/removals in later phases without re-approval.
+   additions/removals in later phases without re-approval. On freeze, write the
+   Decomposition Contract to disk as
+   `{date}_{topic_slug}_{mode}_decomposition.json` and validate it via
+   `scripts/validate_sidecar.py --kind decomposition` (predicates D1-D3). Unlike
+   the four evidence-pinning sidecars, the decomposition contract does NOT gate
+   compiler assembly — it is a Phase-1 planning artifact consumed by the Phase 2
+   investigation (and, in fan-out modes, the per-sub-question researchers).
 
 ### RQ Evaluation Scoring
 
