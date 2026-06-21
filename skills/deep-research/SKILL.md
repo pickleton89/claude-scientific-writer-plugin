@@ -185,6 +185,13 @@ the next phase begins. There are no auto-continue shortcuts.
 
 **Objective:** Transform the user's topic into a precise, actionable research question.
 
+> **Use extended thinking as a planning scratchpad.** Before emitting the
+> contract bundle, reason through (in thinking, not in the output): the RQ's true
+> scope, breadth-vs-depth trade-off, which databases actually fit, how much effort
+> the question warrants, and where it naturally decomposes into sub-questions.
+> Planning in thinking — rather than committing to the first framing — improves
+> instruction-following and right-sizes effort for the query.
+
 **Process:**
 1. Identify research domain and entity types (gene, drug, disease, general)
 2. If biomedical entities detected, check if entity-resolution identity table exists

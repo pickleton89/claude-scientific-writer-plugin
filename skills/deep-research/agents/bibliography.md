@@ -141,6 +141,14 @@ Criteria` section.
 > Pre-requisite: Step 0 criteria are drafted. Date-range, study-design, and
 > language criteria from Step 0 become Boolean filter clauses below.
 
+**Start wide, then narrow (before stacking the Boolean).** Agents default to
+long, over-specified queries that return too few hits. First run a short *broad*
+query per channel (1–2 core terms, no stacked filters) and call OpenAlex
+`find_review_articles` + `find_seminal_papers` (§OpenAlex, "Survey-stage
+anchoring") to map the landscape — established vocabulary, sub-topics, consensus.
+Use what surfaces to inform the precise Boolean below. See
+`references/search_strategy_design.md` §Step 0.
+
 From the research question, extract:
 - **Core concepts** (2-4 key terms)
 - **Synonyms and variants** per concept
@@ -339,6 +347,12 @@ in `required_databases` MUST be called.
 5. Check saturation: run one more search iteration
    - If <5% new papers found → saturation achieved
    - If ≥5% new papers → refine query and repeat (max 3 iterations)
+
+**Interleaved thinking between iterations.** After each parallel batch returns,
+evaluate the results in thinking *before* firing the next query: are the hits
+on-target for the RQ, or did a collision-prone term pull in noise? Which sub-topic
+is under-covered? Should the next pass broaden (too few hits) or tighten (too much
+off-target)? Let that assessment — not a fixed query list — drive the refinement.
 
 ### Step 4b: Evidence Reception Assessment (Scite)
 
