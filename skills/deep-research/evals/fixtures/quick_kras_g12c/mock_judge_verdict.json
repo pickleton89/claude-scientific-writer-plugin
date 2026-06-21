@@ -1,0 +1,12 @@
+{
+  "scores": {
+    "factual_accuracy": 0.95,
+    "citation_accuracy": 0.95,
+    "completeness": 0.80,
+    "source_quality": 0.95,
+    "tool_efficiency": 0.85
+  },
+  "overall": 0.90,
+  "pass": true,
+  "rationale": "Both ORR claims trace exactly to the two NEJM Phase II trials in the sources sidecar, and the report correctly flags that the cross-trial ORR gap is not a comparative result. Quick-mode scope appropriately covers the approved agents and response rates; resistance/combinations are explicitly deferred."
+}

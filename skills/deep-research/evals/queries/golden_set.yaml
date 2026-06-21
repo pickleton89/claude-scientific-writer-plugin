@@ -1,0 +1,265 @@
+# Deep-research eval harness — golden query set (Phase 0 regression bed)
+#
+# ~20 representative research questions spanning all search-running modes
+# (full, lit-review, systematic-review, hypothesis, fact-check, quick) and
+# domains (biomedical, molecular, pharmacology, cross-domain). This is the
+# fixed set the LLM-as-judge rubric (../rubric.md) scores against. Keep it
+# small and stable — per Anthropic's multi-agent post, ~20 well-chosen queries
+# surface large quality swings; hundreds are not needed to start.
+#
+# entry fields:
+#   id                 stable slug (names the results file)
+#   mode               deep-research mode to run the query under
+#   domain             biomedical | molecular | pharmacology | cross-domain
+#   research_question  the prompt handed to deep-research
+#   complexity         simple | comparative | complex (drives expected effort)
+#   expected_coverage  facets a COMPLETE answer must hit (feeds the rubric's
+#                      completeness dimension)
+#   notes              what this query stresses in the harness
+
+queries:
+  - id: q01-full-kras-g12c-resistance
+    mode: full
+    domain: biomedical
+    research_question: "What mechanisms drive acquired resistance to KRAS G12C inhibitors in NSCLC, and what combination strategies are under clinical investigation to overcome them?"
+    complexity: complex
+    expected_coverage:
+      - "On-target secondary RAS/KRAS mutations (e.g. Y96D, G12D switching)"
+      - "Bypass/parallel pathway reactivation (RTK-SHP2, MET, EGFR)"
+      - "Histologic/EMT transformation"
+      - "Named combination regimens (SHP2i, SOS1i, anti-EGFR) with trial identifiers"
+      - "Evidence grading distinguishing preclinical from clinical data"
+    notes: "Heavy synthesis; expect 3-7 themes, T1-T4 labels, full 4-sidecar set."
+
+  - id: q02-full-gut-microbiome-ici
+    mode: full
+    domain: biomedical
+    research_question: "How does gut microbiome composition modulate response to immune checkpoint inhibitors in solid tumors?"
+    complexity: complex
+    expected_coverage:
+      - "Specific taxa associated with response (Akkermansia, Faecalibacterium)"
+      - "FMT interventional trials"
+      - "Mechanistic links (antigen mimicry, SCFA, dendritic cell priming)"
+      - "Confounders: antibiotics, diet, geography"
+      - "Contradictory cohort findings across studies"
+    notes: "Cross-cohort contradictions expected; stresses contradiction handling."
+
+  - id: q03-litreview-senolytics-aging
+    mode: lit-review
+    domain: biomedical
+    research_question: "What is the current evidence base for senolytic therapies in age-related disease?"
+    complexity: comparative
+    expected_coverage:
+      - "Dasatinib+quercetin clinical findings"
+      - "Navitoclax/Bcl-2 family agents"
+      - "Preclinical vs human evidence split"
+      - "Disease contexts (IPF, osteoarthritis, diabetic kidney disease)"
+      - "Annotated bibliography breadth (>=25 sources)"
+    notes: "lit-review MIN_SOURCES=25; stresses source_quality and coverage breadth."
+
+  - id: q04-litreview-base-editing
+    mode: lit-review
+    domain: molecular
+    research_question: "What does the literature say about in vivo base editing as a therapeutic modality, and where does delivery remain the bottleneck?"
+    complexity: comparative
+    expected_coverage:
+      - "Adenine vs cytosine base editor classes"
+      - "LNP vs AAV vs VLP delivery"
+      - "Off-target and bystander editing assessment"
+      - "First-in-human programs (e.g. VERVE-101 PCSK9)"
+      - "Tissue tropism limits beyond liver"
+    notes: "Molecular-biology framing; stresses domain routing and primary > review."
+
+  - id: q05-systreview-glp1-cv-outcomes
+    mode: systematic-review
+    domain: pharmacology
+    research_question: "In adults with type 2 diabetes, do GLP-1 receptor agonists reduce major adverse cardiovascular events compared with placebo or standard care?"
+    complexity: complex
+    expected_coverage:
+      - "PICO framing (population, intervention, comparator, MACE outcome)"
+      - "Named CVOTs (LEADER, SUSTAIN-6, REWIND, HARMONY)"
+      - "RoB 2 / risk-of-bias assessment per trial"
+      - "Pooled effect size + heterogeneity (I-squared)"
+      - "GRADE certainty per outcome; PRISMA flow accounting"
+    notes: "PRISMA mode; stresses methodological rigor scoring."
+
+  - id: q06-systreview-vitd-respiratory
+    mode: systematic-review
+    domain: biomedical
+    research_question: "Does vitamin D supplementation reduce the incidence of acute respiratory tract infections in the general population?"
+    complexity: complex
+    expected_coverage:
+      - "Individual-participant vs aggregate meta-analysis distinction"
+      - "Dosing regimen subgroups (daily/weekly vs bolus)"
+      - "Baseline 25(OH)D stratification"
+      - "RoB across included RCTs"
+      - "GRADE certainty and publication-bias assessment"
+    notes: "Contested meta-analysis; stresses citation_accuracy on pooled data."
+
+  - id: q07-hypothesis-tau-spread
+    mode: hypothesis
+    domain: biomedical
+    research_question: "What are competing mechanistic explanations for prion-like trans-synaptic spread of tau pathology in Alzheimer's disease?"
+    complexity: comparative
+    expected_coverage:
+      - "3-5 mechanistically distinct hypotheses with distinct causal chains"
+      - "Molecular grounding (LRP1, HSPG, exosomal vs free release)"
+      - "Per-hypothesis testable predictions"
+      - "Experimental test design with controls"
+      - "Quality scores per hypothesis"
+    notes: "hypothesis mode requires non-empty hypotheses[] (predicate Y3)."
+
+  - id: q08-hypothesis-tnbc-synthetic-lethality
+    mode: hypothesis
+    domain: molecular
+    research_question: "What synthetic-lethal vulnerabilities could be exploited in BRCA-wildtype triple-negative breast cancer?"
+    complexity: comparative
+    expected_coverage:
+      - "Candidate target pairs (e.g. CHK1/WEE1, PARP/ATR)"
+      - "Mechanistic rationale per candidate grounded in pathway evidence"
+      - "Distinctiveness across hypotheses"
+      - "Falsifiable predictions"
+      - "Experimental validation plan (CRISPR screen / drug combo)"
+    notes: "Stresses grounding of speculative claims in real evidence vs fabrication."
+
+  - id: q09-factcheck-metformin-longevity
+    mode: fact-check
+    domain: pharmacology
+    research_question: "Is it true that metformin extends lifespan in non-diabetic humans?"
+    complexity: simple
+    expected_coverage:
+      - "Clear verdict (supported/refuted/mixed/unsubstantiated)"
+      - "Epidemiological association vs causal RCT evidence"
+      - "TAME trial status (ongoing, no human lifespan readout)"
+      - "Model-organism vs human evidence boundary"
+    notes: "fact-check requires all 4 sidecars; stresses verdict calibration."
+
+  - id: q10-factcheck-ivermectin-covid
+    mode: fact-check
+    domain: pharmacology
+    research_question: "Does ivermectin reduce mortality in COVID-19?"
+    complexity: simple
+    expected_coverage:
+      - "Verdict grounded in high-quality RCT/meta-analysis evidence"
+      - "Explicit note on retracted/flawed early studies"
+      - "Regulatory position (FDA/EMA)"
+      - "In vitro vs clinical dosing distinction"
+    notes: "Regulatory-token hardening (WebSemantic non-strikable); retraction awareness."
+
+  - id: q11-factcheck-aducanumab
+    mode: fact-check
+    domain: biomedical
+    research_question: "Did aducanumab demonstrate clinical cognitive benefit in its pivotal trials?"
+    complexity: simple
+    expected_coverage:
+      - "EMERGE vs ENGAGE divergent outcomes"
+      - "Amyloid reduction vs clinical endpoint distinction"
+      - "FDA accelerated-approval controversy"
+      - "Verdict reflecting contested evidence"
+    notes: "Stresses nuanced (non-binary) verdict and faithful representation."
+
+  - id: q12-quick-pcsk9-indications
+    mode: quick
+    domain: pharmacology
+    research_question: "What are the approved indications for PCSK9 inhibitors as of 2026?"
+    complexity: simple
+    expected_coverage:
+      - "Named agents (alirocumab, evolocumab, inclisiran)"
+      - "Approved indications (HeFH, HoFH, ASCVD secondary prevention)"
+      - "Monoclonal vs siRNA mechanism distinction"
+    notes: "quick mode: sources+grading sidecars only; MIN_SOURCES=5."
+
+  - id: q13-quick-car-t-indications
+    mode: quick
+    domain: biomedical
+    research_question: "Which CAR-T cell therapies are FDA-approved and for what hematologic indications as of 2026?"
+    complexity: simple
+    expected_coverage:
+      - "Named products (tisagenlecleucel, axicabtagene, etc.)"
+      - "Target antigens (CD19, BCMA)"
+      - "Approved indications (B-ALL, DLBCL, multiple myeloma)"
+    notes: "quick mode; stresses tool_efficiency on a fact-lookup query."
+
+  - id: q14-quick-crispr-sickle-cell
+    mode: quick
+    domain: molecular
+    research_question: "What is the current regulatory status of CRISPR-based therapies for sickle cell disease?"
+    complexity: simple
+    expected_coverage:
+      - "Exagamglogene autotemcel (exa-cel / Casgevy)"
+      - "Mechanism (BCL11A disruption, HbF induction)"
+      - "Approval jurisdictions and timeline"
+    notes: "quick molecular; stresses currency and source_quality."
+
+  - id: q15-full-sglt2-vs-glp1-hfpef
+    mode: full
+    domain: pharmacology
+    research_question: "What is the comparative efficacy and safety of SGLT2 inhibitors versus GLP-1 receptor agonists for heart failure with preserved ejection fraction?"
+    complexity: complex
+    expected_coverage:
+      - "Trial evidence for SGLT2i in HFpEF (EMPEROR-Preserved, DELIVER)"
+      - "Limited/indirect GLP-1 RA evidence in HFpEF"
+      - "Outcome definitions (HF hospitalization, CV death)"
+      - "Safety/tolerability contrasts"
+      - "Honest statement where head-to-head data are absent"
+    notes: "Stresses comparison framing + faithful 'evidence gap' acknowledgement."
+
+  - id: q16-full-gnn-binding-affinity
+    mode: full
+    domain: cross-domain
+    research_question: "How are graph neural networks being applied to protein-ligand binding affinity prediction, and what are their validation limitations?"
+    complexity: complex
+    expected_coverage:
+      - "Representative GNN architectures for binding affinity"
+      - "Benchmark datasets (PDBbind, CASF) and leakage concerns"
+      - "Generalization to novel scaffolds/targets"
+      - "Comparison to physics-based methods"
+      - "Reported validation pitfalls"
+    notes: "Cross-domain routing (arXiv/OpenAlex full-text); stresses non-biomedical reach."
+
+  - id: q17-litreview-ml-clinical-reproducibility
+    mode: lit-review
+    domain: cross-domain
+    research_question: "What does the literature say about the reproducibility crisis in machine-learning-based clinical prediction models?"
+    complexity: comparative
+    expected_coverage:
+      - "Common failure modes (data leakage, optimistic validation)"
+      - "Reporting standards (TRIPOD-AI, PROBAST)"
+      - "External validation scarcity"
+      - "Proposed remedies"
+    notes: "Cross-domain lit-review; stresses source_quality across ML + clinical venues."
+
+  - id: q18-hypothesis-gut-brain-parkinsons
+    mode: hypothesis
+    domain: biomedical
+    research_question: "What competing hypotheses explain the gut-brain axis contribution to Parkinson's disease pathogenesis?"
+    complexity: comparative
+    expected_coverage:
+      - "Braak's gut-first/vagal-spread hypothesis"
+      - "Microbiome-driven neuroinflammation"
+      - "Alpha-synuclein seeding in enteric neurons"
+      - "Distinct, falsifiable predictions per hypothesis"
+    notes: "hypothesis mode; stresses distinctiveness + grounded reasoning."
+
+  - id: q19-systreview-sglt2-nondiabetic-hf
+    mode: systematic-review
+    domain: pharmacology
+    research_question: "Do SGLT2 inhibitors reduce hospitalization for heart failure in patients without diabetes?"
+    complexity: complex
+    expected_coverage:
+      - "Trials enrolling non-diabetic HF patients (DAPA-HF, EMPEROR subgroups)"
+      - "Subgroup vs primary-population evidence distinction"
+      - "RoB assessment and pooled estimate"
+      - "GRADE certainty for the non-diabetic subgroup"
+    notes: "PRISMA mode; stresses subgroup-evidence rigor and citation_accuracy."
+
+  - id: q20-factcheck-mrna-genome-integration
+    mode: fact-check
+    domain: molecular
+    research_question: "Is it true that mRNA vaccines integrate into the human genome?"
+    complexity: simple
+    expected_coverage:
+      - "Clear refuting verdict with mechanism (no reverse transcriptase, cytoplasmic mRNA)"
+      - "Address the misinterpreted in vitro LINE-1 preprint"
+      - "Regulatory/scientific consensus"
+    notes: "Misinformation claim; stresses faithful refutation + source_quality."
