@@ -1,6 +1,6 @@
 ---
 name: deep-research
-version: 1.1.0
+version: 1.2.0
 description: >
   Multi-mode biomedical research pipeline (7 agents, 8 modes, 6 mandatory user
   checkpoints) for literature reviews, systematic reviews (PRISMA), hypothesis

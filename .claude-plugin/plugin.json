@@ -1,7 +1,7 @@
 {
   "name": "claude-scientific-writer",
   "description": "A library of scientific research skills — biomedical intelligence, literature analysis, accuracy verification, publication-ready documents, deterministic SVG figure authoring, and ToolUniverse integration with 2400+ database tools",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "author": {
     "name": "Jeff Kiefer"
   },
