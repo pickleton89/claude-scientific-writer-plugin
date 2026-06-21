@@ -13,7 +13,7 @@ description: >
   research-paper-summarizer), review a manuscript (use peer-review), write a paper
   (use scientific-writing), or build a target/drug dossier or validation scorecard
   (use target-intelligence / drug-intelligence / target-validation).
-allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
+allowed-tools: [Read, Write, Edit, Bash, Glob, Grep, Task]
 ---
 
 <!-- Pipeline architecture inspired by academic-research-skills by Cheng-I Wu (CC-BY-NC 4.0) -->
@@ -315,7 +315,46 @@ and advocate assessment to the user.
 
 **Objective:** Systematic literature search and source verification.
 
-**Process:**
+**Execution model — single-context vs. parallel fan-out:**
+
+Read the frozen **Decomposition Contract** (from Checkpoint 1). Two paths:
+
+- **Fan-out** (mode in `thresholds.FANOUT_MODES` — `full` / `systematic-review`
+  / `hypothesis` — AND `scaling.fan_out_width > 1`): spawn **one researcher
+  subagent per sub-question** with the `Task` tool, in a single batched message
+  so they run in parallel (the orchestrator-worker pattern). Give each subagent
+  its sub-question's four delegation fields (objective, output format, source
+  guidance, boundary) plus the frozen Search Contract, and instruct it to: run
+  the bibliography search loop (Process steps 1-3 below) **for its slice only**,
+  staying within its `scaling.tool_calls_max` budget; write a PARTIAL sources
+  sidecar named `{date}_{topic_slug}_{mode}_sources.sub{N}.json` with
+  `metadata.sub_question_id` set to its `SQ{n}` id; and return only the partial's
+  **path** (a lightweight reference — do NOT echo the full bibliography back
+  through the message). When all subagents return, merge the partials:
+
+  ```bash
+  uv run python scripts/merge_sources.py --mode {mode} --topic-slug {slug} \
+    --frozen-at {iso} --out {date}_{slug}_{mode}_sources.json \
+    {date}_{slug}_{mode}_sources.sub1.json {date}_{slug}_{mode}_sources.sub2.json ...
+  ```
+
+  This dedups by `paper_id` and unions the per-database search logs. The merged
+  file is the canonical `sources.json` — validate it
+  (`validate_sidecar.py --kind sources`) and run the search audit + verification
+  on the **merged** sidecar exactly as the single-context path does. Each
+  subagent compresses its slice in its own context window, so the lead never
+  holds every raw result at once.
+
+- **Single-context** (all other search-running modes, or when
+  `fan_out_width == 1`): run Process steps 1-4 directly in this context — no
+  subagents, no partials; the bibliography agent writes `sources.json` itself.
+
+Token note: fan-out costs materially more (a separate context window per
+subagent), which is why it is gated to high-value modes. The 6 checkpoints are
+unchanged — fan-out lives entirely inside Phase 2, before Checkpoint 2.
+
+**Process** (steps 1-3 run per-researcher in fan-out, or directly in
+single-context; step 4 always runs once on the final/merged `sources.json`):
 1. Load `agents/bibliography.md`. Execute multi-database search **per the
    frozen Search Contract**:
    - The Search Contract's `required_databases` list is authoritative — every
@@ -356,7 +395,8 @@ and advocate assessment to the user.
 **Hard gate (Phase 2 → Phase 3):** Run `scripts/search_audit.py` against the
 frozen Search Contract before requesting Checkpoint 2. The audit calls
 `exit_criteria.audit_phase_2_search()` to compare contracted required
-databases against the actual Search Log. If `passed: false`, the Bibliography
+databases against the actual Search Log (the **merged** Search Log in fan-out
+mode). If `passed: false`, the Bibliography
 agent MUST loop back, issue parallel tool calls for the missing channels,
 and re-run the audit. Phase 3 is BLOCKED until the audit passes. Do NOT
 request Checkpoint 2 with a failing audit.
