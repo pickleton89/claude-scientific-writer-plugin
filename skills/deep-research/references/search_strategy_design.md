@@ -23,6 +23,28 @@ search.
 
 ## Five-Step Framework
 
+### Step 0: Start Wide, Then Narrow
+
+Expert researchers survey the landscape before drilling in; agents tend to do the
+opposite — opening with long, over-specified Boolean queries that match too few
+papers (the empty-result spiral; see §Common Pitfalls #1). Counteract this with an
+explicit broad-first reconnaissance pass *before* building the precise query:
+
+1. **Open broad.** Run a short, high-level query per channel first — 1–2 core
+   terms, no stacked filters — to gauge how much literature exists and how the
+   field frames the question.
+2. **Anchor on existing synthesis.** Before primary discovery, call OpenAlex
+   `find_review_articles` + `find_seminal_papers` (see `agents/bibliography.md`
+   §OpenAlex "Survey-stage anchoring") to surface reviews / meta-analyses and
+   landmark works. These reveal the established vocabulary, sub-topics, and
+   consensus you would otherwise waste effort re-deriving.
+3. **Then narrow.** Feed what the broad pass surfaced — real MeSH terms, author
+   keywords, sub-topic boundaries — into the focused Boolean in Step 3.
+
+This sequencing (broad reconnaissance → focused query) raises recall and avoids
+the over-specific-query failure mode. It precedes Steps 1–5; it does not replace
+them.
+
 ### Step 1: Identify Concepts
 
 Decompose the research question into concept groups:

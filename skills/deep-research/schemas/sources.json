@@ -37,6 +37,15 @@
         "rq": {
           "type": ["string", "null"],
           "description": "Research question text from Phase 1 contract."
+        },
+        "sub_question_id": {
+          "type": ["string", "null"],
+          "description": "For a PARTIAL sources sidecar from Phase-3 fan-out, the decomposition sub-question id (e.g. 'SQ2') that produced it. Null/absent for a full or merged sidecar."
+        },
+        "merged_from": {
+          "type": ["array", "null"],
+          "items": {"type": "string"},
+          "description": "For a MERGED sources sidecar, the list of sub-question ids whose partial sidecars were combined by merge_sources.py. Null/absent for a non-merged sidecar."
         }
       },
       "additionalProperties": false

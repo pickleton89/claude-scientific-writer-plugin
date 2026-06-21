@@ -1,0 +1,4 @@
+# Generated eval verdicts are not tracked; keep the directory itself.
+*
+!.gitkeep
+!.gitignore

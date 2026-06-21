@@ -48,8 +48,8 @@ MIN_SOURCES: Final[dict[str, int]] = {
     "systematic-review": 30,  # "all eligible" — use 30 as practical floor
     "hypothesis": 15,
     "fact-check": 3,
-    "review": 0,        # no search phase
-    "socratic": 0,      # no search phase
+    "review": 0,  # no search phase
+    "socratic": 0,  # no search phase
 }
 
 # ---------------------------------------------------------------------------
@@ -132,14 +132,49 @@ PEER_REVIEWED_MIN: Final[dict[str, float]] = {
 # ---------------------------------------------------------------------------
 
 WORD_COUNTS: Final[dict[str, dict[str, int]]] = {
-    "full":              {"target_min": 3000, "target_max":  8000, "hard_min": 2500, "hard_max": 10000},
-    "quick":             {"target_min":  500, "target_max":  1500, "hard_min":  300, "hard_max":  2000},
-    "lit-review":        {"target_min": 2000, "target_max":  5000, "hard_min": 1500, "hard_max":  7000},
-    "systematic-review": {"target_min": 5000, "target_max": 15000, "hard_min": 4000, "hard_max": 20000},
-    "hypothesis":        {"target_min": 2000, "target_max":  4000, "hard_min": 1500, "hard_max":  5000},
-    "fact-check":        {"target_min":  300, "target_max":  1000, "hard_min":  200, "hard_max":  1500},
-    "review":            {"target_min": 1000, "target_max":  3000, "hard_min":  500, "hard_max":  4000},
-    "socratic":          {"target_min":    0, "target_max":     0, "hard_min":    0, "hard_max":     0},  # no compiler output
+    "full": {
+        "target_min": 3000,
+        "target_max": 8000,
+        "hard_min": 2500,
+        "hard_max": 10000,
+    },
+    "quick": {"target_min": 500, "target_max": 1500, "hard_min": 300, "hard_max": 2000},
+    "lit-review": {
+        "target_min": 2000,
+        "target_max": 5000,
+        "hard_min": 1500,
+        "hard_max": 7000,
+    },
+    "systematic-review": {
+        "target_min": 5000,
+        "target_max": 15000,
+        "hard_min": 4000,
+        "hard_max": 20000,
+    },
+    "hypothesis": {
+        "target_min": 2000,
+        "target_max": 4000,
+        "hard_min": 1500,
+        "hard_max": 5000,
+    },
+    "fact-check": {
+        "target_min": 300,
+        "target_max": 1000,
+        "hard_min": 200,
+        "hard_max": 1500,
+    },
+    "review": {
+        "target_min": 1000,
+        "target_max": 3000,
+        "hard_min": 500,
+        "hard_max": 4000,
+    },
+    "socratic": {
+        "target_min": 0,
+        "target_max": 0,
+        "hard_min": 0,
+        "hard_max": 0,
+    },  # no compiler output
 }
 
 # ---------------------------------------------------------------------------
@@ -151,14 +186,14 @@ WORD_COUNTS: Final[dict[str, dict[str, int]]] = {
 # ---------------------------------------------------------------------------
 
 SPOT_CHECK_RATES: Final[dict[str, dict[str, float]]] = {
-    "full":              {"biomedical": 0.50, "general": 0.30},
-    "quick":             {"biomedical": 0.50, "general": 0.30},
-    "lit-review":        {"biomedical": 0.50, "general": 0.30},
+    "full": {"biomedical": 0.50, "general": 0.30},
+    "quick": {"biomedical": 0.50, "general": 0.30},
+    "lit-review": {"biomedical": 0.50, "general": 0.30},
     "systematic-review": {"biomedical": 1.00, "general": 1.00},
-    "hypothesis":        {"biomedical": 0.50, "general": 0.30},
-    "fact-check":        {"biomedical": 1.00, "general": 1.00},
-    "review":            {"biomedical": 0.50, "general": 0.30},
-    "socratic":          {"biomedical": 0.0,  "general": 0.0},
+    "hypothesis": {"biomedical": 0.50, "general": 0.30},
+    "fact-check": {"biomedical": 1.00, "general": 1.00},
+    "review": {"biomedical": 0.50, "general": 0.30},
+    "socratic": {"biomedical": 0.0, "general": 0.0},
 }
 
 # ---------------------------------------------------------------------------
@@ -168,12 +203,12 @@ SPOT_CHECK_RATES: Final[dict[str, dict[str, float]]] = {
 # ---------------------------------------------------------------------------
 
 CURRENCY_THRESHOLDS: Final[dict[str, dict[str, float | None]]] = {
-    "biomedical":          {"recent": 5.0,  "current": 1.0},
-    "ml_genomics":         {"recent": 2.0,  "current": 0.5},
-    "drug_development":    {"recent": 5.0,  "current": 2.0},
-    "clinical_practice":   {"recent": 5.0,  "current": 2.0},
-    "structural_biology":  {"recent": 10.0, "current": 3.0},
-    "seminal":             {"recent": None, "current": None},  # exempt
+    "biomedical": {"recent": 5.0, "current": 1.0},
+    "ml_genomics": {"recent": 2.0, "current": 0.5},
+    "drug_development": {"recent": 5.0, "current": 2.0},
+    "clinical_practice": {"recent": 5.0, "current": 2.0},
+    "structural_biology": {"recent": 10.0, "current": 3.0},
+    "seminal": {"recent": None, "current": None},  # exempt
 }
 
 # ---------------------------------------------------------------------------
@@ -181,11 +216,11 @@ CURRENCY_THRESHOLDS: Final[dict[str, dict[str, float | None]]] = {
 # (convergence_signals.md §Convergence Rules)
 # ---------------------------------------------------------------------------
 
-CONVERGENCE_SIGNALS_REQUIRED: Final[int] = 3          # min active for CONVERGED
-CONVERGENCE_SIGNALS_TOTAL: Final[int] = 5             # B1-B5
-CONVERGENCE_STAGNATION_ROUNDS: Final[int] = 10        # no new INSIGHT
-CONVERGENCE_TIME_LIMIT_TURNS: Final[int] = 40         # force-complete
-SCOPE_STABILITY_ROUNDS: Final[int] = 3                # B4 requires 3 stable rounds
+CONVERGENCE_SIGNALS_REQUIRED: Final[int] = 3  # min active for CONVERGED
+CONVERGENCE_SIGNALS_TOTAL: Final[int] = 5  # B1-B5
+CONVERGENCE_STAGNATION_ROUNDS: Final[int] = 10  # no new INSIGHT
+CONVERGENCE_TIME_LIMIT_TURNS: Final[int] = 40  # force-complete
+SCOPE_STABILITY_ROUNDS: Final[int] = 3  # B4 requires 3 stable rounds
 
 # ---------------------------------------------------------------------------
 # Evidence strength thresholds for synthesis agent
@@ -194,17 +229,17 @@ SCOPE_STABILITY_ROUNDS: Final[int] = 3                # B4 requires 3 stable rou
 
 STRONG_MIN_SOURCES: Final[int] = 3
 MODERATE_MIN_SOURCES: Final[int] = 2
-EMERGING_MAX_AGE_YEARS: Final[float] = 1.0            # ≤1 year for "emerging"
+EMERGING_MAX_AGE_YEARS: Final[float] = 1.0  # ≤1 year for "emerging"
 
 # ---------------------------------------------------------------------------
 # Hypothesis quality scoring
 # (score_hypothesis.py thresholds)
 # ---------------------------------------------------------------------------
 
-HYPOTHESIS_STRONG_THRESHOLD: Final[int] = 8           # total ≥8 out of 10
-HYPOTHESIS_VIABLE_THRESHOLD: Final[int] = 5           # total ≥5 out of 10
+HYPOTHESIS_STRONG_THRESHOLD: Final[int] = 8  # total ≥8 out of 10
+HYPOTHESIS_VIABLE_THRESHOLD: Final[int] = 5  # total ≥5 out of 10
 HYPOTHESIS_MAX_SCORE: Final[int] = 10
-HYPOTHESIS_CRITERIA_COUNT: Final[int] = 5             # 5 criteria × 2 pts each
+HYPOTHESIS_CRITERIA_COUNT: Final[int] = 5  # 5 criteria × 2 pts each
 
 # ---------------------------------------------------------------------------
 # Kappa threshold for inter-rater reliability (screening)
@@ -224,14 +259,24 @@ MANDATORY_SECTIONS_ALL: Final[tuple[str, ...]] = (
 )
 
 MANDATORY_SECTIONS_BY_MODE: Final[dict[str, tuple[str, ...]]] = {
-    "full":              ("Executive Summary", "Methods", "Results", "Discussion"),
-    "quick":             ("Key Findings", "Evidence Summary"),
-    "lit-review":        ("Search Strategy", "Literature Matrix", "Thematic Synthesis", "Gap Analysis"),
+    "full": ("Executive Summary", "Methods", "Results", "Discussion"),
+    "quick": ("Key Findings", "Evidence Summary"),
+    "lit-review": (
+        "Search Strategy",
+        "Literature Matrix",
+        "Thematic Synthesis",
+        "Gap Analysis",
+    ),
     "systematic-review": ("Abstract", "Methods", "Results", "Discussion"),
-    "hypothesis":        ("Background", "Hypotheses", "Comparison Matrix", "Recommended Priority"),
-    "fact-check":        ("Claim", "Verdict", "Evidence"),
-    "review":            ("Summary", "Strengths", "Weaknesses", "Recommendations"),
-    "socratic":          (),  # no compiler output
+    "hypothesis": (
+        "Background",
+        "Hypotheses",
+        "Comparison Matrix",
+        "Recommended Priority",
+    ),
+    "fact-check": ("Claim", "Verdict", "Evidence"),
+    "review": ("Summary", "Strengths", "Weaknesses", "Recommendations"),
+    "socratic": (),  # no compiler output
 }
 
 # ---------------------------------------------------------------------------
@@ -333,7 +378,6 @@ SECTION_SCHEMAS: Final[dict[str, list[dict]]] = {
             "slot_type": "fixed",
         },
     ],
-
     # ── quick mode (6 sections) ─────────────────────────────────────────
     "quick": [
         {
@@ -380,7 +424,6 @@ SECTION_SCHEMAS: Final[dict[str, list[dict]]] = {
             "slot_type": "fixed",
         },
     ],
-
     # ── lit-review mode (7 sections) ────────────────────────────────────
     "lit-review": [
         {
@@ -450,7 +493,6 @@ SECTION_SCHEMAS: Final[dict[str, list[dict]]] = {
             "slot_type": "fixed",
         },
     ],
-
     # ── systematic-review mode (PRISMA, 7 sections) ────────────────────
     "systematic-review": [
         {
@@ -525,7 +567,6 @@ SECTION_SCHEMAS: Final[dict[str, list[dict]]] = {
             "slot_type": "fixed",
         },
     ],
-
     # ── hypothesis mode (6 sections) ────────────────────────────────────
     "hypothesis": [
         {
@@ -587,7 +628,6 @@ SECTION_SCHEMAS: Final[dict[str, list[dict]]] = {
             "slot_type": "fixed",
         },
     ],
-
     # ── fact-check mode (6 sections) ────────────────────────────────────
     "fact-check": [
         {
@@ -640,7 +680,6 @@ SECTION_SCHEMAS: Final[dict[str, list[dict]]] = {
             "slot_type": "fixed",
         },
     ],
-
     # ── review mode (5 sections) ────────────────────────────────────────
     "review": [
         {
@@ -693,7 +732,6 @@ SECTION_SCHEMAS: Final[dict[str, list[dict]]] = {
             "slot_type": "fixed",
         },
     ],
-
     # ── socratic mode (no compiler output) ──────────────────────────────
     "socratic": [],
 }
@@ -703,14 +741,18 @@ SECTION_SCHEMAS: Final[dict[str, list[dict]]] = {
 # ---------------------------------------------------------------------------
 
 FILE_SPECS: Final[dict[str, dict[str, str | int]]] = {
-    "full":              {"max_files": 1, "naming": "{date}_{topic_slug}_full_report.md"},
-    "quick":             {"max_files": 1, "naming": "{date}_{topic_slug}_quick_brief.md"},
-    "lit-review":        {"max_files": 1, "naming": "{date}_{topic_slug}_lit_review.md"},
-    "systematic-review": {"max_files": 2, "naming": "{date}_{topic_slug}_systematic_review.md", "supplementary": "appendices.md"},
-    "hypothesis":        {"max_files": 1, "naming": "{date}_{topic_slug}_hypotheses.md"},
-    "fact-check":        {"max_files": 1, "naming": "{date}_{topic_slug}_fact_check.md"},
-    "review":            {"max_files": 1, "naming": "{date}_{topic_slug}_review.md"},
-    "socratic":          {"max_files": 0, "naming": ""},
+    "full": {"max_files": 1, "naming": "{date}_{topic_slug}_full_report.md"},
+    "quick": {"max_files": 1, "naming": "{date}_{topic_slug}_quick_brief.md"},
+    "lit-review": {"max_files": 1, "naming": "{date}_{topic_slug}_lit_review.md"},
+    "systematic-review": {
+        "max_files": 2,
+        "naming": "{date}_{topic_slug}_systematic_review.md",
+        "supplementary": "appendices.md",
+    },
+    "hypothesis": {"max_files": 1, "naming": "{date}_{topic_slug}_hypotheses.md"},
+    "fact-check": {"max_files": 1, "naming": "{date}_{topic_slug}_fact_check.md"},
+    "review": {"max_files": 1, "naming": "{date}_{topic_slug}_review.md"},
+    "socratic": {"max_files": 0, "naming": ""},
 }
 
 # ---------------------------------------------------------------------------
@@ -727,14 +769,14 @@ FILE_SPECS: Final[dict[str, dict[str, str | int]]] = {
 SIDECAR_KINDS: Final[tuple[str, ...]] = ("sources", "grading", "synthesis", "advocate")
 
 SIDECAR_SPECS: Final[dict[str, tuple[str, ...]]] = {
-    "full":              ("sources", "grading", "synthesis", "advocate"),
-    "lit-review":        ("sources", "grading", "synthesis", "advocate"),
+    "full": ("sources", "grading", "synthesis", "advocate"),
+    "lit-review": ("sources", "grading", "synthesis", "advocate"),
     "systematic-review": ("sources", "grading", "synthesis", "advocate"),
-    "hypothesis":        ("sources", "grading", "synthesis", "advocate"),
-    "fact-check":        ("sources", "grading", "synthesis", "advocate"),
-    "review":            ("sources", "grading", "synthesis", "advocate"),
-    "quick":             ("sources", "grading"),
-    "socratic":          (),
+    "hypothesis": ("sources", "grading", "synthesis", "advocate"),
+    "fact-check": ("sources", "grading", "synthesis", "advocate"),
+    "review": ("sources", "grading", "synthesis", "advocate"),
+    "quick": ("sources", "grading"),
+    "socratic": (),
 }
 
 # Feature flag — compiler enforcement of sidecar presence.
@@ -767,9 +809,13 @@ def sidecar_filename(mode: str, kind: str, date: str, topic_slug: str) -> str:
         ValueError: If the (mode, kind) pair is not in SIDECAR_SPECS[mode].
     """
     if kind not in SIDECAR_KINDS:
-        raise ValueError(f"Unknown sidecar kind: {kind!r}. Expected one of {SIDECAR_KINDS}.")
+        raise ValueError(
+            f"Unknown sidecar kind: {kind!r}. Expected one of {SIDECAR_KINDS}."
+        )
     if mode not in SIDECAR_SPECS:
-        raise ValueError(f"Unknown mode: {mode!r}. Expected one of {tuple(SIDECAR_SPECS)}.")
+        raise ValueError(
+            f"Unknown mode: {mode!r}. Expected one of {tuple(SIDECAR_SPECS)}."
+        )
     if mode == "socratic":
         return ""
     if kind not in SIDECAR_SPECS[mode]:
@@ -786,20 +832,92 @@ def required_sidecars(mode: str) -> tuple[str, ...]:
 
 
 # ---------------------------------------------------------------------------
+# Query complexity → effort scaling (Phase 1 decomposition + Phase 3 fan-out)
+# ---------------------------------------------------------------------------
+# Mirrors the "scale effort to query complexity" heuristic from Anthropic's
+# multi-agent research system: simple fact-finding → 1 agent / few tool calls;
+# direct comparisons → 2-4 agents / more calls; complex research → many agents.
+# Consumed by complexity_classifier.py (classification) and
+# decomposition_contract.py (sub-question fan-out width + per-subagent budget).
+#   fan_out_{min,max,default} — number of sub-question researchers
+#   tool_calls_{min,max}      — per-subagent tool-call budget
+#   results_cap               — per-channel result cap for a sub-question
+
+COMPLEXITY_LEVELS: Final[tuple[str, ...]] = ("simple", "comparative", "complex")
+
+COMPLEXITY_SCALING: Final[dict[str, dict[str, int]]] = {
+    "simple": {
+        "fan_out_min": 1,
+        "fan_out_max": 1,
+        "fan_out_default": 1,
+        "tool_calls_min": 3,
+        "tool_calls_max": 10,
+        "results_cap": 30,
+    },
+    "comparative": {
+        "fan_out_min": 2,
+        "fan_out_max": 4,
+        "fan_out_default": 3,
+        "tool_calls_min": 10,
+        "tool_calls_max": 15,
+        "results_cap": 40,
+    },
+    "complex": {
+        "fan_out_min": 4,
+        "fan_out_max": 8,
+        "fan_out_default": 5,
+        "tool_calls_min": 10,
+        "tool_calls_max": 20,
+        "results_cap": 50,
+    },
+}
+
+# Modes eligible for true parallel sub-question fan-out (Phase 3). Other
+# search-running modes (quick, lit-review, fact-check) still plan a
+# decomposition but execute single-context (fan_out_width capped to 1).
+# Token economics: fan-out costs ~15x chat tokens — justified only for
+# high-value, parallelizable modes.
+FANOUT_MODES: Final[frozenset[str]] = frozenset(
+    {"full", "systematic-review", "hypothesis"}
+)
+
+
+def complexity_scaling(level: str) -> dict[str, int]:
+    """Return a copy of the effort-scaling profile for a complexity level.
+
+    Raises:
+        ValueError: If level not in COMPLEXITY_LEVELS.
+    """
+    if level not in COMPLEXITY_SCALING:
+        raise ValueError(
+            f"Unknown complexity level: {level!r}. Expected one of {COMPLEXITY_LEVELS}."
+        )
+    return dict(COMPLEXITY_SCALING[level])
+
+
+# ---------------------------------------------------------------------------
 # Schema ↔ mandatory-sections consistency check
 # ---------------------------------------------------------------------------
+
 
 def _validate_schema_consistency() -> None:
     """Verify MANDATORY_SECTIONS_BY_MODE is consistent with SECTION_SCHEMAS."""
     for mode in ALL_MODES:
         if mode == "socratic":
             continue  # no compiler output — empty schema by design
-        schema_required = {s["name"] for s in SECTION_SCHEMAS.get(mode, []) if s.get("required", False)}
-        mandatory = set(MANDATORY_SECTIONS_BY_MODE.get(mode, ())) | set(MANDATORY_SECTIONS_ALL)
+        schema_required = {
+            s["name"] for s in SECTION_SCHEMAS.get(mode, []) if s.get("required", False)
+        }
+        mandatory = set(MANDATORY_SECTIONS_BY_MODE.get(mode, ())) | set(
+            MANDATORY_SECTIONS_ALL
+        )
         # All mandatory sections should appear in schema as required
         missing = mandatory - schema_required
         if missing:
-            raise ValueError(f"Schema inconsistency for {mode}: mandatory sections {missing} not in schema")
+            raise ValueError(
+                f"Schema inconsistency for {mode}: mandatory sections {missing} not in schema"
+            )
+
 
 _validate_schema_consistency()
 
@@ -818,4 +936,35 @@ def _validate_sidecar_consistency() -> None:
             f"SIDECAR_ENFORCEMENT must be 'advisory' or 'required', got {SIDECAR_ENFORCEMENT!r}"
         )
 
+
 _validate_sidecar_consistency()
+
+
+def _validate_complexity_consistency() -> None:
+    """Verify COMPLEXITY_SCALING covers every level with sane bounds."""
+    missing = set(COMPLEXITY_LEVELS) - set(COMPLEXITY_SCALING)
+    if missing:
+        raise ValueError(f"COMPLEXITY_SCALING missing levels: {missing}")
+    required_keys = (
+        "fan_out_min",
+        "fan_out_max",
+        "fan_out_default",
+        "tool_calls_min",
+        "tool_calls_max",
+        "results_cap",
+    )
+    for level, prof in COMPLEXITY_SCALING.items():
+        for key in required_keys:
+            if key not in prof:
+                raise ValueError(f"COMPLEXITY_SCALING[{level!r}] missing key {key!r}")
+        if not (prof["fan_out_min"] <= prof["fan_out_default"] <= prof["fan_out_max"]):
+            raise ValueError(
+                f"COMPLEXITY_SCALING[{level!r}] fan_out bounds inconsistent"
+            )
+        if prof["tool_calls_min"] > prof["tool_calls_max"]:
+            raise ValueError(
+                f"COMPLEXITY_SCALING[{level!r}] tool_call bounds inconsistent"
+            )
+
+
+_validate_complexity_consistency()

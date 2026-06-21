@@ -5,7 +5,7 @@
 #   "jsonschema>=4.20",
 # ]
 # ///
-"""Validate deep-research sidecar artifacts (sources / grading / synthesis / advocate).
+"""Validate deep-research sidecar artifacts (sources / grading / synthesis / advocate / decomposition).
 
 Two-stage validation per the shared verifier_kit pattern:
 
@@ -45,6 +45,15 @@ Predicates by kind:
         emit a warning that the compiler MUST refuse assembly.
         (Enforcement of refusal lives in output_validator.py, not here.)
 
+  decomposition.json  (Phase-1 Checkpoint-1 contract, NOT an evidence-pinning
+                       sidecar — separate from thresholds.SIDECAR_SPECS, so it
+                       never gates compiler assembly)
+    D1. sub_questions[].id values are unique and non-empty.
+    D2. scaling.fan_out_width == len(sub_questions) AND
+        1 <= fan_out_width <= COMPLEXITY_SCALING[complexity].fan_out_max.
+    D3. Every sub_question has all four delegation fields non-empty
+        (objective, output_format, source_guidance, boundary).
+
 Usage:
     uv run python validate_sidecar.py --kind sources --file path/to/sources.json
     uv run python validate_sidecar.py --kind grading --file grading.json --sources sources.json
@@ -68,7 +77,13 @@ if str(_SHARED_DIR) not in sys.path:
 
 from verifier_kit.validate import SchemaValidator  # noqa: E402
 
-SCHEMA_KINDS = ("sources", "grading", "synthesis", "advocate")
+# thresholds lives alongside this script; needed for the decomposition D2
+# complexity-cap check.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from thresholds import COMPLEXITY_SCALING  # noqa: E402
+
+SCHEMA_KINDS = ("sources", "grading", "synthesis", "advocate", "decomposition")
 
 
 def _load_paper_ids(sources_path: Path) -> set[str]:
@@ -90,7 +105,9 @@ class SidecarValidator(SchemaValidator):
 
     def __init__(self, kind: str, schema_path: Path | None = None) -> None:
         if kind not in SCHEMA_KINDS:
-            raise ValueError(f"Unknown sidecar kind: {kind!r}. Expected one of {SCHEMA_KINDS}.")
+            raise ValueError(
+                f"Unknown sidecar kind: {kind!r}. Expected one of {SCHEMA_KINDS}."
+            )
         self.kind = kind
         base = Path(__file__).resolve().parent.parent / "schemas"
         resolved = schema_path if schema_path else base / f"{kind}.json"
@@ -107,11 +124,17 @@ class SidecarValidator(SchemaValidator):
         if self.kind == "sources":
             self._sources_predicates(record, errors, warnings)
         elif self.kind == "grading":
-            self._grading_predicates(record, errors, warnings, ctx.get("known_paper_ids"))
+            self._grading_predicates(
+                record, errors, warnings, ctx.get("known_paper_ids")
+            )
         elif self.kind == "synthesis":
-            self._synthesis_predicates(record, errors, warnings, ctx.get("known_paper_ids"))
+            self._synthesis_predicates(
+                record, errors, warnings, ctx.get("known_paper_ids")
+            )
         elif self.kind == "advocate":
             self._advocate_predicates(record, errors, warnings)
+        elif self.kind == "decomposition":
+            self._decomposition_predicates(record, errors, warnings)
 
     # ── sources ────────────────────────────────────────────────────────────
     def _sources_predicates(
@@ -145,7 +168,9 @@ class SidecarValidator(SchemaValidator):
                 )
 
         # S3 (advisory): every database in search_log produced at least one kept source
-        log_dbs = {entry.get("database") for entry in search_log if isinstance(entry, dict)}
+        log_dbs = {
+            entry.get("database") for entry in search_log if isinstance(entry, dict)
+        }
         source_dbs = {s.get("source") for s in sources if isinstance(s, dict)}
         zero_yield = log_dbs - source_dbs - {None}
         for db in sorted(zero_yield):
@@ -162,11 +187,11 @@ class SidecarValidator(SchemaValidator):
                 if ts.tzinfo is None:
                     ts = ts.replace(tzinfo=timezone.utc)
                 if ts > datetime.now(timezone.utc):
-                    errors.append(
-                        f"S4: metadata.frozen_at {frozen!r} is in the future"
-                    )
+                    errors.append(f"S4: metadata.frozen_at {frozen!r} is in the future")
             except ValueError:
-                errors.append(f"S4: metadata.frozen_at {frozen!r} is not a valid ISO-8601 timestamp")
+                errors.append(
+                    f"S4: metadata.frozen_at {frozen!r} is not a valid ISO-8601 timestamp"
+                )
 
     # ── grading ───────────────────────────────────────────────────────────
     def _grading_predicates(
@@ -220,10 +245,15 @@ class SidecarValidator(SchemaValidator):
                     )
 
         for i, theme in enumerate(record.get("themes") or []):
-            _check_ids(f"themes[{i}].supporting_paper_ids", theme.get("supporting_paper_ids") or [])
+            _check_ids(
+                f"themes[{i}].supporting_paper_ids",
+                theme.get("supporting_paper_ids") or [],
+            )
 
         for i, gap in enumerate(record.get("gaps") or []):
-            _check_ids(f"gaps[{i}].supporting_paper_ids", gap.get("supporting_paper_ids") or [])
+            _check_ids(
+                f"gaps[{i}].supporting_paper_ids", gap.get("supporting_paper_ids") or []
+            )
 
         for i, c in enumerate(record.get("contradictions") or []):
             ids = c.get("paper_ids") or []
@@ -240,7 +270,9 @@ class SidecarValidator(SchemaValidator):
         if meta.get("mode") == "hypothesis":
             hyps = record.get("hypotheses") or []
             if not hyps:
-                errors.append("Y3: metadata.mode == 'hypothesis' requires hypotheses[] non-empty")
+                errors.append(
+                    "Y3: metadata.mode == 'hypothesis' requires hypotheses[] non-empty"
+                )
 
     # ── advocate ──────────────────────────────────────────────────────────
     def _advocate_predicates(
@@ -272,7 +304,8 @@ class SidecarValidator(SchemaValidator):
 
         # A3 (advisory): open CRITICALs block the compiler
         open_critical = [
-            f for f in findings
+            f
+            for f in findings
             if f.get("severity") == "CRITICAL" and f.get("status") == "open"
         ]
         if open_critical:
@@ -280,6 +313,62 @@ class SidecarValidator(SchemaValidator):
                 f"A3 advisory: {len(open_critical)} open CRITICAL finding(s) present — "
                 "compiler MUST refuse assembly until status changes."
             )
+
+    # ── decomposition ──────────────────────────────────────────────────────
+    def _decomposition_predicates(
+        self, record: dict[str, Any], errors: list[str], warnings: list[str]
+    ) -> None:
+        sub_questions = record.get("sub_questions") or []
+        scaling = record.get("scaling") or {}
+        complexity = (record.get("metadata") or {}).get("complexity")
+
+        # D1: sub_question ids unique and non-empty
+        seen: dict[str, int] = {}
+        for i, sq in enumerate(sub_questions):
+            sid = sq.get("id")
+            if not sid:
+                errors.append(f"D1: sub_questions[{i}] has an empty id")
+                continue
+            if sid in seen:
+                errors.append(
+                    f"D1: duplicate sub_question id {sid!r} at sub_questions[{i}] "
+                    f"(first at sub_questions[{seen[sid]}])"
+                )
+            else:
+                seen[sid] = i
+
+        # D2: scaling.fan_out_width must equal the sub-question count and stay
+        #     within [1, COMPLEXITY_SCALING[complexity].fan_out_max].
+        width = scaling.get("fan_out_width")
+        if isinstance(width, int):
+            if width != len(sub_questions):
+                errors.append(
+                    f"D2: scaling.fan_out_width ({width}) != number of "
+                    f"sub_questions ({len(sub_questions)})"
+                )
+            if width < 1:
+                errors.append(f"D2: scaling.fan_out_width ({width}) must be >= 1")
+            if complexity in COMPLEXITY_SCALING:
+                cap = COMPLEXITY_SCALING[complexity]["fan_out_max"]
+                if width > cap:
+                    errors.append(
+                        f"D2: scaling.fan_out_width ({width}) exceeds the "
+                        f"'{complexity}' complexity cap ({cap})"
+                    )
+
+        # D3: every sub_question carries all four delegation fields, non-empty.
+        for i, sq in enumerate(sub_questions):
+            for field_name in (
+                "objective",
+                "output_format",
+                "source_guidance",
+                "boundary",
+            ):
+                if not (sq.get(field_name) or "").strip():
+                    errors.append(
+                        f"D3: sub_questions[{i}] ({sq.get('id')}) has empty "
+                        f"{field_name!r} — all four delegation fields are required"
+                    )
 
 
 def main() -> None:
@@ -318,10 +407,18 @@ def main() -> None:
     ok, errors, warnings = validator.validate(record, known_paper_ids=known_paper_ids)
 
     if args.json:
-        print(json.dumps(
-            {"kind": args.kind, "file": str(target), "valid": ok, "errors": errors, "warnings": warnings},
-            indent=2,
-        ))
+        print(
+            json.dumps(
+                {
+                    "kind": args.kind,
+                    "file": str(target),
+                    "valid": ok,
+                    "errors": errors,
+                    "warnings": warnings,
+                },
+                indent=2,
+            )
+        )
     else:
         tag = "VALID" if ok else "INVALID"
         print(f"[{args.kind}] {target} {tag}")

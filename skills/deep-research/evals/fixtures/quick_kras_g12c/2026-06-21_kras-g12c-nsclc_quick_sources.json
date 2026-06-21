@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0",
+  "metadata": {
+    "frozen_at": "2026-06-21T17:30:00Z",
+    "mode": "quick",
+    "topic_slug": "kras-g12c-nsclc",
+    "search_contract_version": null,
+    "rq": "What is the clinical efficacy of KRAS G12C inhibitors in NSCLC?"
+  },
+  "sources": [
+    {
+      "paper_id": "10.1056/NEJMoa2103695",
+      "doi": "10.1056/NEJMoa2103695",
+      "pmid": "34096690",
+      "pmcid": null,
+      "title": "Sotorasib for Lung Cancers with KRAS p.G12C Mutation",
+      "authors": ["Skoulidis F", "Li BT", "Dy GK"],
+      "year": 2021,
+      "venue": "New England Journal of Medicine",
+      "source": "PubMed",
+      "study_design": "Phase II single-arm trial",
+      "key_findings": "Objective response rate of 37.1% in pretreated NSCLC with KRAS G12C.",
+      "relevance": "High",
+      "limitations": "Single-arm; modest sample size (n=126).",
+      "reception": {
+        "scite_index": 0.92,
+        "supporting": 412,
+        "contrasting": 3,
+        "mentioning": 1180
+      },
+      "grey_lit_note": null
+    },
+    {
+      "paper_id": "10.1056/NEJMoa2204619",
+      "doi": "10.1056/NEJMoa2204619",
+      "pmid": "35658005",
+      "pmcid": null,
+      "title": "Adagrasib in Non-Small-Cell Lung Cancer Harboring a KRAS G12C Mutation",
+      "authors": ["Jänne PA", "Riely GJ", "Gadgeel SM"],
+      "year": 2022,
+      "venue": "New England Journal of Medicine",
+      "source": "PubMed",
+      "study_design": "Phase II trial",
+      "key_findings": "Objective response in 42.9% of evaluable patients (n=112).",
+      "relevance": "High",
+      "limitations": "Non-randomized; toxicity profile required dose adjustments.",
+      "reception": null,
+      "grey_lit_note": null
+    }
+  ],
+  "search_log": [
+    {
+      "database": "PubMed",
+      "date": "2026-06-21",
+      "query": "(KRAS G12C[Title/Abstract]) AND (sotorasib OR adagrasib)",
+      "filters": "humans, 2020:2026",
+      "results": 187,
+      "after_dedup": 142,
+      "trace_id": null
+    }
+  ]
+}

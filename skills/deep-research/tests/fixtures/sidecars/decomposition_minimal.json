@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "metadata": {
+    "frozen_at": "2026-06-21T18:00:00Z",
+    "mode": "full",
+    "topic_slug": "kras-g12c-resistance",
+    "complexity": "complex",
+    "rq": "What mechanisms drive acquired resistance to KRAS G12C inhibitors and what combinations overcome them?"
+  },
+  "scaling": {
+    "fan_out_width": 4,
+    "tool_calls_min": 10,
+    "tool_calls_max": 20,
+    "results_cap_per_channel": 50,
+    "fanout_eligible": true
+  },
+  "sub_questions": [
+    {
+      "id": "SQ1",
+      "objective": "Catalog on-target secondary KRAS/RAS mutations driving resistance.",
+      "output_format": "Annotated sources + 2-3 sentence finding per paper; T1-T4 labels.",
+      "source_guidance": "PubMed + PubTator3 (KRAS entity); Paperclip full text.",
+      "boundary": "On-target mutations only; excludes bypass-pathway mechanisms (SQ2)."
+    },
+    {
+      "id": "SQ2",
+      "objective": "Map bypass / parallel pathway reactivation (RTK-SHP2, MET, EGFR).",
+      "output_format": "Annotated sources + 2-3 sentence finding per paper; T1-T4 labels.",
+      "source_guidance": "PubMed + OpenAlex citation graph; Paperclip.",
+      "boundary": "Bypass signaling only; excludes histologic transformation (SQ3)."
+    },
+    {
+      "id": "SQ3",
+      "objective": "Characterize histologic / EMT transformation as a resistance route.",
+      "output_format": "Annotated sources + 2-3 sentence finding per paper; T1-T4 labels.",
+      "source_guidance": "PubMed + Consensus.",
+      "boundary": "Phenotypic transformation only; excludes combination trials (SQ4)."
+    },
+    {
+      "id": "SQ4",
+      "objective": "Enumerate combination regimens in clinical investigation with trial identifiers.",
+      "output_format": "Table of regimens + trial IDs + status; T1-T4 labels.",
+      "source_guidance": "WebSemantic (ClinicalTrials.gov), Paperclip (trials corpus).",
+      "boundary": "Clinical combinations only; excludes preclinical mechanism (SQ1-SQ3)."
+    }
+  ]
+}

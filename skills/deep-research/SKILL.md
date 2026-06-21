@@ -1,6 +1,6 @@
 ---
 name: deep-research
-version: 1.1.0
+version: 1.2.0
 description: >
   Multi-mode biomedical research pipeline (7 agents, 8 modes, 6 mandatory user
   checkpoints) for literature reviews, systematic reviews (PRISMA), hypothesis
@@ -13,7 +13,7 @@ description: >
   research-paper-summarizer), review a manuscript (use peer-review), write a paper
   (use scientific-writing), or build a target/drug dossier or validation scorecard
   (use target-intelligence / drug-intelligence / target-validation).
-allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
+allowed-tools: [Read, Write, Edit, Bash, Glob, Grep, Task]
 ---
 
 <!-- Pipeline architecture inspired by academic-research-skills by Cheng-I Wu (CC-BY-NC 4.0) -->
@@ -185,6 +185,13 @@ the next phase begins. There are no auto-continue shortcuts.
 
 **Objective:** Transform the user's topic into a precise, actionable research question.
 
+> **Use extended thinking as a planning scratchpad.** Before emitting the
+> contract bundle, reason through (in thinking, not in the output): the RQ's true
+> scope, breadth-vs-depth trade-off, which databases actually fit, how much effort
+> the question warrants, and where it naturally decomposes into sub-questions.
+> Planning in thinking — rather than committing to the first framing — improves
+> instruction-following and right-sizes effort for the query.
+
 **Process:**
 1. Identify research domain and entity types (gene, drug, disease, general)
 2. If biomedical entities detected, check if entity-resolution identity table exists
@@ -197,11 +204,11 @@ the next phase begins. There are no auto-continue shortcuts.
 4. Define inclusion/exclusion criteria
 5. Select databases (≥3 required; see `references/biomedical_research.md` for mapping)
 
-### Contract Bundle Generation (Output + Search)
+### Contract Bundle Generation (Output + Search + Decomposition)
 
 After scope is defined and mode is selected, generate the **contract bundle**
-— Output Contract + Search Contract, both presented at Checkpoint 1, both
-frozen on approval:
+— Output Contract + Search Contract + Decomposition Contract, all presented at
+Checkpoint 1, all frozen on approval:
 
 1. Run `scripts/mode_selector.py` with the user's prompt to determine mode
    (if not explicitly specified by the user). Honor the mode-confirmation
@@ -249,18 +256,42 @@ frozen on approval:
     bibliography agent must emit a PRISMA-S §S4 disclosure block in
     Phase 2 output. Out-of-whitelist hits stay context-only per
     `shared/references/citable_web_domains.md` W3 rules.
-4. Present BOTH contracts to the user as part of Checkpoint 1:
+3b. Run `scripts/decomposition_contract.py` to produce the **Decomposition
+    Contract** (skip for `socratic` and `review`):
+    - Inputs: `mode`, `research_question`, optional `complexity` override,
+      optional `topic_slug`. When `complexity` is omitted,
+      `scripts/complexity_classifier.py` labels the RQ simple / comparative /
+      complex from its wording plus the mode prior.
+    - Outputs the sub-question fan-out: `fan_out_width` researchers (from
+      `thresholds.COMPLEXITY_SCALING`, capped to 1 outside
+      `thresholds.FANOUT_MODES` — only `full` / `systematic-review` /
+      `hypothesis` fan out in Phase 3; the rest plan a decomposition but run
+      single-context), each with a per-subagent tool-call budget.
+    - Emits one sub-question scaffold per researcher with four mandatory
+      delegation fields — **objective, output format, source guidance,
+      boundary**. **Replace every `[FILL]` placeholder with the real semantic
+      decomposition before freezing** — bounded, non-overlapping sub-questions
+      prevent the duplicated-work / coverage-gap failure mode.
+4. Present ALL THREE contracts to the user as part of Checkpoint 1:
    - Selected mode and confidence level (plus any mode-confirmation note)
    - Output: section structure with user-label mappings, word counts, file spec
    - Search: required databases (gated), optional channels (mode-eligible),
      mode-skipped channels, and the `MIN_DATABASES` / `MIN_SOURCES` floor
-   - Any warnings from either contract
+   - Decomposition: complexity level, fan-out width, and the sub-question list
+     with their objectives + boundaries
+   - Any warnings from the contracts
 5. The user can strike specific optional channels from the Search Contract
    (e.g., "skip Paperclip") via `SearchContract.strike()`. Required channels
    cannot be struck below `MIN_DATABASES`.
-6. The user must approve the bundle before Phase 2 begins. Both contracts
+6. The user must approve the bundle before Phase 2 begins. All three contracts
    are FROZEN after approval — no structural changes and no database
-   additions/removals in later phases without re-approval.
+   additions/removals in later phases without re-approval. On freeze, write the
+   Decomposition Contract to disk as
+   `{date}_{topic_slug}_{mode}_decomposition.json` and validate it via
+   `scripts/validate_sidecar.py --kind decomposition` (predicates D1-D3). Unlike
+   the four evidence-pinning sidecars, the decomposition contract does NOT gate
+   compiler assembly — it is a Phase-1 planning artifact consumed by the Phase 2
+   investigation (and, in fan-out modes, the per-sub-question researchers).
 
 ### RQ Evaluation Scoring
 
@@ -284,7 +315,46 @@ and advocate assessment to the user.
 
 **Objective:** Systematic literature search and source verification.
 
-**Process:**
+**Execution model — single-context vs. parallel fan-out:**
+
+Read the frozen **Decomposition Contract** (from Checkpoint 1). Two paths:
+
+- **Fan-out** (mode in `thresholds.FANOUT_MODES` — `full` / `systematic-review`
+  / `hypothesis` — AND `scaling.fan_out_width > 1`): spawn **one researcher
+  subagent per sub-question** with the `Task` tool, in a single batched message
+  so they run in parallel (the orchestrator-worker pattern). Give each subagent
+  its sub-question's four delegation fields (objective, output format, source
+  guidance, boundary) plus the frozen Search Contract, and instruct it to: run
+  the bibliography search loop (Process steps 1-3 below) **for its slice only**,
+  staying within its `scaling.tool_calls_max` budget; write a PARTIAL sources
+  sidecar named `{date}_{topic_slug}_{mode}_sources.sub{N}.json` with
+  `metadata.sub_question_id` set to its `SQ{n}` id; and return only the partial's
+  **path** (a lightweight reference — do NOT echo the full bibliography back
+  through the message). When all subagents return, merge the partials:
+
+  ```bash
+  uv run python scripts/merge_sources.py --mode {mode} --topic-slug {slug} \
+    --frozen-at {iso} --out {date}_{slug}_{mode}_sources.json \
+    {date}_{slug}_{mode}_sources.sub1.json {date}_{slug}_{mode}_sources.sub2.json ...
+  ```
+
+  This dedups by `paper_id` and unions the per-database search logs. The merged
+  file is the canonical `sources.json` — validate it
+  (`validate_sidecar.py --kind sources`) and run the search audit + verification
+  on the **merged** sidecar exactly as the single-context path does. Each
+  subagent compresses its slice in its own context window, so the lead never
+  holds every raw result at once.
+
+- **Single-context** (all other search-running modes, or when
+  `fan_out_width == 1`): run Process steps 1-4 directly in this context — no
+  subagents, no partials; the bibliography agent writes `sources.json` itself.
+
+Token note: fan-out costs materially more (a separate context window per
+subagent), which is why it is gated to high-value modes. The 6 checkpoints are
+unchanged — fan-out lives entirely inside Phase 2, before Checkpoint 2.
+
+**Process** (steps 1-3 run per-researcher in fan-out, or directly in
+single-context; step 4 always runs once on the final/merged `sources.json`):
 1. Load `agents/bibliography.md`. Execute multi-database search **per the
    frozen Search Contract**:
    - The Search Contract's `required_databases` list is authoritative — every
@@ -325,7 +395,8 @@ and advocate assessment to the user.
 **Hard gate (Phase 2 → Phase 3):** Run `scripts/search_audit.py` against the
 frozen Search Contract before requesting Checkpoint 2. The audit calls
 `exit_criteria.audit_phase_2_search()` to compare contracted required
-databases against the actual Search Log. If `passed: false`, the Bibliography
+databases against the actual Search Log (the **merged** Search Log in fan-out
+mode). If `passed: false`, the Bibliography
 agent MUST loop back, issue parallel tool calls for the missing channels,
 and re-run the audit. Phase 3 is BLOCKED until the audit passes. Do NOT
 request Checkpoint 2 with a failing audit.
