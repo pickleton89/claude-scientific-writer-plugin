@@ -200,7 +200,11 @@ def main() -> None:
         sys.exit(1)
 
     arg = sys.argv[1]
-    data = json.loads(arg) if arg.startswith("{") else json.load(open(arg))
+    if arg.startswith("{"):
+        data = json.loads(arg)
+    else:
+        with open(arg) as f:
+            data = json.load(f)
 
     result = classify_from_json(data)
     assert result["level"] in COMPLEXITY_LEVELS, (

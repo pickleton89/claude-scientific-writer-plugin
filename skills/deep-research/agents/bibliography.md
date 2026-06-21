@@ -581,6 +581,17 @@ sources from conversation context, which can drift or be lost to auto-compaction
 **Filename:** `{date}_{topic_slug}_{mode}_sources.json` — computed via
 `scripts/thresholds.sidecar_filename(mode, "sources", date, topic_slug)`.
 
+**Fan-out mode (Phase-3 parallel sub-question researchers):** when this agent
+runs as a per-sub-question researcher subagent (SKILL.md Phase 2 §Execution
+model), write a **PARTIAL** sidecar named
+`{date}_{topic_slug}_{mode}_sources.sub{N}.json` instead — set
+`metadata.sub_question_id` to your `SQ{n}` id and cover only your slice. Do NOT
+write the canonical `{..}_sources.json`: every researcher shares that name, so
+writing it would clobber your siblings' results. The orchestrator merges the
+partials into the canonical `sources.json` via `scripts/merge_sources.py` and
+validates that merged file. Single-context runs write `{..}_sources.json`
+directly, as below.
+
 **Schema:** `skills/deep-research/schemas/sources.json` (Draft-07).
 **Validator:** `uv run python skills/deep-research/scripts/validate_sidecar.py --kind sources --file <path>`
 
