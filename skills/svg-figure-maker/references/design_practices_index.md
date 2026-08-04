@@ -63,7 +63,7 @@ Use to understand what the preflight script enforces, and to fix what it flags.
 | Source | What it gives you |
 |---|---|
 | `references/anti_patterns.md` (this skill) | Expanded banned-attribute list with examples and fixes |
-| `shared/references/figure_design_principles.md` §7 (anti-patterns) | Universal anti-pattern table (14 entries) |
+| `shared/references/figure_design_principles.md` §7 (anti-patterns) | Universal anti-pattern table (17 entries) |
 | `shared/references/figure_design_principles.md` §2.1 (type ladder), §2.2 (font family), §3.5 (no improvised hex), §6.1 (grid) | Principles the preflight encodes mechanically |
 | `oligon-brand/SKILL.md` `<svg_output>` | The grep checks (`font-family`, `font-size`) the preflight runs |
 | `scripts/preflight_check.py --help` (this skill) | Operational reference: invocation, output schema |
@@ -92,7 +92,7 @@ Use when inspecting the rasterized PNG for problems no linter can catch.
 | Source | What it gives you |
 |---|---|
 | `references/visual_critique_checklist.md` (this skill — Phase 3 deliverable) | Vision-loop critique rubric |
-| `shared/references/pre_submission_checklist.md` | 15-point submission gate (cross-check after Stage 5) |
+| `shared/references/pre_submission_checklist.md` | 20-point submission gate (cross-check after Stage 5) |
 | `shared/references/figure_design_principles.md` §4 (accessibility) | WCAG contrast minimums; alt-text formula to verify against `<desc>` |
 | `shared/references/figure_design_principles.md` §5.2 (direct labeling) | Visual check: are labels placed near their data? |
 | `shared/references/figure_design_principles.md` §6.2–6.4 | Visual checks for panel alignment, legend placement, whitespace |

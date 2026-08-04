@@ -259,7 +259,13 @@ block-beta
 DIAGRAM_TYPE_TO_TEMPLATES: dict[str, list[str]] = {
     "consort": ["consort_basic", "consort_with_followup"],
     "prisma": ["prisma_basic", "prisma_with_duplicates"],
-    "flowchart": ["simple_flowchart_td", "simple_flowchart_lr", "simple_flowchart_bt", "simple_flowchart_rl", "decision_tree"],
+    "flowchart": [
+        "simple_flowchart_td",
+        "simple_flowchart_lr",
+        "simple_flowchart_bt",
+        "simple_flowchart_rl",
+        "decision_tree",
+    ],
     "methods_flowchart": ["methods_pipeline", "data_processing_pipeline"],
     "sequence": ["sequence_basic", "sequence_three_party", "api_sequence"],
     "state": ["state_machine_basic", "state_machine_with_notes"],
@@ -409,7 +415,12 @@ TEMPLATE_METADATA: dict[str, TemplateInfo] = {
         name="Sequence Diagram (3 Participants)",
         description="Sequence diagram with three participants",
         diagram_type="sequence",
-        required_fields=["participant1", "participant2", "participant3", "interactions"],
+        required_fields=[
+            "participant1",
+            "participant2",
+            "participant3",
+            "interactions",
+        ],
         optional_fields=[],
         example_output="sequenceDiagram\n    participant A\n    participant B\n    participant C",
     ),
@@ -527,7 +538,7 @@ TEMPLATE_METADATA: dict[str, TemplateInfo] = {
         diagram_type="pie",
         required_fields=["title", "segments"],
         optional_fields=[],
-        example_output="pie showData\n    title Distribution\n    \"A\" : 50",
+        example_output='pie showData\n    title Distribution\n    "A" : 50',
     ),
     # Mindmap templates
     "mindmap_basic": TemplateInfo(
@@ -574,9 +585,7 @@ def fill_template(template_name: str, **kwargs: Any) -> str:
     """
     if template_name not in TEMPLATES:
         available = ", ".join(sorted(TEMPLATES.keys()))
-        raise KeyError(
-            f"Template '{template_name}' not found. Available: {available}"
-        )
+        raise KeyError(f"Template '{template_name}' not found. Available: {available}")
 
     template = TEMPLATES[template_name]
 
@@ -759,6 +768,78 @@ def build_nodes_string(
     return "\n".join(lines)
 
 
+# Mermaid edge forms, keyed by the arrow-legend channel each one encodes.
+# See "Canonical Arrow Legend" in ../../references/best_practices.md:
+#   solid  (-->)  Activation / direct positive effect. THE DEFAULT: emitted
+#                 whenever a connection does not explicitly declare a style.
+#   dashed (-.->) "Indirect, hypothetical, or context-dependent effect" -- the
+#                 canonical meaning of dashed in mechanism and pathway diagrams.
+#   thick  (==>)  "Ordinal magnitude of one relationship (e.g. dominant vs minor
+#                 flux) - legend-declared only".
+# Each value is (plain_arrow, label_open, label_close); labelled forms follow
+# Mermaid's documented syntax per link type (A -->|t| B, A -. t .-> B,
+# A == t ==> B).
+EDGE_STYLES: dict[str, tuple[str, str, str]] = {
+    "solid": ("-->", "-->|", "|"),
+    "dashed": ("-.->", "-. ", " .->"),
+    "thick": ("==>", "== ", " ==>"),
+}
+
+# Convenience aliases; each resolves to a key of EDGE_STYLES. Names come from
+# the canonical legend's own vocabulary so callers can declare meaning rather
+# than glyphs.
+#
+# CAVEAT on "dotted": Mermaid has no dotted link distinct from its dashed one,
+# so both collapse onto `-.->`. Elsewhere in this library dotted and dashed ARE
+# distinct (matplotlib LineStyle DOTTED=":" vs DASHED="--"), where they serve as
+# separate categorical series identifiers in data plots. In a Mermaid mechanism
+# or pathway diagram there is only one non-solid path, and it carries the
+# canonical meaning "indirect / hypothetical / context-dependent" -- so a caller
+# reaching for "dotted" as a third series identifier will instead assert that
+# canonical meaning. Use a data-plot renderer, not Mermaid, when you need three
+# distinguishable categorical line styles.
+EDGE_STYLE_ALIASES: dict[str, str] = {
+    "direct": "solid",
+    "dotted": "dashed",
+    "indirect": "dashed",
+    "hypothetical": "dashed",
+    "bold": "thick",
+}
+
+
+def resolve_edge_style(style: str | None = None) -> tuple[str, str, str]:
+    """Resolve an edge style name to its Mermaid edge form.
+
+    Args:
+        style: Style name or alias. None / "" resolves to "solid" (the default).
+
+    Returns:
+        Tuple of (plain_arrow, label_open, label_close)
+
+    Raises:
+        ValueError: If the style is not a known style or alias. Unknown styles
+            are rejected rather than silently downgraded, because an undeclared
+            edge channel is a defect, not a style choice.
+
+    Example:
+        >>> resolve_edge_style()[0]
+        '-->'
+        >>> resolve_edge_style("dashed")[0]
+        '-.->'
+        >>> resolve_edge_style("thick")[0]
+        '==>'
+    """
+    key = (style or "solid").strip().lower()
+    key = EDGE_STYLE_ALIASES.get(key, key)
+    if key not in EDGE_STYLES:
+        valid = ", ".join(sorted(EDGE_STYLES))
+        aliases = ", ".join(sorted(EDGE_STYLE_ALIASES))
+        raise ValueError(
+            f"Unknown edge style {style!r}. Valid styles: {valid} (aliases: {aliases})"
+        )
+    return EDGE_STYLES[key]
+
+
 def build_connections_string(
     connections: list[dict[str, str]],
     indent: str = "    ",
@@ -766,7 +847,11 @@ def build_connections_string(
     """Build Mermaid connections string from a list of connection definitions.
 
     Args:
-        connections: List of dicts with 'from', 'to', and optional 'label' keys
+        connections: List of dicts with 'from', 'to', and optional 'label' and
+            'style' keys. 'style' is optional and defaults to "solid" (-->);
+            "dashed" (-.->) marks an indirect, hypothetical, or
+            context-dependent effect, and "thick" (==>) carries
+            legend-declared ordinal magnitude. See EDGE_STYLES.
         indent: Indentation string (default 4 spaces)
 
     Returns:
@@ -780,17 +865,30 @@ def build_connections_string(
         >>> print(build_connections_string(conns))
             A -->|yes| B
             A -->|no| C
+
+        >>> conns = [
+        ...     {"from": "A", "to": "B"},
+        ...     {"from": "B", "to": "C", "style": "dashed"},
+        ...     {"from": "C", "to": "D", "style": "thick", "label": "major"},
+        ... ]
+        >>> print(build_connections_string(conns))
+            A --> B
+            B -.-> C
+            C == major ==> D
     """
     lines = []
     for conn in connections:
         from_node = conn.get("from", "")
         to_node = conn.get("to", "")
         label = conn.get("label", "")
+        arrow, label_open, label_close = resolve_edge_style(conn.get("style"))
 
         if label:
-            lines.append(f"{indent}{from_node} -->|{label}| {to_node}")
+            lines.append(
+                f"{indent}{from_node} {label_open}{label}{label_close} {to_node}"
+            )
         else:
-            lines.append(f"{indent}{from_node} --> {to_node}")
+            lines.append(f"{indent}{from_node} {arrow} {to_node}")
 
     return "\n".join(lines)
 

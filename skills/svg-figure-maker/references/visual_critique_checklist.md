@@ -17,7 +17,7 @@ checklist match the schema's `category` enum exactly — copy them verbatim.
 **How to use this doc:**
 
 1. After `Read`-ing `figure.preview.png`, walk the seven categories below in
-   order. Each category has 2–4 questions; for each question, decide
+   order. Each category has 3–5 questions; for each question, decide
    `pass | warn | fail`.
 2. For every `fail` (and every `warn` you intend to record), emit one finding
    object: `id` = `F` + zero-padded ordinal (`F001`, `F002`, …), `severity`,
@@ -53,7 +53,7 @@ Where in the PNG to look: every label, axis tick, legend entry, annotation, titl
 | 1.3 | Does the size ladder feel intentional (titles > subtitles > body > ticks/annotations)? | Larger numbers in the ladder reserved for higher-priority text | §2.1 |
 | 1.4 | Does any text show a fallback / wrong font (e.g., serif rendered where Arial expected)? | All text appears sans-serif and consistent | §2.2 |
 
-**Common fixes:** Bump up font size for clipped tiny labels; rotate or stagger crowded tick labels; move overlapping annotations to a callout with a leader line; ensure `font-family` is declared on the element (preflight catches the declaration; only the renderer can show whether the fallback chain worked).
+**Common fixes:** Bump up font size for clipped tiny labels; rotate or stagger crowded tick labels; move overlapping annotations to a callout on a leader line — the leader is fine, but it must terminate in a dot / anchor at its referent, never an arrowhead (item 2.5); ensure `font-family` is declared on the element (preflight catches the declaration; only the renderer can show whether the fallback chain worked).
 
 ---
 
@@ -67,8 +67,9 @@ Where in the PNG to look: overall composition; the takeaway-message question.
 | 2.2 | Is there exactly one focal element drawing the eye first? | One element clearly highest-contrast or largest | §5.2 |
 | 2.3 | Are secondary elements visibly subordinate (size, weight, color)? | Visual rank matches conceptual rank | §5.2 |
 | 2.4 | Are direct labels used instead of distant legends where possible? | Direct labels on data > legend in margin | §5.2 |
+| 2.5 | Does any arrow terminate on a **label** rather than on a target? | Label leaders end in a dot / anchor; arrowheads reserved for motion, flow, or transformation (§7 row 17) | §7 |
 
-**Common fixes:** Promote the takeaway via title weight; demote noisy supporting elements by reducing stroke or saturating to a neutral palette token; move legend entries inline as direct labels.
+**Common fixes:** Promote the takeaway via title weight; demote noisy supporting elements by reducing stroke or saturating to a neutral palette token; move legend entries inline as direct labels; swap any arrowhead that lands on a label for a filled dot at the referent end of the leader.
 
 ---
 
@@ -82,8 +83,9 @@ Where in the PNG to look: panel edges, axis baselines, label rows, group boundar
 | 3.2 | Are labels in repeated positions (e.g., per-panel titles) at identical y-coordinates? | Same role → same position across panels | §6.2 |
 | 3.3 | Does any element appear "drifted" — off by a few pixels relative to neighbors? | Differences are intentional (e.g., shifted to avoid overlap), not random | §6.1 |
 | 3.4 | Are panel labels (A, B, C…) at the same offset within each panel? | Identical (x, y) relative to panel origin | §6.2 |
+| 3.5 | Do directly-compared panels share a **horizontal** axis, so the differing element is the only variable? | Treated vs control / disease vs healthy / before vs after sit side by side, not stacked; where separation is forced, the comparison is marked on the figure | §5.6 |
 
-**Common fixes:** Snap drifting coords to the 8px grid (preflight emits a per-coord report under `--strict-grid`); recompute panel origins so margins match; pin panel-label coords to a single shared variable.
+**Common fixes:** Snap drifting coords to the 8px grid (preflight emits a per-coord report under `--strict-grid`); recompute panel origins so margins match; pin panel-label coords to a single shared variable; re-flow a stacked comparison pair onto one row (or, if it cannot move, annotate the comparison in place rather than asking for a cross-panel scan).
 
 ---
 
@@ -109,7 +111,7 @@ Where in the PNG to look: every stroke, every axis line, every connector.
 | Q | Question | Pass criterion | Anchor |
 |---|---|---|---|
 | 5.1 | Do lines render cleanly at the rasterized scale (no fuzzy / pixel-soup edges)? | Strokes have crisp 1-px or wider edges | §8.2 |
-| 5.2 | Are stroke widths used consistently (e.g., axis lines all the same weight)? | Same role → same stroke width | §6.1 |
+| 5.2 | Are stroke widths used consistently (e.g., axis lines all the same weight)? | Same role → same stroke width, **unless** width is a legend-declared ordinal magnitude channel across instances of one role (e.g. thicker = larger flux) — a declared ramp is a pass, not a defect | §6.1 |
 | 5.3 | Are very fine lines (< 0.75pt at print size) avoided? | All visible strokes ≥ 0.75pt equivalent | §8.2 |
 
 **Common fixes:** Re-rasterize at `--scale 3` to confirm whether the issue is the SVG or the preview DPI; thicken strokes that vanish at print resolution; collapse redundant strokes (e.g., border + fill of identical color) that compound into fuzz.
@@ -124,7 +126,7 @@ Where in the PNG to look: whitespace, density, overall framing.
 |---|---|---|---|
 | 6.1 | Is whitespace intentional (margins, gutters, padding around dense regions)? | No element kissing the viewBox edge; gutters present between panels | §6.4 |
 | 6.2 | Is the figure within its complexity budget (no overcrowding)? | Element count appropriate to figure type per §5.4 | §5.4 |
-| 6.3 | Does the figure read top-to-bottom or left-to-right in a way that matches the message? | Reading order matches the conceptual flow | §5.5 |
+| 6.3 | Does the figure lay its argument along the default scan path — left-to-right, then top-to-bottom, entry point top-left and conclusion bottom-right? | The default path holds, **or** the figure takes a named exception and holds it consistently: a cyclical layout running one rotational direction, or a right-to-left venue (mirror the horizontal direction only; the ordering discipline itself does not relax) | §5.6 |
 | 6.4 | Is there negative space large enough to host a legend / annotation without colliding with data? | A clear zone exists where text can land | §6.3, §6.4 |
 
 **Common fixes:** Move data away from edges (increase margins); split into two figures if over budget; reorient panels (vertical → horizontal) if reading order is wrong; demote / remove decorative elements that aren't carrying meaning.

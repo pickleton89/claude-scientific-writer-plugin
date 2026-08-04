@@ -148,9 +148,9 @@ Each intent type maps to one or more domain-specific subtypes catalogued below.
 
 **Key elements:**
 - Substrate → product transformations
-- Enzyme names on arrows
+- Enzyme names on arrows — the one sanctioned exception to caption-only labeling, because here the enzyme name *is* the relationship (the `→ with label` row of the Canonical Arrow Legend in `best_practices.md`). Everything else about the reaction goes in the caption
 - Cofactors (ATP, NAD+, etc.)
-- Regulatory feedback loops
+- Regulatory feedback loops — ↺ curved return path routed clear of the forward cascade, terminator carrying the sign (arrowhead = positive feedback, flat bar = negative feedback)
 - Compartmentalization (cytoplasm, mitochondria)
 
 **Prompt keywords:** metabolism, glycolysis, TCA cycle, enzyme, substrate, product, biochemical
@@ -163,8 +163,8 @@ Each intent type maps to one or more domain-specific subtypes catalogued below.
 **Key elements:**
 - Transcription factors
 - Promoter regions
-- Activation/repression arrows
-- Feedback loops
+- Activation/repression arrows (→ solid arrowhead / ⊣ flat bar terminator)
+- Feedback loops — ↺ curved return path routed clear of the forward flow, terminator carrying the sign (arrowhead = positive feedback, flat bar = negative feedback); see the Canonical Arrow Legend in `best_practices.md`
 - Expression outcomes
 
 **Prompt keywords:** gene regulation, transcription factor, promoter, enhancer, expression, network

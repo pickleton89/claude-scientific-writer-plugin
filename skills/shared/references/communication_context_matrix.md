@@ -28,6 +28,7 @@ Match figure complexity to the context. Over-detailed figures fail in oral talks
 | **Oral / public talk** | + (seconds per slide) | + to ++ (limited Q&A) | Specialists or lay public depending on venue | **Low — single message per figure** | One takeaway annotated directly on the figure; statistical-significance markers integrated; key value text-callouts (e.g., "−2.5 kg"); strip non-essential elements; build-up animation for complex figures (PowerPoint or Beamer `\pause`) |
 | **Research article (PDF / journal page)** | +++ (asynchronous; reader can re-read) | 0 (no real-time interaction) | Specialists in the field | High — multi-panel composition; comprehensive | Multi-panel (A, B, C, D) with shared axes / consistent panel size; detailed legend; methodology in caption; supplementary data linked separately; alt text per panel for HTML version |
 | **Online / interactive (dashboard, web supplement)** | +++ (asynchronous; user-paced) | ++ (UI: zoom, filter, hover, switch views) | Mixed: specialists, journalists, lay public | Variable — **progressive disclosure** | Overview-first then detail-on-demand (Shneiderman); hover tooltips for exact values; default view simple, advanced controls behind a toggle; tables alongside figures for precise lookup (e.g., WHO COVID-19 dashboard pattern) |
+| **Graphical abstract / TOC thumbnail** | + (seconds; scanned in a contents listing beside the title, not read) | 0 (no presenter, no UI, and in most listings no caption either) | Mixed: browsing readers deciding whether to open the paper, plus handling editors | **Lowest — one claim, and it must survive the thumbnail** | Usually first met at ~200–300 px wide in contents listings, so the **thumbnail, not the print size, is the binding constraint** on text and element count; every label legible at ~250 px or it does not belong; element budget tighter than §5.4; ~70% of content carried visually; **confirm the venue uses one at all** — most do not (px range and ratio provisional/uncalibrated) |
 
 Legend: + = limited, ++ = moderate, +++ = abundant, 0 = none.
 
@@ -67,6 +68,8 @@ A baseline-characteristics summary (age, sex, comorbidities across study arms): 
 | Topic | See |
 |---|---|
 | Figure-vs-table decision (upstream of this matrix) | `figure_vs_table_decision.md` |
+| Graphical-abstract design spec (element / text / thumbnail budgets behind the GA row) | `graphical_abstract_spec.md` |
+| Journal graphical-abstract format specs (dimensions, DPI, which venues use one) | `../venue-templates/references/figure_specs.md` §1 |
 | Pre-submission quality gate | `pre_submission_checklist.md` |
 | Cognitive-foundation citations (Cleveland, Crameri, Fujii, Wilke) | `../oligon-brand/SKILL.md` `<design_foundation>` |
 | Bar-chart / risk-ratio anti-patterns | `../plotting-libraries/references/plot_selection_guide.md` |

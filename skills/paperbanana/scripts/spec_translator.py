@@ -6,6 +6,10 @@ strings that PaperBanana's GenerationInput already consumes:
 `source_context` (descriptive: what to depict) and `communicative_intent`
 (directive: what the figure should communicate).
 
+`meta.doc_type` is read: a doc type with its own design ceiling (currently
+only `graphical_abstract`) appends a budget hint as the last element of
+`communicative_intent`. Every other doc type renders exactly as before.
+
 Determinism contract: same spec dict → byte-identical output strings on
 every call. Components are sorted by id; relationships render in
 declaration order. No timestamps, no random ordering.
@@ -18,7 +22,9 @@ from pathlib import Path
 from typing import Any
 
 _SCHEMA_PATH = (
-    Path(__file__).resolve().parent.parent / "references" / "scientific_figure.schema.json"
+    Path(__file__).resolve().parent.parent
+    / "references"
+    / "scientific_figure.schema.json"
 )
 
 
@@ -157,6 +163,33 @@ def _render_layout_hint(flow: str, controls: dict[str, Any]) -> str:
     return f"Use {flow_phrase}; {variation_phrase}."
 
 
+def _render_budget_hint(meta: dict[str, Any]) -> str:
+    """Design-budget hint for doc types that carry their own ceiling.
+
+    Only `graphical_abstract` has one today: a graphical abstract is read in
+    seconds at table-of-contents thumbnail scale, so it inherits tighter
+    element / text / legibility budgets than an in-paper figure
+    (`../shared/references/graphical_abstract_spec.md`). Every other doc_type
+    returns "" so its rendered intent stays byte-identical to before this
+    hint existed.
+    """
+    if meta.get("doc_type") != "graphical_abstract":
+        return ""
+    return (
+        "Graphical-abstract budgets: one claim only, and a single focal "
+        "accent. Target 5 nodes and 6 arrows; 7 nodes and 9 arrows are "
+        "absolute ceilings, and they are read together rather than "
+        "separately — a figure sitting at both at once is a mechanism "
+        "diagram and belongs in the paper as a numbered figure with a "
+        "caption. Use fewer words than the written abstract and carry "
+        "roughly 70% of the content visually rather than in text (two "
+        "separate measures; both provisional/uncalibrated heuristics). "
+        "Every label must stay legible when the figure is rendered ~250 px "
+        "wide as a table-of-contents thumbnail — the thumbnail, not the "
+        "print size, is the binding constraint."
+    )
+
+
 def translate_spec(spec: dict[str, Any], *, validate: bool = True) -> tuple[str, str]:
     """Translate a scientific_figure spec into (source_context, communicative_intent).
 
@@ -178,6 +211,7 @@ def translate_spec(spec: dict[str, Any], *, validate: bool = True) -> tuple[str,
     style = fig.get("style", {})
     brand = fig.get("brand", {"use_oligon": True})
     controls = fig.get("controls", {})
+    meta = fig.get("meta", {})
     flow = fig["narrative"].get("flow_direction", "left_to_right")
 
     intent_parts = [
@@ -186,6 +220,11 @@ def translate_spec(spec: dict[str, Any], *, validate: bool = True) -> tuple[str,
         _render_brand_hint(brand),
         _render_layout_hint(flow, controls),
     ]
+    # Appended, never inserted: the first four parts stay byte-identical so
+    # only doc_type-gated specs see a changed intent string.
+    budget_hint = _render_budget_hint(meta)
+    if budget_hint:
+        intent_parts.append(budget_hint)
     communicative_intent = " ".join(intent_parts)
 
     return source_context, communicative_intent

@@ -50,7 +50,9 @@ from typing import Any
 HERE = Path(__file__).resolve().parent
 SKILL_ROOT = HERE.parent
 PREFLIGHT_SCRIPT = HERE / "preflight_check.py"
-RENDER_SCRIPT = (SKILL_ROOT.parent / "oligon-brand" / "scripts" / "render_svg_preview.sh").resolve()
+RENDER_SCRIPT = (
+    SKILL_ROOT.parent / "oligon-brand" / "scripts" / "render_svg_preview.sh"
+).resolve()
 
 # Canonical category labels — MUST match schemas/critique_finding.schema.json
 # `category` enum. If you change one, change both. The categories below
@@ -76,6 +78,7 @@ CRITIQUE_CATEGORIES = [
             "One focal element draws the eye first?",
             "Secondary elements visibly subordinate?",
             "Direct labels preferred over distant legends?",
+            "No arrow terminates on a label (leaders end in a dot / anchor)?",
         ],
     },
     {
@@ -87,6 +90,7 @@ CRITIQUE_CATEGORIES = [
             "Repeated labels at identical positions across panels?",
             "No elements drifted off relative to neighbors?",
             "Panel labels (A, B, C…) at identical per-panel offsets?",
+            "Directly-compared panels share a horizontal axis (side by side, not stacked)?",
         ],
     },
     {
@@ -106,7 +110,7 @@ CRITIQUE_CATEGORIES = [
         "checklist_section": "Category 5",
         "questions": [
             "Lines render cleanly at the rasterized scale?",
-            "Stroke widths consistent for the same role?",
+            "Stroke widths consistent for the same role (a legend-declared ordinal width ramp is a pass, not a defect)?",
             "No vanishing fine lines (< 0.75pt equivalent)?",
         ],
     },
@@ -117,7 +121,7 @@ CRITIQUE_CATEGORIES = [
         "questions": [
             "Whitespace intentional (margins, gutters, padding)?",
             "Within complexity budget for this figure type?",
-            "Reading order matches the conceptual flow?",
+            "Reading order runs left-to-right, then top-to-bottom (or a named exception)?",
             "Room exists for legends / annotations without colliding with data?",
         ],
     },
@@ -145,7 +149,8 @@ def _run_preflight(
         sys.executable,
         str(PREFLIGHT_SCRIPT),
         str(svg_path),
-        "--grid-unit", str(grid_unit),
+        "--grid-unit",
+        str(grid_unit),
     ]
     if tokens_path is not None:
         cmd.extend(["--tokens", str(tokens_path)])
@@ -167,7 +172,9 @@ def _run_preflight(
     try:
         return json.loads(proc.stdout)
     except json.JSONDecodeError as e:
-        raise RuntimeError(f"preflight produced unparseable JSON: {e}\n{proc.stdout[:500]}") from e
+        raise RuntimeError(
+            f"preflight produced unparseable JSON: {e}\n{proc.stdout[:500]}"
+        ) from e
 
 
 def _run_rasterizer(svg_path: Path, output_png: Path | None, scale: int) -> Path:
@@ -189,7 +196,8 @@ def _run_rasterizer(svg_path: Path, output_png: Path | None, scale: int) -> Path
         str(RENDER_SCRIPT),
         str(svg_path),
         str(output_png),
-        "--scale", str(scale),
+        "--scale",
+        str(scale),
     ]
     proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
     if proc.returncode != 0:
@@ -251,7 +259,9 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Render an SVG to PNG and emit a structured inspection report.",
     )
-    parser.add_argument("svg_path", type=Path, help="Path to the SVG to render and inspect.")
+    parser.add_argument(
+        "svg_path", type=Path, help="Path to the SVG to render and inspect."
+    )
     parser.add_argument(
         "--tokens",
         type=Path,
@@ -294,7 +304,8 @@ def main(argv: list[str] | None = None) -> int:
         help="If preflight has any fail-severity finding, do not rasterize.",
     )
     parser.add_argument(
-        "-o", "--output",
+        "-o",
+        "--output",
         type=Path,
         default=None,
         help="Write the report JSON to this path (default: stdout).",

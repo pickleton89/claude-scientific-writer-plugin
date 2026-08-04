@@ -506,7 +506,7 @@ Each is a CRITICAL block on submission. Run `scripts/validate_writing_quality.py
 - `references/socratic_planning_protocol.md` - Plan Mode protocol (Capability 12 / Workflow Stage 0): commitment questions, mandatory probes, convergence signals, Chapter Plan output
 - `../shared/references/figure_vs_table_decision.md` - When a result belongs in a figure, a table, or both (Fujii 2026; Midway 2020) — apply before drafting the figure or table caption
 - `../shared/references/communication_context_matrix.md` - Audience × time × interaction → figure complexity (Fujii 2026); the **research article** row covers manuscript figures
-- `../shared/references/pre_submission_checklist.md` - 15-point quality gate before submission
+- `../shared/references/pre_submission_checklist.md` - 20-point quality gate before submission
 
 **Validation Scripts** (run for quality assurance):
 - `scripts/validate_writing_quality.py` - Sentence/paragraph length, passive voice

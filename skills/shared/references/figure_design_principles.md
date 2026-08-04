@@ -15,8 +15,9 @@
 - Skills `<cross_references>` blocks point here for shared principles
 - Skills' workflows say "READ §N before proceeding" inline at the relevant stage
 - Programmatic enforcement lives in `skills/svg-figure-maker/scripts/preflight_check.py` (rules that can be mechanized)
-- For the unified pre-submission gate (15-point checklist), see `pre_submission_checklist.md` in this directory
+- For the unified pre-submission gate (20-point checklist), see `pre_submission_checklist.md` in this directory
 - For the AI-figure-slop guardrail (categorical tells dominate; aesthetic signals are weak, down-weighted, and two-sided; thresholds provisional/uncalibrated; never minimize ink), see `ai_figure_slop.md` in this directory
+- For graphical abstracts, which tighten §5.4's budgets and add a thumbnail-legibility constraint this doc does not carry, see `graphical_abstract_spec.md` in this directory
 
 ---
 
@@ -117,6 +118,14 @@ Use magenta (R+B) + green (G), not red + green. Red+green is unreadable to ~8% o
 
 All colors come from a brand palette token. The preflight checker (`skills/svg-figure-maker/scripts/preflight_check.py`) rejects any hex value not present in `tokens/brand-tokens.json` (or the project-declared palette).
 
+### §3.6 Hue implies grouping
+
+Readers infer relatedness from shared hue: two elements in the same color are read as members of one group whether or not any grouping was intended (Wagemans 2012 Gestalt grouping by **similarity** — a distinct principle from the **proximity** grouping that binds a label to the data it sits beside in §5.2, and one that acts across the whole canvas rather than locally). Never reuse an accent hue across conceptually unrelated elements; a repeated hue is a claim of relatedness, and the reader acts on that claim before reading a single label. When palette limits force two unrelated elements onto the same hue, break the implied grouping with shape, line style, or spatial separation so that similarity is not the cue doing the work (§3.2).
+
+**Subordinate tie-breaker — PROVISIONAL and UNCALIBRATED:** when *no* domain convention governs a hue, cool hues may go to the favored entity and warm hues to the disfavored one. This heuristic is WEAK, heavily DOWN-WEIGHTED, and culturally contingent: it is subordinate to the domain legend convention (green = activation / red = inhibition; see `scientific-schematics/SKILL.md`) and to the CVD rules (§3.1, §3.4), and it applies only as a last resort when nothing else selects the hue. Where it conflicts with any of those, drop it.
+
+**Source:** Wagemans et al. 2012 via `oligon-brand/SKILL.md` `<design_foundation>`; §3.2 (redundant encoding). Color-affect tie-breaker: practitioner heuristic, no calibrated source — provisional/uncalibrated.
+
 ---
 
 ## §4. Accessibility
@@ -195,6 +204,17 @@ Figure complexity should match the viewing context (oral talk → seconds-to-gra
 
 **Source:** `communication_context_matrix.md`; Fujii 2026.
 
+### §5.6 Reading order and comparison axis
+
+The default scan path is left-to-right, then top-to-bottom; a figure that fights it costs the reader a scan before any content is read. Lay the argument along that path:
+
+- **Reading order is argument order** — entry point top-left, conclusion bottom-right, so the eye's path and the story's path coincide (Wagemans 2012: proximity and continuity set the path taken); mirror the horizontal direction for right-to-left venues, where the direction is culturally contingent (**PROVISIONAL and UNCALIBRATED**) even though the ordering discipline is not
+- **Direct comparisons share a horizontal axis** — disease vs healthy, treated vs control, before vs after go side by side so the differing element is the only variable; vertical stacking makes the reader hold one panel in working memory while inspecting the other (Cowan 2010), converting a within-glance comparison into a remembered one
+- **Annotate the comparison you cannot place side by side** — when panels must be separated, mark the comparison on the figure rather than asking for a cross-panel scan by eye (Franconeri et al. 2021; see §5.2)
+- **Cyclical layouts run one consistent rotational direction** — pick clockwise or counter-clockwise and hold it for the whole figure; a cycle that reverses mid-loop reads as two unrelated processes
+
+**Source:** Wagemans et al. 2012, Cowan 2010, Franconeri et al. 2021 via `oligon-brand/SKILL.md` `<design_foundation>`; §5.2, §5.4.
+
 ---
 
 ## §6. Layout and grid
@@ -270,8 +290,9 @@ Universal anti-patterns. Skill-specific anti-patterns (e.g., matplotlib library 
 | 14 | Optimizing for data-to-ink ratio mechanically | Tufte's rule mis-applied removes useful labels | Apply Fujii's signal-to-noise reframing: keep ink that supports the *takeaway*, not just ink that "represents data" |
 | 15 ⚑ | Lexically-void / garbled label text (`diƨlocttal`, `2xℇpens`), or axis ticks rendered as raw sequence indices (1,2,3…) instead of real categories | Near-categorical AI-generation tell (Frontiers/Bik 2024); a competent human never emits void glyph-strings | Replace with real terms from the source data; for our own output this is caught EXACTLY by `svg-figure-maker/scripts/preflight_check.py` (`check_garbled_text`, `check_raw_index_labels`) against the known labels — see `ai_figure_slop.md` |
 | 16 ⚑ | Encoding contradicts the printed value (bar height / slice angle / point position ≠ its number), or parts-of-whole that do not sum (pie ≠ 100%, stacked totals don't reconcile) | Covert Class-B tell: rendering looks correct, the encoding contract is broken (Woo; practitioner) | We hold the source data — verify EXACTLY (`plotting-libraries/scripts/validate_data.py::check_encoding_value_fidelity`, `::check_closure`). Never an image-OCR step for our own figures. See `ai_figure_slop.md` |
+| 17 | Arrow used as a label leader (arrowhead landing on the label, or pointing from label to the thing it names) | An arrowhead is a motion/transformation glyph — the reader keeps looking for where it leads instead of reading the label as a stopping point (Heiser & Tversky 2006: arrows push readers to describe a diagram functionally rather than structurally) | Terminate label leaders with a dot / anchor at the target; reserve arrowheads for motion, flow, or transformation |
 
-**Sources:** `oligon-brand/SKILL.md` `<anti_patterns>` §1–7; `diagram-design-skill.md` §4 lines 96–113; `pre_submission_checklist.md` §13–14. Rows 15–16: `ai_figure_slop.md` (categorical-tell-dominant; two-sided/down-weighted aesthetic signals).
+**Sources:** `oligon-brand/SKILL.md` `<anti_patterns>` §1–7; `diagram-design-skill.md` §4 lines 96–113; `pre_submission_checklist.md` §13–14. Rows 15–16: `ai_figure_slop.md` (categorical-tell-dominant; two-sided/down-weighted aesthetic signals). Row 17: Heiser & Tversky 2006 *Cogn Sci* **30**, 581–592 (arrows are read as function/motion, not as pointers).
 
 ---
 
@@ -309,7 +330,7 @@ Always cross-check against the venue's current author guidelines.
 
 ## §9. Pre-submission validation (operational gate)
 
-The full 15-point checklist lives at `pre_submission_checklist.md`. This section names the SVG-specific operational checks every skill that emits SVG must run.
+The full 20-point checklist lives at `pre_submission_checklist.md`. This section names the SVG-specific operational checks every skill that emits SVG must run.
 
 ### §9.1 SVG grep checks
 
@@ -339,6 +360,7 @@ skills/oligon-brand/scripts/render_svg_preview.sh figure.svg --scale 3
 - Tick labels don't overlap each other or the axis line
 - Legend doesn't cover data
 - Arrowheads / connector endpoints land where they should
+- No arrowhead terminates on a label — label leaders end in a dot / anchor on their target (§7 row 17)
 - Panel labels (A, B, C) don't collide with axis titles
 - Overall composition matches the figure brief
 
@@ -418,12 +440,13 @@ Things that look like principles but belong elsewhere:
 |---|---|
 | Specific brand color hex values | `oligon-brand/tokens/brand-tokens.json` |
 | Cognitive-foundation citations (full text + apply rules) | `oligon-brand/SKILL.md` `<design_foundation>` |
-| Discipline-specific signal direction (→ ⊣ - - →) | `scientific-schematics/SKILL.md` |
+| Discipline-specific signal direction and its arrow / terminator / line-style glyph set | `scientific-schematics/references/best_practices.md` "Canonical Arrow Legend" (authoritative); `scientific-schematics/SKILL.md` carries an abridged restatement |
+| Graphical-abstract element / text / thumbnail budgets | `graphical_abstract_spec.md` |
 | Biological color conventions (DNA blue, mRNA orange) | `scientific-schematics/SKILL.md` |
 | Mermaid theme variables / init blocks | `scientific-schematics/SKILL.md` |
 | matplotlib mplstyle / rcParams | `oligon-brand/assets/oligon_color_brand.mplstyle` |
 | Skill-internal four-stage workflow recipes | individual skill `<workflow>` blocks |
-| The 15-point pre-submission gate | `pre_submission_checklist.md` |
+| The 20-point pre-submission gate | `pre_submission_checklist.md` |
 | Per-venue column widths and DPI rules | `venue-templates/references/figure_specs.md` |
 | Iconography licensing per library | `iconography-licensing.md` |
 
@@ -447,6 +470,7 @@ Scientific-figure guidance:
 - Weissgerber et al. 2015 *PLoS Biol* **13**, e1002128 — bar charts hide distributions
 - Jambor 2025 *Nat Cell Biol* **27**, 879–883 — alt text + figure accessibility
 - Midway 2020 *Patterns* **1**, 100141 — table-vs-figure principles
+- Heiser & Tversky 2006 *Cogn Sci* **30**, 581–592 — arrows are read as function and motion, not as pointers (§7 row 17)
 - Tufte 2001 *The Visual Display of Quantitative Information* (2nd ed., Graphics Press)
 - Wilke 2019 *Fundamentals of Data Visualization* (O'Reilly)
 - Heer & Bostock 2010 *CHI* — crowd-sourced graphical perception

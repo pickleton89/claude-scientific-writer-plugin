@@ -119,7 +119,7 @@ Where publisher documents disagree, confirm with the editor rather than guessing
 | Per-venue column widths, DPI floors, page limits | `journals_formatting.md`, `nature_science_style.md`, `cell_press_style.md`, `medical_journal_styles.md`, `bioinformatics_journals.md` |
 | Conference posters | `posters_guidelines.md` |
 | Iconography licensing (BioRender, NIH BIOART, Servier, etc.) | `../shared/references/iconography-licensing.md` |
-| 15-point pre-submission quality gate | `../shared/references/pre_submission_checklist.md` |
+| 20-point pre-submission quality gate | `../shared/references/pre_submission_checklist.md` |
 | Figure-vs-table decision aid | `../shared/references/figure_vs_table_decision.md` |
 | Communication-context matrix (audience × time × interaction) | `../shared/references/communication_context_matrix.md` |
 | Font embedding in matplotlib programmatically | `plotting-libraries/scripts/plotting_params.py::JOURNAL_SPECS` |

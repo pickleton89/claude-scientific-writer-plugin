@@ -41,6 +41,9 @@ from .mermaid_templates import (
     build_nodes_string,
     build_connections_string,
     build_flowchart,
+    resolve_edge_style,
+    EDGE_STYLES,
+    EDGE_STYLE_ALIASES,
 )
 from .mermaid_renderer import (
     MermaidRenderer,
@@ -100,6 +103,9 @@ __all__ = [
     "build_nodes_string",
     "build_connections_string",
     "build_flowchart",
+    "resolve_edge_style",
+    "EDGE_STYLES",
+    "EDGE_STYLE_ALIASES",
     # Mermaid renderer
     "MermaidRenderer",
     "RenderBackend",

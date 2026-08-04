@@ -11,10 +11,15 @@ Tests cover:
 
 from __future__ import annotations
 
+import ast
+from pathlib import Path
+
 import pytest
 
 from utils.mermaid_templates import (
     DIAGRAM_TYPE_TO_TEMPLATES,
+    EDGE_STYLE_ALIASES,
+    EDGE_STYLES,
     TEMPLATES,
     build_connections_string,
     build_flowchart,
@@ -26,6 +31,7 @@ from utils.mermaid_templates import (
     get_template_metadata,
     list_diagram_types,
     list_templates,
+    resolve_edge_style,
     validate_template_data,
 )
 
@@ -411,6 +417,164 @@ class TestBuildConnectionsString:
 
 
 # =====================================================================
+# Edge Style Tests (canonical arrow legend)
+# =====================================================================
+
+
+class TestEdgeStyleDefault:
+    """The solid arrow (-->) must remain the default edge form."""
+
+    def test_no_style_key_emits_solid_arrow(self) -> None:
+        """Connections without a 'style' key emit the plain solid arrow."""
+        result = build_connections_string([{"from": "A", "to": "B"}])
+        assert result.strip() == "A --> B"
+
+    def test_no_style_key_labeled_emits_solid_arrow(self) -> None:
+        """Labeled connections without a 'style' key keep the pipe syntax."""
+        result = build_connections_string([{"from": "A", "to": "B", "label": "yes"}])
+        assert result.strip() == "A -->|yes| B"
+
+    def test_empty_style_falls_back_to_solid(self) -> None:
+        """An empty style string is treated as the default, not an error."""
+        result = build_connections_string([{"from": "A", "to": "B", "style": ""}])
+        assert result.strip() == "A --> B"
+
+    def test_none_style_falls_back_to_solid(self) -> None:
+        """An explicit None style is treated as the default."""
+        result = build_connections_string([{"from": "A", "to": "B", "style": None}])
+        assert result.strip() == "A --> B"
+
+    def test_explicit_solid_matches_implicit_default(self) -> None:
+        """style='solid' produces byte-identical output to omitting style."""
+        implicit = build_connections_string(
+            [{"from": "A", "to": "B"}, {"from": "A", "to": "C", "label": "no"}]
+        )
+        explicit = build_connections_string(
+            [
+                {"from": "A", "to": "B", "style": "solid"},
+                {"from": "A", "to": "C", "label": "no", "style": "solid"},
+            ]
+        )
+        assert implicit == explicit
+
+
+class TestDashedEdges:
+    """Dashed (-.->) encodes indirect / hypothetical / context-dependent effects."""
+
+    def test_dashed_plain(self) -> None:
+        """Unlabeled dashed connection uses the dotted-link form."""
+        result = build_connections_string(
+            [{"from": "RAS", "to": "ERK", "style": "dashed"}]
+        )
+        assert result.strip() == "RAS -.-> ERK"
+
+    def test_dashed_labeled(self) -> None:
+        """Labeled dashed connection uses Mermaid's dotted-link text syntax."""
+        result = build_connections_string(
+            [{"from": "RAS", "to": "ERK", "label": "indirect", "style": "dashed"}]
+        )
+        assert result.strip() == "RAS -. indirect .-> ERK"
+
+    def test_dashed_never_emits_solid_arrow(self) -> None:
+        """A dashed edge must not degrade to the default solid arrow."""
+        result = build_connections_string([{"from": "A", "to": "B", "style": "dashed"}])
+        assert "-->" not in result
+
+    @pytest.mark.parametrize("alias", ["dotted", "indirect", "hypothetical"])
+    def test_dashed_aliases(self, alias: str) -> None:
+        """Canonical-vocabulary aliases resolve to the dashed form."""
+        result = build_connections_string([{"from": "A", "to": "B", "style": alias}])
+        assert result.strip() == "A -.-> B"
+
+
+class TestThickEdges:
+    """Thick (==>) carries legend-declared ordinal magnitude."""
+
+    def test_thick_plain(self) -> None:
+        """Unlabeled thick connection uses the thick-link form."""
+        result = build_connections_string(
+            [{"from": "G6P", "to": "F6P", "style": "thick"}]
+        )
+        assert result.strip() == "G6P ==> F6P"
+
+    def test_thick_labeled(self) -> None:
+        """Labeled thick connection uses Mermaid's thick-link text syntax."""
+        result = build_connections_string(
+            [{"from": "G6P", "to": "F6P", "label": "major flux", "style": "thick"}]
+        )
+        assert result.strip() == "G6P == major flux ==> F6P"
+
+    def test_thick_never_emits_solid_arrow(self) -> None:
+        """A thick edge must not degrade to the default solid arrow."""
+        result = build_connections_string([{"from": "A", "to": "B", "style": "thick"}])
+        assert "-->" not in result
+
+    def test_thick_alias(self) -> None:
+        """'bold' resolves to the thick form."""
+        result = build_connections_string([{"from": "A", "to": "B", "style": "bold"}])
+        assert result.strip() == "A ==> B"
+
+
+class TestMixedEdgeStyles:
+    """Styled edges must not perturb unstyled ones in the same diagram."""
+
+    def test_mixed_styles_in_one_diagram(self) -> None:
+        """Each connection renders in its own declared form."""
+        connections = [
+            {"from": "RTK", "to": "RAS"},
+            {"from": "RAS", "to": "RAF", "style": "thick", "label": "dominant"},
+            {"from": "RAF", "to": "MEK", "style": "dashed"},
+            {"from": "MEK", "to": "ERK", "label": "phosphorylation"},
+        ]
+        lines = build_connections_string(connections).splitlines()
+        assert lines[0].strip() == "RTK --> RAS"
+        assert lines[1].strip() == "RAS == dominant ==> RAF"
+        assert lines[2].strip() == "RAF -.-> MEK"
+        assert lines[3].strip() == "MEK -->|phosphorylation| ERK"
+
+    def test_styles_respect_custom_indent(self) -> None:
+        """Indentation applies to styled edges too."""
+        result = build_connections_string(
+            [{"from": "A", "to": "B", "style": "dashed"}], indent="  "
+        )
+        assert result.startswith("  A -.-> B")
+
+
+class TestResolveEdgeStyle:
+    """Tests for the edge style resolver."""
+
+    def test_default_is_solid_arrow(self) -> None:
+        """Calling with no argument yields the solid arrow."""
+        assert resolve_edge_style()[0] == "-->"
+
+    def test_known_styles(self) -> None:
+        """Each declared style maps to its Mermaid arrow."""
+        assert resolve_edge_style("solid")[0] == "-->"
+        assert resolve_edge_style("dashed")[0] == "-.->"
+        assert resolve_edge_style("thick")[0] == "==>"
+
+    def test_case_and_whitespace_insensitive(self) -> None:
+        """Style names are normalized before lookup."""
+        assert resolve_edge_style("  DASHED ") == EDGE_STYLES["dashed"]
+
+    def test_unknown_style_raises(self) -> None:
+        """Unknown styles are rejected rather than silently downgraded."""
+        with pytest.raises(ValueError, match="Unknown edge style"):
+            resolve_edge_style("squiggly")
+
+    def test_unknown_style_raises_via_builder(self) -> None:
+        """The builder surfaces the same error for an unknown style."""
+        with pytest.raises(ValueError, match="Unknown edge style"):
+            build_connections_string([{"from": "A", "to": "B", "style": "squiggly"}])
+
+    def test_all_aliases_resolve(self) -> None:
+        """Every declared alias maps onto a declared style."""
+        for alias, target in EDGE_STYLE_ALIASES.items():
+            assert target in EDGE_STYLES
+            assert resolve_edge_style(alias) == EDGE_STYLES[target]
+
+
+# =====================================================================
 # Flowchart Building Tests
 # =====================================================================
 
@@ -454,6 +618,22 @@ class TestBuildFlowchart:
         connections = [{"from": "A", "to": "B"}]
         result = build_flowchart(nodes, connections, direction="RL")
         assert "flowchart RL" in result
+
+    def test_build_flowchart_with_styled_edges(self) -> None:
+        """Styled edges survive assembly into a complete flowchart."""
+        nodes = [
+            {"id": "A", "label": "Ligand"},
+            {"id": "B", "label": "Receptor"},
+            {"id": "C", "label": "Target gene"},
+        ]
+        connections = [
+            {"from": "A", "to": "B", "style": "thick"},
+            {"from": "B", "to": "C", "style": "dashed", "label": "hypothesized"},
+        ]
+        result = build_flowchart(nodes, connections)
+        assert "flowchart TD" in result
+        assert "A ==> B" in result
+        assert "B -. hypothesized .-> C" in result
 
 
 # =====================================================================
@@ -528,3 +708,69 @@ class TestDiagramTypeMapping:
                 assert template_name in TEMPLATES, (
                     f"Template '{template_name}' for type '{dtype}' not found"
                 )
+
+
+# =====================================================================
+# AI Tier Arrow Legend Tests
+# =====================================================================
+
+
+def _ai_guidelines_text() -> str:
+    """Extract SCIENTIFIC_DIAGRAM_GUIDELINES from the AI generator source.
+
+    Parsed via ast rather than imported: generate_schematic_ai.py calls
+    sys.exit() at import time when the requests library is unavailable.
+    """
+    source_path = Path(__file__).parent.parent / "scripts" / "generate_schematic_ai.py"
+    tree = ast.parse(source_path.read_text(encoding="utf-8"))
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign):
+            targets = [t.id for t in node.targets if isinstance(t, ast.Name)]
+            if "SCIENTIFIC_DIAGRAM_GUIDELINES" in targets:
+                assert isinstance(node.value, ast.Constant)
+                return node.value.value
+    raise AssertionError("SCIENTIFIC_DIAGRAM_GUIDELINES not found in AI generator")
+
+
+class TestAIGuidelinesArrowLegend:
+    """The AI tier's prompt template must carry the canonical arrow legend."""
+
+    def test_guidelines_declare_arrow_semantics(self) -> None:
+        """The prompt has a dedicated arrow semantics section."""
+        assert "ARROW SEMANTICS" in _ai_guidelines_text()
+
+    @pytest.mark.parametrize(
+        "phrase",
+        [
+            "Activation / direct positive effect",
+            "Inhibition / repression",
+            "Indirect, hypothetical, or context-dependent effect",
+            "Reversible reaction / equilibrium",
+            "Catalysis / enzyme action on substrate",
+            "Feedback regulation",
+            "Label leader",
+            "Ordinal magnitude of one relationship",
+        ],
+    )
+    def test_canonical_legend_rows_present(self, phrase: str) -> None:
+        """Each canonical legend row is expressed in the prompt."""
+        assert phrase in _ai_guidelines_text()
+
+    def test_label_leader_forbids_arrowhead(self) -> None:
+        """The prompt states the label-leader terminator rule."""
+        text = _ai_guidelines_text()
+        assert "filled dot at the referent end" in text
+        assert "no arrowhead" in " ".join(text.lower().split())
+
+    def test_color_is_redundant_encoding_only(self) -> None:
+        """Color must be declared as a redundant cue, never the sole one."""
+        text = _ai_guidelines_text()
+        assert "Color is redundant encoding only" in text
+        assert "never the sole cue" in text
+
+    def test_four_channels_declared(self) -> None:
+        """The four independent line channels are named."""
+        text = _ai_guidelines_text()
+        assert "four independent channels" in text
+        for channel in ("path", "terminator", "stroke width", "profile"):
+            assert channel in text

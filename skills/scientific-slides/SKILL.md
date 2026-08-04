@@ -615,7 +615,7 @@ See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 | `assets/timing_guidelines.md` | Timing, pacing, and practice strategies |
 | `../shared/references/communication_context_matrix.md` | Audience × time × interaction → figure complexity (Fujii 2026); the **oral / public talk** row of this matrix is the canonical figure-complexity guide for slides |
 | `../shared/references/figure_vs_table_decision.md` | Decide whether a slide should show a figure or a table (Fujii 2026; Midway 2020) |
-| `../shared/references/pre_submission_checklist.md` | 15-point quality gate; applies to slides exported as PDF for permanent record |
+| `../shared/references/pre_submission_checklist.md` | 20-point quality gate; applies to slides exported as PDF for permanent record |
 | `../shared/references/ai_figure_slop.md` | AI-figure-slop guardrail. The Nano Banana Pro slide-image path is a diffusion source of Class-A tells (garbled text, fabricated symbols); embedded data figures inherit their source skill's gate. Apply at Stage 4 visual validation; categorical tells dominate, aesthetic/default-palette signals are weak/two-sided. Emit a vector of severity-tagged sub-scores (thresholds provisional/uncalibrated) — never a single slop score; never minimize visuals to clear aesthetic flags (Bateman CHI 2010) |
 | `../oligon-brand/SKILL.md` `<design_foundation>` | Cognitive-foundation citations (Cleveland-McGill, Cowan working memory limit, Crameri color, Fujii 2026 communication context) |
 

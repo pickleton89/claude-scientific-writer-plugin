@@ -53,12 +53,15 @@ Color in biological schematics carries semantic meaning and must be used consist
 - **Mitochondria**: orange
 - **Lysosomes**: red/purple
 
-**Signal direction conventions**:
-- Arrows: activation (→ solid arrowhead), inhibition (⊣ flat bar), indirect (- - →)
-- Color coding arrows: green = activating, red = inhibiting, gray = neutral/context
+**Signal direction conventions** (path, terminator, stroke width, and profile are four separately declared channels):
+- Arrows: activation (→ solid line, solid arrowhead), inhibition (⊣ solid line, flat bar terminator), indirect / hypothetical / context-dependent (- - → dashed line, solid arrowhead)
+- Terminators: arrowhead = motion / direction / transformation; filled dot = stationary label anchor; flat bar = inhibition. Never use an arrow as a label leader — an arrowhead implies movement, so readers keep searching for where it leads instead of treating the label as a stopping point; a dot gives a clean endpoint
+- Feedback regulation: ↺ curved return path routed clear of the forward flow, terminator carrying the sign (arrowhead = positive feedback, flat bar = negative feedback)
+- Motion / flow: tapered or fading stroke, legend-declared; stroke width carries ordinal magnitude across instances of one relationship, legend-declared only, ordinal comparison and never value-reading
+- Color coding arrows: green = activating, red = inhibiting, gray = neutral/context — redundant encoding only, never the sole cue
 
 **Accessibility**:
-- Never use red–green encoding alone; add shape cues (✓/✗, solid/dashed)
+- Never use red–green encoding alone; add shape cues (→ vs ⊣ terminator, ✓/✗). In mechanism diagrams dashed is reserved for indirect / hypothetical / context-dependent; solid-vs-dashed as a pure category cue belongs to data plots
 - Test with CVD simulator before submission
 - Use at least 3:1 contrast ratio for text on colored backgrounds
 
@@ -68,7 +71,7 @@ Color in biological schematics carries semantic meaning and must be used consist
 
 **Element spacing**: Maintain consistent padding between grouped elements. Crowded diagrams cause readers to misread association between elements.
 
-**Arrow semantics**: Every arrow must convey exactly one relationship. Do not use arrows interchangeably for "leads to," "causes," "physically binds," and "is required for" — use distinct arrow styles for each.
+**Arrow semantics**: Every arrow must convey exactly one relationship. Do not use arrows interchangeably for "leads to," "causes," "physically binds," and "is required for" — use distinct arrow styles for each, and treat the terminator as its own channel: an arrowhead means motion, direction, or transformation; a filled dot means a stationary label anchor; a flat bar means inhibition. Never use an arrow as a label leader — an arrowhead implies movement, so readers keep searching for where it leads instead of treating the label as a stopping point.
 
 **Text minimalism**: Labels should be noun phrases only (not full sentences). Move explanatory text to the figure caption, not into the diagram itself.
 
@@ -120,13 +123,13 @@ What is this schematic trying to communicate?
 
 1. **Start with a sketch before opening any tool**: Draw the schematic on paper first. Determine what elements are needed, their hierarchy, and the spatial relationships. Opening software first leads to layout decisions driven by tool constraints, not by communication goals.
 
-2. **Define a consistent visual vocabulary before drawing the first panel**: Assign colors, shapes, and arrow styles to each biological entity type at the project level. Document these assignments in a legend or lab style guide. Inconsistency across figures in a paper signals carelessness and confuses reviewers.
+2. **Define a consistent visual vocabulary before drawing the first panel**: Assign colors, shapes, and arrow styles to each biological entity type at the project level, declaring all four line channels — path (solid/dashed/curved), terminator (arrowhead/dot/flat bar), stroke width, and profile (uniform/tapered). Width is a style constant within a role; it may carry ordinal magnitude across instances of one role only when the legend declares it, and then for "more than / less than" comparison only, never value-reading. Document these assignments in a legend or lab style guide. Inconsistency across figures in a paper signals carelessness and confuses reviewers.
 
 3. **Use the journal's graphical abstract template**: Every high-impact journal (Cell, Nature, PNAS, PLOS) publishes exact dimensions, resolution requirements, and font rules for graphical abstracts. Download the template before starting — resizing after the fact destroys aspect ratios and makes text too small.
 
 4. **Export at publication resolution from the vector source**: Always export final figures from the original vector file (SVG, AI, AFDESIGN) at the target DPI, never by screenshot or screen capture. Screenshots are raster at screen resolution (~72 dpi); journals require 300–600 dpi.
 
-5. **Label arrows and connections in captions, not in the diagram**: Arrow labels ("activates," "phosphorylates," "recruits") add clutter and reduce diagram readability. Move these relationships to the figure caption using panel reference labels (A, B, C). The diagram should be self-explanatory to someone who reads the caption.
+5. **Label arrows and connections in captions, not in the diagram**: Arrow labels ("activates," "phosphorylates," "recruits") add clutter and reduce diagram readability. Move these relationships to the figure caption using panel reference labels (A, B, C). The single sanctioned exception is a named reaction, enzyme, or process step where the name *is* the relationship (as in metabolic pathways). The diagram should be self-explanatory to someone who reads the caption.
 
 6. **Group related elements visually using proximity, enclosure, and color**: Elements that belong together conceptually should be spatially close, share a background color, or be enclosed in a bounding box. Do not use arbitrary spatial arrangements — viewers interpret proximity as association.
 
@@ -135,8 +138,8 @@ What is this schematic trying to communicate?
 ## Common Pitfalls
 
 1. **Using inconsistent arrow styles across a figure**
-   - *What goes wrong*: Solid arrows and dashed arrows mixed arbitrarily make readers unsure whether dashed means "indirect," "hypothetical," or merely a stylistic choice.
-   - *How to avoid*: Define an arrow legend: solid arrow = direct activation, dashed = indirect, flat bar = inhibition. Use this consistently in every panel of every figure in the paper.
+   - *What goes wrong*: Solid arrows and dashed arrows mixed arbitrarily make readers unsure whether dashed means "indirect," "hypothetical," or merely a stylistic choice. An arrowhead used as a label leader is the same failure in a different channel: it implies movement, so readers keep searching for where it leads instead of treating the label as a stopping point.
+   - *How to avoid*: Define an arrow legend: solid arrow = direct activation, dashed = indirect / hypothetical / context-dependent, flat bar = inhibition, filled dot = stationary label anchor. In mechanism and pathway diagrams that dashed meaning is canonical; dashed as a categorical series identifier stays legal in data plots, and any other dashed use must be legend-declared and must not co-occur with the canonical use in the same figure. Use the legend consistently in every panel of every figure in the paper.
 
 2. **Overloading a single panel with too many elements**
    - *What goes wrong*: Pathway diagrams with 20+ nodes and 30+ arrows cannot be read in a journal figure at 170 mm width. Reviewers ask for simplification; revisions are time-consuming.
@@ -152,7 +155,7 @@ What is this schematic trying to communicate?
 
 5. **Red–green arrow encoding for activation–inhibition without shape cues**
    - *What goes wrong*: ~8% of male readers have red–green color vision deficiency and cannot distinguish activation (green) from inhibition (red) arrows.
-   - *How to avoid*: Use distinct arrow shapes: → for activation, ⊣ for inhibition. Color is redundant encoding, not the only cue.
+   - *How to avoid*: Carry the meaning on the terminator: → (solid arrowhead) for activation, ⊣ (flat bar) for inhibition. Color is redundant encoding, not the only cue.
 
 6. **Copying schematic elements from published papers without redrawing**
    - *What goes wrong*: Reproducing figures from published papers without permission violates copyright. This applies to diagrams and icons, not just photographs.

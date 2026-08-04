@@ -572,6 +572,8 @@ Strategic use of icons enhances comprehension:
 - Rounded corners: Friendly, modern
 - Drop shadows: Depth, modern (use sparingly)
 
+> **Legend-declared exception.** "Dashed lines: Informal, secondary info" governs poster *borders and dividers*, not arrows inside a schematic panel. On an arrow, dashed canonically means indirect / hypothetical / context-dependent (`scientific-schematics/references/best_practices.md` — Canonical Arrow Legend). If a poster uses both, declare the border meaning where it is used and keep the two off the same figure.
+
 **Guidelines**:
 - Keep consistent width (2-5pt typical)
 - Use sparingly (not every element needs a border)

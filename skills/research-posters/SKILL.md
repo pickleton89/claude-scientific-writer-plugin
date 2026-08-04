@@ -635,7 +635,7 @@ See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 | `{baseDir}/references/latex_packages.md` | LaTeX package comparison (beamerposter, tikzposter, baposter) |
 | `{baseDir}/references/pptx_workflows.md` | PowerPoint templates and workflows |
 | `../shared/references/iconography-licensing.md` | Icon-library licensing (BioRender, NIH BIOART, SciDraw, Servier, Noun Project) — re-verify at submission |
-| `../shared/references/pre_submission_checklist.md` | 15-point unified quality gate (also applies to posters) |
+| `../shared/references/pre_submission_checklist.md` | 20-point unified quality gate (also applies to posters) |
 | `../shared/references/ai_figure_slop.md` | AI-figure-slop guardrail for composited figures (categorical tells dominate; aesthetic signals weak/two-sided; thresholds provisional/uncalibrated; never strip decoration to minimize ink) |
 | `../shared/references/communication_context_matrix.md` | Audience × time × interaction → poster complexity (Fujii 2026); poster row covers 3-5 minute viewer scenarios |
 | `../shared/references/figure_vs_table_decision.md` | Decision aid for figure vs table on a poster (Fujii 2026; Midway 2020) |

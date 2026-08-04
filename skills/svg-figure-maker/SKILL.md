@@ -176,14 +176,14 @@ Is the figure a one-off custom illustration?
      **no positive evidence**, not proof. Thresholds are provisional/uncalibrated.
 3. Walk `references/visual_critique_checklist.md` (Phase 3 deliverable) — for v0.1 use the inline checklist below:
    - **Text legibility:** every label readable; nothing clipped, overlapping, or truncated
-   - **Hierarchy:** the takeaway message is recognizable from the figure alone
-   - **Alignment:** elements snap to the 8px grid; panels align cleanly
-   - **Color rendering:** brand colors render correctly; no muddy / off-palette tones
-   - **Line crispness:** strokes render cleanly at the rasterized resolution
-   - **Composition balance:** whitespace is intentional (§6.4 of `figure_design_principles.md`); no crowding
-   - **Accessibility:** color isn't the only differentiator; legible in grayscale
+   - **Hierarchy:** the takeaway message is recognizable from the figure alone; no arrow terminates on a label — label leaders end in a dot / anchor, arrowheads reserved for motion, flow, or transformation (§7 row 17)
+   - **Alignment:** elements snap to the 8px grid; panels align cleanly; directly-compared panels share a horizontal axis so the differing element is the only variable (§5.6)
+   - **Color rendering:** brand colors render correctly; no muddy / off-palette tones; two-channel fluorescence is magenta + green, never red + green (§3.4)
+   - **Line crispness:** strokes render cleanly at the rasterized resolution; stroke width is constant within a role, unless a legend-declared ordinal width ramp says otherwise
+   - **Composition balance:** whitespace is intentional (§6.4 of `figure_design_principles.md`); no crowding; reading order runs left-to-right then top-to-bottom, unless a named exception (cyclical layout, right-to-left venue) is held consistently (§5.6)
+   - **Accessibility:** color isn't the only differentiator (pair hue with shape, line style, or a direct label); **colorblind-safe** — categories survive a deuteranopia simulation (§3.1, §3.2); and, as a *separate* gate, **legible in grayscale** — grayscale tests lightness separation and is not a substitute for the CVD check (§3.3)
 4. Emit findings as JSON validating against `schemas/critique_finding.schema.json` — each finding names the issue, its location in the SVG (group id or element selector), and the suggested fix
-5. READ `design_practices_index.md` §5 → `shared/references/pre_submission_checklist.md` for the 15-point gate cross-check
+5. READ `design_practices_index.md` §5 → `shared/references/pre_submission_checklist.md` for the 20-point gate cross-check
 
 **Exit Criteria:**
 - [ ] `critique.json` written and schema-valid
@@ -409,7 +409,7 @@ Schema: `schemas/figure_metadata.schema.json`. Excerpt:
 |-------|-------------|
 | `oligon-brand` | Brand tokens at Stage 1; `scripts/render_svg_preview.sh` at Stage 4 — **canonical**, do not duplicate |
 | `shared/references/figure_design_principles.md` | Authoritative principles (typography, color, accessibility, anti-patterns, grid, layout) — every workflow stage references a section |
-| `shared/references/pre_submission_checklist.md` | 15-point operational gate cross-checked at Stage 5 |
+| `shared/references/pre_submission_checklist.md` | 20-point operational gate cross-checked at Stage 5 |
 | `shared/references/ai_figure_slop.md` | Anti-slop guardrail (canonical doctrine). `scripts/preflight_check.py` (Stage 3 preflight, already extended) checks our own SVG EXACTLY — garbled/lexically-void text (`categorical` severity = hard fail), default-library palette fingerprint, and axis ticks as raw indices — against the labels/palette we authored, never via OCR. Categorical tells dominate; chartjunk signals are weak and two-sided |
 | `shared/references/figure_vs_table_decision.md` | Stage 0 sanity check |
 | `shared/references/communication_context_matrix.md` | Stage 0 complexity calibration |

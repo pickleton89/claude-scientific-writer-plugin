@@ -46,6 +46,8 @@ Functional Element Colors:
 - Arrow style: Clean, simple arrowheads. No decorative arrowheads.
 - Line routing: Orthogonal/elbow for architectures, curved for feedback loops.
 
+> **Legend-declared exception.** "Secondary flow: Dashed" is a non-canonical use of dashed. The canonical meaning of dashed in mechanism and pathway diagrams is indirect / hypothetical / context-dependent (`scientific-schematics/references/best_practices.md` — Canonical Arrow Legend). A methodology figure using dashed for secondary flow must declare that meaning in its own legend, and must not also use dashed for indirect/hypothetical relations in the same figure.
+
 ### D. Typography
 
 - All text: Sans-serif font family (Arial, Helvetica, Roboto).

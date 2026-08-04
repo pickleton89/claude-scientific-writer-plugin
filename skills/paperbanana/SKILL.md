@@ -157,8 +157,9 @@ Figure/Visual request
 2. Determine communicative intent (what should the figure convey?)
 3. **Tag the communication context** (Fujii 2026 — see `../shared/references/communication_context_matrix.md`):
    - `audience: lay | specialist`
-   - `setting: oral | article | poster | online`
+   - `setting: oral | article | poster | online | graphical_abstract`
    - `time: brief | moderate | extended`
+   - `graphical_abstract` also gates the element / text / thumbnail budgets in `../shared/references/graphical_abstract_spec.md`, and requires confirming the venue accepts one (`../venue-templates/references/figure_specs.md` §1) before any generation — most venues do not
 4. Select document type for quality threshold
 5. Check for explicit style preferences
 
@@ -282,7 +283,7 @@ The compiled revision prompt can be used as `--caption` input for a focused refi
 
 **Steps:**
 1. PaperBanana Critic evaluates on 4 dimensions (Faithfulness, Readability, Conciseness, Aesthetics)
-2. **Communication-context fit check (Fujii 2026):** confirm the figure's complexity matches the Stage 1 context tag (audience / setting / time). E.g., an `oral / brief / lay` figure with 4 panels and 12 colours fails this check; a single-message annotated figure passes. Cross-reference `../shared/references/communication_context_matrix.md`.
+2. **Communication-context fit check (Fujii 2026):** confirm the figure's complexity matches the Stage 1 context tag (audience / setting / time). E.g., an `oral / brief / lay` figure with 4 panels and 12 colours fails this check; a single-message annotated figure passes. Cross-reference `../shared/references/communication_context_matrix.md`. **If `setting: graphical_abstract`, run the budgets in `../shared/references/graphical_abstract_spec.md` instead of the generic complexity read:** element budget (tighter than `figure_design_principles.md` §5.4), text budget (fewer words than the written abstract; ~70% of content carried visually — both provisional/uncalibrated), and the thumbnail-legibility gate — downscale the render to ~250 px wide and confirm every label is still readable, because the thumbnail, not the print size, is the binding constraint.
 3. Quality bridge maps 4-dim scores → 5-point rubric (10 points total)
 4. Compare against document type threshold
 5. If below threshold and iterations remain, pipeline refines automatically
@@ -425,7 +426,7 @@ python {baseDir}/scripts/generate_figure.py --input paper.txt \
    - **T5 Axis/label coherence** (graded) · **T6 default-template feel** (weak, two-sided — do NOT strip decoration or minimize ink to lower it; Bateman CHI2010).
    **Any T1–T4 = 2 ⇒ the figure is rejected: refine via the Critic loop or tighten the caption and regenerate — do not accept.** Emit the `tell_pass` vector into the review log. The output is a vector of severity-tagged sub-scores, never a composite slop score; thresholds are provisional/uncalibrated. A clean pass is **no positive evidence**, not proof; T3 checks only printed values, not whether the source numbers are real.
 2. **Key message check:** does the figure convey the single takeaway from the caption / Stage 1 input?
-3. **Communication-context tag check:** does the complexity match the Stage 1 audience / setting / time tag? See `../shared/references/communication_context_matrix.md`.
+3. **Communication-context tag check:** does the complexity match the Stage 1 audience / setting / time tag? See `../shared/references/communication_context_matrix.md`. For `setting: graphical_abstract`, the element / text / thumbnail budgets in `../shared/references/graphical_abstract_spec.md` govern — a figure that only passes at full size fails here if a label dies at ~250 px.
 4. **Figure-design canon check:** does the output respect Cleveland-McGill 1984 channel ranking, Crameri 2020 colour, Wagemans 2012 direct-labelling, and (if continuous data is involved) Weissgerber 2015? See `../oligon-brand/SKILL.md` `<design_foundation>`.
 
 If any check fails, iterate via the Critic loop or refine the caption with more specific intent. Do not accept the first generation as final for journal-grade output.
@@ -671,10 +672,12 @@ See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 | `{baseDir}/references/examples/spec_egfr_inhibition.json` | Worked example for JSON spec mode |
 | `{baseDir}/data/guidelines/oligon_style.yaml` | Oligon aesthetic guidelines for Stylist agent |
 | `../shared/references/iconography-licensing.md` | Icon-library licensing (BioRender, NIH BIOART, SciDraw, Servier, Noun Project) — re-verify at submission |
-| `../shared/references/pre_submission_checklist.md` | 15-point unified quality gate (Q0 = "should this be a table?") |
+| `../shared/references/pre_submission_checklist.md` | 20-point unified quality gate (Q0 = "should this be a table?") |
 | `../shared/references/ai_figure_slop.md` | AI-figure-slop guardrail. PaperBanana is a diffusion/Imagen pipeline — the highest-risk source of Class-A categorical tells (garbled labels, impossible anatomy, fabricated symbols). Apply at Stage 3 quality evaluation; categorical tells dominate, aesthetic/default-palette signals are weak and two-sided; output is a vector of severity-tagged sub-scores, never a composite, thresholds provisional/uncalibrated |
 | `../shared/references/generative_artifact_tells.md` | Generative-Artifact Tell Pass (T1–T6) — categorical AI-tell checklist run at the head of the Stage-3 post-generation review; vector output, any T1–T4 = 2 ⇒ reject/regenerate |
-| `../shared/references/communication_context_matrix.md` | Audience × time × interaction → figure complexity (Fujii 2026) |
+| `../shared/references/communication_context_matrix.md` | Audience × time × interaction → figure complexity (Fujii 2026); includes the graphical-abstract / TOC-thumbnail row |
+| `../shared/references/graphical_abstract_spec.md` | Graphical-abstract **design** spec — element budget (tighter than `figure_design_principles.md` §5.4), text budget (fewer words than the written abstract; ~70% of content carried visually, both provisional/uncalibrated), and the ~200–300 px thumbnail-legibility gate. Applies whenever `setting: graphical_abstract`; design only, no journal formats |
+| `../venue-templates/references/figure_specs.md` §1 | Graphical-abstract **format** spec — per-venue dimensions, DPI, max file size, file format, font-point floors, and the "most venues do not use graphical abstracts, confirm first" gate |
 | `../shared/references/figure_vs_table_decision.md` | Decision aid for figure vs table vs both (Fujii 2026; Midway 2020) |
 | `../oligon-brand/SKILL.md` `<design_foundation>` | Cognitive-foundation citations (Cleveland-McGill, Crameri, Wilke, Fujii 2026, Weissgerber 2015 for plots, etc.) |
 

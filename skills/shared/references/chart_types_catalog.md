@@ -18,7 +18,7 @@ For other entry points, prefer the matching decision aid:
 | A research question or figure intent (Description / Difference / Association) | `../../plotting-libraries/references/plot_selection_guide.md` (intent-driven decision tree) |
 | A result and unsure whether to show it at all | `figure_vs_table_decision.md` (figure vs table vs both vs text) |
 | A chosen audience / venue (article, slide, poster, dashboard) | `communication_context_matrix.md` (complexity by viewing context) |
-| A drafted figure ready for a final pass | `pre_submission_checklist.md` (15-point quality gate) |
+| A drafted figure ready for a final pass | `pre_submission_checklist.md` (20-point quality gate) |
 
 Run the decision aids **first**; come here **second** to look up the chosen chart's properties.
 
@@ -502,7 +502,7 @@ Each entry uses a consistent shape:
 | Intent-driven decision tree (Description / Difference / Association) | `../../plotting-libraries/references/plot_selection_guide.md` |
 | Figure vs table vs both vs text | `figure_vs_table_decision.md` |
 | Audience × time × interaction → figure complexity | `communication_context_matrix.md` |
-| Pre-submission 15-point quality gate | `pre_submission_checklist.md` |
+| Pre-submission 20-point quality gate | `pre_submission_checklist.md` |
 | Cognitive-foundation citations (Cleveland-McGill, Crameri, Wilke, Fujii, Weissgerber) | `../../oligon-brand/SKILL.md` `<design_foundation>` |
 | Volcano plots (specialised scatter for differential expression) | `../../plotting-libraries/references/volcano_plots.md` |
 | Heatmaps (Python `clustermap`, R `ComplexHeatmap`) | `../../plotting-libraries/references/heatmaps.md` |

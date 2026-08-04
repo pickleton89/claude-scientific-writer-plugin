@@ -565,7 +565,7 @@ See `oligon-brand` skill for complete brand implementation patterns.
 
 ### Cross-Skill Design References
 - **[../shared/references/iconography-licensing.md](../shared/references/iconography-licensing.md)**: Icon-library licensing (BioRender, NIH BIOART, SciDraw, Servier, Noun Project) — re-verify at submission
-- **[../shared/references/pre_submission_checklist.md](../shared/references/pre_submission_checklist.md)**: 15-point unified quality gate (Q0 = "should this be a table?")
+- **[../shared/references/pre_submission_checklist.md](../shared/references/pre_submission_checklist.md)**: 20-point unified quality gate (Q0 = "should this be a table?")
 - **[../shared/references/ai_figure_slop.md](../shared/references/ai_figure_slop.md)**: AI-figure-slop guardrail. Because we hold the source DataFrame, encoding↔value fidelity and parts-sum closure are checked EXACTLY against the data (`scripts/validate_data.py::check_encoding_value_fidelity`, `check_closure`) — not via image OCR. Categorical tells (raw-index tick labels, geometry-contradicts-label) dominate; chartjunk/default-palette signals are weak, two-sided, and down-weighted (do NOT strip decoration to "minimize ink" — Bateman). Thresholds provisional/uncalibrated.
 - **[../shared/references/communication_context_matrix.md](../shared/references/communication_context_matrix.md)**: Audience × time × interaction → figure complexity (Fujii 2026)
 - **[../shared/references/figure_vs_table_decision.md](../shared/references/figure_vs_table_decision.md)**: Decision aid for figure vs table vs both (Fujii 2026; Midway 2020)

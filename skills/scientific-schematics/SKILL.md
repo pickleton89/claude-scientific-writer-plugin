@@ -182,11 +182,18 @@ When generating mechanism, pathway, or structural diagrams without Oligon brand 
 | Endoplasmic reticulum | Light green | |
 | Golgi apparatus | Pink / magenta | |
 
-**Signal-direction convention** (independent of color):
-- Activation: → (solid arrowhead)
-- Inhibition: ⊣ (flat bar)
-- Indirect / hypothetical: - - → (dashed)
-- Optional color overlay: green = activating, red = inhibiting, gray = neutral/context — **never** the only cue (see arrow legend in `references/best_practices.md`).
+**Signal-direction convention** (independent of color) — path, terminator, stroke width, and profile are four separately declared channels:
+- Activation: → (solid line, solid arrowhead)
+- Inhibition: ⊣ (solid line, flat bar terminator)
+- Indirect / hypothetical / context-dependent: - - → (dashed line, solid arrowhead) — the canonical meaning of dashed in mechanism and pathway diagrams. Dashed as a categorical series identifier stays legal in data plots; any other dashed use (cut plane, weak signal, cross-attention, secondary flow) must be legend-declared and must not co-occur with the canonical use in the same figure
+- Feedback regulation: ↺ curved return path routed clear of the forward flow, terminator carrying the sign (arrowhead = positive feedback, flat bar = negative feedback)
+- Label leader: —● thin line ending in a filled dot, **never** an arrowhead. An arrowhead implies movement, so readers keep searching for where it leads instead of treating the label as a stopping point; a dot gives a clean endpoint
+- Reversible reaction / equilibrium: ⇌ two opposing half-arrows
+- Catalysis / enzyme action on substrate: ⊳ solid line, open arrowhead
+- Named reaction or process: → with the enzyme / kinase / process name set above the arrow. This is the **single sanctioned exception** to caption-only arrow labelling — the name must *be* the relationship (e.g. "phosphorylation"), never a restatement of what the arrowhead already encodes (e.g. "activation")
+- Motion / flow: tapered or fading stroke, legend-declared; magnitude never rides on the taper
+- Stroke width: ordinal magnitude across instances of one relationship, legend-declared only — ordinal comparison, never value-reading
+- Optional color overlay: green = activating, red = inhibiting, gray = neutral/context — **never** the only cue (see the Canonical Arrow Legend in `references/best_practices.md`).
 
 ### Disabling Brand Styling
 
@@ -752,7 +759,9 @@ Left: Encoder with input embedding, positional encoding,
 multi-head self-attention (8 heads), add & norm, feed-forward, add & norm.
 Right: Decoder with output embedding, positional encoding, masked self-attention,
 cross-attention from encoder, add & norm, feed-forward, linear & softmax.
-Show cross-attention connection with dashed line."
+Show cross-attention connection with dashed line, and add a legend entry
+reading 'dashed = cross-attention' — a legend-declared use, legal here because
+this diagram contains no indirect/hypothetical edges."
 ```
 
 ---
@@ -925,7 +934,9 @@ Add & Norm → Feed-forward → Add & Norm.
 Decoder (right): Output embedding → Positional encoding → Masked self-attention →
 Add & Norm → Cross-attention (from encoder) → Add & Norm → Feed-forward → Add & Norm →
 Linear → Softmax.
-Cross-attention connection shown with dashed arrow.
+Cross-attention connection shown with dashed arrow, plus a legend entry
+'dashed = cross-attention' (legend-declared use; this diagram has no
+indirect/hypothetical edges, so the canonical dashed meaning is not in play).
 Light blue encoder blocks, light red decoder blocks.
 ```
 
@@ -934,7 +945,7 @@ Light blue encoder blocks, light red decoder blocks.
 MAPK signaling pathway diagram.
 Cell membrane at top with EGFR receptor.
 Sequential cascade: EGFR → RAS (GTP-bound) → RAF kinase → MEK kinase → ERK kinase → Nucleus.
-Label each arrow with 'phosphorylation' or 'activation'.
+Name the process on the cascade arrows where it is informative ('phosphorylation'); do not label an arrow 'activation' — the solid arrowhead already encodes that, and duplicating it on every arrow adds clutter without signal.
 Rounded rectangles for proteins, different colors for each.
 Include membrane boundary line at top.
 Vertical top-to-bottom layout.
@@ -1004,7 +1015,7 @@ See `SKILL_ROUTER.md` for decision trees when multiple skills may apply.
 | `{baseDir}/references/best_practices.md` | Publication standards and accessibility guidelines |
 | `{baseDir}/references/quick_reference.md` | Quick start guide and common examples |
 | `../shared/references/iconography-licensing.md` | Icon-library licensing (BioRender, NIH BIOART, SciDraw, Servier, Noun Project) — re-verify at submission |
-| `../shared/references/pre_submission_checklist.md` | 15-point unified quality gate (Q0 = "should this be a table?") |
+| `../shared/references/pre_submission_checklist.md` | 20-point unified quality gate (Q0 = "should this be a table?") |
 | `../shared/references/ai_figure_slop.md` | AI-figure-slop guardrail (categorical tells dominate; aesthetic signals weak/two-sided; provisional/uncalibrated thresholds). Apply at Stage 5 quality verification, especially for Tier-2 AI output |
 | `../shared/references/generative_artifact_tells.md` | Vision Tell-Pass rubric for the human-eye Class-A categorical check on Tier-2 AI raster output |
 | `../shared/references/communication_context_matrix.md` | Audience × time × interaction → diagram complexity (Fujii 2026) |

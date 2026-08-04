@@ -105,10 +105,11 @@ DPI = 2400 / 8 = 300 ✓ (acceptable)
 - **Emphasis elements**: 2.0-3.0 pt
 - **Minimum visible**: 0.25 pt at final size
 
-**Consistency**
-- Use same line weight for similar elements
-- Vary line weight to show hierarchy
-- Avoid hairline rules (too thin to print reliably)
+**Consistency and Magnitude**
+- **Width is a style constant within a role** — every element playing the same role (all node outlines, all activation arrows, all compartment boundaries) carries one stroke width. Varying width inside a role for visual interest is decoration, and readers decode it as an unintended claim
+- **Hierarchy is expressed across roles, never within one** — emphasis elements heavier than connectors, connectors heavier than outlines; then each of those weights is held fixed
+- **Width may carry ordinal magnitude across instances of a single role, and only when the legend declares it** — for example, thicker = larger flux across the arrows of one pathway. Ordinal comparison only ("more than / less than"), never value-reading off the page: Cleveland & McGill rank position and length above area and width, which makes width a weak quantitative channel (see Canonical Arrow Legend)
+- **Respect the venue's stroke floor** — never go below the journal minimum (Cell specifies 0.5 pt; see Journal-Specific Guidelines), and avoid hairline rules, which do not print reliably. A legend-declared width ramp must fit entirely above that floor, so a venue with a 0.5 pt floor supports fewer distinguishable width steps than one without
 
 ## Accessibility and Colorblindness
 
@@ -157,6 +158,8 @@ Dashed + Orange = Treatment 2
 Dotted + Green = Control
 ```
 
+**Scope — data plots.** Dashed here is a *categorical series identifier*, not a claim about mechanism: it is the color-vision-deficiency redundant-encoding device that separates Treatment 2 from Treatment 1 without relying on hue. This use is fully legal in data plots and is explicitly exempt from the mechanism-diagram rule that dashed means indirect / hypothetical / context-dependent (see Canonical Arrow Legend). The two uses must never appear in the same figure.
+
 **Pattern Fill + Color**
 ```
 Solid fill + Blue = Group A
@@ -171,7 +174,7 @@ Cross-hatch + Green = Group C
 **Strategies**
 - Use different shades (light, medium, dark)
 - Add patterns or textures to filled areas
-- Vary line styles (solid, dashed, dotted)
+- Vary line styles (solid, dashed, dotted) to identify series — a legal categorical use of dashed in data plots, distinct from its canonical mechanism-diagram meaning (see Canonical Arrow Legend)
 - Use labels directly on elements
 - Include text annotations
 
@@ -280,7 +283,7 @@ convert diagram.pdf -colorspace gray diagram_gray.pdf
 **Problem**: Labels overlap elements or are hard to read
 **Solution**:
 - Place labels outside shapes when possible
-- Use leader lines for distant labels
+- Use leader lines for distant labels, terminated in a filled dot at the referent — never an arrowhead. An arrowhead implies movement, so the reader keeps searching for where the line leads instead of treating the label as a stopping point; a dot gives a clean endpoint (see Canonical Arrow Legend)
 - Rotate text only when necessary
 - Ensure adequate contrast with background
 
@@ -297,28 +300,41 @@ convert diagram.pdf -colorspace gray diagram_gray.pdf
 
 **Principle: Every arrow must convey exactly one relationship.** Mixing arrow styles arbitrarily — or using the same style for "leads to," "physically binds," "is required for," and "is hypothesized to influence" — forces readers to guess. Define a legend at the project level and apply it across every panel of every figure in the paper.
 
+A line carries meaning on **four independent channels**: its **path** (solid / dashed / curved), its **terminator** (arrowhead / dot / flat bar), its **stroke width**, and its **profile** (uniform / tapered). Each channel is either declared in the legend or not used at all — an undeclared channel that visibly varies is a defect, not a style choice.
+
 | Symbol | Meaning | Encoding | Optional color |
-|--------|---------|----------|----------------|
+|---|---|---|---|
 | → | Activation / direct positive effect | Solid line, solid arrowhead | Green |
 | ⊣ | Inhibition / repression | Solid line, flat bar terminator | Red |
 | - - → | Indirect, hypothetical, or context-dependent effect | Dashed line, solid arrowhead | Gray |
 | ⇌ | Reversible reaction / equilibrium | Two opposing half-arrows | Neutral |
 | ⊳ (open arrowhead) | Catalysis / enzyme action on substrate | Solid line, open arrowhead | Neutral |
 | → with label | Reaction or process named on the arrow | Add enzyme / kinase / process name above | Match arrow type |
+| —● (dot terminator) | Label leader — points at a referent and asserts no motion | Thin solid line, filled dot at the referent end, no arrowhead | Neutral / text color |
+| ↺ (curved return path) | Feedback regulation — a downstream node acting back on an upstream one | Curved line routed clear of the forward path; the terminator carries the sign (arrowhead = positive feedback, flat bar = negative feedback) | Green (positive) / red (negative) |
+| → (tapered) | Motion, flow, or directional transport, as distinct from a static relation | Stroke narrows or fades along the path; terminator still set by the relationship | Match arrow type |
+| → (thick) vs → (thin) | Ordinal magnitude of one relationship (e.g. dominant vs minor flux) — legend-declared only | Identical path, terminator, and profile; only stroke width varies, monotonically | Match arrow type |
 
 **Rules:**
-- Color is **redundant encoding only** — never the sole cue. ~8% of male readers cannot distinguish red/green; shape distinction (→ vs ⊣) carries the meaning.
-- Use **labels in the figure caption**, not on the arrows themselves, when arrow density is high. Arrow labels add clutter and reduce diagram readability.
-- A diagram should be self-explanatory to a reader who reads the caption.
+
+- **Color is redundant encoding only** — never the sole cue; ~8% of male readers cannot distinguish red from green, so the shape distinction (→ vs ⊣) must carry the meaning unaided
+- **The terminator is a declared channel, not a drawing default** — the shape where a line ends means something on its own: an arrowhead asserts motion, direction, or transformation; a filled dot asserts a stationary anchor; a flat bar asserts inhibition. Choose each terminator deliberately and hold its meaning fixed across every panel of every figure
+- **Never use an arrow as a label leader** — an arrowhead implies movement, so the reader keeps searching for where it leads instead of treating the label as a stopping point. Terminate every leader line in a filled dot: a dot gives a clean endpoint and claims nothing about direction (see Pitfall 3)
+- **Dashed is resolved by figure class** — in mechanism and pathway diagrams, dashed means indirect / hypothetical / context-dependent and nothing else; that is the canonical use. In data plots, dashed as a categorical series identifier stays fully legal, because there it is a color-vision-deficiency redundant-encoding device rather than a claim about mechanism (see Redundant Encoding). Any third use — cut plane, weak signal, cross-attention, "secondary flow," grouping border — must be declared in that figure's own legend and must never co-occur with the canonical mechanism use in the same figure
+- **Taper or fade a stroke to say "motion," never to say "how much"** — a line that narrows or fades along its path reads as flow or transport rather than a static relation, and a taper widening toward the reader can read as movement toward the viewer (**PROVISIONAL and UNCALIBRATED** — a culturally-contingent depth cue, not a measured effect). Declare the taper in the legend and keep magnitude off this channel
+- **Stroke width is a weak ordinal channel** — Cleveland & McGill rank position and length above area and width, so width supports "more than / less than" comparison across instances of a single relationship and never value-reading off the page. Legal only when the legend declares it, and never a substitute for the number in the caption (see Line Weights and Strokes)
+- **Labels belong in the figure caption, not on the arrows** — when arrow density is high, arrow labels add clutter and reduce diagram readability. The single sanctioned exception is the "→ with label" row above: a named reaction, enzyme, or process step where the name *is* the relationship. If a panel needs more than a handful of such names, move them to the caption
+- **A diagram must be self-explanatory to a reader who has read the caption** — every channel in use is declared either in an on-figure legend or in the caption, and no channel varies for decorative reasons
 
 ### Pitfall 5: Ambiguous Arrows
 
-**Problem**: Unclear what arrows represent or where they point
+**Problem**: Unclear what arrows represent, where they point, or whether they are meant to point at all
 **Solution**:
-- Use different arrow styles for different meanings
-- Add labels to arrows
-- Include legend for arrow types
-- Use anchor points for precise connections
+- Assign one meaning per arrow style *and* per terminator — arrowhead = motion / direction / transformation, filled dot = stationary label anchor, flat bar = inhibition (see Canonical Arrow Legend)
+- Never terminate a label leader in an arrowhead; use a filled dot, so the label reads as an endpoint rather than a destination
+- Name relationships in the figure caption rather than on the arrows; label an arrow directly only for a named reaction, enzyme, or process step, where the name *is* the relationship
+- Include a legend covering every channel in use — path, terminator, stroke width, taper
+- Use anchor points for precise connections, so each arrow visibly starts and ends on its intended node
 
 ### Pitfall 6: Color Overuse
 

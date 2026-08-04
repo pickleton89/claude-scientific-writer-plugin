@@ -221,6 +221,14 @@ See `references/grid_and_layout.md` for the grid discipline. Quick check: if a c
 
 **Fix:** apply the padding table from `references/grid_and_layout.md`. When in doubt, use more whitespace.
 
+### D.5 Arrow used as a label leader
+
+**Anti-pattern:** a leader line whose arrowhead lands on the label, or an arrow drawn from a label to the thing it names — `marker-end="url(#arrowhead)"` on a line that connects text to its referent.
+
+**Why:** an arrowhead is a motion / transformation glyph. The reader keeps looking for where it leads instead of reading the label as a stopping point (Heiser & Tversky 2006 — arrows push readers toward a functional rather than structural reading of a diagram). It also spends the arrow vocabulary of the figure on a relationship that is not a process.
+
+**Fix:** terminate label leaders in a filled dot / anchor at the target, and reserve arrowheads for motion, flow, or transformation. A leader line itself is fine — only its terminator changes. See `shared/references/figure_design_principles.md` §7 row 17, and critique item 2.5 in `references/visual_critique_checklist.md`.
+
 ---
 
 ## Category E: Accessibility and metadata mistakes
@@ -301,6 +309,7 @@ The preflight checker uses these severity assignments:
 | C.3 Text below 10pt | `fail` |
 | C.4 Vertical text | `fail` |
 | D.1 Off-grid coords | `warn` (or `fail` with `--strict-grid`) |
+| D.5 Arrow used as a label leader | not mechanizable (vision-loop) |
 | E.1 Missing `<title>` / `<desc>` | `fail` |
 | E.3 `<script>` blocks | `fail` |
 | E.4 `<foreignObject>` | `fail` |
