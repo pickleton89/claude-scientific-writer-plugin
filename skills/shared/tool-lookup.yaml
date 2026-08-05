@@ -14,6 +14,25 @@
 #   GPCRdb_get_protein, DailyMed_search_spls). Some Phase 1 entries
 #   use lowercase shorthand (e.g., interpro_protein); both resolve
 #   correctly. See known_param_corrections.md for canonical mappings.
+#
+# ─── PAPERCLIP TRANSPORTS (normative) ────────────────────────────────────────
+# Paperclip is reachable over TWO equivalent transports. Every entry below
+# written as `paperclip <command>` resolves to whichever is present:
+#
+#   1. CLI binary — `paperclip <command>`, invoked via Bash.
+#   2. MCP server — `mcp__claude_ai_Paperclip__paperclip` with
+#      `{"command": "<command>"}`. Same command surface, same output; the
+#      `paperclip ` prefix is dropped (e.g. CLI `paperclip search "CRISPR" -n 5`
+#      → MCP `{"command": "search \"CRISPR\" -n 5"}`).
+#
+# Neither transport is preferred over the other — use whichever is available.
+# "Paperclip absent / unavailable" in any note below means NEITHER transport is
+# present, and only then do the documented fallbacks apply. Do NOT downgrade to
+# a fallback merely because the CLI binary is off PATH.
+#
+# Corollary for deep-research: `scripts/search_contract.py` runs as a
+# subprocess and can only PATH-check the CLI, so callers must pass
+# `paperclip_available: true` when only the MCP transport is present.
 
 # ─── ENTITY DISAMBIGUATION ───────────────────────────────────────────────────
 
@@ -402,7 +421,7 @@ literature:
   corpus_search:
     description: "Full-text discovery + LLM map/reduce across the Paperclip 8-source corpus (PMC + bioRxiv + medRxiv + arXiv + abstracts + FDA + clinical trials + patents)"
     primary:
-      - tool: paperclip search  # Paperclip CLI (invoke via Bash)
+      - tool: paperclip search  # Paperclip CLI or MCP — see PAPERCLIP TRANSPORTS
         notes: >
           Full-text search across the 8-source corpus (pmc, biorxiv, medrxiv, arxiv,
           abstracts, fda, trials, patents — restrict with `-s <source>` or positional
@@ -412,7 +431,7 @@ literature:
           (`https://citations.gxl.ai/papers/<doc_id>#L<n>`) for durable audit trails.
           Add `-s abstracts` to widen to abstract-only corpus when full-text hits are
           sparse. Pair with PubMed MCP — Paperclip does NOT cover full MEDLINE.
-      - tool: paperclip map  # Paperclip CLI
+      - tool: paperclip map  # Paperclip CLI or MCP — see PAPERCLIP TRANSPORTS
         notes: >
           `paperclip map --from <s_id> "<question>"` runs a per-paper LLM reader and emits
           a map result ID `m_xxxxxxxx`. Recommended at 3–10 papers (`-n 5` or `-n 10` on
@@ -425,7 +444,7 @@ literature:
   corpus_metadata:
     description: "Read-only SQL metadata queries over the Paperclip documents table (200-row cap)"
     primary:
-      - tool: paperclip sql  # Paperclip CLI (invoke via Bash)
+      - tool: paperclip sql  # Paperclip CLI or MCP — see PAPERCLIP TRANSPORTS
         notes: >
           `paperclip sql "SELECT ... FROM documents WHERE ..."`. The query is fanned
           out across the 4 default sources (pmc, abstracts, fda_docs, trials) — each
@@ -442,7 +461,7 @@ literature:
   corpus_grep:
     description: "Sub-second regex search across the Paperclip corpus (full text), or within a single paper"
     primary:
-      - tool: paperclip grep  # Paperclip CLI (invoke via Bash)
+      - tool: paperclip grep  # Paperclip CLI or MCP — see PAPERCLIP TRANSPORTS
         notes: >
           Canonical full-text exact-phrase search across the entire indexed corpus:
           `paperclip grep -F "<exact passage>" /papers/`. Returns paper IDs and per-paper
@@ -731,7 +750,7 @@ verification:
       - tool: pmc_fetch
         notes: "PMC open-access full text retrieval via WebFetch"
     fallback:
-      - tool: paperclip search  # Paperclip CLI
+      - tool: paperclip search  # Paperclip CLI or MCP — see PAPERCLIP TRANSPORTS
         notes: >
           When PMC fetch returns paywall / 404, attempt OA full-text retrieval via
           `paperclip lookup doi <DOI>` (preferred when DOI is known) or
@@ -793,7 +812,7 @@ verification:
     # returns QUOTE_FABRICATED in biomedical context, escalate to `primary` (Paperclip
     # corpus grep) before falling back to `fallback` (web search).
     primary:
-      - tool: paperclip grep  # Paperclip CLI
+      - tool: paperclip grep  # Paperclip CLI or MCP — see PAPERCLIP TRANSPORTS
         notes: >
           When `sources_available == "none"` (biomedical context), or when verify_exact_quote.py
           returns QUOTE_FABRICATED for a quote that may simply be misattributed to the wrong
@@ -814,7 +833,7 @@ verification:
   figure_content:
     description: "VLM analysis of paper figures via Paperclip ask-image — verify claims of the form 'Figure N shows X'"
     primary:
-      - tool: paperclip ask-image  # Paperclip CLI (invoke via Bash)
+      - tool: paperclip ask-image  # Paperclip CLI or MCP — see PAPERCLIP TRANSPORTS
         notes: >
           `paperclip ask-image /papers/<id>/figures/<file> "<question>"`. Two built-in
           fns: `--fn describe` (default question: what does this figure show?) and

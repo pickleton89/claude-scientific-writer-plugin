@@ -14,7 +14,13 @@ audited by ``search_audit.py`` before Checkpoint 2.
 
 Usage:
     python search_contract.py <input.json>
-    JSON: {"mode": "full", "domain": "biomedical", "research_question": "..."}
+    JSON: {"mode": "full", "domain": "biomedical", "research_question": "...",
+           "paperclip_available": true}
+
+    ``paperclip_available`` is optional. Paperclip is reachable over two
+    transports (CLI binary, MCP server); this script can only PATH-check the
+    CLI, so an MCP-only caller must pass ``true`` explicitly to avoid a
+    spurious Checkpoint 1 warning.
 
 Output:
     Markdown rendering of the contract for Checkpoint 1, followed by JSON.
@@ -94,7 +100,10 @@ DATABASE_METADATA: dict[str, dict[str, str]] = {
     "Paperclip": {
         "capability_key": "literature.corpus_search",
         "tool": "paperclip search",
-        "transport": "CLI",
+        # Two equivalent transports (CLI binary, MCP server) — see
+        # shared/tool-lookup.yaml → PAPERCLIP TRANSPORTS. Display/serialization
+        # only; nothing branches on this value.
+        "transport": "CLI/MCP",
     },
     "PubTator3": {
         "capability_key": "literature.entity_annotation",
@@ -198,11 +207,18 @@ NO_SEARCH_MODES: frozenset[str] = frozenset({"socratic", "review"})
 def _paperclip_available() -> bool:
     """Return True if the ``paperclip`` CLI binary is on PATH.
 
-    Used to surface a Checkpoint 1 warning when Paperclip is required by the
-    contract but the binary is missing. Per project decision, missing binary
-    does not hard-fail — the user sees a warning and can either install/login
-    or strike Paperclip explicitly. Run-time PATH check via ``shutil.which``;
-    no subprocess call (``paperclip --version`` may prompt for OAuth refresh).
+    This is the *fallback heuristic* only. Paperclip is reachable by two
+    transports — the CLI binary and the Paperclip MCP server (which exposes
+    the same command surface, e.g. ``search "CRISPR" -n 5``) — but this
+    module runs as a subprocess and cannot introspect the calling agent's MCP
+    tool registry. An MCP-only environment therefore looks "missing" here.
+    Callers that *can* see the registry must pass ``paperclip_available`` to
+    :func:`build_contract` rather than relying on this check.
+
+    Missing-on-both-transports does not hard-fail — the user sees a Checkpoint 1
+    warning and can install/login, connect the MCP server, or strike Paperclip.
+    Run-time PATH check via ``shutil.which``; no subprocess call
+    (``paperclip --version`` may prompt for OAuth refresh).
     """
     return shutil.which("paperclip") is not None
 
@@ -338,7 +354,9 @@ class DatabaseEntry:
     name: str
     capability_key: str
     tool: str
-    transport: str  # "MCP" or "CLI"
+    transport: str  # "MCP", "CLI", or "CLI/MCP" (either transport works)
+    # NOTE: no "|" in transport values — this field is rendered into a markdown
+    # table cell by format_contract_for_user(); a pipe would split the column.
     tier: str  # "primary" / "secondary" / "tertiary" / "reception" / "corpus"
     purpose: str = ""
     starter_query: str = ""
@@ -499,6 +517,7 @@ def build_contract(
     research_question: str = "",
     domain: str = DEFAULT_DOMAIN,
     has_named_entities: bool | None = None,
+    paperclip_available: bool | None = None,
 ) -> SearchContract:
     """
     Build a Search Contract for the given mode + domain + RQ.
@@ -516,6 +535,14 @@ def build_contract(
             ``None`` (default) runs ``_detect_named_entities`` on the RQ;
             ``True`` forces PubTator3 promotion to required (when mode-eligible);
             ``False`` keeps PubTator3 optional. Use to override misfires.
+        paperclip_available: Override the Paperclip availability heuristic.
+            ``None`` (default) falls back to ``_paperclip_available()``, a
+            PATH check that cannot see MCP tools. Callers that *can* enumerate
+            their tool registry should pass ``True`` when Paperclip is
+            reachable by **either** transport (CLI binary on PATH or the
+            Paperclip MCP server), and ``False`` when neither is present.
+            An MCP-only environment MUST pass ``True`` — otherwise every
+            search-running mode emits a spurious Checkpoint 1 warning.
 
     Returns:
         Unfrozen :class:`SearchContract` ready for Checkpoint 1 presentation.
@@ -612,18 +639,41 @@ def build_contract(
     # contract gets a `prisma_s_disclosure_required: true` flag.
 
     # If Paperclip is in the required tier table, surface a Checkpoint 1
-    # warning when the binary is missing. We don't hard-fail — user can
+    # warning when it is unreachable. We don't hard-fail — user can
     # acknowledge and proceed, then strike Paperclip if needed.
+    #
+    # Paperclip has two transports (CLI binary, MCP server). An explicit
+    # `paperclip_available` from the caller is authoritative for both; the
+    # PATH fallback can only see the CLI, so its negative is advisory and the
+    # message says so rather than prescribing CLI-only remediation.
     paperclip_in_required = any(
         d.name == "Paperclip" for d in contract.required_databases
     )
-    if paperclip_in_required and not _paperclip_available():
-        contract.warnings.append(
-            "Paperclip is required by this contract but the `paperclip` "
-            "binary is not on PATH. Run `paperclip install` + "
-            "`paperclip login`, or strike Paperclip at Checkpoint 1 to "
-            "proceed without full-text corpus search."
-        )
+    if paperclip_in_required:
+        if paperclip_available is None:
+            paperclip_reachable = _paperclip_available()
+            unreachable_note = (
+                "the `paperclip` binary is not on PATH (MCP transport not "
+                "checked — this module cannot see the agent's tool registry). "
+                "If the Paperclip MCP server is connected, re-run with "
+                "`paperclip_available: true` to clear this warning. Otherwise "
+                "run `paperclip install` + `paperclip login`, connect the "
+                "Paperclip MCP server, or strike Paperclip at Checkpoint 1 to "
+                "proceed without full-text corpus search."
+            )
+        else:
+            paperclip_reachable = bool(paperclip_available)
+            unreachable_note = (
+                "neither transport is reachable — the `paperclip` binary is "
+                "not on PATH and the Paperclip MCP server is not connected. "
+                "Run `paperclip install` + `paperclip login`, connect the "
+                "Paperclip MCP server, or strike Paperclip at Checkpoint 1 to "
+                "proceed without full-text corpus search."
+            )
+        if not paperclip_reachable:
+            contract.warnings.append(
+                f"Paperclip is required by this contract but {unreachable_note}"
+            )
 
     # --- Optional channels (mode-gated) ---------------------------------------
     # Scite reception assessment (Step 4b)
@@ -788,7 +838,11 @@ def main() -> None:
         print("Usage: search_contract.py <input.json | json_string>")
         print(
             '  JSON: {"mode": "full", "domain": "biomedical", '
-            '"research_question": "..."}'
+            '"research_question": "...", "paperclip_available": true}'
+        )
+        print(
+            "  paperclip_available: set true when the Paperclip CLI *or* the "
+            "Paperclip MCP server is reachable (omit to PATH-check the CLI only)"
         )
         sys.exit(1)
 
@@ -804,6 +858,7 @@ def main() -> None:
         research_question=data.get("research_question", ""),
         domain=data.get("domain", DEFAULT_DOMAIN),
         has_named_entities=data.get("has_named_entities"),
+        paperclip_available=data.get("paperclip_available"),
     )
 
     print(format_contract_for_user(contract))

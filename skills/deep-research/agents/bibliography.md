@@ -34,11 +34,11 @@ search strategy.
 | `get_full_text_article` | PubMed MCP | Full-text retrieval (PMC only) | `article_id` |
 | `search` | Consensus MCP | Cross-domain evidence synthesis | `query` |
 | `search_literature` | Scite MCP | Citation-aware full-text search; post-search reception assessment | `term`, `dois` |
-| `paperclip search` | Paperclip CLI | **Preprint + full-text discovery** across 8-source corpus (PMC + bioRxiv + medRxiv + arXiv + abstracts + FDA + clinical trials + patents). Replaces the retired bioRxiv MCP. | `query`, `-n`, `-s`, `--since`, `--year`, `--journal` |
-| `paperclip lookup` | Paperclip CLI | DOI / PMID / arXiv / title lookup — preferred when an identifier is known | `FIELD VALUE` (FIELD ∈ {doi, pmid, arxiv, pmc, title, author, journal, year, ...}) |
-| `paperclip map` | Paperclip CLI | Per-paper LLM reader across 3–10 search hits | `--from <s_id>`, `"<question>"` |
-| `paperclip reduce` | Paperclip CLI | Synthesize a map result set (`m_id`) into themes/table/summary | `--from <m_id>`, `--strategy {summarize\|table\|themes\|consensus\|bullet_points\|extract}` |
-| `paperclip sql` | Paperclip CLI | Read-only metadata SQL (200-row cap) — pre-search coverage / year-journal filters | SQL query string |
+| `paperclip search` | Paperclip CLI *or* MCP | **Preprint + full-text discovery** across 8-source corpus (PMC + bioRxiv + medRxiv + arXiv + abstracts + FDA + clinical trials + patents). Replaces the retired bioRxiv MCP. | `query`, `-n`, `-s`, `--since`, `--year`, `--journal` |
+| `paperclip lookup` | Paperclip CLI *or* MCP | DOI / PMID / arXiv / title lookup — preferred when an identifier is known | `FIELD VALUE` (FIELD ∈ {doi, pmid, arxiv, pmc, title, author, journal, year, ...}) |
+| `paperclip map` | Paperclip CLI *or* MCP | Per-paper LLM reader across 3–10 search hits | `--from <s_id>`, `"<question>"` |
+| `paperclip reduce` | Paperclip CLI *or* MCP | Synthesize a map result set (`m_id`) into themes/table/summary | `--from <m_id>`, `--strategy {summarize\|table\|themes\|consensus\|bullet_points\|extract}` |
+| `paperclip sql` | Paperclip CLI *or* MCP | Read-only metadata SQL (200-row cap) — pre-search coverage / year-journal filters | SQL query string |
 | `pubtator3 search` | PubTator3 wrapper | Entity-grounded discovery (gene/disease/chemical/variant co-mentions) | `--gene`, `--disease`, `--chemical`, `--variant`, `--size`, `--summary` |
 | `pubtator3 annotations` | PubTator3 wrapper | BioC-JSON entity spans for assembled PMID list | `--pmids`, `--summary` |
 | `pubtator3 relations` | PubTator3 wrapper | Co-mention graph for an entity (dossier-style pivots) | `--entity`, `--summary` |
@@ -53,7 +53,14 @@ search strategy.
 | `mcp__exa__web_search_exa` | Exa MCP | **Required WebSemantic channel** for grey-lit discovery (regulatory pages, conference abstracts, registry pages, sponsor disclosures). Natural-language *page-description* queries, not keywords. Filter hits against the W1/W2 whitelist before promoting to bibliography. | `query` (natural-language page description), `numResults` |
 | `mcp__exa__web_fetch_exa` | Exa MCP | Markdown fetch for whitelisted URLs to capture snippet + `fetched_at` ISO-8601 timestamp into the Search Log. Batch URLs in one call. | `urls` (array, batch-friendly) |
 
-**Paperclip is invoked via Bash, not MCP** — requires `paperclip install` + `paperclip login` (per machine). Vendor-managed `SKILL.md` lives at `.claude/skills/paperclip/SKILL.md`. v1.7.0: Paperclip is the sole preprint + full-text channel (the bioRxiv MCP was retired). Skip Paperclip silently when the binary is absent (CI / sandboxed environments) — bibliography proceeds with the other databases. Capability keys: `literature.corpus_search`, `literature.corpus_grep`, `literature.corpus_metadata`, `verification.figure_content`. See `skills/shared/references/paperclip_stateful_workflow.md` for the s_id/m_id reuse pattern.
+**Paperclip has TWO equivalent transports — check for both before skipping the channel:**
+
+1. **CLI binary** — `paperclip <command>` via Bash. Requires `paperclip install` + `paperclip login` (per machine).
+2. **MCP server** — the `paperclip` tool (`mcp__claude_ai_Paperclip__paperclip`), called as `{"command": "<command>"}`. Same command surface and same output; drop the `paperclip ` prefix (CLI `paperclip search "CRISPR" -n 5` → MCP `{"command": "search \"CRISPR\" -n 5"}`). Auth is handled by the connector — no install/login step.
+
+Neither transport is preferred; use whichever is present. Every `paperclip <command>` in the tool table above resolves to either one. **Skip the Paperclip channel only when NEITHER transport is available** — do not skip merely because the binary is off PATH, and do not treat `command not found` as channel-absent until the MCP tool has also been ruled out. When the channel is genuinely unavailable, skip silently (CI / sandboxed environments) and proceed with the other databases, documenting the gap in the Search Log.
+
+Vendor-managed `SKILL.md` lives at `.claude/skills/paperclip/SKILL.md`. v1.7.0: Paperclip is the sole preprint + full-text channel (the bioRxiv MCP was retired), which is why a spurious skip is costly — there is no preprint fallback. Capability keys: `literature.corpus_search`, `literature.corpus_grep`, `literature.corpus_metadata`, `verification.figure_content` (see `skills/shared/tool-lookup.yaml` → PAPERCLIP TRANSPORTS for the normative rule). See `skills/shared/references/paperclip_stateful_workflow.md` for the s_id/m_id reuse pattern.
 
 **PubTator3 is invoked via Bash:** `uv run python skills/shared/scripts/pubtator3.py <subcommand>`. No auth, NCBI REST. Skip silently when the network call fails (sandboxed environments) — bibliography proceeds with the other databases. Capability keys: `literature.entity_annotation`, `literature.entity_autocomplete`. See `skills/shared/references/pubtator3_quirks.md` for entity-ID format and query syntax.
 
@@ -79,7 +86,7 @@ search strategy.
 | Consensus MCP rate-limit | 429 or "rate limit" in response | Wait 30s, retry once | 1 |
 | ToolUniverse session expired | "session" or "auth" error from `execute_tool` | Retry `execute_tool` once | 1 |
 | Scite MCP error/timeout | Error response or timeout from `search_literature` | Skip Step 4b reception assessment; no equivalent fallback | 0 |
-| Paperclip CLI error | Non-zero exit / `paperclip: command not found` / OAuth expired | Skip Paperclip channel; proceed with PubMed + Consensus + OpenAlex. No preprint fallback exists post-bioRxiv-MCP retirement — document gap in Search Log. | 1 |
+| Paperclip error (either transport) | Non-zero exit / `paperclip: command not found` / OAuth expired (CLI), or tool error (MCP) | **Try the other transport first** — `command not found` on the CLI means try the `paperclip` MCP tool, and vice versa. Only if BOTH fail: skip Paperclip channel; proceed with PubMed + Consensus + OpenAlex. No preprint fallback exists post-bioRxiv-MCP retirement — document gap in Search Log. | 1 per transport |
 | PubTator3 wrapper error | Non-zero exit / network error / `requests` not installed | Skip PubTator3 channel; proceed with other databases. No fallback for entity-grounded search. | 1 |
 | OpenAlex MCP error/timeout | Error from `health_check` or any `mcp__openalex__*` call; rate-limit (429) | Re-run `health_check` once; on second failure skip OpenAlex channel and emit DEGRADED-SEARCH advisory (OpenAlex is required, so its loss must be flagged). For citation-graph requests, fall back to PubMed `find_related_articles` (biomedical only) or Scite citation context (sentiment-classified, narrower coverage). | 1 |
 | Exa MCP error/empty | Error from `mcp__exa__web_search_exa` or empty results across all sub-queries | Retry once with the RQ reformulated as a page-description (Exa is semantic). On second failure, skip the WebSemantic channel and emit DEGRADED-SEARCH advisory; record gap in Search Log (no equivalent grey-lit fallback). In `fact-check` with regulatory auto-hardening, treat Exa loss as a HARD GAP and re-open the Search Contract with the user. | 1 |

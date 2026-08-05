@@ -222,7 +222,16 @@ Checkpoint 1, all frozen on approval:
    for `socratic` and `review` — those modes do not search):
    - Inputs: `mode`, `domain` (biomedical / molecular / pharmacology /
      cross-domain / preprint-heavy), `research_question`, optional
-     `has_named_entities` override
+     `has_named_entities` override, optional `paperclip_available` override
+   - **Set `paperclip_available` on every invocation.** Paperclip is
+     reachable over two transports — the `paperclip` CLI binary and the
+     Paperclip MCP server (`paperclip` tool, same command surface). The
+     script runs as a subprocess and can only PATH-check the CLI, so it
+     cannot see the MCP transport. Before running it, check your own tool
+     registry: pass `"paperclip_available": true` if **either** transport is
+     present, `false` only if neither is. Omitting it falls back to the
+     CLI-only PATH check, which fires a spurious warning in MCP-only
+     environments.
    - Outputs the required-database list (per `thresholds.MIN_DATABASES` +
      the resolved domain tier table). In heavy modes (`full` /
      `lit-review` / `systematic-review` / `hypothesis`) and `fact-check`,
@@ -241,9 +250,9 @@ Checkpoint 1, all frozen on approval:
      PubTator3 when no entities detected) are also surfaced
    - Mode-skipped channels are surfaced explicitly so the user can see
      *why* a tool is absent
-   - When Paperclip is required but the binary is missing, a Checkpoint 1
-     warning fires (no hard fail) — user can install/login or strike the
-     channel
+   - When Paperclip is required but unreachable by **both** transports, a
+     Checkpoint 1 warning fires (no hard fail) — user can install/login the
+     CLI, connect the Paperclip MCP server, or strike the channel
 3a. **WebSemantic opt-in (systematic-review only).** Before locking
     Checkpoint 1 in `systematic-review` mode, emit this one-line prompt:
     > "WebSemantic (Exa grey-lit discovery) is not in the default

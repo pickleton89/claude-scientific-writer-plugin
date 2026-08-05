@@ -8,6 +8,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 from search_contract import (
+    ALL_MODES,
     DATABASE_METADATA,
     NO_SEARCH_MODES,
     OPENALEX_REQUIRED_MODES,
@@ -618,6 +619,181 @@ def test_missing_paperclip_no_warning_in_no_search_modes(monkeypatch):
             mode=mode, research_question="x", domain="biomedical"
         )
         assert not any("paperclip" in w.lower() for w in contract.warnings)
+
+
+# ---------------------------------------------------------------------------
+# Paperclip MCP transport — `paperclip_available` override
+#
+# The PATH heuristic can only see the CLI binary. An MCP-only environment must
+# be able to suppress the warning by passing the override, and the override
+# must be authoritative in both directions.
+# ---------------------------------------------------------------------------
+
+
+SEARCH_RUNNING_MODES = sorted(set(ALL_MODES) - set(NO_SEARCH_MODES))
+
+
+@pytest.mark.parametrize("mode", SEARCH_RUNNING_MODES)
+def test_paperclip_available_true_suppresses_warning_all_modes(monkeypatch, mode):
+    """MCP-only env: binary off PATH but override True → no warning, any mode.
+
+    This is the regression guard for the actual defect — before the override
+    existed, every search-running mode warned spuriously under MCP-only.
+    """
+    import search_contract
+
+    monkeypatch.setattr(search_contract, "_paperclip_available", lambda: False)
+    contract = build_contract(
+        mode=mode,
+        research_question="BRAF melanoma",
+        domain="biomedical",
+        paperclip_available=True,
+    )
+    assert "Paperclip" in contract.required_database_names()
+    assert not any("paperclip" in w.lower() for w in contract.warnings)
+
+
+@pytest.mark.parametrize("mode", SEARCH_RUNNING_MODES)
+def test_paperclip_available_false_warns_all_modes(monkeypatch, mode):
+    """Override False is authoritative even when the binary IS on PATH."""
+    import search_contract
+
+    monkeypatch.setattr(search_contract, "_paperclip_available", lambda: True)
+    contract = build_contract(
+        mode=mode,
+        research_question="BRAF melanoma",
+        domain="biomedical",
+        paperclip_available=False,
+    )
+    assert any("paperclip" in w.lower() for w in contract.warnings)
+
+
+def test_paperclip_available_none_falls_back_to_path_check(monkeypatch):
+    """Omitting the override preserves v1.7.0 PATH-check behavior exactly."""
+    import search_contract
+
+    monkeypatch.setattr(search_contract, "_paperclip_available", lambda: True)
+    contract = build_contract(mode="full", research_question="x")
+    assert not any("paperclip" in w.lower() for w in contract.warnings)
+
+    monkeypatch.setattr(search_contract, "_paperclip_available", lambda: False)
+    contract = build_contract(mode="full", research_question="x")
+    assert any("paperclip" in w.lower() for w in contract.warnings)
+
+
+def test_paperclip_override_short_circuits_path_check(monkeypatch):
+    """Override True must not require the PATH check to run at all.
+
+    Guards against a regression where the heuristic is evaluated eagerly and
+    its result ORed in — the override alone must be sufficient.
+    """
+    import search_contract
+
+    def _boom():
+        raise AssertionError("_paperclip_available must not be called")
+
+    monkeypatch.setattr(search_contract, "_paperclip_available", _boom)
+    contract = build_contract(
+        mode="full", research_question="x", paperclip_available=True
+    )
+    assert not any("paperclip" in w.lower() for w in contract.warnings)
+
+
+def test_path_fallback_warning_mentions_mcp_transport(monkeypatch):
+    """The None-path warning must not give CLI-only remediation advice.
+
+    An MCP-connected user who forgot the flag needs to be told the flag
+    exists, not told to reinstall a binary they may not want.
+    """
+    import search_contract
+
+    monkeypatch.setattr(search_contract, "_paperclip_available", lambda: False)
+    contract = build_contract(mode="full", research_question="x")
+    warning = next(w for w in contract.warnings if "paperclip" in w.lower())
+    assert "mcp" in warning.lower()
+    assert "paperclip_available" in warning
+
+
+def test_explicit_false_warning_states_both_transports_absent(monkeypatch):
+    """The authoritative-negative branch reads differently from the fallback."""
+    import search_contract
+
+    monkeypatch.setattr(search_contract, "_paperclip_available", lambda: True)
+    contract = build_contract(
+        mode="full", research_question="x", paperclip_available=False
+    )
+    warning = next(w for w in contract.warnings if "paperclip" in w.lower())
+    assert "neither transport" in warning.lower()
+    assert "mcp" in warning.lower()
+
+
+def test_paperclip_entry_advertises_both_transports():
+    """The contract must not tell downstream agents Paperclip is CLI-only.
+
+    `transport` is rendered into the Checkpoint 1 table and the frozen JSON.
+    A bare "CLI" here caused the bibliography agent to skip the channel in
+    MCP-only environments even after the availability warning was fixed.
+    """
+    contract = build_contract(
+        mode="full", research_question="x", paperclip_available=True
+    )
+    paperclip = next(
+        d for d in contract.required_databases if d.name == "Paperclip"
+    )
+    assert "MCP" in paperclip.transport
+    assert "CLI" in paperclip.transport
+    # Survives serialization — the frozen contract is what Phase 2 consumes.
+    payload = contract.to_dict()
+    seat = next(
+        d for d in payload["required_databases"] if d["name"] == "Paperclip"
+    )
+    assert seat["transport"] == "CLI/MCP"
+
+
+def test_no_transport_value_contains_a_pipe():
+    """Transport is rendered into a markdown table cell — a pipe splits it."""
+    from search_contract import DATABASE_METADATA
+
+    for name, meta in DATABASE_METADATA.items():
+        assert "|" not in meta["transport"], f"{name} transport breaks the table"
+
+
+def test_no_search_modes_ignore_paperclip_override():
+    """Socratic / review never warn regardless of the override value."""
+    for mode in NO_SEARCH_MODES:
+        for flag in (True, False, None):
+            contract = build_contract(
+                mode=mode, research_question="x", paperclip_available=flag
+            )
+            assert not any("paperclip" in w.lower() for w in contract.warnings)
+
+
+def test_main_plumbs_paperclip_available_from_json(monkeypatch, capsys):
+    """CLI entry point must forward the JSON key, not silently drop it."""
+    import json as _json
+
+    import search_contract
+
+    monkeypatch.setattr(search_contract, "_paperclip_available", lambda: False)
+    monkeypatch.setattr(
+        search_contract.sys,
+        "argv",
+        [
+            "search_contract.py",
+            _json.dumps(
+                {
+                    "mode": "full",
+                    "domain": "biomedical",
+                    "research_question": "BRAF melanoma",
+                    "paperclip_available": True,
+                }
+            ),
+        ],
+    )
+    search_contract.main()
+    out = capsys.readouterr().out
+    payload = _json.loads(out.split("\n---\n", 1)[1])
+    assert not any("paperclip" in w.lower() for w in payload["warnings"])
 
 
 # ---------------------------------------------------------------------------
