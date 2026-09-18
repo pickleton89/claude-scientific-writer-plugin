@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.9.1] - 2026-09-18
+
+### Fixed
+
+- Oligon presentation titles omit eyebrow text, kickers, and overlines on every slide type. Updated the deck playbook, copy guidance, and preflight checklist from canonical brand revision `50b3bc3`.
+
 ## [Unreleased]
 
 ### Fixed — `deep-research` treated Paperclip as CLI-only, disabling it in MCP-only environments

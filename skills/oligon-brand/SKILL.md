@@ -8,7 +8,7 @@ tokens-file: tokens/brand-tokens.json
 style-guide: references/Oligon_Digital_Style_Guide_v2.3.html
 ---
 <!-- GENERATED FILE - do not edit here.
-     Vendored from https://github.com/pickleton89/oligon-brand-core@b4e52ed
+     Vendored from https://github.com/pickleton89/oligon-brand-core@50b3bc3
      Edit oligon-brand-core and re-run scripts/sync_brand_core.sh. -->
 
 
@@ -526,6 +526,17 @@ scripts/render_svg_preview.sh figure.svg /tmp/out.png # explicit output path
 ```
 </design_foundation>
 
+## Presentation titles: no eyebrows
+
+Do not add eyebrow text (small category labels, kickers, or overlines)
+above presentation titles. This applies to every slide type, including
+cover, agenda, section-divider, content, data, and appendix slides,
+and to PPTX, Beamer, and HTML presentations. Use the title itself for
+the main message; place necessary context in a subtitle below the title
+or in the body. Do not reserve an empty eyebrow row. This presentation
+rule supersedes eyebrow patterns in the bundled style guide and generic
+copy examples; other media retain their own conventions.
+
 <preflight>
 ## Preflight Checklist
 
@@ -545,6 +556,8 @@ scripts/render_svg_preview.sh figure.svg /tmp/out.png # explicit output path
 - [ ] Resolution ≥ 300 DPI for print; vector preferred for line art
 - [ ] Alt text describes the *finding*, not the chart type
 - [ ] Logo excluded from publication figures
+- [ ] Presentation titles have no eyebrow, kicker, or overline text above
+      them, including on cover and section-divider slides
 </preflight>
 
 <anti_patterns>

@@ -74,12 +74,18 @@ medium's dimensions and conventions.
 
 ### Investor & scientific deck structure
 
+**No eyebrows in presentations.** Do not place small category labels,
+kickers, or overlines above slide titles, on any slide type. Use a title
+alone, with necessary context below it as a subtitle or body text. Do not
+reserve an empty eyebrow row. This rule supersedes presentation eyebrow
+examples in the bundled Digital Style Guide v2.3.
+
 | Slide type          | Specification |
 |---------------------|---------------|
-| Cover               | `blue.900` full-bleed; H3 eyebrow (e.g. `INVESTOR UPDATE — Q2 2026`); H1 title (28 pt); wordmark bottom-right |
-| Section divider     | `blue.900`; H3 eyebrow + H1 only, no body |
-| Content slide       | White ground; H3 eyebrow + H2 title; content area |
-| Data slide          | White ground; H3 eyebrow + H2 title; figure per brand-colors-full.md §3–§6 at 300 dpi |
+| Cover               | `blue.900` full-bleed; H1 title (28 pt); wordmark bottom-right |
+| Section divider     | `blue.900`; H1 title only, no body |
+| Content slide       | White ground; H2 title; content area |
+| Data slide          | White ground; H2 title; figure per brand-colors-full.md §3–§6 at 300 dpi |
 | Quote slide         | `blue.900`; oversized quotation mark in Brand Blue at 0.25 opacity; display-size quote; attribution |
 | Closing / contact   | `blue.900`; CTA text; wordmark; contact email |
 

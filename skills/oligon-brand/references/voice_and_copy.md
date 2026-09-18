@@ -77,7 +77,9 @@ technical-to-plain glossary.
 
 ### 4.1 Eyebrow + Headline pattern
 
-The most distinctive structural move in the system.
+This pattern applies to media whose playbooks specify eyebrows.
+**Do not use it in presentations:** slide titles have no eyebrow, kicker,
+or overline above them. The same exclusion applies to Formula C below.
 
 - **Eyebrow** = `H3` (14 pt uppercase, 700, `neutral.900`,
   0.05em letter-spacing)
@@ -143,7 +145,9 @@ Formula A above.
 
 Exceptions: reference slides, disclosure slides, acknowledgments, and
 appendix raw-data slides carry neutral topic labels. Agenda and
-section-divider slides carry an eyebrow-only pattern.
+section-divider slides use a normal title, without an eyebrow. No slide
+type uses eyebrow text above its title; necessary context belongs below
+the title or in the body.
 
 ---
 
